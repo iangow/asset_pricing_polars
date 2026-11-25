@@ -1,0 +1,14 @@
+[project]
+name = "asset-pricing-polars-book"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = ["polars>=1.30", "jupyter"]
+
+[dependency-groups]
+parity = [
+  "pandas", "numpy", "pyarrow", "scipy", "statsmodels", "linearmodels",
+  "rich", "tqdm", "deprecated", "openpyxl", "seaborn", "matplotlib",
+]
+
+[tool.uv]
+package = false

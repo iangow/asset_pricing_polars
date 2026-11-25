@@ -1,0 +1,13 @@
+project:
+  type: book
+  output-dir: _book
+
+book:
+  title: "Empirical Asset Pricing with Polars"
+  chapters:
+    - index.qmd
+    - size.qmd
+
+format:
+  html:
+    code-copy: true

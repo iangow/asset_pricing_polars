@@ -1,0 +1,12 @@
+/.venv/
+/.quarto/
+/_book/
+/.jupyter/
+/.mplconfig/
+/.ipynb_checkpoints/
+/size_files/
+__pycache__/
+*.parquet
+*.csv
+
+**/*.quarto_ipynb

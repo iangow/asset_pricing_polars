@@ -1,0 +1,174 @@
+---
+title: "Size portfolios"
+jupyter: python3
+---
+
+This pilot forms monthly size quintiles and measures their next-month returns.
+It uses CRSP CIZ, a short historical subset (2000–2002 holding months), and breakpoints
+computed from all eligible observations rather than NYSE-only breakpoints.
+Its purpose is to compare the Polars sort with AnomalyLab on identical inputs,
+not to match the textbook's tables.
+
+## Read the stock-month panel
+
+Use ordinary U.S.-incorporated common shares of corporations on the NYSE,
+AMEX, and Nasdaq at **formation**. Use positive market capitalization for
+both the sort and the portfolio weights. Don't require a stock to meet the same
+screen in the holding month: keep its reported CIZ return if present, including
+a return for a delisting month when available.
+
+```{python}
+import os
+from datetime import date
+from pathlib import Path
+
+import polars as pl
+
+root = Path(os.environ.get("ASSET_PRICING_DATA_DIR", "~/Dropbox/pq_data")).expanduser()
+first = date(2000, 1, 1)
+last = date(2002, 12, 1)
+monthly = (
+    pl.scan_parquet(root / "crsp" / "msf_v2.parquet")
+    .with_columns(month=pl.col("mthcaldt").dt.month_start())
+    .filter(pl.col("month").is_between(date(1999, 12, 1), last))
+)
+stock_months = monthly.select("permno", "month")
+assert stock_months.collect().is_duplicated().sum() == 0, "Duplicate stock-months"
+
+formation = (
+    monthly.filter(
+        pl.col("securitytype") == "EQTY",
+        pl.col("securitysubtype") == "COM",
+        pl.col("sharetype") == "NS",
+        pl.col("usincflg") == "Y",
+        pl.col("issuertype").is_in(["ACOR", "CORP"]),
+        pl.col("primaryexch").is_in(["A", "N", "Q"]),
+        pl.col("tradingstatusflg") == "A",
+        pl.col("conditionaltype") == "RW",
+        pl.col("mthcap") > 0,
+    )
+    .select(
+        "permno",
+        pl.col("month").dt.offset_by("1mo").alias("month"),
+        pl.col("mthcap").cast(pl.Float64).alias("size"),
+    )
+    .filter(pl.col("month").is_between(first, last))
+)
+returns = monthly.select("permno", "month", pl.col("mthret").cast(pl.Float64).alias("ret"))
+panel = formation.join(returns, on=["permno", "month"], how="left").collect()
+complete = panel.filter(pl.col("ret").is_finite())
+print(f"{panel.height:,} formation observations; {complete.height:,} with a usable return.")
+```
+
+The join advances the calendar by exactly one month. It does not jump a gap
+to the next available observed return. For this parity check, we follow
+AnomalyLab by dropping missing holding-period returns **before** computing
+breakpoints. That can change the portfolios using information that wasn't
+known at formation. A backtest should instead freeze the breakpoints and
+assignments at formation, then handle missing returns separately.
+
+## Sort within each month
+
+Use linear quantiles and right-closed bins, like the reference's
+`pandas.qcut` quintiles. Values equal to a breakpoint stay in the lower bin.
+Stop rather than silently breaking ties if quantile edges coincide.
+
+```{python}
+probs = [0, .2, .4, .6, .8, 1]
+edges = [f"q{i}" for i in range(len(probs))]
+cutoffs = complete.group_by("month").agg(
+    pl.col("size").quantile(q, interpolation="linear").alias(edge)
+    for q, edge in zip(probs, edges)
+)
+assert cutoffs.height > 0, "No complete stock-months"
+assert not cutoffs.select(
+    pl.any_horizontal(pl.col(a) >= pl.col(b) for a, b in zip(edges, edges[1:])).any()
+).item(), "Non-unique quantile edges"
+
+members = (
+    complete.join(cutoffs, on="month")
+    .with_columns(
+        quintile=1 + pl.sum_horizontal(
+            (pl.col("size") > pl.col(edge)).cast(pl.Int32) for edge in edges[1:-1]
+        )
+    )
+    .select("permno", "month", "size", "ret", "quintile")
+)
+```
+
+## Compare returns
+
+Compute one equal-weighted and one value-weighted return per month and quintile.
+Then take the arithmetic mean over months. The spread is large minus small.
+Returns in the table are percentages per month; the calculations use decimals.
+
+```{python}
+monthly_returns = members.group_by("month", "quintile").agg(
+    equal_weighted=pl.col("ret").mean(),
+    value_weighted=(pl.col("ret") * pl.col("size")).sum() / pl.col("size").sum(),
+).sort("month", "quintile")
+assert monthly_returns.group_by("month").len()["len"].eq(5).all()
+
+small = monthly_returns.filter(pl.col("quintile") == 1)
+large = monthly_returns.filter(pl.col("quintile") == 5)
+spread = large.join(small, on="month", suffix="_small").select(
+    "month",
+    pl.lit(6, dtype=pl.Int32).alias("quintile"),
+    (pl.col("equal_weighted") - pl.col("equal_weighted_small")).alias("equal_weighted"),
+    (pl.col("value_weighted") - pl.col("value_weighted_small")).alias("value_weighted"),
+)
+all_returns = pl.concat([monthly_returns, spread])
+summary = all_returns.group_by("quintile").agg(
+    pl.len().alias("months"),
+    (100 * pl.col("equal_weighted").mean()).round(3).alias("equal_weighted_pct"),
+    (100 * pl.col("value_weighted").mean()).round(3).alias("value_weighted_pct"),
+).sort("quintile").with_columns(
+    portfolio=pl.when(pl.col("quintile") == 6).then(pl.lit("Large − small"))
+    .otherwise(pl.col("quintile").cast(pl.String))
+).drop("quintile").select("portfolio", "months", "equal_weighted_pct", "value_weighted_pct")
+summary
+```
+
+No factor adjustment or inference is applied in this chapter.
+
+```{python}
+#| include: false
+
+# Optional parity check, against an unmodified upstream checkout.
+if checkout := os.environ.get("ANOMALYLAB_CHECKOUT"):
+    import sys
+
+    import numpy as np
+    import pandas as pd
+
+    sys.path.insert(0, str(Path(checkout).expanduser().resolve(strict=True)))
+    from anomalylab import Panel
+
+    reference = Panel(complete.sort("month", "permno").to_pandas(),
+                      id="permno", time="month", frequency="M", ret="ret")
+    reference_members = reference.group("ret", "size", "size", 5)
+    expected_keys = (
+        reference_members[["month", "permno", "size_g5"]]
+        .rename(columns={"size_g5": "quintile"})
+        .sort_values(["month", "permno"]).reset_index(drop=True)
+    )
+    actual_keys = members.sort("month", "permno").select(
+        "month", "permno", "quintile"
+    ).to_pandas()
+    actual_keys["month"] = actual_keys["month"].dt.to_period("M")
+    pd.testing.assert_frame_equal(actual_keys, expected_keys, check_dtype=False)
+
+    ew, vw = reference.univariate_analysis("ret", "size", "size", 5, factor_return=True)
+    actual = all_returns.to_pandas()
+    actual["month"] = actual["month"].dt.to_period("M")
+    actual["quintile"] = actual["quintile"].replace({6: "H-L"})
+    actual = actual.set_index(["month", "quintile"])
+    errors = {}
+    for col, expected in [("equal_weighted", ew), ("value_weighted", vw)]:
+        assert len(actual) == len(expected) and set(actual.index) == set(expected.index)
+        obs = actual[col].reindex(expected.index).to_numpy()
+        np.testing.assert_allclose(obs, expected.to_numpy(), atol=1e-12, rtol=0)
+        errors[col] = float(np.max(np.abs(obs - expected.to_numpy())))
+    print(f"Matched {members.height:,} assignments and {len(actual)} portfolio-months;"
+          f" maximum absolute differences: {errors}", file=sys.stderr)
+```
