@@ -52,3 +52,12 @@ sorts (208,501 memberships per design), including their populated return
 cells and spreads. Fama–MacBeth matched all 36 monthly coefficient vectors;
 HAC standard errors agreed after aligning the finite-sample correction.
 Momentum persistence is calendar-aligned rather than shifting by observed rows.
+
+
+## Publish
+
+Render locally with access to the inputs above, inspect the generated
+`_book/` HTML, then run
+`quarto publish gh-pages --no-render --no-prompt --no-browser`.
+GitHub Pages serves the already-rendered output from `gh-pages`; it does
+not run the CRSP analyses. Do not put licensed data or `.env` on either branch.
