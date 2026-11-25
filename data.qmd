@@ -12,10 +12,8 @@ through 2012. The empirical replications use longer monthly samples.
 
 The examples read local Parquet files through `era_pl.load_parquet()`.
 The `DATA_DIR` setting points to the data root, and each table lives at
-`DATA_DIR/schema/table.parquet`. See the
-[repository's setup instructions](https://github.com/iangow/asset_pricing_polars#render)
-to render the book with your own copies. The repository does not include
-the licensed WRDS data.
+`DATA_DIR/schema/table.parquet`. You can create these files from WRDS
+with the [setup script](#create-data-repository).
 
 **[WRDS tables]{#data-vintages}**
 
@@ -71,6 +69,24 @@ Engle, and Murray wrote the book. The local legacy exports are newer than
 their original snapshot. The newer CIZ files use different return
 conventions, including the timing of dividend reinvestment.
 See [CRSP's comparison of the formats](https://www.crsp.org/crsp_pdf/crsp-us-stock-indexes-databases-siz-to-ciz-executive-summary/).
+
+**[Create the Parquet repository]{#create-data-repository}**
+
+Copy `.env.example` to `.env` in the book checkout and set `DATA_DIR` to
+your Parquet root and `WRDS_ID` to your WRDS username. After `uv sync`, run
+the script below from that checkout. The script uses `db2pq.wrds_update_pq()`
+to export the WRDS tables to `DATA_DIR`. If you already have the source
+files there, you can skip this step. If your WRDS account lacks access to
+the legacy CRSP tables, use licensed SIZ extracts at the corresponding
+paths.
+
+```sh
+uv run scripts/download_wrds_tables.py
+```
+
+```python
+{{< include scripts/download_wrds_tables.py >}}
+```
 
 **[Other inputs]{#other-inputs}**
 

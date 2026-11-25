@@ -6,12 +6,27 @@ Fama–French factors.
 
 ## Render
 
-Copy `.env.example` to `.env` and set `DATA_DIR` to your Parquet root.
-An exported `DATA_DIR` takes precedence. [Preliminaries](data.qmd) lists the
-WRDS inputs and their source vintages.
+Copy `.env.example` to `.env`, set `DATA_DIR` to your local Parquet root,
+and set `WRDS_ID` to your WRDS username if you need to download the inputs.
+An exported `DATA_DIR` takes precedence.
 
 ```sh
 uv sync
+```
+
+If you need to create the Parquet repository, run the download script from
+this checkout with a WRDS account that has access to the source tables.
+`db2pq` prompts for your WRDS password if needed. If you already have the
+source files under `DATA_DIR`, skip this step. The required tables and the
+vintages used in the book are listed in [Preliminaries](data.qmd).
+
+```sh
+uv run scripts/download_wrds_tables.py
+```
+
+Download the public inputs for the replication chapters.
+
+```sh
 mkdir -p data
 curl -fLsS 'https://fred.stlouisfed.org/graph/fredgraph.csv?id=CPIAUCNS&cosd=1925-12-01&coed=2012-12-01' \
   -o data/cpi-aucns.csv
