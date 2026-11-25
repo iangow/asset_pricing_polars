@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>3&nbsp; Fama–MacBeth regressions – Empirical Asset Pricing with Polars</title>
+<title>4&nbsp; Fama–MacBeth regressions – Empirical Asset Pricing with Polars</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -152,7 +152,7 @@ window.Quarto = {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./fama-macbeth.html"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Fama–MacBeth regressions</span></a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./fama-macbeth.html"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Fama–MacBeth regressions</span></a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -185,32 +185,38 @@ window.Quarto = {
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="./data.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Data</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="./size.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Size portfolios</span></span></a>
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Size portfolios</span></span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./momentum.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Size and momentum</span></span></a>
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Size and momentum</span></span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./fama-macbeth.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Fama–MacBeth regressions</span></span></a>
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Fama–MacBeth regressions</span></span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./illiquidity.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Size and illiquidity</span></span></a>
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Size and illiquidity</span></span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./size-replication.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Replicating the size summary</span></span></a>
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Replicating the size summary</span></span></a>
   </div>
 </li>
     </ul>
@@ -223,8 +229,8 @@ window.Quarto = {
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#prepare-the-monthly-panel" id="toc-prepare-the-monthly-panel" class="nav-link active" data-scroll-target="#prepare-the-monthly-panel"><span class="header-section-number">3.1</span> Prepare the monthly panel</a></li>
-  <li><a href="#estimate-the-two-step-regression" id="toc-estimate-the-two-step-regression" class="nav-link" data-scroll-target="#estimate-the-two-step-regression"><span class="header-section-number">3.2</span> Estimate the two-step regression</a></li>
+  <li><a href="#prepare-the-monthly-panel" id="toc-prepare-the-monthly-panel" class="nav-link active" data-scroll-target="#prepare-the-monthly-panel"><span class="header-section-number">4.1</span> Prepare the monthly panel</a></li>
+  <li><a href="#estimate-the-two-step-regression" id="toc-estimate-the-two-step-regression" class="nav-link" data-scroll-target="#estimate-the-two-step-regression"><span class="header-section-number">4.2</span> Estimate the two-step regression</a></li>
   </ul>
 </nav>
     </div>
@@ -233,7 +239,7 @@ window.Quarto = {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Fama–MacBeth regressions</span></h1>
+<h1 class="title"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Fama–MacBeth regressions</span></h1>
 </div>
 
 
@@ -251,11 +257,11 @@ window.Quarto = {
 
 
 <p>A portfolio sort compares returns across groups. A Fama–MacBeth regression instead estimates how returns vary with several characteristics at once. We estimate one cross-sectional regression per holding month, then give each month equal weight when averaging its coefficients.</p>
-<section id="prepare-the-monthly-panel" class="level2" data-number="3.1">
-<h2 data-number="3.1" class="anchored" data-anchor-id="prepare-the-monthly-panel"><span class="header-section-number">3.1</span> Prepare the monthly panel</h2>
+<section id="prepare-the-monthly-panel" class="level2" data-number="4.1">
+<h2 data-number="4.1" class="anchored" data-anchor-id="prepare-the-monthly-panel"><span class="header-section-number">4.1</span> Prepare the monthly panel</h2>
 <p>We use market equity measured at formation and momentum from months <span class="math inline">\(t-12\)</span> through <span class="math inline">\(t-2\)</span> to explain the return in holding month <span class="math inline">\(t\)</span>.</p>
-<p>Work with the same holding months as in <a href="size.html" class="quarto-xref"><span>Chapter 1</span></a>. For holding month <span class="math inline">\(t\)</span>, market equity is observed at the end of <span class="math inline">\(t-1\)</span>. Momentum compounds returns from <span class="math inline">\(t-12\)</span> through <span class="math inline">\(t-2\)</span>, skipping <span class="math inline">\(t-1\)</span>. The calendar window must have all 11 monthly returns, so it cannot jump over a missing month.</p>
-<div id="ed8d507b" class="cell" data-execution_count="1">
+<p>Work with the same holding months as in <a href="size.html" class="quarto-xref"><span>Chapter 2</span></a>. For holding month <span class="math inline">\(t\)</span>, market equity is observed at the end of <span class="math inline">\(t-1\)</span>. Momentum compounds returns from <span class="math inline">\(t-12\)</span> through <span class="math inline">\(t-2\)</span>, skipping <span class="math inline">\(t-1\)</span>. The calendar window must have all 11 monthly returns, so it cannot jump over a missing month.</p>
+<div id="35c177d5" class="cell" data-execution_count="1">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> polars <span class="im">as</span> pl</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> era_pl <span class="im">import</span> load_parquet</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -310,7 +316,7 @@ window.Quarto = {
 <span id="cb1-52"><a href="#cb1-52" aria-hidden="true" tabindex="-1"></a>    .join(rets, on<span class="op">=</span>[<span class="st">"permno"</span>, <span class="st">"month"</span>], how<span class="op">=</span><span class="st">"left"</span>, validate<span class="op">=</span><span class="st">"1:1"</span>)</span>
 <span id="cb1-53"><a href="#cb1-53" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div id="ebd5aa49" class="cell" data-execution_count="2">
+<div id="0cf225a9" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> statspai <span class="im">as</span> sp</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>fm_data <span class="op">=</span> (</span>
@@ -323,10 +329,10 @@ window.Quarto = {
 </div>
 <p>We take the natural log of market equity. Returns and momentum are expressed as decimals, and the regressors are not standardized within month.</p>
 </section>
-<section id="estimate-the-two-step-regression" class="level2" data-number="3.2">
-<h2 data-number="3.2" class="anchored" data-anchor-id="estimate-the-two-step-regression"><span class="header-section-number">3.2</span> Estimate the two-step regression</h2>
+<section id="estimate-the-two-step-regression" class="level2" data-number="4.2">
+<h2 data-number="4.2" class="anchored" data-anchor-id="estimate-the-two-step-regression"><span class="header-section-number">4.2</span> Estimate the two-step regression</h2>
 <p>Set <code>time="month"</code> to identify the cross-sections. <code>lags=3</code> applies a Newey–West adjustment to the <strong>monthly coefficient series</strong>, not to each cross-sectional regression. The estimates are the same in both columns; the standard errors need not be.</p>
-<div id="b18843e0" class="cell" data-execution_count="3">
+<div id="32878d27" class="cell" data-execution_count="3">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>fm <span class="op">=</span> sp.fama_macbeth(<span class="st">"ret ~ log_size + momentum"</span>, data<span class="op">=</span>fm_data, time<span class="op">=</span><span class="st">"month"</span>)</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>fm_nw <span class="op">=</span> sp.fama_macbeth(</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"ret ~ log_size + momentum"</span>, data<span class="op">=</span>fm_data, time<span class="op">=</span><span class="st">"month"</span>, lags<span class="op">=</span><span class="dv">3</span></span>
@@ -344,7 +350,7 @@ window.Quarto = {
 <div id="tbl-fm" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="4">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-fm-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Table&nbsp;3.1: Fama–MacBeth regressions of monthly stock returns
+Table&nbsp;4.1: Fama–MacBeth regressions of monthly stock returns
 </figcaption>
 <div aria-describedby="tbl-fm-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="cell-output cell-output-display" data-execution_count="4">
@@ -822,12 +828,12 @@ Table&nbsp;3.1: Fama–MacBeth regressions of monthly stock returns
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
       <a href="./momentum.html" class="pagination-link" aria-label="Size and momentum">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Size and momentum</span></span>
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Size and momentum</span></span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
       <a href="./illiquidity.html" class="pagination-link" aria-label="Size and illiquidity">
-        <span class="nav-page-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Size and illiquidity</span></span> <i class="bi bi-arrow-right-short"></i>
+        <span class="nav-page-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Size and illiquidity</span></span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>

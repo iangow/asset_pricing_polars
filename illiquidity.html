@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>4&nbsp; Size and illiquidity – Empirical Asset Pricing with Polars</title>
+<title>5&nbsp; Size and illiquidity – Empirical Asset Pricing with Polars</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -152,7 +152,7 @@ window.Quarto = {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./illiquidity.html"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Size and illiquidity</span></a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./illiquidity.html"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Size and illiquidity</span></a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -185,32 +185,38 @@ window.Quarto = {
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="./data.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Data</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="./size.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Size portfolios</span></span></a>
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Size portfolios</span></span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./momentum.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Size and momentum</span></span></a>
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Size and momentum</span></span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./fama-macbeth.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Fama–MacBeth regressions</span></span></a>
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Fama–MacBeth regressions</span></span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./illiquidity.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Size and illiquidity</span></span></a>
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Size and illiquidity</span></span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./size-replication.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Replicating the size summary</span></span></a>
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Replicating the size summary</span></span></a>
   </div>
 </li>
     </ul>
@@ -223,10 +229,10 @@ window.Quarto = {
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#from-daily-data-to-monthly-illiquidity" id="toc-from-daily-data-to-monthly-illiquidity" class="nav-link active" data-scroll-target="#from-daily-data-to-monthly-illiquidity"><span class="header-section-number">4.1</span> From daily data to monthly illiquidity</a></li>
-  <li><a href="#align-formation-and-holding-months" id="toc-align-formation-and-holding-months" class="nav-link" data-scroll-target="#align-formation-and-holding-months"><span class="header-section-number">4.2</span> Align formation and holding months</a></li>
-  <li><a href="#sort-independently-and-within-size-groups" id="toc-sort-independently-and-within-size-groups" class="nav-link" data-scroll-target="#sort-independently-and-within-size-groups"><span class="header-section-number">4.3</span> Sort independently and within size groups</a></li>
-  <li><a href="#compare-monthly-returns" id="toc-compare-monthly-returns" class="nav-link" data-scroll-target="#compare-monthly-returns"><span class="header-section-number">4.4</span> Compare monthly returns</a></li>
+  <li><a href="#from-daily-data-to-monthly-illiquidity" id="toc-from-daily-data-to-monthly-illiquidity" class="nav-link active" data-scroll-target="#from-daily-data-to-monthly-illiquidity"><span class="header-section-number">5.1</span> From daily data to monthly illiquidity</a></li>
+  <li><a href="#align-formation-and-holding-months" id="toc-align-formation-and-holding-months" class="nav-link" data-scroll-target="#align-formation-and-holding-months"><span class="header-section-number">5.2</span> Align formation and holding months</a></li>
+  <li><a href="#sort-independently-and-within-size-groups" id="toc-sort-independently-and-within-size-groups" class="nav-link" data-scroll-target="#sort-independently-and-within-size-groups"><span class="header-section-number">5.3</span> Sort independently and within size groups</a></li>
+  <li><a href="#compare-monthly-returns" id="toc-compare-monthly-returns" class="nav-link" data-scroll-target="#compare-monthly-returns"><span class="header-section-number">5.4</span> Compare monthly returns</a></li>
   </ul>
 </nav>
     </div>
@@ -235,7 +241,7 @@ window.Quarto = {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Size and illiquidity</span></h1>
+<h1 class="title"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Size and illiquidity</span></h1>
 </div>
 
 
@@ -253,10 +259,10 @@ window.Quarto = {
 
 
 <p>We can sort on two characteristics to see, for example, whether the spread between illiquid and liquid stocks differs across size portfolios. We use monthly market capitalization and a measure constructed from daily prices and volume. As in the size chapter, the holding months are January 2000 through December 2002; this is a methods comparison, not a replication of published estimates.</p>
-<section id="from-daily-data-to-monthly-illiquidity" class="level2" data-number="4.1">
-<h2 data-number="4.1" class="anchored" data-anchor-id="from-daily-data-to-monthly-illiquidity"><span class="header-section-number">4.1</span> From daily data to monthly illiquidity</h2>
+<section id="from-daily-data-to-monthly-illiquidity" class="level2" data-number="5.1">
+<h2 data-number="5.1" class="anchored" data-anchor-id="from-daily-data-to-monthly-illiquidity"><span class="header-section-number">5.1</span> From daily data to monthly illiquidity</h2>
 <p>Following <a href="https://doi.org/10.1016/S1386-4181(01)00024-6">Amihud (2002)</a>, divide each absolute daily return by daily dollar volume, then average the ratios. Here we average within each stock-month, require 10 usable days, and scale by one million for readability. CRSP’s <a href="https://www.crsp.org/wp-content/uploads/guides/CRSP_US_Stock_%26_Indexes_Database_Guide_Flat_File_Format_2.0.pdf"><code>dlyprcvol</code></a> approximates dollar volume as price times shares traded. We exclude zero volume and use only information through the formation month.</p>
-<div id="db616fda" class="cell" data-execution_count="1">
+<div id="acfd6179" class="cell" data-execution_count="1">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> polars <span class="im">as</span> pl</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> era_pl <span class="im">import</span> load_parquet</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -283,10 +289,10 @@ window.Quarto = {
 <span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
-<section id="align-formation-and-holding-months" class="level2" data-number="4.2">
-<h2 data-number="4.2" class="anchored" data-anchor-id="align-formation-and-holding-months"><span class="header-section-number">4.2</span> Align formation and holding months</h2>
+<section id="align-formation-and-holding-months" class="level2" data-number="5.2">
+<h2 data-number="5.2" class="anchored" data-anchor-id="align-formation-and-holding-months"><span class="header-section-number">5.2</span> Align formation and holding months</h2>
 <p>We apply the same formation screen as in the size chapter. Both characteristics are measured in month <span class="math inline">\(t\)</span>; the return is for month <span class="math inline">\(t+1\)</span>. For the AnomalyLab comparison we keep only rows with a usable holding return before sorting. As in the size chapter, this complete-case convention is not a recommended way to form portfolios in a real-time backtest.</p>
-<div id="f5c1e49b" class="cell" data-execution_count="2">
+<div id="38424611" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>monthly <span class="op">=</span> (</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    load_parquet(<span class="st">"msf_v2"</span>, <span class="st">"crsp"</span>)</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    .with_columns(month<span class="op">=</span>pl.col(<span class="st">"mthcaldt"</span>).dt.month_start())</span>
@@ -320,10 +326,10 @@ window.Quarto = {
 <span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
-<section id="sort-independently-and-within-size-groups" class="level2" data-number="4.3">
-<h2 data-number="4.3" class="anchored" data-anchor-id="sort-independently-and-within-size-groups"><span class="header-section-number">4.3</span> Sort independently and within size groups</h2>
+<section id="sort-independently-and-within-size-groups" class="level2" data-number="5.3">
+<h2 data-number="5.3" class="anchored" data-anchor-id="sort-independently-and-within-size-groups"><span class="header-section-number">5.3</span> Sort independently and within size groups</h2>
 <p>For independent sorts, compute both sets of breakpoints for the full cross-section each month. For dependent sorts, compute the illiquidity breakpoints within each size quintile. The dependent sort therefore compares the relatively illiquid and liquid stocks of similar size. We use the same linear quantile and right-closed convention as AnomalyLab.</p>
-<div id="b0b0f99a" class="cell" data-execution_count="3">
+<div id="c8f285db" class="cell" data-execution_count="3">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> quintile(data, var, by):</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> pl.col(var)</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    cuts <span class="op">=</span> [x.quantile(q <span class="op">/</span> <span class="dv">5</span>, interpolation<span class="op">=</span><span class="st">"linear"</span>).over(by) <span class="cf">for</span> q <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">6</span>)]</span>
@@ -342,10 +348,10 @@ window.Quarto = {
 <span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
-<section id="compare-monthly-returns" class="level2" data-number="4.4">
-<h2 data-number="4.4" class="anchored" data-anchor-id="compare-monthly-returns"><span class="header-section-number">4.4</span> Compare monthly returns</h2>
+<section id="compare-monthly-returns" class="level2" data-number="5.4">
+<h2 data-number="5.4" class="anchored" data-anchor-id="compare-monthly-returns"><span class="header-section-number">5.4</span> Compare monthly returns</h2>
 <p>For each size group, take the monthly return on its most illiquid quintile minus that on its most liquid quintile. The table reports average spreads in percentage points per month.</p>
-<div id="7e783b47" class="cell" data-execution_count="4">
+<div id="a6564772" class="cell" data-execution_count="4">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> portfolio_returns(grouped):</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> (</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>        grouped</span>
@@ -885,12 +891,12 @@ window.Quarto = {
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
       <a href="./fama-macbeth.html" class="pagination-link" aria-label="Fama–MacBeth regressions">
-        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Fama–MacBeth regressions</span></span>
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Fama–MacBeth regressions</span></span>
       </a>          
   </div>
   <div class="nav-page nav-page-next">
       <a href="./size-replication.html" class="pagination-link" aria-label="Replicating the size summary">
-        <span class="nav-page-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Replicating the size summary</span></span> <i class="bi bi-arrow-right-short"></i>
+        <span class="nav-page-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Replicating the size summary</span></span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>

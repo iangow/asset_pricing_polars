@@ -26,14 +26,14 @@ ul.task-list li input[type="checkbox"] {
 </style>
 
 
-<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js" integrity="sha384-ZvpUoO/+PpLXR1lu4jmpXWu80pZlYUAfxl5NsBMWOEPSjUn/6Z/hRTt8+pR6L4N2" crossorigin="anonymous"></script><script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
 <script src="site_libs/quarto-nav/headroom.min.js"></script>
 <script src="site_libs/clipboard/clipboard.min.js"></script>
 <script src="site_libs/quarto-search/autocomplete.umd.js"></script>
 <script src="site_libs/quarto-search/fuse.min.js"></script>
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
-<link href="./size.html" rel="next">
+<link href="./data.html" rel="next">
 <script src="site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
@@ -71,9 +71,6 @@ ul.task-list li input[type="checkbox"] {
     "search-label": "Search"
   }
 }</script>
-<script src="https://cdn.jsdelivr.net/npm/requirejs@2.3.6/require.min.js" integrity="sha384-c9c+LnTbwQ3aujuU7ULEPVvgLs+Fn6fJUvIGTsuu1ZcCf11fiEubah0ttpca4ntM sha384-6V1/AdqZRWk1KAlWbKBlGhN7VG4iE/yAZcO6NZPMF8od0vukrvr0tg4qY6NSrItx" crossorigin="anonymous"></script>
-
-<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
 
 
 </head>
@@ -120,32 +117,38 @@ ul.task-list li input[type="checkbox"] {
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="./data.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Data</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="./size.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Size portfolios</span></span></a>
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Size portfolios</span></span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./momentum.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Size and momentum</span></span></a>
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Size and momentum</span></span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./fama-macbeth.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Fama–MacBeth regressions</span></span></a>
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Fama–MacBeth regressions</span></span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./illiquidity.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Size and illiquidity</span></span></a>
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Size and illiquidity</span></span></a>
   </div>
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./size-replication.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Replicating the size summary</span></span></a>
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Replicating the size summary</span></span></a>
   </div>
 </li>
     </ul>
@@ -158,10 +161,7 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#about" id="toc-about" class="nav-link active" data-scroll-target="#about">About</a>
-  <ul class="collapse">
-  <li><a href="#data-vintages" id="toc-data-vintages" class="nav-link" data-scroll-target="#data-vintages">Data vintages</a></li>
-  </ul></li>
+  <li><a href="#about" id="toc-about" class="nav-link active" data-scroll-target="#about">About</a></li>
   </ul>
 </nav>
     </div>
@@ -191,59 +191,10 @@ ul.task-list li input[type="checkbox"] {
 <h1 class="unnumbered">About</h1>
 <p>A worked book for empirical asset pricing using Python Polars and local WRDS Parquet files. The chapters build from size portfolios to factor adjustment, double sorts, and Fama–MacBeth regression, inspired by Bali, Engle, and Murray’s <em>Empirical Asset Pricing: The Cross Section of Stock Returns</em>. <a href="https://github.com/FinPhD/AnomalyLab">AnomalyLab</a> is an independent numerical reference, not a reader dependency.</p>
 <p>The methods examples compare implementations on the same inputs. The final chapter compares reconstructed size summaries with the published Table 9.1. The book does not redistribute WRDS data.</p>
-<section id="data-vintages" class="level2">
-<h2 class="anchored" data-anchor-id="data-vintages">Data vintages</h2>
-<p>These are the source update dates recorded in the Parquet metadata, read by <a href="https://iangow.github.io/db2pq/">db2pq</a>. They are not the sample end dates or the dates the files were copied. In particular, the Table 9.1 replication uses a later export of legacy CRSP (SIZ), not the original 2016 book vintage.</p>
-<div id="922fac06" class="cell" data-execution_count="1">
-<div class="cell-output cell-output-display" data-execution_count="1">
-<div><style>
-.dataframe > thead > tr,
-.dataframe > tbody > tr {
-  text-align: right;
-  white-space: pre-wrap;
-}
-</style>
-<small>shape: (5, 2)</small>
-<table class="dataframe caption-top table table-sm table-striped small" data-border="1">
-<thead>
-<tr class="header">
-<th data-quarto-table-cell-role="th">Table</th>
-<th data-quarto-table-cell-role="th">Source updated</th>
-</tr>
-<tr class="even">
-<td>str</td>
-<td>str</td>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>"crsp.msf"</td>
-<td>"2025-02-08"</td>
-</tr>
-<tr class="even">
-<td>"crsp.msenames"</td>
-<td>"2025-02-08"</td>
-</tr>
-<tr class="odd">
-<td>"crsp.msf_v2"</td>
-<td>"2026-02-06"</td>
-</tr>
-<tr class="even">
-<td>"crsp.dsf_v2"</td>
-<td>"2026-02-06"</td>
-</tr>
-<tr class="odd">
-<td>"ff.factors_monthly"</td>
-<td>"2026-05-23"</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-</div>
+<p>See the <a href="./data.html">Data chapter</a> for the inputs. The <a href="./data.html#data-vintages">WRDS table list</a> includes their source update dates.</p>
+<p><span id="data-vintages"></span></p>
 
 
-</section>
 </section>
 
 </main> <!-- /main -->
@@ -651,8 +602,8 @@ ul.task-list li input[type="checkbox"] {
   <div class="nav-page nav-page-previous">
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./size.html" class="pagination-link" aria-label="Size portfolios">
-        <span class="nav-page-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Size portfolios</span></span> <i class="bi bi-arrow-right-short"></i>
+      <a href="./data.html" class="pagination-link" aria-label="Data">
+        <span class="nav-page-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Data</span></span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>
