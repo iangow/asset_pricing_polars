@@ -329,7 +329,7 @@ window.Quarto = {
 <section id="annual-cross-sections" class="level3" data-number="2.1.1">
 <h3 data-number="2.1.1" class="anchored" data-anchor-id="annual-cross-sections"><span class="header-section-number">2.1.1</span> Periodic Cross-Sectional Summary Statistics</h3>
 <p>The sample covers U.S. common stocks at each December 31 from 1988 through 2012. We take the December value of the 12-month daily beta from the <a href="./beta-replication.html#sec-bem-beta">market beta chapter</a>. It uses all available daily excess returns in the calendar year and requires at least 200 matched observations.</p>
-<div id="c505c080" class="cell" data-execution_count="2">
+<div id="6e8ea638" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> polars <span class="im">as</span> pl</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> era_pl <span class="im">import</span> load_parquet</span>
@@ -342,7 +342,7 @@ window.Quarto = {
 <span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>For each year, compute the statistics across the stocks with a beta. We use the sample standard deviation, bias-adjusted skewness and excess kurtosis, and linearly interpolated percentiles. The count is the number of available values in that cross-section.</p>
-<div id="e2a12c71" class="cell" data-execution_count="3">
+<div id="aca46857" class="cell" data-execution_count="3">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> cross_section(variable):</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> pl.col(variable)</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> [</span>
@@ -795,7 +795,7 @@ Table&nbsp;2.1: Annual summary statistics for market beta (BEM Table 2.1)
 <section id="average-across-years" class="level3" data-number="2.1.2">
 <h3 data-number="2.1.2" class="anchored" data-anchor-id="average-across-years"><span class="header-section-number">2.1.2</span> Average Cross-Sectional Summary Statistics</h3>
 <p>To describe the typical cross-section, take the mean of each column in <a href="#tbl-bem2-annual" class="quarto-xref">Table&nbsp;<span>2.1</span></a>. For example, if <span class="math inline">\(n_t\)</span> stocks have valid betas in year <span class="math inline">\(t\)</span>, their mean is <span class="math inline">\(\bar{\beta}_t = \sum_{i=1}^{n_t}\widehat{\beta}_{i,t}/n_t\)</span>. The table reports <span class="math inline">\(T^{-1}\sum_{t=1}^{T}\bar{\beta}_t\)</span>. A pooled mean would instead give years with more observations more weight. The same two-step procedure applies to the median and other statistics.</p>
-<div id="e772d880" class="cell" data-execution_count="5">
+<div id="f3e1bb9d" class="cell" data-execution_count="5">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>average_stats <span class="op">=</span> annual_stats.select(pl.exclude(<span class="st">"year"</span>).mean())</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="cell" data-execution_count="6">
@@ -867,7 +867,7 @@ Table&nbsp;2.2: Average cross-sectional summary statistics for market beta (BEM 
 <p>We also summarize year-end market capitalization in millions of dollars, its natural logarithm (size), book-to-market, and the following calendar year’s excess return. The <a href="./size-replication.html">size chapter</a> exports December market capitalization and its log. The <a href="./value-replication.html">value chapter</a> exports the ratio of prior-year fiscal book equity to prior December market capitalization. We use its signed ratio, consistent with the negative observations in BEM Table 2.3.</p>
 <p>We compound available CRSP monthly stock returns within the holding year and subtract the compounded risk-free return. This construction uses CRSP’s reported monthly returns. BEM §1.1 does not spell out how its annual returns handle delistings. Formation years run through 2012, but the return series ends in 2012, so the last formation year contributes zero observations to the return count and no return moments.</p>
 <p>Apply the same summary to each variable separately. This keeps stocks with a beta but no book-to-market ratio in the beta row. The observation count reflects the available data for each variable.</p>
-<div id="c24fdddd" class="cell" data-execution_count="8">
+<div id="3769ddd1" class="cell" data-execution_count="8">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>variables <span class="op">=</span> [<span class="st">"Beta"</span>, <span class="st">"MktCap"</span>, <span class="st">"Size"</span>, <span class="st">"BM"</span>, <span class="st">"excess"</span>]</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>all_stats <span class="op">=</span> (</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    annual_panel.unpivot(on<span class="op">=</span>variables, index<span class="op">=</span><span class="st">"year"</span>, variable_name<span class="op">=</span><span class="st">"Measure"</span>)</span>

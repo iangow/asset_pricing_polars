@@ -287,7 +287,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   white-space: nowrap;
 }
 </style>
-<div id="79a7dd0a" class="cell" data-execution_count="2">
+<div id="8a5a1f66" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> polars <span class="im">as</span> pl</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> era_pl <span class="im">import</span> load_parquet</span>
@@ -304,7 +304,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="periodic-cross-sectional-regressions" class="level3" data-number="6.1.1">
 <h3 data-number="6.1.1" class="anchored" data-anchor-id="periodic-cross-sectional-regressions"><span class="header-section-number">6.1.1</span> Periodic Cross-Sectional Regressions</h3>
 <p>Compare three univariate regressions with a regression that includes beta, size, and book-to-market together. The outcome is the next year’s excess return in percent. Following BEM, winsorize the regressors at 0.5% in each year’s regression sample. Use six Newey–West lags when estimating standard errors for the averages.</p>
-<div id="c19ba2dd" class="cell" data-execution_count="4">
+<div id="60585e79" class="cell" data-execution_count="4">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> statspai <span class="im">as</span> sp</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> _bem_monthly <span class="im">import</span> clip_tails</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>

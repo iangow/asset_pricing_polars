@@ -316,7 +316,7 @@ window.Quarto = {
   white-space: nowrap;
 }
 </style>
-<div id="41b4ebf6" class="cell" data-execution_count="2">
+<div id="0db6c638" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> polars <span class="im">as</span> pl</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> era_pl <span class="im">import</span> load_parquet</span>
@@ -341,7 +341,7 @@ window.Quarto = {
                    \sqrt{\sum_{i\in\mathcal S_{t,\tau}}(X_{i,t+\tau}-\bar X_{t+\tau})^2}}.
 \tag{4.1}\]</span></span></p>
 <p>Shift the future year’s join key back by the lag so that each stock’s observation in <span class="math inline">\(t+\tau\)</span> joins its observation in <span class="math inline">\(t\)</span>. Use the same winsorized Pearson correlation as in <a href="./correlation.html">Chapter 3</a>.</p>
-<div id="527f53cb" class="cell" data-execution_count="4">
+<div id="80ba076a" class="cell" data-execution_count="4">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> _bem_monthly <span class="im">import</span> winsorized_corr</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>measures <span class="op">=</span> [<span class="st">"Beta"</span>, <span class="st">"Size"</span>, <span class="st">"BM"</span>]</span>
@@ -617,7 +617,7 @@ Figure&nbsp;4.1: Annual persistence of beta by lag
 \rho_\tau(X)=\frac{1}{N-\tau}\sum_{t=1}^{N-\tau}\rho_{t,t+\tau}(X).
 \tag{4.2}\]</span></span></p>
 <p>Here <span class="math inline">\(N=25\)</span>, so the one-year estimate averages 24 correlations and the five-year estimate averages 20. <a href="#tbl-bem4-beta" class="quarto-xref">Table&nbsp;<span>4.2</span></a> reports the averages for beta and <a href="#tbl-bem4-characteristics" class="quarto-xref">Table&nbsp;<span>4.3</span></a> puts all three characteristics side by side.</p>
-<div id="9e3711a6" class="cell" data-execution_count="7">
+<div id="e1cb0d77" class="cell" data-execution_count="7">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>average <span class="op">=</span> annual.group_by(<span class="st">"Lag"</span>).agg(pl.col(measures).mean()).sort(<span class="st">"Lag"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="cell" data-execution_count="8">
