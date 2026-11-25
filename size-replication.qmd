@@ -16,6 +16,7 @@ The book was published in 2016, well before CRSP's CIZ format. This
 replication uses the legacy (SIZ) monthly stock and names files, not the
 CIZ files used in the earlier chapters. Our legacy snapshot is newer
 than the authors' original data, even though we use the same sample dates.
+See [Data vintages](index.qmd#data-vintages) for the embedded update dates.
 
 Use the share code in force at the end of each month. Keep share codes 10 and 11, without adding an exchange screen.
 The book's measure uses the absolute alternate price and shares outstanding.

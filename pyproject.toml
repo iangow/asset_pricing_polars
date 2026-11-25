@@ -3,6 +3,7 @@ name = "asset-pricing-polars-book"
 version = "0.1.0"
 requires-python = ">=3.11"
 dependencies = [
+  "db2pq==0.2.8",
   "era-py[polars]==0.0.37",
   "jupyter",
   "polars>=1.30",
