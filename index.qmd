@@ -7,7 +7,7 @@ of Stock Returns*. [AnomalyLab](https://github.com/FinPhD/AnomalyLab) is an
 independent numerical reference, not a reader dependency.
 
 The methods examples compare implementations on the same inputs. The final
-chapter compares reconstructed size summaries with the published Table 9.1.
+chapters reconstruct Bali, Engle, and Murray's Chapter 7 results and Table 9.1.
 The book does not redistribute WRDS data.
 
 See the [Data chapter](data.qmd) for the inputs. The [WRDS table list](data.qmd#data-vintages) includes their source update dates.

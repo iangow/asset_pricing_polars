@@ -6,6 +6,7 @@ dependencies = [
   "db2pq==0.2.8",
   "era-py[polars]==0.0.37",
   "jupyter",
+  "matplotlib",
   "polars>=1.30",
   "pyarrow",
   "statspai==1.46.3",
@@ -15,7 +16,7 @@ dependencies = [
 [dependency-groups]
 parity = [
   "pandas", "numpy", "scipy", "linearmodels",
-  "rich", "tqdm", "deprecated", "openpyxl", "seaborn", "matplotlib",
+  "rich", "tqdm", "deprecated", "openpyxl", "seaborn",
 ]
 
 [tool.uv]

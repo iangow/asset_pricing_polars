@@ -1,0 +1,80 @@
+---
+jupyter: python3
+---
+
+# The CRSP sample and market factor {#sec-bem-crsp}
+
+This chapter reconstructs the figures and tables in Chapter 7 of
+Bali, Engle, and Murray (2016), *Empirical Asset Pricing*. We use a
+later snapshot of legacy CRSP (SIZ), the same data format used by the
+authors. See the [Data chapter](data.qmd#data-vintages) for source
+update dates. The comparisons below separate data and convention differences
+from the calculations themselves.
+
+## Build the monthly common-stock sample
+
+At each calendar month-end, keep securities with a historical share
+code of 10 or 11. We do not restrict the exchange or require a price
+to count a stock. For market capitalization, use the absolute alternate
+price times shares outstanding. Dividing by 1,000 gives millions of dollars
+because CRSP reports shares in thousands.
+
+```{python}
+import polars as pl
+
+from era_pl import load_parquet
+
+first = pl.date(1925, 12, 1)
+last = pl.date(2012, 12, 1)
+
+msf = (
+    load_parquet("msf", "crsp")
+    .with_columns(month=pl.col("date").dt.month_start())
+    .filter(pl.col("month").is_between(first, last))
+    .select(
+        "permno", "month", "date", "altprc", "prc", "ret",
+        cap=pl.when((pl.col("altprc") != 0) & (pl.col("shrout") > 0))
+        .then((pl.col("altprc") * pl.col("shrout")).abs() / 1000),
+    )
+)
+
+names = (
+    load_parquet("msenames", "crsp")
+    .filter(
+        pl.col("shrcd").is_in([10, 11]),
+        pl.col("namedt") <= last.dt.month_end(),
+        pl.col("nameendt") >= first,
+    )
+    .with_columns(
+        month=pl.date_ranges(
+            pl.max_horizontal(pl.col("namedt").dt.month_start(), first),
+            pl.min_horizontal(pl.col("nameendt").dt.month_start(), last),
+            interval="1mo",
+        )
+    )
+    .explode("month")
+    .filter(pl.col("month").dt.month_end().is_between("namedt", "nameendt"))
+    .select("permno", "month", "exchcd", "siccd")
+)
+universe = names.join(msf, on=["permno", "month"], how="left", validate="1:1")
+
+factors = (
+    load_parquet("factors_monthly", "ff")
+    .select(pl.col("date").dt.month_start().alias("month"), "mktrf", "rf")
+    .filter(pl.col("month").is_between(first, last))
+)
+
+cpi = (
+    pl.read_csv("data/cpi-aucns.csv", try_parse_dates=True)
+    .rename({"observation_date": "month", "CPIAUCNS": "cpi"})
+)
+if cpi.filter(pl.col("month").is_between(first, last))["month"].n_unique() != 1045:
+    raise ValueError("Refresh the CPI file for December 1925–December 2012; see README.")
+cpi_2012 = cpi.filter(pl.col("month") == last)["cpi"].item()
+```
+
+{{< include _bem7-composition.qmd >}}
+
+{{< include _bem7-returns.qmd >}}
+
+{{< include _bem7-market.qmd >}}

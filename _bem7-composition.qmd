@@ -1,0 +1,237 @@
+## Exchange and industry composition {#sec-bem7-composition}
+
+Figures 7.1–7.4 of Bali, Engle, and Murray (2016) decompose the sample by
+exchange and industry from December 1925 to December 2012. Count every
+stock in the month-end universe, even if market capitalization is
+missing. For market value, sum only observed capitalization. Convert
+nominal millions to billions of December 2012 dollars using the ratio
+of December 2012 CPI to that month's CPI.
+
+### Exchanges
+
+The book groups exchange codes 1 and 31 as NYSE, 2 and 32 as AMEX, and
+3 and 33 as Nasdaq. All remaining codes go into *Other*.
+
+```{python}
+import matplotlib.pyplot as plt
+
+exchange = (
+    pl.when(pl.col("exchcd").is_in([1, 31])).then(pl.lit("NYSE"))
+    .when(pl.col("exchcd").is_in([2, 32])).then(pl.lit("AMEX"))
+    .when(pl.col("exchcd").is_in([3, 33])).then(pl.lit("Nasdaq"))
+    .otherwise(pl.lit("Other"))
+)
+
+composition = (
+    universe
+    .filter(pl.col("month").is_between(pl.date(1925, 12, 1), pl.date(2012, 12, 1)))
+    .select("month", "cap", "siccd", exchange=exchange)
+    .join(cpi.lazy(), on="month", how="left", validate="m:1")
+    .with_columns(real_cap=pl.col("cap") * cpi_2012 / pl.col("cpi") / 1000)
+    .collect()
+)
+
+assert composition["cpi"].is_not_null().all()
+assert composition["cpi"].gt(0).all()
+assert composition["month"].n_unique() == 1045
+
+def summarize_composition(sample, group, labels):
+    summary = sample.group_by("month", group).agg(
+        stocks=pl.len(),
+        value=pl.col("real_cap").sum(),
+    )
+    grid = sample.select("month").unique().join(
+        pl.DataFrame({group: labels}), how="cross"
+    )
+    return (
+        grid
+        .join(summary, on=["month", group], how="left", validate="1:1")
+        .with_columns(pl.col("stocks", "value").fill_null(0))
+        .sort("month")
+    )
+
+exchange_labels = ["NYSE", "AMEX", "Nasdaq", "Other"]
+by_exchange = summarize_composition(composition, "exchange", exchange_labels)
+total = (
+    by_exchange
+    .group_by("month")
+    .agg(pl.col("stocks", "value").sum())
+    .with_columns(exchange=pl.lit("Total"))
+    .select(by_exchange.columns)
+)
+by_exchange = pl.concat([total, by_exchange])
+
+def plot_composition(data, group, labels, measure, y_label):
+    fig, ax = plt.subplots(figsize=(9, 4), layout="constrained")
+    colors = plt.get_cmap("tab20").colors
+    for label, color in zip(labels, colors[::2] + colors[1::2]):
+        series = data.filter(pl.col(group) == label).sort("month")
+        ax.plot(series["month"], series[measure], label=label,
+                color="black" if label == "Total" else color)
+    ax.set(xlabel="Month", ylabel=y_label, ylim=(0, None))
+    ax.grid(axis="y", alpha=0.2)
+    ax.legend(ncol=3, frameon=False)
+    return fig
+```
+
+```{python}
+#| label: fig-bem7-exchange-count
+#| fig-cap: "Number of stocks by exchange, recreating the series in BEM Figure 7.1."
+#| fig-alt: "Stock counts jump when AMEX and Nasdaq stocks enter the sample. Total count peaks in the late 1990s."
+
+plot_composition(by_exchange, "exchange", ["Total", *exchange_labels],
+                 "stocks", "Number of stocks");
+```
+
+```{python}
+#| label: fig-bem7-exchange-value
+#| fig-cap: "Market value by exchange, recreating the series in BEM Figure 7.2."
+#| fig-alt: "The NYSE accounts for most of the sample market value. Nasdaq grows considerably in the late 1990s."
+
+plot_composition(by_exchange, "exchange", ["Total", *exchange_labels],
+                 "value", "Market value ($ billions, December 2012)");
+```
+
+AMEX enters the data in July 1962. Most Nasdaq coverage starts in December
+1972. The value series jumps much less than the count series at those dates:
+market coverage can change substantially without much change in market value.
+Keep that distinction in mind when comparing equal- and value-weighted results
+across time.
+
+The following checkpoints compare the reconstructed exchange counts with
+the figures quoted in the book's text. The authors report a December 2012
+total of 3,675, but their four exchange counts add up to 3,677. Keep both
+benchmarks rather than forcing the component counts to match the printed
+total. The available legacy CRSP file is a later vintage; the count
+differences do not by themselves identify revisions or coding differences.
+
+```{python}
+#| label: tbl-bem7-count-checkpoints
+#| tbl-cap: "Exchange-count checkpoints reported by BEM and reconstructed from the available CRSP vintage."
+
+benchmarks = pl.DataFrame({
+    "checkpoint": ["1925-12", "1962-06", "1962-07", "1972-11",
+                   "1972-12", "1997-11", "2012-12"],
+    "printed_total": [499, 1130, 1963, 2666, 5534, 7544, 3675],
+    "printed_nyse": [499, 1121, 1125, 1378, 1386, 1862, 1319],
+    "printed_amex": [0, 0, 834, 1133, 1135, 572, 226],
+    "printed_nasdaq": [0, 0, 0, 102, 2896, 5029, 2130],
+    "printed_other": [0, 9, 4, 53, 117, 81, 2],
+})
+actual_counts = (
+    by_exchange
+    .with_columns(checkpoint=pl.col("month").dt.strftime("%Y-%m"))
+    .pivot(on="exchange", index="checkpoint", values="stocks")
+)
+count_checkpoints = (
+    benchmarks
+    .join(actual_counts, on="checkpoint", validate="1:1")
+    .with_columns(total_difference=pl.col("Total") - pl.col("printed_total"))
+)
+
+count_checkpoints.select(
+    "checkpoint", "printed_total", reconstructed_total="Total",
+    difference="total_difference",
+)
+```
+
+```{python}
+#| label: tbl-bem7-exchange-end
+#| tbl-cap: "Exchange counts at the end of 2012."
+
+last_counts = count_checkpoints.filter(pl.col("checkpoint") == "2012-12")
+labels = ["NYSE", "AMEX", "Nasdaq", "Other", "Total"]
+pl.DataFrame({
+    "exchange": labels,
+    "printed": [last_counts[f"printed_{label.lower()}"].item() for label in labels],
+    "reconstructed": [last_counts[label].item() for label in labels],
+})
+```
+
+The local December 2012 universe has 3,742 common stocks. Of the 86 in
+the Other category, 85 have no usable capitalization in this vintage.
+That helps explain why a visible difference in counts need not produce
+a comparable difference in market value, but does not tell us why the
+book counted only two Other stocks.
+
+```{python}
+#| label: tbl-bem7-value-checkpoints
+#| tbl-cap: "Market-value checkpoints in billions of December 2012 dollars; the book values are approximate."
+
+value_benchmarks = pl.DataFrame({
+    "checkpoint": ["1925-12", "1972-12", "2000-03", "2012-12"],
+    "printed_billions": [341, 5300, 22500, 15700],
+})
+reconstructed = (
+    total
+    .select(checkpoint=pl.col("month").dt.strftime("%Y-%m"),
+            reconstructed_billions=pl.col("value").round(1))
+)
+(
+    value_benchmarks
+    .join(reconstructed, on="checkpoint", validate="1:1")
+    .with_columns(difference_billions=(
+        pl.col("reconstructed_billions") - pl.col("printed_billions")
+    ).round(1))
+)
+```
+
+The reconstructed market value is about $15.72 trillion in December
+2012, close to the book's $15.7 trillion despite the difference in
+stock counts.
+
+### Industries
+
+We use the security's current SIC code rather than a code carried back
+from a later date. [OSHA's SIC manual](https://www.osha.gov/data/sic-manual)
+describes the divisions. The table uses the intervals in BEM Table 7.1,
+with shortened labels. Keep zero and null codes separate from nonmissing
+codes that do not fall in a listed interval.
+
+```{python}
+#| label: tbl-bem7-sic
+#| tbl-cap: "SIC code ranges used in the industry breakdown (BEM Table 7.1)."
+
+sic_divisions = pl.DataFrame({
+    "first_sic": [1, 1000, 1500, 2000, 4000, 5000, 5200, 6000, 7000, 9000],
+    "last_sic": [999, 1499, 1799, 3999, 4999, 5199, 5999, 6799, 8999, 9999],
+    "industry": ["Agriculture", "Mining", "Construction", "Manufacturing",
+                 "Transport and utilities", "Wholesale", "Retail",
+                 "Finance", "Services", "Public administration"],
+})
+with pl.Config(tbl_rows=12):
+    display(sic_divisions)
+```
+
+```{python}
+industry = pl.coalesce([
+    pl.when(pl.col("siccd").is_between(lo, hi)).then(pl.lit(name))
+    for lo, hi, name in sic_divisions.iter_rows()
+])
+classified = composition.with_columns(
+    industry=pl.when(pl.col("siccd").fill_null(0) == 0).then(pl.lit("Missing"))
+    .otherwise(industry.fill_null("Unclassified"))
+)
+industry_labels = [*sic_divisions["industry"].to_list(), "Missing"]
+if classified["industry"].eq("Unclassified").any():
+    industry_labels.append("Unclassified")
+by_industry = summarize_composition(classified, "industry", industry_labels)
+```
+
+```{python}
+#| label: fig-bem7-industry-count
+#| fig-cap: "Number of stocks by SIC division, recreating the series in BEM Figure 7.3."
+#| fig-alt: "Manufacturing is the largest industry by stock count, with sharp changes in several industries when Nasdaq enters."
+
+plot_composition(by_industry, "industry", industry_labels,
+                 "stocks", "Number of stocks");
+```
+
+```{python}
+#| label: fig-bem7-industry-value
+#| fig-cap: "Market value by SIC division, recreating the series in BEM Figure 7.4."
+#| fig-alt: "Manufacturing has the largest market value. Communications, grouped with transport and utilities, and services grow during the dot-com boom."
+
+plot_composition(by_industry, "industry", industry_labels,
+                 "value", "Market value ($ billions, December 2012)");
+```

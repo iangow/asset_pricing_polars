@@ -12,6 +12,7 @@ book:
     - momentum.qmd
     - fama-macbeth.qmd
     - illiquidity.qmd
+    - crsp-replication.qmd
     - size-replication.qmd
 
 format:

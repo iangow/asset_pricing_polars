@@ -32,11 +32,17 @@ tables = [
     ("crsp", "dsf_v2", "CRSP CIZ",
      "Daily returns and dollar volume for Amihud illiquidity."),
     ("ff", "factors_monthly", "Fama–French",
-     "Monthly factors and the risk-free rate for portfolio alphas."),
+     "Monthly factors and the risk-free rate for alphas and market checks."),
+    ("ff", "factors_daily", "Fama–French",
+     "Daily market excess returns for Chapter 7 crash checks."),
     ("crsp", "msf", "CRSP legacy (SIZ)",
-     "Alternate prices and shares outstanding for Table 9.1."),
+     "Legacy prices, shares outstanding, and monthly returns."),
     ("crsp", "msenames", "CRSP legacy (SIZ)",
-     "Historical share codes for the Table 9.1 sample."),
+     "Historical share codes, exchanges, and industries."),
+    ("crsp", "msedelist", "CRSP legacy (SIZ)",
+     "Delisting returns and codes for the Chapter 7 return tables."),
+    ("crsp", "msi", "CRSP legacy (SIZ)",
+     "CRSP value-weighted index for the market factor comparison."),
 ]
 
 rows = [
@@ -52,8 +58,8 @@ for schema, name, dataset, purpose in tables:
 display(Markdown("\n".join(rows)))
 ```
 
-Most examples use CRSP's newer CIZ files. The [Table 9.1 replication](size-replication.qmd)
-instead uses legacy CRSP (SIZ), the format available when Bali, Engle, and
+Most examples use CRSP's newer CIZ files. The [Chapter 7 replication](crsp-replication.qmd) and
+[Table 9.1 replication](size-replication.qmd) instead use legacy CRSP (SIZ), the format available when Bali, Engle, and
 Murray wrote the book. The local legacy exports are newer than their
 original snapshot. CIZ is not a drop-in substitute for legacy monthly
 returns: the two formats differ, for example, in the timing of dividend
@@ -61,7 +67,7 @@ reinvestment. See [CRSP's comparison of the formats](https://www.crsp.org/crsp_p
 
 ## Other input
 
-The Table 9.1 replication also uses the
+Both BEM replication chapters also use the
 [BLS all-items CPI for urban consumers, not seasonally adjusted](https://fred.stlouisfed.org/series/CPIAUCNS),
 from FRED, to express market capitalizations in December 2012 dollars.
 This file does not come from WRDS.
