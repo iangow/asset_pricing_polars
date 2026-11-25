@@ -10,12 +10,17 @@ With Quarto and uv, prepare `.env` (below), then render:
 
 ```sh
 uv sync
+mkdir -p data
+curl -fLsS 'https://fred.stlouisfed.org/graph/fredgraph.csv?id=CPIAUCNS&cosd=1963-06-01&coed=2012-12-01' \
+  -o data/cpi-aucns.csv
 QUARTO_PYTHON="$PWD/.venv/bin/python" quarto render --to html
 ```
 
 Before rendering, copy `.env.example` to `.env` in the project and set
 `DATA_DIR` to your Parquet root. The book uses `era_pl.load_parquet()` to read `crsp/msf_v2.parquet`,
 `crsp/dsf_v2.parquet`, and `ff/factors_monthly.parquet` under that root.
+The Table 9.1 reproduction also uses legacy `crsp/msf.parquet` and
+`crsp/msenames.parquet`, plus the public CPI CSV fetched above.
 An exported `DATA_DIR` overrides the gitignored `.env`.
 
 Open `_book/index.html` after rendering.

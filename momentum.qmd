@@ -166,6 +166,60 @@ independent design holds the absolute momentum thresholds fixed across size
 groups; the dependent design fills each size group with roughly the same
 proportions of low-, medium-, and high-momentum stocks.
 
+## Track changes in momentum groups
+
+The persistence correlations summarize how closely the *levels* of momentum
+move together. A transition matrix asks instead how often a stock remains
+in the same *group*. Assign each stock to a momentum group every month
+using the same 30th and 70th percentile cutoffs, without conditioning on
+the holding-month return.
+
+Match the same stock exactly 12 calendar months later. The percentages are
+conditional on having a momentum group in both months. We pool stock-month
+pairs before calculating each row's shares, rather than averaging monthly
+shares. A month with more matched stocks therefore gets more weight.
+
+```{python}
+momentum_groups = (
+    sort_into_three(signals, "momentum", "month", "momentum_group")
+    .select("permno", "month", "momentum_group")
+)
+at_start = momentum_groups.select(
+    "permno", "month", start_group="momentum_group"
+)
+one_year_later = momentum_groups.select(
+    "permno",
+    pl.col("month").dt.offset_by("-12mo"),
+    end_group="momentum_group",
+)
+transition_pairs = at_start.join(
+    one_year_later, on=["permno", "month"], validate="1:1"
+)
+
+transition_matrix = (
+    transition_pairs
+    .group_by("start_group")
+    .agg(
+        pairs=pl.len(),
+        low_pct=100 * (pl.col("end_group") == 1).mean(),
+        middle_pct=100 * (pl.col("end_group") == 2).mean(),
+        high_pct=100 * (pl.col("end_group") == 3).mean(),
+    )
+    .sort("start_group")
+)
+transition_matrix.with_columns(pl.col("low_pct", "middle_pct", "high_pct").round(1))
+```
+
+Each row shows where stocks starting in that group end up after a year.
+The diagonal gives the percentage that remains in the same group. This is
+not a measure of how many stocks drop out of the sample.
+
+AnomalyLab also pools counts before dividing by the row totals, but it pairs
+dates by position in the sequence of distinct observed months. That agrees
+with a 12-month calendar match here because the sequence has no missing
+months. In a panel with a missing month across all stocks, the calendar
+join still matches observations exactly one year apart.
+
 ```{python}
 #| include: false
 
@@ -226,4 +280,21 @@ if checkout := os.environ.get("ANOMALYLAB_CHECKOUT"):
 
         print(f"{design}: matched {groups.height:,} assignments and "
               f"{returns.height} portfolio-months per weighting method.", file=sys.stderr)
+
+    dates = signals["month"].unique().sort()
+    month_numbers = dates.dt.year() * 12 + dates.dt.month()
+    assert month_numbers.diff().drop_nulls().eq(1).all()
+    persistence_reference = Panel(
+        signals.select("permno", "month", "momentum").to_pandas(),
+        id="permno", time="month", frequency="M",
+    )
+    expected = persistence_reference.transition_matrix(
+        "momentum", group=3, lag=12, decimal=12
+    ).astype(float)
+    assert transition_matrix["start_group"].to_list() == [1, 2, 3]
+    actual = transition_matrix.select("low_pct", "middle_pct", "high_pct").to_numpy()
+    np.testing.assert_allclose(actual.sum(axis=1), 100, rtol=0, atol=1e-12)
+    np.testing.assert_allclose(actual / 100, expected.to_numpy(), rtol=0, atol=1e-12)
+    print(f"Momentum transitions: matched all nine shares across "
+          f"{transition_pairs.height:,} stock-month pairs.", file=sys.stderr)
 ```
