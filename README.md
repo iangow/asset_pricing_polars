@@ -19,8 +19,9 @@ QUARTO_PYTHON="$PWD/.venv/bin/python" quarto render --to html
 Before rendering, copy `.env.example` to `.env` in the project and set
 `DATA_DIR` to your Parquet root. The book uses `era_pl.load_parquet()` to read `crsp/msf_v2.parquet`,
 `crsp/dsf_v2.parquet`, and `ff/factors_monthly.parquet` under that root.
-The Chapter 7 and Table 9.1 replications use legacy CRSP, plus the public
-CPI CSV fetched above.
+The BEM replications use legacy CRSP, including `crsp/dsf.parquet` for
+Chapter 8. The Chapter 7 and Table 9.1 replications also use the public CPI
+CSV fetched above.
 An exported `DATA_DIR` overrides the gitignored `.env`.
 
 Open `_book/index.html` after rendering.

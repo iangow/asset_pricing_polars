@@ -32,15 +32,17 @@ tables = [
     ("crsp", "dsf_v2", "CRSP CIZ",
      "Daily returns and dollar volume for Amihud illiquidity."),
     ("ff", "factors_monthly", "Fama–French",
-     "Monthly factors and the risk-free rate for alphas and market checks."),
+     "Monthly factors and the risk-free rate for betas, alphas, and market checks."),
     ("ff", "factors_daily", "Fama–French",
-     "Daily market excess returns for Chapter 7 crash checks."),
+     "Daily market excess returns for Chapter 7 crash checks and daily betas."),
     ("crsp", "msf", "CRSP legacy (SIZ)",
      "Legacy prices, shares outstanding, and monthly returns."),
+    ("crsp", "dsf", "CRSP legacy (SIZ)",
+     "Daily stock returns for Chapter 8 beta estimation."),
     ("crsp", "msenames", "CRSP legacy (SIZ)",
      "Historical share codes, exchanges, and industries."),
     ("crsp", "msedelist", "CRSP legacy (SIZ)",
-     "Delisting returns and codes for the Chapter 7 return tables."),
+     "Delisting returns and codes for holding-period returns in Chapters 7 and 8."),
     ("crsp", "msi", "CRSP legacy (SIZ)",
      "CRSP value-weighted index for the market factor comparison."),
 ]
@@ -58,8 +60,9 @@ for schema, name, dataset, purpose in tables:
 display(Markdown("\n".join(rows)))
 ```
 
-Most examples use CRSP's newer CIZ files. The [Chapter 7 replication](crsp-replication.qmd) and
-[Table 9.1 replication](size-replication.qmd) instead use legacy CRSP (SIZ), the format available when Bali, Engle, and
+Most examples use CRSP's newer CIZ files. The [Chapter 7 replication](crsp-replication.qmd),
+[Chapter 8 replication](beta-replication.qmd), and [Table 9.1 replication](size-replication.qmd)
+use legacy CRSP (SIZ), the format available when Bali, Engle, and
 Murray wrote the book. The local legacy exports are newer than their
 original snapshot. CIZ is not a drop-in substitute for legacy monthly
 returns: the two formats differ, for example, in the timing of dividend

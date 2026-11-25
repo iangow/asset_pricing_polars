@@ -13,6 +13,7 @@ book:
     - fama-macbeth.qmd
     - illiquidity.qmd
     - crsp-replication.qmd
+    - beta-replication.qmd
     - size-replication.qmd
 
 format:
