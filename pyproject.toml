@@ -2,11 +2,18 @@
 name = "asset-pricing-polars-book"
 version = "0.1.0"
 requires-python = ">=3.11"
-dependencies = ["polars>=1.30", "jupyter", "era-py[polars]==0.0.37"]
+dependencies = [
+  "era-py[polars]==0.0.37",
+  "jupyter",
+  "polars>=1.30",
+  "pyarrow",
+  "statspai==1.46.3",
+  "statsmodels",
+]
 
 [dependency-groups]
 parity = [
-  "pandas", "numpy", "pyarrow", "scipy", "statsmodels", "linearmodels",
+  "pandas", "numpy", "scipy", "linearmodels",
   "rich", "tqdm", "deprecated", "openpyxl", "seaborn", "matplotlib",
 ]
 

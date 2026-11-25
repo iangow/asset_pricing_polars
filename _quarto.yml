@@ -8,6 +8,9 @@ book:
   chapters:
     - index.qmd
     - size.qmd
+    - momentum.qmd
+    - fama-macbeth.qmd
+    - illiquidity.qmd
 
 format:
   html:

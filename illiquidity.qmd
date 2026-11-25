@@ -1,0 +1,225 @@
+---
+title: "Size and illiquidity"
+jupyter: python3
+---
+
+We can sort on two characteristics to see, for example, whether the spread
+between illiquid and liquid stocks differs across size portfolios. We use
+monthly market capitalization and a measure constructed from daily prices
+and volume. As in the size chapter, the holding months are January 2000
+through December 2002; this is a methods comparison, not a replication of
+published estimates.
+
+## From daily data to monthly illiquidity
+
+Following [Amihud (2002)](https://doi.org/10.1016/S1386-4181(01)00024-6),
+divide each absolute daily return by daily dollar volume, then average the
+ratios. Here we average within each stock-month, require 10 usable days,
+and scale by one million for readability. CRSP's
+[`dlyprcvol`](https://www.crsp.org/wp-content/uploads/guides/CRSP_US_Stock_%26_Indexes_Database_Guide_Flat_File_Format_2.0.pdf)
+approximates dollar volume as price times shares traded. We exclude zero
+volume and use only information through the formation month.
+
+```{python}
+import polars as pl
+from era_pl import load_parquet
+
+first = pl.date(2000, 1, 1)
+last = pl.date(2002, 12, 1)
+
+illiq = (
+    load_parquet("dsf_v2", "crsp")
+    .filter(
+        pl.col("dlycaldt").is_between(first.dt.offset_by("-1mo"), last, closed="left"),
+        pl.col("dlydelflg") == "N",
+        pl.col("dlyret").is_finite(),
+        pl.col("dlyprcvol").is_finite(),
+        pl.col("dlyprcvol") > 0,
+    )
+    .with_columns(
+        month=pl.col("dlycaldt").dt.month_start(),
+        daily_illiq=1e6 * pl.col("dlyret").abs() / pl.col("dlyprcvol"),
+    )
+    .group_by("permno", "month")
+    .agg(illiq=pl.col("daily_illiq").mean(), days=pl.len())
+    .filter(pl.col("days") >= 10)
+    .select("permno", "month", "illiq")
+)
+```
+
+## Align formation and holding months
+
+We apply the same formation screen as in the size chapter. Both
+characteristics are measured in month $t$; the return is for month $t+1$.
+For the AnomalyLab comparison we keep only rows with a usable holding return
+before sorting. As in the size chapter, this complete-case convention is
+not a recommended way to form portfolios in a real-time backtest.
+
+```{python}
+monthly = (
+    load_parquet("msf_v2", "crsp")
+    .with_columns(month=pl.col("mthcaldt").dt.month_start())
+    .filter(pl.col("month").is_between(first.dt.offset_by("-1mo"), last))
+)
+
+formation = (
+    monthly
+    .filter(
+        pl.col("securitytype") == "EQTY",
+        pl.col("securitysubtype") == "COM",
+        pl.col("sharetype") == "NS",
+        pl.col("usincflg") == "Y",
+        pl.col("issuertype").is_in(["ACOR", "CORP"]),
+        pl.col("primaryexch").is_in(["A", "N", "Q"]),
+        pl.col("tradingstatusflg") == "A",
+        pl.col("conditionaltype") == "RW",
+        pl.col("mthcap") > 0,
+    )
+    .select("permno", "month", size="mthcap")
+    .join(illiq, on=["permno", "month"], validate="1:1")
+    .with_columns(month=pl.col("month").dt.offset_by("1mo"))
+)
+
+returns = monthly.select("permno", "month", ret="mthret")
+stocks = (
+    formation
+    .join(returns, on=["permno", "month"], validate="1:1")
+    .filter(pl.col("ret").is_finite())
+    .collect()
+)
+```
+
+## Sort independently and within size groups
+
+For independent sorts, compute both sets of breakpoints for the full
+cross-section each month. For dependent sorts, compute the illiquidity
+breakpoints within each size quintile. The dependent sort therefore
+compares the relatively illiquid and liquid stocks of similar size.
+We use the same linear quantile and right-closed convention as AnomalyLab.
+
+```{python}
+def quintile(data, var, by):
+    x = pl.col(var)
+    cuts = [x.quantile(q / 5, interpolation="linear").over(by) for q in range(6)]
+    if data.select(
+        pl.any_horizontal(a >= b for a, b in zip(cuts, cuts[1:])).any()
+    ).item():
+        raise ValueError(f"Non-unique quintile edges for {var}")
+    return 1 + pl.sum_horizontal((x > cut).cast(pl.Int32) for cut in cuts[1:-1])
+
+by_size = stocks.with_columns(size_group=quintile(stocks, "size", ["month"]))
+independent = by_size.with_columns(
+    illiq_group=quintile(by_size, "illiq", ["month"])
+)
+dependent = by_size.with_columns(
+    illiq_group=quintile(by_size, "illiq", ["month", "size_group"])
+)
+```
+
+## Compare monthly returns
+
+For each size group, take the monthly return on its most illiquid quintile
+minus that on its most liquid quintile. The table reports average spreads
+in percentage points per month.
+
+```{python}
+def portfolio_returns(grouped):
+    return (
+        grouped
+        .group_by("month", "size_group", "illiq_group")
+        .agg(
+            equal_weighted=pl.col("ret").mean(),
+            value_weighted=(pl.col("ret") * pl.col("size")).sum() / pl.col("size").sum(),
+        )
+    )
+
+def spread(returns):
+    keys = ["month", "size_group"]
+    low = returns.filter(pl.col("illiq_group") == 1).select(*keys, "equal_weighted", "value_weighted")
+    high = returns.filter(pl.col("illiq_group") == 5).select(*keys, "equal_weighted", "value_weighted")
+    return high.join(low, on=keys, suffix="_low", validate="1:1").select(
+        *keys,
+        equal_weighted=pl.col("equal_weighted") - pl.col("equal_weighted_low"),
+        value_weighted=pl.col("value_weighted") - pl.col("value_weighted_low"),
+    )
+
+sorts = {"Independent": independent, "Dependent": dependent}
+portfolios = {name: portfolio_returns(grouped) for name, grouped in sorts.items()}
+spreads = pl.concat(
+    spread(ret).with_columns(sort=pl.lit(name)) for name, ret in portfolios.items()
+)
+
+(
+    spreads.group_by("sort", "size_group")
+    .agg(
+        months=pl.len(),
+        equal_weighted_pct=(100 * pl.col("equal_weighted").mean()).round(3),
+        value_weighted_pct=(100 * pl.col("value_weighted").mean()).round(3),
+    )
+    .sort("sort", "size_group")
+)
+```
+
+Under the independent sort, a size–illiquidity cell can be sparse when the
+characteristics are strongly related. The `months` column counts only
+months in which both extremes have a return. The dependent sort gives an
+illiquidity ranking separately within each size group, so it answers a
+different question even though both designs use the same stocks.
+
+```{python}
+#| include: false
+
+import os
+
+if checkout := os.environ.get("ANOMALYLAB_CHECKOUT"):
+    import sys
+    from pathlib import Path
+
+    import numpy as np
+    import pandas as pd
+
+    sys.path.insert(0, str(Path(checkout).expanduser().resolve(strict=True)))
+    from anomalylab import Panel
+
+    reference = Panel(
+        stocks.sort("month", "permno").to_pandas(),
+        id="permno", time="month", frequency="M", ret="ret",
+    )
+    id_cols = ["month", "permno"]
+    group_cols = ["size_group", "illiq_group"]
+    for name, grouped in sorts.items():
+        mode = name.lower()
+        expected = (
+            reference.group("ret", "size", ["size", "illiq"], [5, 5], sort_type=mode)
+            .rename(columns={"size_g5": "size_group", "illiq_g5": "illiq_group"})
+            [id_cols + group_cols]
+            .sort_values(id_cols).reset_index(drop=True)
+        )
+        observed = grouped.select(*id_cols, *group_cols).sort(id_cols).to_pandas()
+        observed["month"] = observed["month"].dt.to_period("M")
+        pd.testing.assert_frame_equal(observed, expected, check_dtype=False)
+
+        result = portfolios[name]
+        monthly_keys = ["month", "size_group"]
+        raw = result.to_pandas()
+        raw["month"] = raw["month"].dt.to_period("M")
+        hml = spread(result).to_pandas()
+        hml["month"] = hml["month"].dt.to_period("M")
+        ew, vw = reference.bivariate_analysis(
+            "ret", "size", "size", "illiq", 5, 5, sort_type=mode, factor_return=True
+        )
+        errors = {}
+        for col, reference_return in [("equal_weighted", ew), ("value_weighted", vw)]:
+            actual = raw.pivot(index=monthly_keys, columns="illiq_group", values=col)
+            actual["H-L"] = hml.set_index(monthly_keys)[col]
+            expected = reference_return[
+                reference_return.index.get_level_values("size").isin(range(1, 6))
+            ].loc[:, [1, 2, 3, 4, 5, "H-L"]]
+            expected.index = expected.index.set_names(monthly_keys)
+            assert set(actual.index) == set(expected.index)
+            actual = actual.reindex(expected.index)
+            np.testing.assert_allclose(actual, expected, rtol=0, atol=1e-12)
+            errors[col] = np.nanmax(np.abs(actual.to_numpy() - expected.to_numpy()))
+        print(f"{name}: {grouped.height:,} memberships, {result.height:,} portfolio-months; "
+              f"maximum absolute difference: {errors}", file=sys.stderr)
+```

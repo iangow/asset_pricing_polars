@@ -1,11 +1,12 @@
 # Empirical Asset Pricing with Polars
 
-A local Quarto book, not a Python package. The first chapter builds monthly
-size portfolios from CRSP CIZ Parquet. No data or rendered outputs are tracked.
+A local Quarto book, not a Python package. The examples use CRSP CIZ and Fama–French factors from local Parquet: size
+quintiles and factor-adjusted returns, size–momentum sorts and diagnostics,
+Fama–MacBeth regressions, and size–illiquidity sorts. No data or rendered outputs are tracked.
 
 ## Render
 
-With Quarto, uv, and access to CRSP monthly Parquet:
+With Quarto and uv, prepare `.env` (below), then render:
 
 ```sh
 uv sync
@@ -13,7 +14,8 @@ QUARTO_PYTHON="$PWD/.venv/bin/python" quarto render --to html
 ```
 
 Before rendering, copy `.env.example` to `.env` in the project and set
-`DATA_DIR` to your Parquet root. The book reads `$DATA_DIR/crsp/msf_v2.parquet` with `era_pl.load_parquet()`.
+`DATA_DIR` to your Parquet root. The book uses `era_pl.load_parquet()` to read `crsp/msf_v2.parquet`,
+`crsp/dsf_v2.parquet`, and `ff/factors_monthly.parquet` under that root.
 An exported `DATA_DIR` overrides the gitignored `.env`.
 
 Open `_book/index.html` after rendering.
@@ -30,12 +32,18 @@ ANOMALYLAB_CHECKOUT="$HOME/git/AnomalyLab" \
 QUARTO_PYTHON="$PWD/.venv/bin/python" quarto render --to html
 ```
 
-This compares portfolio membership and raw monthly returns on identical
-complete cases, before inference or factor adjustments. The sample is not a
-replication of the book's historical tables. StatsPAI is not needed for
-this check; it may be useful when adding inference or factor regressions.
+This enables chapter-by-chapter comparisons with the upstream numeric
+results on identical inputs. The examples are not replications of the
+textbook's historical tables. StatsPAI is used in the Fama–MacBeth chapter.
 
 The initial Mac mini check (January 2000 through December 2002) matched all
 215,991 stock-month assignments and all 216 portfolio-months per weighting
 method (five quintiles plus the spread in each of 36 months). The largest
 absolute return difference was 1.67e-16 in decimal units.
+
+The expanded check matched all 12 three-factor alphas and HAC t-statistics,
+both momentum sorts (202,682 memberships per design), and both illiquidity
+sorts (208,501 memberships per design), including their populated return
+cells and spreads. Fama–MacBeth matched all 36 monthly coefficient vectors;
+HAC standard errors agreed after aligning the finite-sample correction.
+Momentum persistence is calendar-aligned rather than shifting by observed rows.

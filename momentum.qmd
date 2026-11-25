@@ -1,0 +1,229 @@
+---
+title: "Size and momentum"
+jupyter: python3
+---
+
+A stock's past returns may help explain its future returns. But the apparent
+momentum effect could differ with size. Here we compare two ways to sort on
+both characteristics.
+
+## Measure momentum
+
+For a portfolio held in month $t$, we measure size at the end of month $t-1$
+and compound returns from months $t-12$ through $t-2$ to measure momentum.
+Skipping month $t-1$ separates the momentum signal from the most recent return.
+The holding-period outcome is the return in month $t$.
+
+{{< include _monthly-characteristics.qmd >}}
+
+## Summarize the characteristics
+
+We first restrict attention to observations for which both characteristics are
+available. These descriptive calculations do not use the holding-month return.
+
+```{python}
+signals = (
+    characteristics
+    .filter(pl.col("size").is_finite() & pl.col("momentum").is_finite())
+    .with_columns(log_size=pl.col("size").log())
+)
+
+monthly_summary = (
+    signals
+    .group_by("month")
+    .agg(
+        stocks=pl.len(),
+        median_momentum=pl.col("momentum").median(),
+        corr_size_momentum=pl.corr("log_size", "momentum"),
+    )
+)
+
+monthly_summary.select(
+    avg_stocks=pl.col("stocks").mean().round(0),
+    avg_median_momentum_pct=(100 * pl.col("median_momentum").mean()).round(2),
+    avg_corr=pl.col("corr_size_momentum").mean().round(3),
+)
+```
+
+The correlation is cross-sectional in each month; we give each month equal
+weight. Persistence asks a different question: how closely does a stock's
+momentum today resemble its own momentum at an earlier date? Match the dates
+rather than shifting by a number of rows, so a stock missing a month does not
+silently appear to have been observed in it.
+
+```{python}
+def momentum_persistence(months):
+    past = signals.select(
+        "permno",
+        pl.col("month").dt.offset_by(f"{months}mo"),
+        pl.col("momentum").alias("momentum_past"),
+    )
+
+    return (
+        signals
+        .join(past, on=["permno", "month"], validate="1:1")
+        .group_by("month")
+        .agg(correlation=pl.corr("momentum", "momentum_past"))
+        .select(lag_months=pl.lit(months),
+                months=pl.col("correlation").is_finite().sum(),
+                average_corr=pl.col("correlation").filter(
+                    pl.col("correlation").is_finite()
+                ).mean().round(3))
+    )
+
+pl.concat([momentum_persistence(h) for h in [1, 3, 12]])
+```
+
+The 1- and 3-month comparisons share many underlying returns by construction.
+A high correlation at short lags need not mean the same stock stays a winner
+for long.
+
+## Sort the stocks into portfolios
+
+An **independent sort** finds size and momentum breakpoints separately in each
+month. A **dependent sort** finds momentum breakpoints *within* each size
+group. The second approach ranks firms against other firms of similar size.
+
+As in AnomalyLab's three-group implementation, we use 30th and 70th percentile
+cutoffs, with observations exactly on a cutoff assigned to the lower group.
+For this comparison we drop observations with missing holding-month returns
+before forming groups, as AnomalyLab does. In an investable backtest, form the
+groups before checking which returns are available, then handle missing
+returns separately.
+
+```{python}
+def sort_into_three(data, characteristic, by, group):
+    x = pl.col(characteristic)
+    low = x.quantile(0.30, interpolation="linear").over(by)
+    high = x.quantile(0.70, interpolation="linear").over(by)
+
+    return data.with_columns(
+        pl.when(x <= low).then(1).when(x <= high).then(2).otherwise(3)
+        .alias(group)
+    )
+
+sort_sample = signals.filter(pl.col("ret").is_finite())
+size_groups = sort_into_three(sort_sample, "size", "month", "size_group")
+
+independent = sort_into_three(size_groups, "momentum", "month", "momentum_group")
+dependent = sort_into_three(
+    size_groups, "momentum", ["month", "size_group"], "momentum_group"
+)
+```
+
+## Compare the portfolio returns
+
+For each sort, first compute the nine monthly returns. Then subtract the
+low-momentum return from the high-momentum return within each size group.
+The table averages those monthly spreads and reports percentage points per
+month. Value weights are the market capitalizations used at formation.
+
+```{python}
+def portfolio_returns(groups):
+    return (
+        groups
+        .group_by("month", "size_group", "momentum_group")
+        .agg(
+            equal_weighted=pl.col("ret").mean(),
+            value_weighted=(pl.col("ret") * pl.col("size")).sum() / pl.col("size").sum(),
+        )
+    )
+
+def momentum_spread(returns, design):
+    keys = ["month", "size_group"]
+    low = returns.filter(pl.col("momentum_group") == 1)
+    high = returns.filter(pl.col("momentum_group") == 3)
+
+    return (
+        high
+        .join(low, on=keys, suffix="_low", validate="1:1")
+        .group_by("size_group")
+        .agg(
+            months=pl.len(),
+            equal_weighted_pct=(
+                100 * (pl.col("equal_weighted") - pl.col("equal_weighted_low")).mean()
+            ).round(3),
+            value_weighted_pct=(
+                100 * (pl.col("value_weighted") - pl.col("value_weighted_low")).mean()
+            ).round(3),
+        )
+        .with_columns(sort=pl.lit(design))
+    )
+
+independent_returns = portfolio_returns(independent)
+dependent_returns = portfolio_returns(dependent)
+
+(
+    pl.concat([momentum_spread(independent_returns, "Independent"),
+               momentum_spread(dependent_returns, "Dependent")])
+    .select("sort", "size_group", "months", "equal_weighted_pct", "value_weighted_pct")
+    .sort("sort", "size_group")
+)
+```
+
+The two designs need not produce the same portfolios or spreads. The
+independent design holds the absolute momentum thresholds fixed across size
+groups; the dependent design fills each size group with roughly the same
+proportions of low-, medium-, and high-momentum stocks.
+
+```{python}
+#| include: false
+
+import os
+
+if checkout := os.environ.get("ANOMALYLAB_CHECKOUT"):
+    import sys
+    from pathlib import Path
+
+    import numpy as np
+    import pandas as pd
+
+    sys.path.insert(0, str(Path(checkout).expanduser().resolve(strict=True)))
+    from anomalylab import Panel
+
+    reference = Panel(
+        sort_sample.select("permno", "month", "ret", "size", "momentum")
+        .sort("month", "permno").to_pandas(),
+        id="permno", time="month", frequency="M", ret="ret",
+    )
+    keys = ["month", "permno", "size_group", "momentum_group"]
+    size_and_mom = {"size_g3": "size_group", "momentum_g3": "momentum_group"}
+    for design, groups, returns in [
+        ("independent", independent, independent_returns),
+        ("dependent", dependent, dependent_returns),
+    ]:
+        expected = (
+            reference.group("ret", "size", ["size", "momentum"], [3, 3], sort_type=design)
+            .rename(columns=size_and_mom)[keys]
+            .sort_values(keys[:2]).reset_index(drop=True)
+        )
+        actual = groups.select(keys).sort(keys[:2]).to_pandas()
+        actual["month"] = actual["month"].dt.to_period("M")
+        pd.testing.assert_frame_equal(actual, expected, check_dtype=False)
+
+        ew, vw = reference.bivariate_analysis(
+            endog="ret", weight="size", sort_var="size", core_var="momentum",
+            sort_g=3, core_g=3, sort_type=design, factor_return=True,
+        )
+        actual = returns.to_pandas()
+        actual["month"] = actual["month"].dt.to_period("M")
+
+        for column, expected in [("equal_weighted", ew), ("value_weighted", vw)]:
+            raw = expected.loc[expected.index.get_level_values("size").isin([1, 2, 3]),
+                               [1, 2, 3]]
+            result = actual.pivot(index=["month", "size_group"],
+                                  columns="momentum_group", values=column)
+            expected_index = raw.index.set_names(["month", "size_group"])
+            assert set(result.index) == set(expected_index)
+            matches = result.reindex(index=expected_index, columns=[1, 2, 3])
+            np.testing.assert_allclose(matches.to_numpy(), raw.to_numpy(),
+                                       rtol=0, atol=1e-12)
+            ref_spread = expected.loc[
+                expected.index.get_level_values("size").isin([1, 2, 3]), "H-L"
+            ]
+            np.testing.assert_allclose((matches[3] - matches[1]).to_numpy(),
+                                       ref_spread.to_numpy(), rtol=0, atol=1e-12)
+
+        print(f"{design}: matched {groups.height:,} assignments and "
+              f"{returns.height} portfolio-months per weighting method.", file=sys.stderr)
+```

@@ -1,0 +1,60 @@
+Work with the same holding months as in @sec-size. For holding month $t$,
+market equity is observed at the end of $t-1$. Momentum compounds returns
+from $t-12$ through $t-2$, skipping $t-1$. The calendar window must have all
+11 monthly returns, so it cannot jump over a missing month.
+
+```{python}
+import polars as pl
+from era_pl import load_parquet
+
+first = pl.date(2000, 1, 1)
+last = pl.date(2002, 12, 1)
+
+msf = (
+    load_parquet("msf_v2", "crsp")
+    .with_columns(month=pl.col("mthcaldt").dt.month_start())
+    .filter(pl.col("month").is_between(first.dt.offset_by("-12mo"), last))
+)
+rets = (
+    msf
+    .select("permno", "month", ret="mthret")
+    .collect()
+    .sort("permno", "month")
+)
+assert not rets.select("permno", "month").is_duplicated().any()
+
+momentum = (
+    rets
+    .rolling("month", period="11mo", group_by="permno", closed="left")
+    .agg(
+        momentum=(1 + pl.col("ret")).product() - 1,
+        n_months=pl.col("ret").count(),
+    )
+    .filter(pl.col("n_months") == 11)
+    .select("permno", "month", "momentum")
+)
+
+size = (
+    msf
+    .filter(
+        pl.col("securitytype") == "EQTY",
+        pl.col("securitysubtype") == "COM",
+        pl.col("sharetype") == "NS",
+        pl.col("usincflg") == "Y",
+        pl.col("issuertype").is_in(["ACOR", "CORP"]),
+        pl.col("primaryexch").is_in(["A", "N", "Q"]),
+        pl.col("tradingstatusflg") == "A",
+        pl.col("conditionaltype") == "RW",
+        pl.col("mthcap") > 0,
+    )
+    .select("permno", "month", size="mthcap")
+    .collect()
+)
+characteristics = (
+    size
+    .join(momentum, on=["permno", "month"], validate="1:1")
+    .with_columns(month=pl.col("month").dt.offset_by("1mo"))
+    .filter(pl.col("month").is_between(first, last))
+    .join(rets, on=["permno", "month"], how="left", validate="1:1")
+)
+```

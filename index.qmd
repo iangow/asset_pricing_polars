@@ -1,10 +1,10 @@
 # About {.unnumbered}
 
 A worked book for empirical asset pricing using Python Polars and local WRDS
-Parquet files. The first chapter reconstructs one portfolio-sort workflow,
-inspired by Bali, Engle, and Murray's *Empirical Asset Pricing: The Cross Section
+Parquet files. The chapters build from size portfolios to factor adjustment,
+double sorts, and Fama–MacBeth regression, inspired by Bali, Engle, and Murray's *Empirical Asset Pricing: The Cross Section
 of Stock Returns*. [AnomalyLab](https://github.com/FinPhD/AnomalyLab) is an
 independent numerical reference, not a reader dependency.
 
-The first chapter compares implementations on the same input panel. It does
+The comparisons use the same input panels in each implementation. It does
 not claim to reproduce a published table or redistribute WRDS data.

@@ -1,0 +1,126 @@
+---
+title: "Fama–MacBeth regressions"
+jupyter: python3
+---
+
+A portfolio sort compares returns across groups. A Fama–MacBeth regression
+instead estimates how returns vary with several characteristics at once. We
+estimate one cross-sectional regression per holding month, then give each
+month equal weight when averaging its coefficients.
+
+## Prepare the monthly panel
+
+We use market equity measured at formation and momentum from months $t-12$
+through $t-2$ to explain the return in holding month $t$.
+
+{{< include _monthly-characteristics.qmd >}}
+
+```{python}
+import statspai as sp
+
+fm_data = (
+    characteristics
+    .with_columns(log_size=pl.col("size").log())
+    .select("permno", "month", "ret", "log_size", "momentum")
+    .filter(pl.all_horizontal(pl.col("ret", "log_size", "momentum").is_finite()))
+    .sort("month", "permno")
+)
+```
+
+We take the natural log of market equity. Returns and momentum are expressed
+as decimals, and the regressors are not standardized within month.
+
+## Estimate the two-step regression
+
+Set `time="month"` to identify the cross-sections. `lags=3` applies a
+Newey–West adjustment to the **monthly coefficient series**, not to each
+cross-sectional regression. The estimates are the same in both columns;
+the standard errors need not be.
+
+```{python}
+fm = sp.fama_macbeth("ret ~ log_size + momentum", data=fm_data, time="month")
+fm_nw = sp.fama_macbeth(
+    "ret ~ log_size + momentum", data=fm_data, time="month", lags=3
+)
+```
+
+```{python}
+#| label: tbl-fm
+#| tbl-cap: Fama–MacBeth regressions of monthly stock returns
+sp.regtable(
+    fm, fm_nw,
+    model_labels=["FM-t", "FM-NW (3 lags)"],
+    keep=["Intercept", "log_size", "momentum"],
+    fmt=4,
+    stats=["N"],
+    diagnostics=False,
+)
+```
+
+AnomalyLab uses the same monthly regressions on these inputs, but its
+Newey–West covariance does not apply StatsPAI's finite-sample correction.
+For $T$ months, StatsPAI multiplies that covariance by $T/(T-1)$, and uses
+a Student $t$ reference with $T-1$ degrees of freedom rather than a normal
+reference. For validation, we check the individual monthly coefficients
+first, then compare standard errors after aligning the finite-sample
+correction.
+
+```{python}
+#| include: false
+
+import os
+
+if checkout := os.environ.get("ANOMALYLAB_CHECKOUT"):
+    import sys
+    from pathlib import Path
+
+    import numpy as np
+    import pandas as pd
+    from scipy.stats import norm, t
+
+    sys.path.insert(0, str(Path(checkout).expanduser().resolve(strict=True)))
+    from anomalylab import Panel
+
+    panel = Panel(fm_data.to_pandas(), id="permno", time="month",
+                  frequency="M", ret="ret")
+    [ref_monthly] = panel.fm_reg(
+        endog="ret", exog=["log_size", "momentum"], lag=3,
+        return_intermediate=True,
+    )
+    ref_monthly = (
+        ref_monthly.rename(columns={"const": "Intercept"})
+        .set_index("month").sort_index()
+    )
+    obs_monthly = fm_nw.model_info["period_coefs"].sort_index()
+    terms = ["Intercept", "log_size", "momentum"]
+    pd.testing.assert_index_equal(pd.DatetimeIndex(obs_monthly.index),
+                                  pd.DatetimeIndex(ref_monthly.index), exact=False)
+    np.testing.assert_allclose(obs_monthly[terms], ref_monthly[terms],
+                               atol=1e-12, rtol=0)
+    np.testing.assert_allclose(fm.params[terms], fm_nw.params[terms],
+                               atol=1e-12, rtol=0)
+
+    # Retrieve unrounded AnomalyLab results, bypassing its table formatter.
+    processor = panel.fm_preprocessor
+    ref = processor._reg(
+        df=processor.panel_data.df, reg={"ret": ["log_size", "momentum"]},
+        is_normalize=False, lag=3,
+    )
+    ref_terms = ["const", "log_size", "momentum"]
+    ref_pars = ref["params"][ref_terms].to_numpy()
+    ref_t = ref["tvalues"][ref_terms].to_numpy()
+    np.testing.assert_allclose(fm_nw.params[terms], ref_pars, atol=1e-12, rtol=0)
+    np.testing.assert_allclose(ref["pvalues"][ref_terms], 2 * norm.sf(np.abs(ref_t)),
+                               atol=1e-12, rtol=0)
+
+    periods = obs_monthly.shape[0]
+    adjustment = np.sqrt(periods / (periods - 1))
+    np.testing.assert_allclose(fm_nw.std_errors[terms], ref_pars / ref_t * adjustment,
+                               atol=1e-12, rtol=0)
+    np.testing.assert_allclose(fm_nw.pvalues[terms],
+                               2 * t.sf(np.abs(ref_t) / adjustment, df=periods - 1),
+                               atol=1e-12, rtol=0)
+    print(f"Fama–MacBeth: matched {periods} sets of monthly coefficients and "
+          "3 HAC standard errors after aligning the finite-sample correction.",
+          file=sys.stderr)
+```

@@ -1,7 +1,8 @@
 ---
-title: "Size portfolios"
 jupyter: python3
 ---
+
+# Size portfolios {#sec-size}
 
 This pilot forms monthly size quintiles and measures their next-month returns.
 It uses CRSP CIZ, a short historical subset (2000–2002 holding months), and breakpoints
@@ -125,7 +126,68 @@ summary = all_returns.group_by("quintile").agg(
 summary
 ```
 
-No factor adjustment or inference is applied in this chapter.
+## Risk-adjusted returns
+
+A portfolio's average return includes compensation for exposures to common
+risk factors. We estimate Fama–French three-factor alphas by regressing
+each portfolio's **excess** return on the market excess return, SMB, and HML.
+Subtract the risk-free rate from each quintile's return. For the long–short
+spread the two risk-free rates cancel.
+
+```{python}
+factors = (
+    load_parquet("factors_monthly", "ff")
+    .with_columns(month=pl.col("date").dt.month_start())
+    .select("month", "mktrf", "smb", "hml", "rf")
+    .filter(pl.col("month").is_between(first, last))
+    .collect()
+)
+factor_data = (
+    all_returns
+    .join(factors, on="month", validate="m:1")
+    .unpivot(
+        on=["equal_weighted", "value_weighted"],
+        index=["month", "quintile", "mktrf", "smb", "hml", "rf"],
+        variable_name="weighting",
+        value_name="ret",
+    )
+    .with_columns(
+        excess=pl.when(pl.col("quintile") == 6)
+        .then(pl.col("ret"))
+        .otherwise(pl.col("ret") - pl.col("rf"))
+    )
+    .sort("month")
+)
+```
+
+The intercept is monthly alpha. We use Bartlett Newey–West standard errors
+with three lags and no small-sample correction, matching the numeric
+AnomalyLab calculation. The regressions use only 36 months, so these are
+illustrations of the method rather than a test of the size premium.
+
+```{python}
+import statsmodels.formula.api as smf
+
+assert factor_data.height == 2 * all_returns.height
+assert not any(factor_data.select("mktrf", "smb", "hml", "rf").null_count().row(0))
+
+fits = {
+    key: smf.ols("excess ~ mktrf + smb + hml", data=series.to_pandas()).fit(
+        cov_type="HAC", cov_kwds={"maxlags": 3, "use_correction": False}
+    )
+    for key, series in factor_data.group_by("quintile", "weighting")
+}
+alphas = pl.DataFrame([
+    {"quintile": quintile, "weighting": weighting, "months": int(fm.nobs),
+     "alpha_pct": 100 * fm.params["Intercept"], "t": fm.tvalues["Intercept"]}
+    for (quintile, weighting), fm in fits.items()
+]).sort("quintile", "weighting")
+alphas.with_columns(
+    portfolio=pl.when(pl.col("quintile") == 6).then(pl.lit("Large − small"))
+    .otherwise(pl.col("quintile").cast(pl.String)),
+    alpha_pct=pl.col("alpha_pct").round(3), t=pl.col("t").round(3),
+).select("portfolio", "weighting", "months", "alpha_pct", "t")
+```
 
 ```{python}
 #| include: false
@@ -168,6 +230,34 @@ if checkout := os.environ.get("ANOMALYLAB_CHECKOUT"):
         obs = actual[col].reindex(expected.index).to_numpy()
         np.testing.assert_allclose(obs, expected.to_numpy(), atol=1e-12, rtol=0)
         errors[col] = float(np.max(np.abs(obs - expected.to_numpy())))
+    from anomalylab import TimeSeries
+
+    excess_stocks = (complete
+        .join(factors.select("month", "rf"), on="month", validate="m:1")
+        .select("permno", "month", "size", excess=pl.col("ret") - pl.col("rf"))
+        .sort("month", "permno")
+    )
+    excess_panel = Panel(excess_stocks.to_pandas(), id="permno", time="month",
+                         frequency="M", ret="excess")
+    ref_factors = TimeSeries(factors.drop("rf").to_pandas(), time="month")
+    ref = excess_panel.portfolio_analysis_processor(
+        endog="excess", weight="size", models={"FF3": ["mktrf", "smb", "hml"]},
+        factors_series=ref_factors,
+    )
+    # Use the underlying numeric results; the presentation path is incompatible
+    # with pandas 3's typed column assignment.
+    ref_ew, ref_vw = ref.univariate_analysis("size", 5, factor_return=True)
+    for (quintile, weighting), fm in fits.items():
+        candidate = ref_ew if weighting == "equal_weighted" else ref_vw
+        label = quintile if quintile < 6 else "H-L"
+        data = candidate.xs(label, level="size").to_frame("excess").reset_index()
+        expected = ref._calculate_alpha_and_t_value(data, lag=3)
+        np.testing.assert_allclose(
+            [fm.params["Intercept"], fm.tvalues["Intercept"]],
+            [expected["FF3-α"], expected["FF3-t"]],
+            atol=1e-11, rtol=0,
+        )
+    print(f"Matched {len(fits)} FF3 alphas and HAC t-statistics.", file=sys.stderr)
     print(f"Matched {members.height:,} assignments and {len(actual)} portfolio-months;"
           f" maximum absolute differences: {errors}", file=sys.stderr)
 ```
