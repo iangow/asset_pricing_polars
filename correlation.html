@@ -1,0 +1,1395 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.36">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>3&nbsp; Correlation – Empirical Asset Pricing with Polars</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./persistence.html" rel="next">
+<link href="./summary-statistics.html" rel="prev">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-845c23b38eaddc0f92fda52bfe77a8c8.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-ae5bfd2a28a766e8842bcde6b84df935.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-sidebar floating quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./data.html">Part I. Statistical Methodologies</a></li><li class="breadcrumb-item"><a href="./correlation.html"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Correlation</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="./">Empirical Asset Pricing with Polars</a> 
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Preface</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part I. Statistical Methodologies</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./data.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Preliminaries</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./summary-statistics.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Summary Statistics</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./correlation.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Correlation</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./persistence.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Persistence Analysis</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./portfolio-analysis.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Portfolio Analysis</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./annual-regressions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Fama and Macbeth Regression Analysis</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part II. The Cross Section of Stock Returns</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./crsp-replication.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">The CRSP Sample and Market Factor</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./beta-replication.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Beta</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./size-replication.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">The Size Effect</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./value-replication.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">The Value Premium</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#implementation" id="toc-implementation" class="nav-link active" data-scroll-target="#implementation"><span class="header-section-number">3.1</span> Implementation</a>
+  <ul class="collapse">
+  <li><a href="#annual-cross-sectional-correlations" id="toc-annual-cross-sectional-correlations" class="nav-link" data-scroll-target="#annual-cross-sectional-correlations"><span class="header-section-number">3.1.1</span> Periodic Cross-Sectional Correlations</a></li>
+  <li><a href="#average-across-years" id="toc-average-across-years" class="nav-link" data-scroll-target="#average-across-years"><span class="header-section-number">3.1.2</span> Average Cross-Sectional Correlations</a></li>
+  </ul></li>
+  <li><a href="#interpret-the-correlations" id="toc-interpret-the-correlations" class="nav-link" data-scroll-target="#interpret-the-correlations"><span class="header-section-number">3.2</span> Interpreting Correlations</a></li>
+  <li><a href="#present-the-correlations" id="toc-present-the-correlations" class="nav-link" data-scroll-target="#present-the-correlations"><span class="header-section-number">3.3</span> Presenting Correlations</a></li>
+  <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary"><span class="header-section-number">3.4</span> Summary</a></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./data.html">Part I. Statistical Methodologies</a></li><li class="breadcrumb-item"><a href="./correlation.html"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Correlation</span></a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title"><span id="sec-bem-correlation" class="quarto-section-identifier"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Correlation</span></span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>Bali, Engle, and Murray (2016), Chapter 3, compare the cross-sectional associations among beta, size, book-to-market (BM), and next-year excess return. We use the 1988–2012 annual panel from <a href="./summary-statistics.html">Chapter 2</a>.</p>
+<style>
+.cell-output-markdown:has(> table) {
+  max-width: 100%;
+  overflow-x: auto;
+}
+.cell-output-markdown > table {
+  white-space: nowrap;
+}
+</style>
+<div id="562d624c" class="cell" data-execution_count="2">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> polars <span class="im">as</span> pl</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> era_pl <span class="im">import</span> load_parquet</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>annual_beta <span class="op">=</span> (</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    load_parquet(<span class="st">"betas"</span>, <span class="st">"eap"</span>)</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    .with_columns(year<span class="op">=</span>pl.col(<span class="st">"month"</span>).dt.year())</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    .<span class="bu">filter</span>(pl.col(<span class="st">"month"</span>).dt.month() <span class="op">==</span> <span class="dv">12</span>, pl.col(<span class="st">"year"</span>).is_between(<span class="dv">1988</span>, <span class="dv">2012</span>))</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    .select(<span class="st">"permno"</span>, <span class="st">"year"</span>, Beta<span class="op">=</span><span class="st">"12M"</span>)</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<section id="implementation" class="level2" data-number="3.1">
+<h2 data-number="3.1" class="anchored" data-anchor-id="implementation"><span class="header-section-number">3.1</span> Implementation</h2>
+<section id="annual-cross-sectional-correlations" class="level3" data-number="3.1.1">
+<h3 data-number="3.1.1" class="anchored" data-anchor-id="annual-cross-sectional-correlations"><span class="header-section-number">3.1.1</span> Periodic Cross-Sectional Correlations</h3>
+<p>For variables <span class="math inline">\(X\)</span> and <span class="math inline">\(Y\)</span> in year <span class="math inline">\(t\)</span>, keep the <span class="math inline">\(n_t\)</span> stocks for which both variables are observed. The Pearson correlation measures linear association. With <span class="math inline">\(\bar X_t\)</span> and <span class="math inline">\(\bar Y_t\)</span> denoting the means in this paired cross-section, the correlation is</p>
+<p><span id="eq-bem3-pearson"><span class="math display">\[
+\rho_t(X,Y)=
+\frac{\sum_{i=1}^{n_t}(X_{i,t}-\bar X_t)(Y_{i,t}-\bar Y_t)}
+{\sqrt{\sum_{i=1}^{n_t}(X_{i,t}-\bar X_t)^2}
+\sqrt{\sum_{i=1}^{n_t}(Y_{i,t}-\bar Y_t)^2}}.
+\tag{3.1}\]</span></span></p>
+<p>For the Pearson entries in <a href="#tbl-bem3-annual" class="quarto-xref">Table&nbsp;<span>3.1</span></a>, winsorize each variable at the 0.5th and 99.5th percentiles of the paired cross-section before computing its mean and correlation.</p>
+<p>The Spearman correlation measures association between ranks. Let <span class="math inline">\(x_{i,t}\)</span> and <span class="math inline">\(y_{i,t}\)</span> be the ranks of the original values within the paired cross-section, with rank 1 assigned to the smallest value. When neither variable has ties, the rank difference <span class="math inline">\(d_{i,t}=x_{i,t}-y_{i,t}\)</span> gives</p>
+<p><span id="eq-bem3-spearman"><span class="math display">\[
+\rho_t^S(X,Y)=1-\frac{6\sum_{i=1}^{n_t}d_{i,t}^2}{n_t(n_t^2-1)}.
+\tag{3.2}\]</span></span></p>
+<p>With ties, give equal values their average rank and compute the Pearson correlation of the two rank vectors. This is the calculation used by <code>pl.corr(method="spearman")</code>, including when <a href="#eq-bem3-spearman" class="quarto-xref">Equation&nbsp;<span>3.2</span></a> applies.</p>
+<div id="165adf6b" class="cell" data-execution_count="4">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> _bem_monthly <span class="im">import</span> correlation_matrix, period_correlations</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>variables <span class="op">=</span> {<span class="st">"Beta"</span>: <span class="st">"Beta"</span>, <span class="st">"Size"</span>: <span class="st">"Size"</span>, <span class="st">"BM"</span>: <span class="st">"BM"</span>, <span class="st">"excess"</span>: <span class="st">"Next-year return"</span>}</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>annual <span class="op">=</span> period_correlations(annual_panel, variables, <span class="st">"year"</span>).sort(<span class="st">"year"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="cell" data-execution_count="5">
+<div id="tbl-bem3-annual" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="5">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bem3-annual-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;3.1: Annual Pearson and Spearman correlations (BEM Table 3.1)
+</figcaption>
+<div aria-describedby="tbl-bem3-annual-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output cell-output-display cell-output-markdown">
+<table class="cell caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 7%">
+<col style="width: 7%">
+<col style="width: 7%">
+<col style="width: 7%">
+<col style="width: 7%">
+<col style="width: 7%">
+<col style="width: 7%">
+<col style="width: 7%">
+<col style="width: 7%">
+<col style="width: 7%">
+<col style="width: 7%">
+<col style="width: 7%">
+<col style="width: 7%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Year</th>
+<th style="text-align: right;">Pearson Beta–Size</th>
+<th style="text-align: right;">Spearman Beta–Size</th>
+<th style="text-align: right;">Pearson Beta–BM</th>
+<th style="text-align: right;">Spearman Beta–BM</th>
+<th style="text-align: right;">Pearson Beta–Return</th>
+<th style="text-align: right;">Spearman Beta–Return</th>
+<th style="text-align: right;">Pearson Size–BM</th>
+<th style="text-align: right;">Spearman Size–BM</th>
+<th style="text-align: right;">Pearson Size–Return</th>
+<th style="text-align: right;">Spearman Size–Return</th>
+<th style="text-align: right;">Pearson BM–Return</th>
+<th style="text-align: right;">Spearman BM–Return</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">1988</td>
+<td style="text-align: right;">0.47</td>
+<td style="text-align: right;">0.45</td>
+<td style="text-align: right;">-0.10</td>
+<td style="text-align: right;">-0.12</td>
+<td style="text-align: right;">0.04</td>
+<td style="text-align: right;">0.06</td>
+<td style="text-align: right;">-0.15</td>
+<td style="text-align: right;">-0.11</td>
+<td style="text-align: right;">0.13</td>
+<td style="text-align: right;">0.24</td>
+<td style="text-align: right;">0.04</td>
+<td style="text-align: right;">0.05</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">1989</td>
+<td style="text-align: right;">0.44</td>
+<td style="text-align: right;">0.45</td>
+<td style="text-align: right;">-0.14</td>
+<td style="text-align: right;">-0.16</td>
+<td style="text-align: right;">0.02</td>
+<td style="text-align: right;">0.02</td>
+<td style="text-align: right;">-0.14</td>
+<td style="text-align: right;">-0.11</td>
+<td style="text-align: right;">0.07</td>
+<td style="text-align: right;">0.17</td>
+<td style="text-align: right;">0.00</td>
+<td style="text-align: right;">0.04</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">1990</td>
+<td style="text-align: right;">0.43</td>
+<td style="text-align: right;">0.45</td>
+<td style="text-align: right;">-0.17</td>
+<td style="text-align: right;">-0.23</td>
+<td style="text-align: right;">0.07</td>
+<td style="text-align: right;">0.15</td>
+<td style="text-align: right;">-0.19</td>
+<td style="text-align: right;">-0.16</td>
+<td style="text-align: right;">-0.07</td>
+<td style="text-align: right;">0.10</td>
+<td style="text-align: right;">-0.05</td>
+<td style="text-align: right;">-0.06</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">1991</td>
+<td style="text-align: right;">0.45</td>
+<td style="text-align: right;">0.49</td>
+<td style="text-align: right;">-0.09</td>
+<td style="text-align: right;">-0.17</td>
+<td style="text-align: right;">-0.09</td>
+<td style="text-align: right;">-0.09</td>
+<td style="text-align: right;">-0.23</td>
+<td style="text-align: right;">-0.23</td>
+<td style="text-align: right;">-0.15</td>
+<td style="text-align: right;">-0.03</td>
+<td style="text-align: right;">0.13</td>
+<td style="text-align: right;">0.19</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">1992</td>
+<td style="text-align: right;">0.34</td>
+<td style="text-align: right;">0.37</td>
+<td style="text-align: right;">-0.20</td>
+<td style="text-align: right;">-0.30</td>
+<td style="text-align: right;">-0.10</td>
+<td style="text-align: right;">-0.10</td>
+<td style="text-align: right;">-0.21</td>
+<td style="text-align: right;">-0.18</td>
+<td style="text-align: right;">-0.14</td>
+<td style="text-align: right;">-0.04</td>
+<td style="text-align: right;">0.11</td>
+<td style="text-align: right;">0.20</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">1993</td>
+<td style="text-align: right;">0.36</td>
+<td style="text-align: right;">0.38</td>
+<td style="text-align: right;">-0.19</td>
+<td style="text-align: right;">-0.25</td>
+<td style="text-align: right;">-0.01</td>
+<td style="text-align: right;">-0.03</td>
+<td style="text-align: right;">-0.19</td>
+<td style="text-align: right;">-0.17</td>
+<td style="text-align: right;">-0.00</td>
+<td style="text-align: right;">0.07</td>
+<td style="text-align: right;">0.10</td>
+<td style="text-align: right;">0.16</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">1994</td>
+<td style="text-align: right;">0.31</td>
+<td style="text-align: right;">0.35</td>
+<td style="text-align: right;">-0.18</td>
+<td style="text-align: right;">-0.23</td>
+<td style="text-align: right;">0.03</td>
+<td style="text-align: right;">0.02</td>
+<td style="text-align: right;">-0.17</td>
+<td style="text-align: right;">-0.12</td>
+<td style="text-align: right;">-0.00</td>
+<td style="text-align: right;">0.11</td>
+<td style="text-align: right;">0.01</td>
+<td style="text-align: right;">0.06</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">1995</td>
+<td style="text-align: right;">0.31</td>
+<td style="text-align: right;">0.32</td>
+<td style="text-align: right;">-0.17</td>
+<td style="text-align: right;">-0.21</td>
+<td style="text-align: right;">-0.06</td>
+<td style="text-align: right;">-0.08</td>
+<td style="text-align: right;">-0.21</td>
+<td style="text-align: right;">-0.19</td>
+<td style="text-align: right;">-0.01</td>
+<td style="text-align: right;">0.09</td>
+<td style="text-align: right;">0.09</td>
+<td style="text-align: right;">0.14</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">1996</td>
+<td style="text-align: right;">0.30</td>
+<td style="text-align: right;">0.32</td>
+<td style="text-align: right;">-0.26</td>
+<td style="text-align: right;">-0.36</td>
+<td style="text-align: right;">-0.17</td>
+<td style="text-align: right;">-0.19</td>
+<td style="text-align: right;">-0.21</td>
+<td style="text-align: right;">-0.18</td>
+<td style="text-align: right;">0.04</td>
+<td style="text-align: right;">0.10</td>
+<td style="text-align: right;">0.11</td>
+<td style="text-align: right;">0.21</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">1997</td>
+<td style="text-align: right;">0.42</td>
+<td style="text-align: right;">0.43</td>
+<td style="text-align: right;">-0.22</td>
+<td style="text-align: right;">-0.29</td>
+<td style="text-align: right;">0.03</td>
+<td style="text-align: right;">-0.00</td>
+<td style="text-align: right;">-0.20</td>
+<td style="text-align: right;">-0.18</td>
+<td style="text-align: right;">0.08</td>
+<td style="text-align: right;">0.18</td>
+<td style="text-align: right;">0.03</td>
+<td style="text-align: right;">0.07</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">1998</td>
+<td style="text-align: right;">0.38</td>
+<td style="text-align: right;">0.40</td>
+<td style="text-align: right;">-0.25</td>
+<td style="text-align: right;">-0.33</td>
+<td style="text-align: right;">0.15</td>
+<td style="text-align: right;">0.11</td>
+<td style="text-align: right;">-0.22</td>
+<td style="text-align: right;">-0.24</td>
+<td style="text-align: right;">-0.09</td>
+<td style="text-align: right;">-0.04</td>
+<td style="text-align: right;">-0.04</td>
+<td style="text-align: right;">-0.03</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">1999</td>
+<td style="text-align: right;">0.48</td>
+<td style="text-align: right;">0.47</td>
+<td style="text-align: right;">-0.23</td>
+<td style="text-align: right;">-0.33</td>
+<td style="text-align: right;">-0.11</td>
+<td style="text-align: right;">-0.10</td>
+<td style="text-align: right;">-0.33</td>
+<td style="text-align: right;">-0.38</td>
+<td style="text-align: right;">0.04</td>
+<td style="text-align: right;">0.07</td>
+<td style="text-align: right;">0.03</td>
+<td style="text-align: right;">0.08</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">2000</td>
+<td style="text-align: right;">0.24</td>
+<td style="text-align: right;">0.27</td>
+<td style="text-align: right;">-0.38</td>
+<td style="text-align: right;">-0.54</td>
+<td style="text-align: right;">-0.20</td>
+<td style="text-align: right;">-0.27</td>
+<td style="text-align: right;">-0.25</td>
+<td style="text-align: right;">-0.25</td>
+<td style="text-align: right;">-0.19</td>
+<td style="text-align: right;">-0.13</td>
+<td style="text-align: right;">0.08</td>
+<td style="text-align: right;">0.17</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">2001</td>
+<td style="text-align: right;">0.32</td>
+<td style="text-align: right;">0.38</td>
+<td style="text-align: right;">-0.20</td>
+<td style="text-align: right;">-0.35</td>
+<td style="text-align: right;">-0.38</td>
+<td style="text-align: right;">-0.44</td>
+<td style="text-align: right;">-0.32</td>
+<td style="text-align: right;">-0.39</td>
+<td style="text-align: right;">-0.13</td>
+<td style="text-align: right;">-0.09</td>
+<td style="text-align: right;">0.17</td>
+<td style="text-align: right;">0.25</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">2002</td>
+<td style="text-align: right;">0.46</td>
+<td style="text-align: right;">0.54</td>
+<td style="text-align: right;">-0.23</td>
+<td style="text-align: right;">-0.31</td>
+<td style="text-align: right;">0.01</td>
+<td style="text-align: right;">0.04</td>
+<td style="text-align: right;">-0.27</td>
+<td style="text-align: right;">-0.29</td>
+<td style="text-align: right;">-0.23</td>
+<td style="text-align: right;">-0.15</td>
+<td style="text-align: right;">0.05</td>
+<td style="text-align: right;">0.03</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">2003</td>
+<td style="text-align: right;">0.51</td>
+<td style="text-align: right;">0.59</td>
+<td style="text-align: right;">-0.14</td>
+<td style="text-align: right;">-0.18</td>
+<td style="text-align: right;">-0.14</td>
+<td style="text-align: right;">-0.13</td>
+<td style="text-align: right;">-0.24</td>
+<td style="text-align: right;">-0.30</td>
+<td style="text-align: right;">-0.08</td>
+<td style="text-align: right;">0.03</td>
+<td style="text-align: right;">0.11</td>
+<td style="text-align: right;">0.10</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">2004</td>
+<td style="text-align: right;">0.32</td>
+<td style="text-align: right;">0.40</td>
+<td style="text-align: right;">-0.26</td>
+<td style="text-align: right;">-0.28</td>
+<td style="text-align: right;">-0.09</td>
+<td style="text-align: right;">-0.08</td>
+<td style="text-align: right;">-0.17</td>
+<td style="text-align: right;">-0.13</td>
+<td style="text-align: right;">0.06</td>
+<td style="text-align: right;">0.14</td>
+<td style="text-align: right;">0.07</td>
+<td style="text-align: right;">0.13</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">2005</td>
+<td style="text-align: right;">0.45</td>
+<td style="text-align: right;">0.50</td>
+<td style="text-align: right;">-0.16</td>
+<td style="text-align: right;">-0.15</td>
+<td style="text-align: right;">-0.01</td>
+<td style="text-align: right;">0.03</td>
+<td style="text-align: right;">-0.13</td>
+<td style="text-align: right;">-0.11</td>
+<td style="text-align: right;">-0.01</td>
+<td style="text-align: right;">0.08</td>
+<td style="text-align: right;">0.07</td>
+<td style="text-align: right;">0.13</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">2006</td>
+<td style="text-align: right;">0.41</td>
+<td style="text-align: right;">0.48</td>
+<td style="text-align: right;">-0.19</td>
+<td style="text-align: right;">-0.22</td>
+<td style="text-align: right;">0.07</td>
+<td style="text-align: right;">0.06</td>
+<td style="text-align: right;">-0.15</td>
+<td style="text-align: right;">-0.15</td>
+<td style="text-align: right;">0.12</td>
+<td style="text-align: right;">0.19</td>
+<td style="text-align: right;">-0.02</td>
+<td style="text-align: right;">-0.03</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">2007</td>
+<td style="text-align: right;">0.47</td>
+<td style="text-align: right;">0.52</td>
+<td style="text-align: right;">-0.11</td>
+<td style="text-align: right;">-0.13</td>
+<td style="text-align: right;">-0.01</td>
+<td style="text-align: right;">-0.01</td>
+<td style="text-align: right;">-0.15</td>
+<td style="text-align: right;">-0.17</td>
+<td style="text-align: right;">0.09</td>
+<td style="text-align: right;">0.16</td>
+<td style="text-align: right;">-0.02</td>
+<td style="text-align: right;">-0.00</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">2008</td>
+<td style="text-align: right;">0.44</td>
+<td style="text-align: right;">0.48</td>
+<td style="text-align: right;">-0.07</td>
+<td style="text-align: right;">-0.13</td>
+<td style="text-align: right;">0.03</td>
+<td style="text-align: right;">0.09</td>
+<td style="text-align: right;">-0.21</td>
+<td style="text-align: right;">-0.23</td>
+<td style="text-align: right;">-0.18</td>
+<td style="text-align: right;">-0.04</td>
+<td style="text-align: right;">0.08</td>
+<td style="text-align: right;">-0.06</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">2009</td>
+<td style="text-align: right;">0.31</td>
+<td style="text-align: right;">0.37</td>
+<td style="text-align: right;">0.02</td>
+<td style="text-align: right;">0.01</td>
+<td style="text-align: right;">0.11</td>
+<td style="text-align: right;">0.13</td>
+<td style="text-align: right;">-0.25</td>
+<td style="text-align: right;">-0.34</td>
+<td style="text-align: right;">-0.00</td>
+<td style="text-align: right;">0.09</td>
+<td style="text-align: right;">0.05</td>
+<td style="text-align: right;">0.04</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">2010</td>
+<td style="text-align: right;">0.39</td>
+<td style="text-align: right;">0.39</td>
+<td style="text-align: right;">-0.15</td>
+<td style="text-align: right;">-0.14</td>
+<td style="text-align: right;">-0.10</td>
+<td style="text-align: right;">-0.12</td>
+<td style="text-align: right;">-0.27</td>
+<td style="text-align: right;">-0.28</td>
+<td style="text-align: right;">0.14</td>
+<td style="text-align: right;">0.18</td>
+<td style="text-align: right;">-0.00</td>
+<td style="text-align: right;">0.01</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">2011</td>
+<td style="text-align: right;">0.37</td>
+<td style="text-align: right;">0.36</td>
+<td style="text-align: right;">-0.22</td>
+<td style="text-align: right;">-0.22</td>
+<td style="text-align: right;">-0.05</td>
+<td style="text-align: right;">-0.02</td>
+<td style="text-align: right;">-0.26</td>
+<td style="text-align: right;">-0.26</td>
+<td style="text-align: right;">-0.04</td>
+<td style="text-align: right;">0.04</td>
+<td style="text-align: right;">0.11</td>
+<td style="text-align: right;">0.13</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">2012</td>
+<td style="text-align: right;">0.35</td>
+<td style="text-align: right;">0.36</td>
+<td style="text-align: right;">-0.15</td>
+<td style="text-align: right;">-0.16</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;">-0.29</td>
+<td style="text-align: right;">-0.31</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+</section>
+<section id="average-across-years" class="level3" data-number="3.1.2">
+<h3 data-number="3.1.2" class="anchored" data-anchor-id="average-across-years"><span class="header-section-number">3.1.2</span> Average Cross-Sectional Correlations</h3>
+<p>Average the annual coefficients for each pair. If <span class="math inline">\(\mathcal T_{XY}\)</span> is the set of years with an available coefficient and <span class="math inline">\(N_{XY}\)</span> is its size, the Pearson and Spearman averages are</p>
+<p><span id="eq-bem3-average-pearson"><span class="math display">\[
+\bar\rho(X,Y)=\frac{1}{N_{XY}}\sum_{t\in\mathcal T_{XY}}\rho_t(X,Y)
+\tag{3.3}\]</span></span></p>
+<p>and</p>
+<p><span id="eq-bem3-average-spearman"><span class="math display">\[
+\bar\rho^S(X,Y)=\frac{1}{N_{XY}}\sum_{t\in\mathcal T_{XY}}\rho_t^S(X,Y).
+\tag{3.4}\]</span></span></p>
+<p>Each available year has the same weight. The next-year return is unavailable for the 2012 formation cohort, so return correlations are averaged over 24 years. The other pairs use all 25 years.</p>
+<div id="38514c04" class="cell" data-execution_count="6">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>average <span class="op">=</span> annual.select(pl.exclude(<span class="st">"year"</span>).mean())</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="cell" data-execution_count="7">
+<div id="tbl-bem3-average" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="7">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bem3-average-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;3.2: Average annual correlations by pair (BEM Table 3.2)
+</figcaption>
+<div aria-describedby="tbl-bem3-average-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output cell-output-display cell-output-markdown">
+<table class="cell caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 8%">
+<col style="width: 8%">
+<col style="width: 8%">
+<col style="width: 8%">
+<col style="width: 8%">
+<col style="width: 8%">
+<col style="width: 8%">
+<col style="width: 8%">
+<col style="width: 8%">
+<col style="width: 8%">
+<col style="width: 8%">
+<col style="width: 8%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Pearson Beta–Size</th>
+<th style="text-align: right;">Spearman Beta–Size</th>
+<th style="text-align: right;">Pearson Beta–BM</th>
+<th style="text-align: right;">Spearman Beta–BM</th>
+<th style="text-align: right;">Pearson Beta–Return</th>
+<th style="text-align: right;">Spearman Beta–Return</th>
+<th style="text-align: right;">Pearson Size–BM</th>
+<th style="text-align: right;">Spearman Size–BM</th>
+<th style="text-align: right;">Pearson Size–Return</th>
+<th style="text-align: right;">Spearman Size–Return</th>
+<th style="text-align: right;">Pearson BM–Return</th>
+<th style="text-align: right;">Spearman BM–Return</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">0.39</td>
+<td style="text-align: right;">0.42</td>
+<td style="text-align: right;">-0.18</td>
+<td style="text-align: right;">-0.23</td>
+<td style="text-align: right;">-0.04</td>
+<td style="text-align: right;">-0.04</td>
+<td style="text-align: right;">-0.22</td>
+<td style="text-align: right;">-0.22</td>
+<td style="text-align: right;">-0.02</td>
+<td style="text-align: right;">0.06</td>
+<td style="text-align: right;">0.06</td>
+<td style="text-align: right;">0.08</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+</section>
+</section>
+<section id="interpret-the-correlations" class="level2" data-number="3.2">
+<h2 data-number="3.2" class="anchored" data-anchor-id="interpret-the-correlations"><span class="header-section-number">3.2</span> Interpreting Correlations</h2>
+<p>The two companion figures plot the annual coefficients in <a href="#tbl-bem3-annual" class="quarto-xref">Table&nbsp;<span>3.1</span></a>. Each panel uses formation years on the horizontal axis. In the second figure, the return paired with year <span class="math inline">\(t\)</span> comes from year <span class="math inline">\(t+1\)</span>.</p>
+<div id="cell-fig-bem3-characteristics" class="cell" data-execution_count="8">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> plot_correlations(pairs):</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">with</span> plt.rc_context({<span class="st">"font.family"</span>: <span class="st">"DejaVu Sans"</span>}):</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>        fig, axes <span class="op">=</span> plt.subplots(<span class="dv">3</span>, <span class="dv">1</span>, figsize<span class="op">=</span>(<span class="dv">8</span>, <span class="dv">6</span>), sharex<span class="op">=</span><span class="va">True</span>, sharey<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>                                 layout<span class="op">=</span><span class="st">"constrained"</span>)</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> ax, (a, b) <span class="kw">in</span> <span class="bu">zip</span>(axes, pairs, strict<span class="op">=</span><span class="va">True</span>):</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>            ax.axhline(<span class="dv">0</span>, color<span class="op">=</span><span class="st">"0.7"</span>, linewidth<span class="op">=</span><span class="fl">0.8</span>)</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>            ax.plot(annual[<span class="st">"year"</span>], annual[<span class="ss">f"Pearson </span><span class="sc">{</span>a<span class="sc">}</span><span class="ss">–</span><span class="sc">{</span>b<span class="sc">}</span><span class="ss">"</span>], color<span class="op">=</span><span class="st">"#24639a"</span>,</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>                    label<span class="op">=</span><span class="st">"Pearson"</span>)</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>            ax.plot(annual[<span class="st">"year"</span>], annual[<span class="ss">f"Spearman </span><span class="sc">{</span>a<span class="sc">}</span><span class="ss">–</span><span class="sc">{</span>b<span class="sc">}</span><span class="ss">"</span>], color<span class="op">=</span><span class="st">"#ac4c27"</span>,</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>                    linestyle<span class="op">=</span><span class="st">"--"</span>, label<span class="op">=</span><span class="st">"Spearman"</span>)</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>            ax.set_title(<span class="ss">f"</span><span class="sc">{</span>variables[a]<span class="sc">}</span><span class="ss"> and </span><span class="sc">{</span>variables[b]<span class="sc">}</span><span class="ss">"</span>, loc<span class="op">=</span><span class="st">"left"</span>)</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>        axes[<span class="op">-</span><span class="dv">1</span>].<span class="bu">set</span>(xlabel<span class="op">=</span><span class="st">"Formation year"</span>, xticks<span class="op">=</span><span class="bu">range</span>(<span class="dv">1988</span>, <span class="dv">2013</span>, <span class="dv">4</span>))</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>        fig.supylabel(<span class="st">"Correlation"</span>)</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>        fig.legend(<span class="op">*</span>axes[<span class="dv">0</span>].get_legend_handles_labels(), loc<span class="op">=</span><span class="st">"outside upper center"</span>, ncols<span class="op">=</span><span class="dv">2</span>)</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>        plt.show()</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>plot_correlations([(<span class="st">"Beta"</span>, <span class="st">"Size"</span>), (<span class="st">"Beta"</span>, <span class="st">"BM"</span>), (<span class="st">"Size"</span>, <span class="st">"BM"</span>)])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div id="fig-bem3-characteristics" class="quarto-float quarto-figure quarto-figure-center anchored" alt="Three line plots compare Pearson and Spearman correlations by formation year. Beta and size move together, while their correlations with book-to-market are usually negative.">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-bem3-characteristics-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="correlation_files/figure-html/fig-bem3-characteristics-output-1.png" alt="Three line plots compare Pearson and Spearman correlations by formation year. Beta and size move together, while their correlations with book-to-market are usually negative." width="779" height="585" class="figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-bem3-characteristics-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;3.1: Annual correlations among beta, size, and book-to-market
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>Larger stocks tend to have higher betas. Both measures of correlation also show that larger stocks tend to have lower book-to-market ratios. Market capitalization enters the denominator of BM, which helps explain part of the association.</p>
+<div id="cell-fig-bem3-returns" class="cell" data-execution_count="9">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>plot_correlations([(<span class="st">"Beta"</span>, <span class="st">"excess"</span>), (<span class="st">"Size"</span>, <span class="st">"excess"</span>), (<span class="st">"BM"</span>, <span class="st">"excess"</span>)])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div id="fig-bem3-returns" class="quarto-float quarto-figure quarto-figure-center anchored" alt="Three line plots show Pearson and Spearman return correlations varying over formation years. The beta and return correlations turn sharply negative in 2001. The series end in 2011.">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-bem3-returns-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="correlation_files/figure-html/fig-bem3-returns-output-1.png" alt="Three line plots show Pearson and Spearman return correlations varying over formation years. The beta and return correlations turn sharply negative in 2001. The series end in 2011." width="779" height="585" class="figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-bem3-returns-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;3.2: Annual correlations of stock characteristics with next-year excess returns
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>The correlations with next-year returns vary considerably. For example, the Pearson correlation between beta and the following year’s return moves from 0.15 for the 1998 formation cohort to −0.11 for the 1999 cohort. Its average of −0.04 in <a href="#tbl-bem3-average" class="quarto-xref">Table&nbsp;<span>3.2</span></a> conceals that change.</p>
+</section>
+<section id="present-the-correlations" class="level2" data-number="3.3">
+<h2 data-number="3.3" class="anchored" data-anchor-id="present-the-correlations"><span class="header-section-number">3.3</span> Presenting Correlations</h2>
+<p><a href="#tbl-bem3-matrix" class="quarto-xref">Table&nbsp;<span>3.3</span></a> puts the same averages in a compact matrix. Read Pearson correlations below the diagonal and Spearman correlations above it. The Pearson correlation between size and BM is −0.22 here and −0.23 in BEM. The other average correlations agree at the reported precision.</p>
+<div class="cell" data-execution_count="10">
+<div id="tbl-bem3-matrix" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="10">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bem3-matrix-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;3.3: Average Pearson (below diagonal) and Spearman (above diagonal) correlations (BEM Table 3.3)
+</figcaption>
+<div aria-describedby="tbl-bem3-matrix-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output cell-output-display cell-output-markdown">
+<table class="cell caption-top table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: left;">Measure</th>
+<th style="text-align: right;">Beta</th>
+<th style="text-align: right;">Size</th>
+<th style="text-align: right;">BM</th>
+<th style="text-align: right;">Next-year return</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Beta</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;">0.42</td>
+<td style="text-align: right;">-0.23</td>
+<td style="text-align: right;">-0.04</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Size</td>
+<td style="text-align: right;">0.39</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;">-0.22</td>
+<td style="text-align: right;">0.06</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">BM</td>
+<td style="text-align: right;">-0.18</td>
+<td style="text-align: right;">-0.22</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;">0.08</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Next-year return</td>
+<td style="text-align: right;">-0.04</td>
+<td style="text-align: right;">-0.02</td>
+<td style="text-align: right;">0.06</td>
+<td style="text-align: right;"></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+</section>
+<section id="summary" class="level2" data-number="3.4">
+<h2 data-number="3.4" class="anchored" data-anchor-id="summary"><span class="header-section-number">3.4</span> Summary</h2>
+</section>
+<section id="references" class="level2 unnumbered">
+<h2 class="unnumbered anchored" data-anchor-id="references">References</h2>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="./summary-statistics.html" class="pagination-link" aria-label="Summary Statistics">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Summary Statistics</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./persistence.html" class="pagination-link" aria-label="Persistence Analysis">
+        <span class="nav-page-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Persistence Analysis</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
