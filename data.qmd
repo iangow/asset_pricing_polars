@@ -1,0 +1,67 @@
+---
+jupyter: python3
+---
+
+# Data {#sec-data}
+
+The examples read local Parquet files through `era_pl.load_parquet()`.
+The `DATA_DIR` setting points to the data root, and each table lives at
+`DATA_DIR/schema/table.parquet`. See the
+[repository's setup instructions](https://github.com/iangow/asset_pricing_polars#render)
+to render the book with your own copies. The repository does not include
+the licensed WRDS data.
+
+## WRDS tables {#data-vintages}
+
+The table lists the inputs used in this build. The source update date comes
+from the metadata embedded in each Parquet file, read with
+[db2pq](https://iangow.github.io/db2pq/). It is not the sample end date
+or the date the file was downloaded.
+
+```{python}
+#| echo: false
+
+import re
+
+from db2pq import pq_last_modified
+from IPython.display import Markdown, display
+
+tables = [
+    ("crsp", "msf_v2", "CRSP CIZ",
+     "Monthly returns and market equity for the sorts and regressions."),
+    ("crsp", "dsf_v2", "CRSP CIZ",
+     "Daily returns and dollar volume for Amihud illiquidity."),
+    ("ff", "factors_monthly", "Fama–French",
+     "Monthly factors and the risk-free rate for portfolio alphas."),
+    ("crsp", "msf", "CRSP legacy (SIZ)",
+     "Alternate prices and shares outstanding for Table 9.1."),
+    ("crsp", "msenames", "CRSP legacy (SIZ)",
+     "Historical share codes for the Table 9.1 sample."),
+]
+
+rows = [
+    "| WRDS table | Dataset | Used for | Source updated |",
+    "|:---|:---|:---|:---|",
+]
+for schema, name, dataset, purpose in tables:
+    metadata = pq_last_modified(name, schema) or ""
+    match = re.search(r"Updated (\d{4}-\d{2}-\d{2})", metadata)
+    updated = match[1] if match else "Not recorded"
+    rows.append(f"| `{schema}.{name}` | {dataset} | {purpose} | {updated} |")
+
+display(Markdown("\n".join(rows)))
+```
+
+Most examples use CRSP's newer CIZ files. The [Table 9.1 replication](size-replication.qmd)
+instead uses legacy CRSP (SIZ), the format available when Bali, Engle, and
+Murray wrote the book. The local legacy exports are newer than their
+original snapshot. CIZ is not a drop-in substitute for legacy monthly
+returns: the two formats differ, for example, in the timing of dividend
+reinvestment. See [CRSP's comparison of the formats](https://www.crsp.org/crsp_pdf/crsp-us-stock-indexes-databases-siz-to-ciz-executive-summary/).
+
+## Other input
+
+The Table 9.1 replication also uses the
+[BLS all-items CPI for urban consumers, not seasonally adjusted](https://fred.stlouisfed.org/series/CPIAUCNS),
+from FRED, to express market capitalizations in December 2012 dollars.
+This file does not come from WRDS.

@@ -1,7 +1,3 @@
----
-jupyter: python3
----
-
 # About {.unnumbered}
 
 A worked book for empirical asset pricing using Python Polars and local WRDS
@@ -14,34 +10,6 @@ The methods examples compare implementations on the same inputs. The final
 chapter compares reconstructed size summaries with the published Table 9.1.
 The book does not redistribute WRDS data.
 
+See the [Data chapter](data.qmd) for the inputs. The [WRDS table list](data.qmd#data-vintages) includes their source update dates.
 
-## Data vintages
-
-These are the source update dates recorded in the Parquet metadata, read by
-[db2pq](https://iangow.github.io/db2pq/). They are not the sample end dates
-or the dates the files were copied. In particular, the Table 9.1 replication
-uses a later export of legacy CRSP (SIZ), not the original 2016 book vintage.
-
-```{python}
-#| echo: false
-
-import polars as pl
-from db2pq import pq_last_modified
-
-tables = [
-    ("crsp", "msf"),
-    ("crsp", "msenames"),
-    ("crsp", "msf_v2"),
-    ("crsp", "dsf_v2"),
-    ("ff", "factors_monthly"),
-]
-
-pl.DataFrame({
-    "Table": [f"{schema}.{name}" for schema, name in tables],
-    "metadata": [pq_last_modified(name, schema) for schema, name in tables],
-}).select(
-    "Table",
-    pl.col("metadata").str.extract(r"Updated (\d{4}-\d{2}-\d{2})")
-    .fill_null("Not recorded").alias("Source updated"),
-)
-```
+[]{#data-vintages}
