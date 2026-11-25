@@ -12,8 +12,11 @@ uv sync
 QUARTO_PYTHON="$PWD/.venv/bin/python" quarto render --to html
 ```
 
-The expected input is `~/Dropbox/pq_data/crsp/msf_v2.parquet`. To choose a
-different data root, set `ASSET_PRICING_DATA_DIR`. Open `_book/index.html`.
+Before rendering, copy `.env.example` to `.env` in the project and set
+`DATA_DIR` to your Parquet root. The book reads `$DATA_DIR/crsp/msf_v2.parquet`.
+An exported `DATA_DIR` overrides the gitignored `.env`.
+
+Open `_book/index.html` after rendering.
 
 ## Numerical comparison
 

@@ -23,8 +23,12 @@ from datetime import date
 from pathlib import Path
 
 import polars as pl
+from dotenv import load_dotenv
 
-root = Path(os.environ.get("ASSET_PRICING_DATA_DIR", "~/Dropbox/pq_data")).expanduser()
+load_dotenv(Path(".env"))
+if not (data_dir := os.environ.get("DATA_DIR")):
+    raise RuntimeError("Set DATA_DIR in the project .env or in your shell.")
+root = Path(data_dir).expanduser()
 first = date(2000, 1, 1)
 last = date(2002, 12, 1)
 monthly = (
