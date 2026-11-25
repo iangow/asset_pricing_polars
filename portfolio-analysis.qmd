@@ -1,0 +1,893 @@
+---
+jupyter: python3
+---
+
+# Portfolio Analysis {#sec-bem-portfolio-analysis}
+
+Bali, Engle, and Murray (2016), Chapter 5, use portfolio sorts to
+study how next year's excess return varies with beta, market
+capitalization, and book-to-market. We form portfolios at each
+December year-end from 1988 to 2012 using the [Chapter 2 panel](summary-statistics.qmd).
+Holding returns run from 1989 to 2012.
+
+{{< include _show-table.qmd >}}
+{{< include _bem-annual-betas.qmd >}}
+{{< include _bem2-characteristics.qmd >}}
+{{< include _bem5-tables.qmd >}}
+
+## Univariate Portfolio Analysis {#univariate-sorts}
+
+### Breakpoints {#breakpoints-and-membership}
+
+In year $t$, let $\{X_t\}$ be the available values of the sort variable
+and $p_k$ the probability used for breakpoint $k$. For $n_P$ portfolios,
+calculate $n_P-1$ breakpoints.
+
+$$
+B_{k,t}=\operatorname{Pctl}_{p_k}(\{X_t\}).
+$$ {#eq-bem5-percentile}
+
+The beta sort uses the 10th, 20th, 40th, 60th, 80th, and 90th
+percentiles. The first and last groups each hold about a tenth of the
+stocks, giving a closer look at both tails of the distribution. We use
+linear interpolation for the percentiles.
+
+```{python}
+def breakpoints(stocks, variable, probabilities, by):
+    return stocks.group_by(by).agg(
+        pl.col(variable).quantile(p, interpolation="linear").alias(f"{p:.0%}")
+        for p in probabilities
+    )
+
+seven_way = [.10, .20, .40, .60, .80, .90]
+beta_stocks = annual_panel.filter(pl.col("Beta").is_finite())
+beta_breaks = breakpoints(beta_stocks, "Beta", seven_way, ["year"])
+```
+
+```{python}
+#| label: tbl-bem5-breakpoints
+#| tbl-cap: Annual breakpoints for beta portfolios (BEM Table 5.1)
+#| echo: false
+
+show_table(beta_breaks.sort("year").rename({"year": "Year"}))
+```
+
+### Portfolio Formation
+
+With $B_{0,t}=-\infty$ and $B_{n_P,t}=\infty$, portfolio $k$ contains
+
+$$
+P_{k,t}=\{i:B_{k-1,t}\le X_{i,t}\le B_{k,t}\}.
+$$ {#eq-bem5-membership}
+
+Both endpoints are included, as in BEM. A stock exactly on a breakpoint
+can enter both adjacent portfolios. The code joins each stock to its
+year's breakpoint intervals, then keeps the intervals that contain its
+sort value.
+
+```{python}
+from itertools import pairwise
+
+def form_portfolios(stocks, variable, breaks, by, label):
+    cutoffs = [pl.col(column) for column in breaks.columns if column not in by]
+    edges = [pl.lit(-float("inf")), *cutoffs, pl.lit(float("inf"))]
+    intervals = pl.concat([
+        breaks.select(*by, pl.lit(group).alias(label), lower=lower, upper=upper)
+        for group, (lower, upper) in enumerate(pairwise(edges), 1)
+    ])
+    return (
+        stocks.join(intervals, on=by)
+        .filter(pl.col(variable).is_between("lower", "upper"))
+        .drop("lower", "upper")
+    )
+
+beta_members = form_portfolios(beta_stocks, "Beta", beta_breaks, ["year"], "portfolio")
+```
+
+```{python}
+#| label: tbl-bem5-counts
+#| tbl-cap: Annual stock counts for beta portfolios (BEM Table 5.2)
+#| echo: false
+
+show_table(
+    beta_members.group_by("year", "portfolio").len()
+    .pivot(on="portfolio", index="year", values="len", sort_columns=True)
+    .sort("year").rename({"year": "Year"})
+)
+```
+
+### Average Portfolio Values {#holding-period-returns}
+
+For an available outcome $Y$ and weight $W$, the portfolio outcome is
+
+$$
+Y_{k,t}=\frac{\sum_{i\in P_{k,t}} W_{i,t}Y_{i,t}}
+              {\sum_{i\in P_{k,t}} W_{i,t}}.
+$$ {#eq-bem5-weighted}
+
+Here $Y_{i,t}$ is the stock's excess return in year $t+1$. For equal
+weights use $W_{i,t}=1$. For value weights use December market
+capitalization and calculate the numerator and denominator on the same
+set of stocks with available returns and weights. For each year, form
+the high-minus-low spread
+
+$$
+Y_{\mathrm{Diff},t}=Y_{n_P,t}-Y_{1,t}.
+$$ {#eq-bem5-spread}
+
+```{python}
+portfolio_columns = [str(group) for group in range(1, 8)]
+univariate_columns = [*portfolio_columns, "7–1"]
+last_holding_year = 2012
+
+def univariate_series(cells, outcome):
+    return (
+        cells.pivot(on="portfolio", index="year", values=outcome)
+        .sort("year")
+        .select("year", *portfolio_columns, (pl.col("7") - pl.col("1")).alias("7–1"))
+    )
+
+r = pl.col("excess")
+valid = pl.all_horizontal(r.is_finite(), pl.col("MktCap").is_finite())
+w = pl.col("MktCap").filter(valid)
+beta_returns = (
+    beta_members.filter(pl.col("year") < last_holding_year)
+    .group_by("year", "portfolio")
+    .agg(EW=r.mean(), VW=(w * r.filter(valid)).sum() / w.sum())
+    .with_columns(pl.col("VW").fill_nan(None))
+)
+beta_ew = univariate_series(beta_returns, "EW")
+beta_vw = univariate_series(beta_returns, "VW")
+```
+
+```{python}
+#| label: tbl-bem5-equal
+#| tbl-cap: Equal-weighted beta portfolio excess returns in percent (BEM Table 5.3)
+#| echo: false
+
+show_holding_year(beta_ew)
+```
+
+```{python}
+#| label: tbl-bem5-value
+#| tbl-cap: Value-weighted beta portfolio excess returns in percent (BEM Table 5.4)
+#| echo: false
+
+show_holding_year(beta_vw)
+```
+
+The 2012 formation cohort appears in the membership tables. The last
+holding year in the return tables is 2012.
+
+### Summarizing the Results {#time-series-averages-and-inference}
+
+Average the portfolio outcomes and the spreads across the $T$ available
+holding years.
+
+$$
+\bar{Y}_k=\frac{1}{T}\sum_{t=1}^T Y_{k,t}.
+$$ {#eq-bem5-average}
+
+$$
+\bar{Y}_{\mathrm{Diff}}=\frac{1}{T}\sum_{t=1}^T Y_{\mathrm{Diff},t}.
+$$ {#eq-bem5-average-spread}
+
+An intercept-only regression gives the same time-series mean. We use
+StatsPAI and six Newey–West lags for inference, as specified by BEM.
+
+```{python}
+beta_means = fit_portfolios(beta_ew, univariate_columns)
+```
+
+```{python}
+#| label: tbl-bem5-inference
+#| tbl-cap: Equal-weighted beta portfolio means and inference (BEM Table 5.5)
+#| echo: false
+
+rows = {"Statistic": ["Average", "Standard error", "t-statistic", "p-value"]}
+for column, fit in beta_means.items():
+    rows[column] = [
+        fit.params["Intercept"], fit.std_errors["Intercept"],
+        fit.tvalues["Intercept"], fit.pvalues["Intercept"],
+    ]
+show_table(pl.DataFrame(rows))
+```
+
+### Interpreting the Results
+
+The univariate beta and market-cap spreads in @tbl-bem5-sorts are
+−6.03 and −20.92 percentage points per year, compared with −6.04 and
+−20.89 in BEM. The book-to-market spread is 16.26 here and 17.59 in BEM.
+
+### Presenting the Results
+
+```{python}
+#| label: tbl-bem5-beta-summary
+#| tbl-cap: Compact summary of beta portfolio excess returns (BEM Table 5.6)
+#| echo: false
+
+show_table(pl.DataFrame({
+    column: [format_fit(fit, "Intercept")] for column, fit in beta_means.items()
+}))
+```
+
+We can use formation-year characteristics as outcomes as well. BEM
+reports the portfolio means and tests the spread. For market
+capitalization the units are millions of dollars.
+
+```{python}
+#| label: tbl-bem5-characteristics
+#| tbl-cap: Average characteristics of beta portfolios (BEM Table 5.7)
+#| echo: false
+
+characteristics = ["Beta", "MktCap", "BM"]
+beta_characteristics = beta_members.group_by("year", "portfolio").agg(pl.col(characteristics).mean())
+rows = []
+for variable in characteristics:
+    series = univariate_series(beta_characteristics, variable)
+    spread_fit = fit_portfolios(series, ["7–1"])["7–1"]
+    rows.append([variable, *series.select(pl.exclude("year").mean()).row(0),
+                 spread_fit.tvalues["Intercept"]])
+show_table(pl.DataFrame(rows, schema=["Outcome", *univariate_columns, "7–1 t-statistic"], orient="row"))
+```
+
+[]{#sort-on-size-or-book-to-market}
+
+The same percentile cutoffs can be applied to other sort variables.
+Recompute the breakpoints with the available observations for each
+variable. Use the signed book-to-market ratio from Chapter 2.
+
+```{python}
+def univariate_sort(variable):
+    stocks = annual_panel.filter(pl.col(variable).is_finite())
+    breaks = breakpoints(stocks, variable, seven_way, ["year"])
+    return form_portfolios(stocks, variable, breaks, ["year"], "portfolio")
+
+univariate_means = {"Beta": beta_means}
+for variable in ["MktCap", "BM"]:
+    members = univariate_sort(variable)
+    returns = (
+        members.filter(pl.col("year") < last_holding_year)
+        .group_by("year", "portfolio").agg(pl.col("excess").mean())
+    )
+    series = univariate_series(returns, "excess")
+    univariate_means[variable] = fit_portfolios(series, univariate_columns)
+```
+
+```{python}
+#| label: tbl-bem5-sorts
+#| tbl-cap: Equal-weighted excess returns by sort variable (BEM Table 5.8)
+#| echo: false
+
+show_table(pl.DataFrame(
+    [[variable, *[format_fit(fit, "Intercept") for fit in fits.values()]]
+     for variable, fits in univariate_means.items()],
+    schema=["Sort variable", *univariate_columns], orient="row",
+))
+```
+
+The companion plot in @fig-bem5-univariate compares the return profiles.
+The size sort has its highest average return in the smallest-stock
+portfolio. Book-to-market has its highest return in the highest-ratio
+portfolio.
+
+```{python}
+#| label: fig-bem5-univariate
+#| fig-cap: Average next-year excess returns by univariate portfolio
+#| fig-alt: Three lines show average excess returns across seven portfolios. The smallest-cap portfolio and the highest book-to-market portfolio have the largest returns in their respective sorts.
+#| echo: false
+
+import matplotlib.pyplot as plt
+
+with plt.rc_context({"font.family": "DejaVu Sans"}):
+    fig, ax = plt.subplots(figsize=(8, 3.8), layout="constrained")
+    for variable, name, marker in [("Beta", "Beta", "o"), ("MktCap", "Market cap", "s"),
+                                    ("BM", "Book-to-market", "^")]:
+        y = [univariate_means[variable][p].params["Intercept"] for p in portfolio_columns]
+        ax.plot(range(1, 8), y, marker=marker, label=name)
+    ax.set(xlabel="Portfolio (low to high)", ylabel="Average annual excess return (%)", xticks=range(1, 8))
+    ax.grid(axis="y", alpha=0.25)
+    ax.legend()
+    plt.show()
+```
+
+### Analyzing Returns {#risk-adjusted-returns}
+
+Regress each annual portfolio return on factors from the same **holding
+year**. We use the published annual series from the Kenneth French
+Data Library, taking the [three factors from the July 2016 archive](https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/Data_Library/f-f_factors_archive.html)
+and [momentum from the December 2024 legacy archive](https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/data_library_202412_archive.html).
+The factors and portfolio outcomes are in percent.
+
+The market model, Fama–French three-factor model, and Carhart
+four-factor model are
+
+$$
+r_{p,t}=\alpha+\beta_{\mathrm{MKT}}\mathrm{MKT}_t+\epsilon_t,
+$$ {#eq-bem5-capm}
+
+$$
+r_{p,t}=\alpha+\beta_{\mathrm{MKT}}\mathrm{MKT}_t+
+\beta_{\mathrm{SMB}}\mathrm{SMB}_t+\beta_{\mathrm{HML}}\mathrm{HML}_t+\epsilon_t,
+$$ {#eq-bem5-ff}
+
+$$
+r_{p,t}=\alpha+\beta_{\mathrm{MKT}}\mathrm{MKT}_t+
+\beta_{\mathrm{SMB}}\mathrm{SMB}_t+\beta_{\mathrm{HML}}\mathrm{HML}_t+
+\beta_{\mathrm{MOM}}\mathrm{MOM}_t+\epsilon_t.
+$$ {#eq-bem5-ffc}
+
+The intercept is the portfolio's alpha under the chosen model.
+For a zero-cost spread, the outcome is the difference between the
+two legs' excess returns.
+
+```{python}
+#| label: tbl-bem5-risk-adjusted
+#| tbl-cap: Beta portfolio alphas and factor loadings (BEM Table 5.9)
+#| echo: false
+
+rows = []
+for model, terms in factor_models.items():
+    fits = beta_means if model == "Excess return" else fit_portfolios(beta_ew, univariate_columns, model)
+    for term in ["Intercept", *terms]:
+        label = ("Mean" if model == "Excess return" else "Alpha") if term == "Intercept" else term
+        rows.append([model, label, *[format_fit(fit, term) for fit in fits.values()]])
+show_table(pl.DataFrame(rows, schema=["Model", "Coefficient", *univariate_columns], orient="row"))
+```
+
+## Bivariate Independent-Sort Analysis {#bivariate-independent-sorts}
+
+### Breakpoints {#two-sets-of-breakpoints}
+
+To study returns across market-cap groups while controlling for beta,
+keep stocks with both characteristics. For an independent sort, calculate
+both sets of breakpoints across this same cross-section. Let $j$ index
+the $n_1$ groups of $X_1$ and $k$ index the $n_2$ groups of $X_2$.
+
+$$
+B_{1j,t}=\operatorname{Pctl}_{p_{1j}}(\{X_{1t}\}).
+$$ {#eq-bem5-first-breaks}
+
+$$
+B_{2k,t}=\operatorname{Pctl}_{p_{2k}}(\{X_{2t}\}).
+$$ {#eq-bem5-second-breaks}
+
+We use the 30th and 70th percentiles for beta and the 25th, 50th, and
+75th percentiles for market capitalization.
+
+Use the same percentile and membership functions as in the univariate
+sort. The second set of breakpoints is grouped only by year here.
+The dependent sort uses the same pipeline with an additional grouping
+key for the first portfolio.
+
+```{python}
+control_ports = ["1", "2", "3"]
+
+def bivariate_sort(first, second, *, dependent=False):
+    stocks = annual_panel.filter(pl.all_horizontal(pl.col(first, second).is_finite()))
+    first_breaks = breakpoints(stocks, first, [.30, .70], ["year"])
+    first_groups = form_portfolios(stocks, first, first_breaks, ["year"], "control")
+
+    by = ["year", "control"] if dependent else ["year"]
+    breakpoint_sample = first_groups if dependent else stocks
+    second_breaks = breakpoints(breakpoint_sample, second, [.25, .50, .75], by)
+    members = form_portfolios(first_groups, second, second_breaks, by, "target")
+    return members, first_breaks, second_breaks
+
+independent, first_breaks, second_breaks = bivariate_sort("Beta", "MktCap")
+```
+
+```{python}
+#| label: tbl-bem5-independent-breaks
+#| tbl-cap: Annual breakpoints for the independent beta and market-cap sorts (BEM Table 5.10)
+#| echo: false
+
+show_table(first_breaks.join(second_breaks, on="year", validate="1:1").sort("year").rename({
+    "year": "Year", "30%": "Beta 30%", "70%": "Beta 70%", "25%": "MktCap 25%",
+    "50%": "MktCap 50%", "75%": "MktCap 75%",
+}))
+```
+
+### Portfolio Formation
+
+A portfolio is the intersection of a beta group and a market-cap group.
+
+$$
+P_{j,k,t}=
+\{i:B_{1,j-1,t}\le X_{1i,t}\le B_{1j,t}\}
+\cap
+\{i:B_{2,k-1,t}\le X_{2i,t}\le B_{2k,t}\}.
+$$ {#eq-bem5-independent-membership}
+
+Pivot the portfolio cells so that the beta groups are columns and the
+market-cap groups are rows within each year.
+
+```{python}
+def control_grid(cells, value):
+    return (
+        cells.pivot(on="control", index=["year", "target"], values=value)
+        .sort("year", "target")
+        .select("year", "target", *control_ports)
+    )
+```
+
+```{python}
+#| label: tbl-bem5-independent-counts
+#| tbl-cap: Annual counts in the independent beta and market-cap portfolios (BEM Table 5.11)
+#| echo: false
+
+independent_counts = independent.group_by("year", "control", "target").len()
+show_grid(control_grid(independent_counts, "len"), "Beta", "MktCap")
+```
+
+### Average Portfolio Values {#returns-spreads-and-average-portfolios}
+
+Within each of the 12 portfolios, compute the outcome using the
+univariate weighting rule. The example uses equal weights.
+
+$$
+Y_{j,k,t}=\frac{\sum_{i\in P_{j,k,t}}W_{i,t}Y_{i,t}}
+                {\sum_{i\in P_{j,k,t}}W_{i,t}}.
+$$ {#eq-bem5-grid-outcome}
+
+A high-minus-low spread along market capitalization holds the beta
+group fixed. A spread along beta holds the market-cap group fixed.
+
+$$
+Y_{j,\mathrm{Diff},t}=Y_{j,n_2,t}-Y_{j,1,t}.
+$$ {#eq-bem5-target-spread}
+
+$$
+Y_{\mathrm{Diff},k,t}=Y_{n_1,k,t}-Y_{1,k,t}.
+$$ {#eq-bem5-control-spread}
+
+We can also average across either set of portfolios. Each group
+receives equal weight, even when stock counts differ.
+
+$$
+Y_{\mathrm{Avg},k,t}=\frac{1}{n_1}\sum_{j=1}^{n_1}Y_{j,k,t}.
+$$ {#eq-bem5-control-average}
+
+$$
+Y_{j,\mathrm{Avg},t}=\frac{1}{n_2}\sum_{k=1}^{n_2}Y_{j,k,t}.
+$$ {#eq-bem5-target-average}
+
+$$
+Y_{\mathrm{Avg},\mathrm{Avg},t}
+=\frac{1}{n_1}\sum_jY_{j,\mathrm{Avg},t}
+=\frac{1}{n_2}\sum_kY_{\mathrm{Avg},k,t}
+=\frac{1}{n_1n_2}\sum_j\sum_kY_{j,k,t}.
+$$ {#eq-bem5-grand-average}
+
+The difference in differences compares the market-cap spread in the
+highest-beta group with the spread in the lowest-beta group. The
+same result comes from comparing beta spreads across market-cap groups.
+
+$$
+\begin{aligned}
+Y_{\mathrm{Diff},\mathrm{Diff},t}
+ &=Y_{n_1,n_2,t}-Y_{n_1,1,t}-Y_{1,n_2,t}+Y_{1,1,t}\\
+ &=Y_{\mathrm{Diff},n_2,t}-Y_{\mathrm{Diff},1,t}\\
+ &=Y_{n_1,\mathrm{Diff},t}-Y_{1,\mathrm{Diff},t}.
+\end{aligned}
+$$ {#eq-bem5-difference-in-differences}
+
+```{python}
+#| label: tbl-bem5-spread-diagram
+#| tbl-cap: Constructing the difference in differences from the four corner portfolios (BEM Table 5.12)
+#| echo: false
+
+show_table(pl.DataFrame({
+    "Second sort": ["Low", "High", "High minus low"],
+    "First sort low": ["$A$", "$C$", "$C-A$"],
+    "First sort high": ["$B$", "$D$", "$D-B$"],
+    "First sort high minus low": ["$B-A$", "$D-C$", "$(D-C)-(B-A)=(D-B)-(C-A)$"],
+}))
+```
+
+Compute the spreads and averages within each holding year before fitting
+their time-series means or alphas. This preserves the covariance between
+the portfolio legs in the reported standard errors.
+
+```{python}
+def bivariate_returns(members, *, dependent=False):
+    cells = (
+        members.filter(pl.col("year") < last_holding_year)
+        .group_by("year", "control", "target").agg(pl.col("excess").mean())
+    )
+    grid = control_grid(cells, "excess")
+    spread = grid.group_by("year").agg(
+        (pl.col(c).filter(pl.col("target") == 4).first()
+         - pl.col(c).filter(pl.col("target") == 1).first()).alias(c)
+        for c in control_ports
+    ).with_columns(target=pl.lit(5))
+
+    rows = [grid, spread.select(grid.columns)]
+    if not dependent:
+        average = grid.group_by("year").agg(pl.col(control_ports).mean()).with_columns(target=pl.lit(6))
+        rows.append(average.select(grid.columns))
+    return (
+        pl.concat(rows).sort("year", "target")
+        .with_columns(Diff=pl.col("3") - pl.col("1"),
+                      Avg=pl.mean_horizontal(control_ports, ignore_nulls=False))
+    )
+
+independent_returns = bivariate_returns(independent)
+```
+
+```{python}
+#| label: tbl-bem5-independent-returns
+#| tbl-cap: Annual equal-weighted returns for the independent sorts (BEM Table 5.13)
+#| echo: false
+
+show_grid(independent_returns, "Beta", "MktCap", holding=True)
+```
+
+### Summarizing the Results {#summarize-and-present-the-returns}
+
+The full return grid reports both excess returns and four-factor
+alphas. The next tables show ways to focus on a specific spread or
+on the return profile after averaging across the control groups.
+
+```{python}
+independent_fits = grid_fits(independent_returns)
+```
+
+```{python}
+#| label: tbl-bem5-independent-summary
+#| tbl-cap: Excess returns and four-factor alphas for the independent sorts (BEM Table 5.14)
+#| echo: false
+
+show_grid_fits(independent_fits)
+```
+
+### Interpreting the Results
+
+### Presenting the Results
+
+```{python}
+#| label: tbl-bem5-independent-alphas
+#| tbl-cap: Compact four-factor alpha grid for the independent sorts (BEM Table 5.15)
+#| echo: false
+
+rows = []
+for group in range(1, 7):
+    fits = independent_fits[group, "FFC"]
+    row = [
+        format_fit(fits[c], "Intercept") if c in ["Diff", "Avg"] or group > 4
+        else f"{fits[c].params['Intercept']:.2f}"
+        for c in [*control_ports, "Diff", "Avg"]
+    ]
+    if group == 6:
+        row[-1] = None
+    rows.append([target_label("MktCap", group), *row])
+show_table(pl.DataFrame(rows, schema=["Portfolio", "Beta 1", "Beta 2", "Beta 3", "Beta 3–1",
+                                     "Beta average"], orient="row"))
+```
+
+To check the size effect with a different control, group on
+book-to-market first and market capitalization second. Both sets of
+breakpoints still use the entire cross-section of eligible stocks.
+
+```{python}
+independent_bm_cap, _, _ = bivariate_sort("BM", "MktCap")
+bm_cap_fits = grid_fits(bivariate_returns(independent_bm_cap))
+cap_controls = {"Beta": independent_fits, "BM": bm_cap_fits}
+```
+
+```{python}
+#| label: tbl-bem5-independent-size-spreads
+#| tbl-cap: Independent-sort size spreads by control variable (BEM Table 5.16)
+#| echo: false
+
+show_spreads(cap_controls, "Control")
+```
+
+```{python}
+#| label: tbl-bem5-independent-size-averages
+#| tbl-cap: Independent-sort size portfolios averaged across control groups (BEM Table 5.17)
+#| echo: false
+
+show_average_portfolios(cap_controls, "Control")
+```
+
+We can also hold the control variable fixed and change the characteristic
+of interest. Here beta is the control in both sorts, and we compare the
+results for market capitalization and book-to-market.
+
+```{python}
+independent_beta_bm, _, _ = bivariate_sort("Beta", "BM")
+beta_bm_fits = grid_fits(bivariate_returns(independent_beta_bm))
+beta_controls = {"MktCap": independent_fits, "BM": beta_bm_fits}
+```
+
+```{python}
+#| label: tbl-bem5-independent-target-spreads
+#| tbl-cap: Independent-sort size and book-to-market spreads by beta group (BEM Table 5.18)
+#| echo: false
+
+show_spreads(beta_controls, "Sort variable")
+```
+
+```{python}
+#| label: tbl-bem5-independent-target-averages
+#| tbl-cap: Independent-sort size and book-to-market portfolios averaged across beta groups (BEM Table 5.19)
+#| echo: false
+
+show_average_portfolios(beta_controls, "Sort variable")
+```
+
+## Bivariate Dependent-Sort Analysis {#bivariate-dependent-sorts}
+
+### Breakpoints {#breakpoints-within-control-groups}
+
+Start with the same beta groups. For each year and each beta group,
+calculate the market-cap quartiles within the group. If $P^{(1)}_{j,t}$
+is the set of stocks in beta group $j$, its market-cap breakpoint $k$ is
+
+$$
+B_{2j,k,t}=\operatorname{Pctl}_{p_{2k}}(\{X_{2i,t}:i\in P^{(1)}_{j,t}\}).
+$$ {#eq-bem5-conditional-breaks}
+
+```{python}
+dependent, beta_cutoffs, conditional_cutoffs = bivariate_sort("Beta", "MktCap", dependent=True)
+```
+
+```{python}
+#| label: tbl-bem5-dependent-breaks
+#| tbl-cap: Annual market-cap breakpoints within each beta group (BEM Table 5.20)
+#| echo: false
+
+show_table(
+    conditional_cutoffs.join(beta_cutoffs, on="year", validate="m:1")
+    .sort("year", "control")
+    .select("year", "control", "30%", "70%", "25%", "50%", "75%")
+    .rename({"year": "Year", "control": "Beta group", "30%": "Beta 30%", "70%": "Beta 70%",
+             "25%": "MktCap 25%", "50%": "MktCap 50%", "75%": "MktCap 75%"})
+)
+```
+
+### Portfolio Formation
+
+The portfolios now use those group-specific market-cap breakpoints.
+
+$$
+P_{j,k,t}=
+\{i:B_{1,j-1,t}\le X_{1i,t}\le B_{1j,t}\}
+\cap
+\{i:B_{2j,k-1,t}\le X_{2i,t}\le B_{2j,k,t}\}.
+$$ {#eq-bem5-dependent-membership}
+
+BEM's printed equation (5.21) leaves the upper endpoint open. The
+discussion of Table 5.21 assigns a stock on a breakpoint to both
+adjacent portfolios, so we use inclusive endpoints here as well.
+
+```{python}
+#| label: tbl-bem5-dependent-counts
+#| tbl-cap: Annual counts in the dependent beta and market-cap portfolios (BEM Table 5.21)
+#| echo: false
+
+dependent_counts = dependent.group_by("year", "control", "target").len()
+show_grid(control_grid(dependent_counts, "len"), "Beta", "MktCap")
+```
+
+Conditional quartiles tend to distribute stocks evenly within each
+beta group. In the independent sort, the largest stocks are much
+more common in the high-beta group than in the low-beta group.
+@fig-bem5-counts compares average stock counts across the two sorts.
+
+```{python}
+#| label: fig-bem5-counts
+#| fig-cap: Average annual stock counts by beta group and market-cap quartile
+#| fig-alt: Heatmaps show uneven counts across cells under independent sorting and approximately equal counts down each beta-group column under dependent sorting.
+#| echo: false
+
+count_grids = [
+    control_grid(counts, "len").group_by("target").agg(pl.col(control_ports).mean())
+    .sort("target").select(control_ports).to_numpy()
+    for counts in [independent_counts, dependent_counts]
+]
+max_count = max(grid.max() for grid in count_grids)
+
+with plt.rc_context({"font.family": "DejaVu Sans"}):
+    fig, axes = plt.subplots(1, 2, figsize=(8, 4), layout="constrained", sharey=True)
+    for ax, title, grid in zip(axes, ["Independent", "Dependent"], count_grids, strict=True):
+        ax.imshow(grid, cmap="Blues", vmin=0, vmax=max_count, aspect="auto")
+        for k, row in enumerate(grid):
+            for j, count in enumerate(row):
+                ax.text(j, k, f"{count:.0f}", ha="center", va="center",
+                        color="white" if count > max_count * .65 else "#172b4d")
+        ax.set(title=title, xlabel="Beta group", xticks=range(3), xticklabels=[1, 2, 3],
+               yticks=range(4), yticklabels=[1, 2, 3, 4])
+    axes[0].set_ylabel("Market-cap quartile")
+    plt.show()
+```
+
+### Average Portfolio Values {#returns-and-inference}
+
+Calculate returns and high-minus-low spreads within each beta group,
+then average the three groups.
+
+```{python}
+dependent_returns = bivariate_returns(dependent, dependent=True)
+```
+
+```{python}
+#| label: tbl-bem5-dependent-returns
+#| tbl-cap: Annual equal-weighted returns for the dependent sorts (BEM Table 5.22)
+#| echo: false
+
+show_grid(dependent_returns.drop("Diff"), "Beta", "MktCap", holding=True)
+```
+
+### Summarizing the Results
+
+```{python}
+dependent_fits = grid_fits(dependent_returns)
+```
+
+```{python}
+#| label: tbl-bem5-dependent-summary
+#| tbl-cap: Excess returns and four-factor alphas for the dependent sorts (BEM Table 5.23)
+#| echo: false
+
+show_grid_fits(dependent_fits, dependent=True)
+```
+
+### Interpreting the Results
+
+The high-minus-low differences across beta groups in the spread tables
+compare *market-cap spreads*. They show whether the size effect varies
+with beta.
+
+### Presenting the Results
+
+```{python}
+#| label: tbl-bem5-dependent-compact
+#| tbl-cap: Compact return grid and four-factor size spreads for the dependent sorts (BEM Table 5.24)
+#| echo: false
+
+columns = [*control_ports, "Avg"]
+rows = [
+    [target_label("MktCap", group), *[
+        f"{dependent_fits[group, 'Excess return'][column].params['Intercept']:.2f}"
+        for column in columns
+    ]]
+    for group in range(1, 5)
+]
+rows += [
+    [label, *[format_fit(dependent_fits[5, model][column], "Intercept") for column in columns]]
+    for label, model in [("MktCap 4–1", "Excess return"), ("FFC alpha", "FFC")]
+]
+show_table(pl.DataFrame(rows, schema=["Portfolio", "Beta 1", "Beta 2", "Beta 3", "Beta average"],
+                        orient="row"))
+```
+
+The same dependent sort can use book-to-market as the first variable
+or the second variable. The following tables keep the sort order
+explicit.
+
+```{python}
+dependent_bm_cap, _, _ = bivariate_sort("BM", "MktCap", dependent=True)
+dependent_beta_bm, _, _ = bivariate_sort("Beta", "BM", dependent=True)
+
+dependent_cap_controls = {
+    "Beta": dependent_fits,
+    "BM": grid_fits(bivariate_returns(dependent_bm_cap, dependent=True)),
+}
+dependent_beta_controls = {
+    "MktCap": dependent_fits,
+    "BM": grid_fits(bivariate_returns(dependent_beta_bm, dependent=True)),
+}
+```
+
+```{python}
+#| label: tbl-bem5-dependent-size-spreads
+#| tbl-cap: Dependent-sort size spreads by control variable (BEM Table 5.25)
+#| echo: false
+
+show_spreads(dependent_cap_controls, "Control")
+```
+
+```{python}
+#| label: tbl-bem5-dependent-size-averages
+#| tbl-cap: Dependent-sort size portfolios averaged across control groups (BEM Table 5.26)
+#| echo: false
+
+show_average_portfolios(dependent_cap_controls, "Control")
+```
+
+```{python}
+#| label: tbl-bem5-dependent-target-spreads
+#| tbl-cap: Dependent-sort size and book-to-market spreads by beta group (BEM Table 5.27)
+#| echo: false
+
+show_spreads(dependent_beta_controls, "Sort variable")
+```
+
+```{python}
+#| label: tbl-bem5-dependent-target-averages
+#| tbl-cap: Dependent-sort size and book-to-market portfolios averaged across beta groups (BEM Table 5.28)
+#| echo: false
+
+show_average_portfolios(dependent_beta_controls, "Sort variable")
+```
+
+## Independent Versus Dependent Sort {#compare-the-two-sorts}
+
+Average market capitalization makes the difference between the two
+methods concrete. An independent sort applies the same market-cap
+cutoffs across beta groups. A dependent sort can classify a stock as
+large among low-beta stocks even if its capitalization would place it
+in a lower quartile among high-beta stocks.
+
+```{python}
+def average_capitalization(members):
+    return (
+        members.group_by("year", "control", "target").agg(pl.col("MktCap").mean())
+        .group_by("control", "target").agg(pl.col("MktCap").mean())
+        .pivot(on="control", index="target", values="MktCap")
+        .sort("target").select("target", *control_ports)
+    )
+
+independent_caps = average_capitalization(independent)
+dependent_caps = average_capitalization(dependent)
+```
+
+```{python}
+#| label: tbl-bem5-independent-capitalization
+#| tbl-cap: Average market capitalization in the independent sorts, millions of dollars (BEM Table 5.29)
+#| echo: false
+
+show_grid(independent_caps.with_columns(pl.col(control_ports).round().cast(pl.Int64)), "Beta", "MktCap")
+```
+
+```{python}
+#| label: tbl-bem5-dependent-capitalization
+#| tbl-cap: Average market capitalization in the dependent sorts, millions of dollars (BEM Table 5.30)
+#| echo: false
+
+show_grid(dependent_caps.with_columns(pl.col(control_ports).round().cast(pl.Int64)), "Beta", "MktCap")
+```
+
+@fig-bem5-capitalization plots the same means on a log scale.
+
+```{python}
+#| label: fig-bem5-capitalization
+#| fig-cap: Market-cap profiles in independent and dependent sorts
+#| fig-alt: Within market-cap quartiles, average market caps are similar across beta groups in the independent sort. The dependent sort shows much wider differences across beta groups.
+#| echo: false
+
+with plt.rc_context({"font.family": "DejaVu Sans"}):
+    fig, axes = plt.subplots(1, 2, figsize=(8, 3.7), sharey=True, layout="constrained")
+    for ax, title, caps in zip(axes, ["Independent", "Dependent"],
+                               [independent_caps, dependent_caps], strict=True):
+        for group, marker in zip(control_ports, ["o", "s", "^"], strict=True):
+            ax.plot(caps["target"], caps[group], marker=marker, label=f"Beta {group}")
+        ax.set(title=title, xlabel="Market-cap quartile", yscale="log", xticks=range(1, 5))
+        ax.grid(axis="y", alpha=0.25)
+    axes[0].set_ylabel("Average market cap ($ millions, log scale)")
+    axes[0].legend(loc="upper left")
+    plt.show()
+```
+
+## Trivariate-Sort Analysis
+
+A third sort variable can be added by forming another unconditional
+group or by calculating its breakpoints within the existing intersected
+groups. With three variables the number of portfolios grows quickly, so
+check the stock counts before interpreting portfolio spreads.
+
+## Summary {#compare-with-bem}
+
+The book-to-market spreads after averaging across the beta groups are
+close to BEM's. The independent sort gives 10.90 versus 10.84, and the
+dependent sort gives 10.47 versus 10.48.
+
+Some differences in inference are larger. Applying the same six-lag
+StatsPAI regression to BEM's printed high-beta return series gives a
+t-statistic of 2.92, versus 3.43 in BEM. For the dependent book-to-market
+sort in @tbl-bem5-dependent-target-spreads, the four-factor difference in
+differences is −5.42 ($t=-3.55$) here and −5.00 ($t=-1.46$) in BEM.
+
+## References {.unnumbered}

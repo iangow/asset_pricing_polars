@@ -7,14 +7,20 @@ book:
   title: "Empirical Asset Pricing with Polars"
   chapters:
     - index.qmd
-    - data.qmd
-    - size.qmd
-    - momentum.qmd
-    - fama-macbeth.qmd
-    - illiquidity.qmd
-    - crsp-replication.qmd
-    - beta-replication.qmd
-    - size-replication.qmd
+    - part: "Part I. Statistical Methodologies"
+      chapters:
+        - data.qmd
+        - summary-statistics.qmd
+        - correlation.qmd
+        - persistence.qmd
+        - portfolio-analysis.qmd
+        - annual-regressions.qmd
+    - part: "Part II. The Cross Section of Stock Returns"
+      chapters:
+        - crsp-replication.qmd
+        - beta-replication.qmd
+        - size-replication.qmd
+        - value-replication.qmd
 
 format:
   html:

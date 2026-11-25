@@ -1,24 +1,14 @@
+{{< include _show-table.qmd >}}
+
 ```{python}
 #| include: false
-
-from IPython.display import Markdown, display
-
-def show_table(frame):
-    def cell(value):
-        if value is None:
-            return ""
-        return f"{value:.2f}" if isinstance(value, float) else str(value)
-
-    rows = [frame.columns, [":--", *["--:"] * (frame.width - 1)]]
-    rows += [[cell(value) for value in row] for row in frame.iter_rows()]
-    display(Markdown("\n".join("| " + " | ".join(row) + " |" for row in rows)))
 
 assert betas.height == universe.height
 assert betas["month"].n_unique() == 594
 assert all(betas.select(pl.col(beta_labels).is_finite().drop_nulls().all()).row(0))
 ```
 
-## Compare the beta estimates
+## Summary Statistics {#compare-the-beta-estimates}
 
 @tbl-bem8-summary averages monthly cross-sectional statistics. The count
 is the average number of stocks with an available estimate in a month.
@@ -68,6 +58,8 @@ and 0.61, as in BEM. The one-month daily estimate is available for
 Our Dimson estimate is available for 4,431 stocks, compared with 4,440.
 In our data the five-day lead cutoff reduces coverage by eight stocks
 per month relative to the 12-month daily beta.
+
+## Correlations
 
 @tbl-bem8-correlations reports the mean of the monthly correlations.
 For each pair, we use stocks for which both estimates are available.
@@ -120,7 +112,7 @@ We use monthly cross-sections, consistent with the discussion and sample
 construction. Correlations between similar lookbacks can partly reflect
 the observations shared by the estimation windows.
 
-## Measure persistence
+## Persistence {#measure-persistence}
 
 @tbl-bem8-persistence compares a stock's winsorized beta with its beta
 exactly $\tau$ calendar months later. We calculate a Pearson correlation
@@ -161,7 +153,9 @@ year later, matching BEM. A year of monthly returns yields a correlation
 of 0.20. This difference suggests that, over the same one-year
 lookback, the daily estimate captures a more stable stock characteristic.
 
-## Sort stocks into beta deciles
+## Beta and Stock Returns
+
+### Portfolio Analysis {#sort-stocks-into-beta-deciles}
 
 We form deciles using all eligible stocks with an estimate of the given
 beta in month $t$. A stock's decile is one plus the number of breakpoints
@@ -315,7 +309,7 @@ respectively. The direction of the equal-weighted spread runs against
 the CAPM prediction, and the spread is much smaller when large stocks
 receive more weight.
 
-## Run Fama–MacBeth regressions
+### Fama–MacBeth Regression Analysis {#run-famamacbeth-regressions}
 
 For each measure of beta, we regress next month's excess return on beta
 in each monthly cross-section,

@@ -1,0 +1,31 @@
+```{python}
+#| echo: false
+
+annual_keys = ["permno", "year"]
+links = (
+    load_parquet("ccmxpf_lnkused", "crsp")
+    .filter(pl.col("usedflag") == 1, pl.col("ulinktype").is_in(["LU", "LC"]), pl.col("upermno") > 0)
+    .select(gvkey="ugvkey", permno=pl.col("upermno").cast(pl.Int32),
+            start="ulinkdt", end="ulinkenddt")
+)
+linked_book = (
+    funda.join(links, on="gvkey")
+    .filter(pl.col("datadate") >= pl.col("start"),
+            (pl.col("datadate") <= pl.col("end")) | pl.col("end").is_null())
+    .select("gvkey", *annual_keys, "be").unique()
+)
+cusips = load_parquet("msenames", "crsp").select("permno", "namedt", "nameendt", cusip="ncusip")
+cusip_book = (
+    funda.join(linked_book.select("gvkey", "year"), on=["gvkey", "year"], how="anti")
+    .filter(pl.col("cusip").str.len_chars() == 8)
+    .join(cusips, on="cusip")
+    .filter(pl.col("datadate").is_between("namedt", "nameendt"))
+    .select("gvkey", *annual_keys, "be").unique()
+    .filter(pl.len().over("gvkey", "year") == 1)
+)
+book = (
+    pl.concat([linked_book, cusip_book])
+    .filter(pl.len().over(*annual_keys) == 1, pl.col("be").is_finite())
+    .select(*annual_keys, "be")
+)
+```

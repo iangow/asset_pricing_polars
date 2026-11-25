@@ -1,0 +1,175 @@
+---
+jupyter: python3
+---
+
+# Persistence Analysis {#sec-bem-persistence}
+
+Bali, Engle, and Murray (2016), Chapter 4, measure persistence by
+correlating a stock characteristic with its own future value across
+stocks. We use the December 1988–2012 panel from
+[Chapter 2](summary-statistics.qmd), including its signed book-to-market
+ratio (BM).
+
+{{< include _show-table.qmd >}}
+{{< include _bem-annual-betas.qmd >}}
+{{< include _bem2-characteristics.qmd >}}
+
+## Implementation
+
+### Periodic Cross-Sectional Persistence {#annual-cross-sectional-persistence}
+
+For a lag of $\tau$ years, match stocks by `permno` in years $t$ and
+$t+\tau$. For each characteristic $X$, keep the set $\mathcal S_{t,\tau}$
+of stocks with finite values of $X$ in both years. Within this matched
+sample, winsorize each year's values separately at the 0.5th and 99.5th
+percentiles. Using the winsorized values and their cross-sectional means,
+the Pearson correlation is
+
+$$
+\rho_{t,t+\tau}(X)=
+\frac{\displaystyle\sum_{i\in\mathcal S_{t,\tau}}
+      (X_{i,t}-\bar X_t)(X_{i,t+\tau}-\bar X_{t+\tau})}
+     {\displaystyle\sqrt{\sum_{i\in\mathcal S_{t,\tau}}(X_{i,t}-\bar X_t)^2}
+                   \sqrt{\sum_{i\in\mathcal S_{t,\tau}}(X_{i,t+\tau}-\bar X_{t+\tau})^2}}.
+$$ {#eq-bem4-periodic}
+
+Shift the future year's join key back by the lag so that each stock's
+observation in $t+\tau$ joins its observation in $t$. Use the same
+winsorized Pearson correlation as in [Chapter 3](correlation.qmd).
+
+```{python}
+from _bem_monthly import winsorized_corr
+
+measures = ["Beta", "Size", "BM"]
+lags = range(1, 6)
+characteristics = annual_panel.select("permno", "year", *measures)
+
+def annual_persistence(lag):
+    future = characteristics.with_columns(year=pl.col("year") - lag)
+    return (
+        characteristics.join(future, on=["permno", "year"], suffix="_future", validate="1:1")
+        .group_by("year")
+        .agg(
+            winsorized_corr(pl.col(x), pl.col(f"{x}_future")).fill_nan(None).alias(x)
+            for x in measures
+        )
+        .with_columns(pl.lit(lag).alias("Lag"))
+    )
+
+annual = pl.concat([annual_persistence(lag) for lag in lags]).sort("Lag", "year")
+```
+
+```{python}
+#| label: tbl-bem4-annual
+#| tbl-cap: Annual cross-sectional persistence of beta (BEM Table 4.1)
+#| echo: false
+
+beta_by_year = (
+    annual.pivot(on="Lag", index="year", values="Beta", sort_columns=True)
+    .sort("year")
+    .rename({"year": "Year", **{str(lag): f"Lag {lag}" for lag in lags}})
+)
+show_table(beta_by_year)
+```
+
+The lags are in years. The blank cells in @tbl-bem4-annual require a
+comparison year beyond 2012. Of the 110 estimates, 107 agree with BEM
+to two decimal places and three differ by 0.01. The companion plot in
+@fig-bem4-annual shows how much beta persistence varies across formation
+years, even at the same lag.
+
+```{python}
+#| label: fig-bem4-annual
+#| fig-cap: Annual persistence of beta by lag
+#| fig-alt: Five lines show beta correlations by formation year. One-year correlations generally exceed the longer-lag correlations and are higher in the 2000s than in the early 1990s. Lines for longer lags end earlier.
+
+import matplotlib.pyplot as plt
+
+with plt.rc_context({"font.family": "DejaVu Sans"}):
+    fig, ax = plt.subplots(figsize=(8, 4), layout="constrained")
+    styles = ["-", "--", "-.", ":", (0, (5, 2, 1, 2, 1, 2))]
+    for lag, style in zip(lags, styles, strict=True):
+        series = annual.filter(pl.col("Lag") == lag)
+        ax.plot(series["year"], series["Beta"], linestyle=style, label=f"{lag}")
+    ax.set(xlabel="Formation year", ylabel="Pearson correlation", ylim=(0, 1),
+           xticks=range(1988, 2013, 4))
+    ax.grid(axis="y", alpha=0.25)
+    ax.legend(title="Lag (years)", loc="upper center", ncols=5)
+    plt.show()
+```
+
+### Average Cross-Sectional Persistence {#average-across-years}
+
+Give each formation year equal weight. With $N$ years indexed from 1
+through $N$, the average persistence at lag $\tau$ is
+
+$$
+\rho_\tau(X)=\frac{1}{N-\tau}\sum_{t=1}^{N-\tau}\rho_{t,t+\tau}(X).
+$$ {#eq-bem4-average}
+
+Here $N=25$, so the one-year estimate averages 24 correlations and
+the five-year estimate averages 20. @tbl-bem4-beta reports the averages
+for beta and @tbl-bem4-characteristics puts all three characteristics
+side by side.
+
+```{python}
+average = annual.group_by("Lag").agg(pl.col(measures).mean()).sort("Lag")
+```
+
+```{python}
+#| label: tbl-bem4-beta
+#| tbl-cap: Average annual persistence of beta (BEM Table 4.2)
+#| echo: false
+
+show_table(pl.DataFrame({
+    f"Lag {lag}": [beta] for lag, beta in average.select("Lag", "Beta").iter_rows()
+}))
+```
+
+## Interpreting Persistence {#interpret-persistence}
+
+Low beta persistence can reflect changing market exposures, noisy
+estimates, or both. Overlapping estimation windows can raise the
+correlation because the two estimates use some of the same returns.
+Here the December 12-month betas use daily returns from separate
+calendar years. The set of stocks with valid measurements at both
+dates can also change with the lag, so differences across lags reflect
+both the time between measurements and the stocks observed at both dates.
+
+## Presenting Persistence
+
+```{python}
+#| label: tbl-bem4-characteristics
+#| tbl-cap: Average persistence of beta, size, and book-to-market (BEM Table 4.3)
+#| echo: false
+
+show_table(average.rename({"Lag": "Lag (years)"}))
+```
+
+@fig-bem4-averages plots the averages from @tbl-bem4-characteristics.
+Size is the most persistent characteristic at every lag. Its average
+correlation falls from 0.96 at one year to 0.88 at five years. At five
+years, beta and BM are at 0.42 and 0.47. The size averages agree with
+BEM at the reported precision. Beta's three-year average is 0.49 here
+and 0.48 in BEM, and the other beta averages agree. BM correlations are
+0.02 to 0.05 higher in this replication across the five lags.
+
+```{python}
+#| label: fig-bem4-averages
+#| fig-cap: Average persistence of beta, size, and book-to-market by lag
+#| fig-alt: Average size persistence stays near 0.9. Book-to-market falls from 0.76 to 0.47 and beta from 0.61 to 0.42 between the one- and five-year lags.
+
+with plt.rc_context({"font.family": "DejaVu Sans"}):
+    fig, ax = plt.subplots(figsize=(8, 4), layout="constrained")
+    for measure, label, marker in [("Beta", "Beta", "o"), ("Size", "Size", "s"),
+                                   ("BM", "Book-to-market", "^")]:
+        ax.plot(average["Lag"], average[measure], marker=marker, label=label)
+    ax.set(xlabel="Lag (years)", ylabel="Average Pearson correlation", ylim=(0, 1), xticks=lags)
+    ax.grid(axis="y", alpha=0.25)
+    ax.legend(loc="lower left")
+    plt.show()
+```
+
+## Summary
+
+## References {.unnumbered}

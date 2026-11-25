@@ -2,7 +2,13 @@
 jupyter: python3
 ---
 
-# Data {#sec-data}
+# Preliminaries {#sec-data}
+
+## Sample
+
+The [summary statistics chapter](summary-statistics.qmd) uses BEM's
+annual teaching sample of U.S. common stocks at each year-end from 1988
+through 2012. The empirical replications use longer monthly samples.
 
 The examples read local Parquet files through `era_pl.load_parquet()`.
 The `DATA_DIR` setting points to the data root, and each table lives at
@@ -11,7 +17,7 @@ The `DATA_DIR` setting points to the data root, and each table lives at
 to render the book with your own copies. The repository does not include
 the licensed WRDS data.
 
-## WRDS tables {#data-vintages}
+**[WRDS tables]{#data-vintages}**
 
 The table lists the inputs used in this build. The source update date comes
 from the metadata embedded in each Parquet file, read with
@@ -27,10 +33,6 @@ from db2pq import pq_last_modified
 from IPython.display import Markdown, display
 
 tables = [
-    ("crsp", "msf_v2", "CRSP CIZ",
-     "Monthly returns and market equity for the sorts and regressions."),
-    ("crsp", "dsf_v2", "CRSP CIZ",
-     "Daily returns and dollar volume for Amihud illiquidity."),
     ("ff", "factors_monthly", "Fama–French",
      "Monthly factors and the risk-free rate for betas, alphas, and market checks."),
     ("ff", "factors_daily", "Fama–French",
@@ -41,8 +43,12 @@ tables = [
      "Daily stock returns for Chapter 8 beta estimation."),
     ("crsp", "msenames", "CRSP legacy (SIZ)",
      "Historical share codes, exchanges, and industries."),
+    ("comp", "funda", "Compustat",
+     "Annual fundamentals for book equity."),
+    ("crsp", "ccmxpf_lnkused", "CRSP/Compustat Merged",
+     "Historical links from Compustat firms to CRSP securities."),
     ("crsp", "msedelist", "CRSP legacy (SIZ)",
-     "Delisting returns and codes for holding-period returns in Chapters 7 and 8."),
+     "Delisting returns and codes for monthly holding-period returns."),
     ("crsp", "msi", "CRSP legacy (SIZ)",
      "CRSP value-weighted index for the market factor comparison."),
 ]
@@ -60,17 +66,30 @@ for schema, name, dataset, purpose in tables:
 display(Markdown("\n".join(rows)))
 ```
 
-Most examples use CRSP's newer CIZ files. The [Chapter 7 replication](crsp-replication.qmd),
-[Chapter 8 replication](beta-replication.qmd), and [Table 9.1 replication](size-replication.qmd)
-use legacy CRSP (SIZ), the format available when Bali, Engle, and
-Murray wrote the book. The local legacy exports are newer than their
-original snapshot. CIZ is not a drop-in substitute for legacy monthly
-returns: the two formats differ, for example, in the timing of dividend
-reinvestment. See [CRSP's comparison of the formats](https://www.crsp.org/crsp_pdf/crsp-us-stock-indexes-databases-siz-to-ciz-executive-summary/).
+The replications use legacy CRSP (SIZ), the format available when Bali,
+Engle, and Murray wrote the book. The local legacy exports are newer than
+their original snapshot. The newer CIZ files use different return
+conventions, including the timing of dividend reinvestment.
+See [CRSP's comparison of the formats](https://www.crsp.org/crsp_pdf/crsp-us-stock-indexes-databases-siz-to-ciz-executive-summary/).
 
-## Other input
+**[Other inputs]{#other-inputs}**
 
-Both BEM replication chapters also use the
+The [beta](beta-replication.qmd), [size](size-replication.qmd), and
+[value](value-replication.qmd) chapters can export the local Parquet tables
+`eap.betas`, `eap.sizes`, and `eap.book_to_market`. The annual methods
+chapters use the December observations from those tables. The
+[render instructions](https://github.com/iangow/asset_pricing_polars#render)
+show how to build them.
+
+The CRSP, size, and value chapters use the
 [BLS all-items CPI for urban consumers, not seasonally adjusted](https://fred.stlouisfed.org/series/CPIAUCNS),
 from FRED, to express market capitalizations in December 2012 dollars.
 This file does not come from WRDS.
+
+## Winsorization and Truncation
+
+## Newey and West (1987) Adjustment
+
+## Summary
+
+## References {.unnumbered}

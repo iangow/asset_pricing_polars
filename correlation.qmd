@@ -1,0 +1,162 @@
+---
+jupyter: python3
+---
+
+# Correlation {#sec-bem-correlation}
+
+Bali, Engle, and Murray (2016), Chapter 3, compare the cross-sectional
+associations among beta, size, book-to-market (BM), and next-year excess
+return. We use the 1988–2012 annual panel from
+[Chapter 2](summary-statistics.qmd).
+
+{{< include _show-table.qmd >}}
+{{< include _bem-annual-betas.qmd >}}
+{{< include _bem2-characteristics.qmd >}}
+
+## Implementation
+
+### Periodic Cross-Sectional Correlations {#annual-cross-sectional-correlations}
+
+For variables $X$ and $Y$ in year $t$, keep the $n_t$ stocks for which
+both variables are observed. The Pearson correlation measures linear
+association. With $\bar X_t$ and $\bar Y_t$ denoting the means in this
+paired cross-section, the correlation is
+
+$$
+\rho_t(X,Y)=
+\frac{\sum_{i=1}^{n_t}(X_{i,t}-\bar X_t)(Y_{i,t}-\bar Y_t)}
+{\sqrt{\sum_{i=1}^{n_t}(X_{i,t}-\bar X_t)^2}
+ \sqrt{\sum_{i=1}^{n_t}(Y_{i,t}-\bar Y_t)^2}}.
+$$ {#eq-bem3-pearson}
+
+For the Pearson entries in @tbl-bem3-annual, winsorize each variable
+at the 0.5th and 99.5th percentiles of the paired cross-section before
+computing its mean and correlation.
+
+The Spearman correlation measures association between ranks. Let $x_{i,t}$
+and $y_{i,t}$ be the ranks of the original values within the paired
+cross-section, with rank 1 assigned to the smallest value. When neither
+variable has ties, the rank difference $d_{i,t}=x_{i,t}-y_{i,t}$ gives
+
+$$
+\rho_t^S(X,Y)=1-\frac{6\sum_{i=1}^{n_t}d_{i,t}^2}{n_t(n_t^2-1)}.
+$$ {#eq-bem3-spearman}
+
+With ties, give equal values their average rank and compute the Pearson
+correlation of the two rank vectors. This is the calculation used by
+`pl.corr(method="spearman")`, including when @eq-bem3-spearman applies.
+
+```{python}
+from _bem_monthly import correlation_matrix, period_correlations
+
+variables = {"Beta": "Beta", "Size": "Size", "BM": "BM", "excess": "Next-year return"}
+annual = period_correlations(annual_panel, variables, "year").sort("year")
+```
+
+```{python}
+#| label: tbl-bem3-annual
+#| tbl-cap: Annual Pearson and Spearman correlations (BEM Table 3.1)
+#| echo: false
+return_labels = {c: c.replace("excess", "Return") for c in annual.columns if "excess" in c}
+show_table(annual.rename(return_labels).rename({"year": "Year"}))
+```
+
+### Average Cross-Sectional Correlations {#average-across-years}
+
+Average the annual coefficients for each pair. If $\mathcal T_{XY}$ is
+the set of years with an available coefficient and $N_{XY}$ is its size,
+the Pearson and Spearman averages are
+
+$$
+\bar\rho(X,Y)=\frac{1}{N_{XY}}\sum_{t\in\mathcal T_{XY}}\rho_t(X,Y)
+$$ {#eq-bem3-average-pearson}
+
+and
+
+$$
+\bar\rho^S(X,Y)=\frac{1}{N_{XY}}\sum_{t\in\mathcal T_{XY}}\rho_t^S(X,Y).
+$$ {#eq-bem3-average-spearman}
+
+Each available year has the same weight. The next-year return is
+unavailable for the 2012 formation cohort, so return correlations are
+averaged over 24 years. The other pairs use all 25 years.
+
+```{python}
+average = annual.select(pl.exclude("year").mean())
+```
+
+```{python}
+#| label: tbl-bem3-average
+#| tbl-cap: Average annual correlations by pair (BEM Table 3.2)
+#| echo: false
+show_table(average.rename(return_labels))
+```
+
+## Interpreting Correlations {#interpret-the-correlations}
+
+The two companion figures plot the annual coefficients in
+@tbl-bem3-annual. Each panel uses formation years on the horizontal
+axis. In the second figure, the return paired with year $t$ comes
+from year $t+1$.
+
+```{python}
+#| label: fig-bem3-characteristics
+#| fig-cap: Annual correlations among beta, size, and book-to-market
+#| fig-alt: Three line plots compare Pearson and Spearman correlations by formation year. Beta and size move together, while their correlations with book-to-market are usually negative.
+
+import matplotlib.pyplot as plt
+
+def plot_correlations(pairs):
+    with plt.rc_context({"font.family": "DejaVu Sans"}):
+        fig, axes = plt.subplots(3, 1, figsize=(8, 6), sharex=True, sharey=True,
+                                 layout="constrained")
+        for ax, (a, b) in zip(axes, pairs, strict=True):
+            ax.axhline(0, color="0.7", linewidth=0.8)
+            ax.plot(annual["year"], annual[f"Pearson {a}–{b}"], color="#24639a",
+                    label="Pearson")
+            ax.plot(annual["year"], annual[f"Spearman {a}–{b}"], color="#ac4c27",
+                    linestyle="--", label="Spearman")
+            ax.set_title(f"{variables[a]} and {variables[b]}", loc="left")
+        axes[-1].set(xlabel="Formation year", xticks=range(1988, 2013, 4))
+        fig.supylabel("Correlation")
+        fig.legend(*axes[0].get_legend_handles_labels(), loc="outside upper center", ncols=2)
+        plt.show()
+
+plot_correlations([("Beta", "Size"), ("Beta", "BM"), ("Size", "BM")])
+```
+
+Larger stocks tend to have higher betas. Both measures of correlation
+also show that larger stocks tend to have lower book-to-market ratios.
+Market capitalization enters the denominator of BM, which helps explain
+part of the association.
+
+```{python}
+#| label: fig-bem3-returns
+#| fig-cap: Annual correlations of stock characteristics with next-year excess returns
+#| fig-alt: Three line plots show Pearson and Spearman return correlations varying over formation years. The beta and return correlations turn sharply negative in 2001. The series end in 2011.
+plot_correlations([("Beta", "excess"), ("Size", "excess"), ("BM", "excess")])
+```
+
+The correlations with next-year returns vary considerably. For example,
+the Pearson correlation between beta and the following year's return
+moves from 0.15 for the 1998 formation cohort to −0.11 for the 1999
+cohort. Its average of −0.04 in @tbl-bem3-average conceals that change.
+
+## Presenting Correlations {#present-the-correlations}
+
+@tbl-bem3-matrix puts the same averages in a compact matrix. Read
+Pearson correlations below the diagonal and Spearman correlations above
+it. The Pearson correlation between size and BM is −0.22 here and
+−0.23 in BEM. The other average correlations agree at the reported
+precision.
+
+```{python}
+#| label: tbl-bem3-matrix
+#| tbl-cap: Average Pearson (below diagonal) and Spearman (above diagonal) correlations (BEM Table 3.3)
+#| echo: false
+show_table(correlation_matrix(average.row(0, named=True), variables))
+```
+
+## Summary
+
+## References {.unnumbered}

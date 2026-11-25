@@ -1,4 +1,4 @@
-## Next-month stock returns {#sec-bem-returns}
+## Stock Returns and Excess Returns {#sec-bem-returns}
 
 Start with eligible common stocks at the end of month $t$ and look up the
 return for the same security in month $t+1$. Do not require it to remain in the
@@ -107,7 +107,7 @@ table_7_2 = summarize_returns(first_return)
 table_7_3 = summarize_returns(first_return_late)
 ```
 
-### July 1926–December 2012 (Table 7.2)
+**[July 1926–December 2012 (Table 7.2)]{#july-1926december-2012-table-7.2}**
 
 ```{python}
 #| echo: false
@@ -116,7 +116,7 @@ with pl.Config(tbl_rows=12):
     display(display_returns(table_7_2))
 ```
 
-### July 1963–December 2012 (Table 7.3)
+### CRSP Sample (1963–2012) {#july-1963december-2012-table-7.3}
 
 ```{python}
 #| echo: false

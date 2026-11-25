@@ -1,4 +1,4 @@
-## Exchange and industry composition {#sec-bem7-composition}
+### Composition of the CRSP Sample {#sec-bem7-composition}
 
 Figures 7.1–7.4 of Bali, Engle, and Murray (2016) decompose the sample by
 exchange and industry from December 1925 to December 2012. Count every
@@ -7,7 +7,7 @@ missing. For market value, sum only observed capitalization. Convert
 nominal millions to billions of December 2012 dollars using the ratio
 of December 2012 CPI to that month's CPI.
 
-### Exchanges
+#### Stock Exchange Composition of CRSP Sample {#exchanges .unnumbered .unlisted}
 
 The book groups exchange codes 1 and 31 as NYSE, 2 and 32 as AMEX, and
 3 and 33 as Nasdaq. All remaining codes go into *Other*.
@@ -180,7 +180,7 @@ The reconstructed market value is about $15.72 trillion in December
 2012, close to the book's $15.7 trillion despite the difference in
 stock counts.
 
-### Industries
+#### Industry Composition of CRSP Sample {#industries .unnumbered .unlisted}
 
 We use the security's current SIC code rather than a code carried back
 from a later date. [OSHA's SIC manual](https://www.osha.gov/data/sic-manual)

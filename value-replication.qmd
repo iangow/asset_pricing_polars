@@ -1,0 +1,332 @@
+---
+jupyter: python3
+---
+
+# The Value Premium {#sec-value-replication}
+
+We follow Chapter 10 of Bali, Engle, and Murray (2016), *Empirical Asset
+Pricing*. Book-to-market compares an accounting measure of equity with
+what investors pay for the shares. We ask how this ratio varies across
+stocks and whether it predicts the following month's excess return.
+
+## Calculating Book-to-Market Ratio {#calculate-book-to-market}
+
+Book equity in millions is stockholders' equity plus deferred taxes and
+the investment tax credit, less preferred stock. We use preferred stock
+redemption value, liquidation value, or par value, in that order. BEM
+require stockholders' equity and deferred taxes. They use zero for a
+missing tax credit or when all three preferred stock fields are missing.
+We take the last fiscal year-end within the calendar year.
+
+```{python}
+import polars as pl
+
+from era_pl import load_parquet
+
+first = pl.date(1963, 6, 1)
+last = pl.date(2012, 11, 1)
+keys = ["permno", "month"]
+
+funda = (
+    load_parquet("funda", "comp")
+    .filter(
+        pl.col("indfmt") == "INDL", pl.col("datafmt") == "STD",
+        pl.col("consol") == "C", pl.col("popsrc") == "D",
+        pl.col("datadate").dt.year().is_between(1962, 2011),
+    )
+    .select(
+        "gvkey", "datadate", year=pl.col("datadate").dt.year(),
+        cusip=pl.col("cusip").str.slice(0, 8),
+        be=pl.col("seq") + pl.col("txdb") + pl.col("itcb").fill_null(0)
+        - pl.coalesce("pstkrv", "pstkl", "pstk", pl.lit(0)),
+    )
+    .filter(pl.col("datadate") == pl.col("datadate").max().over("gvkey", "year"))
+    .unique()
+    .filter(pl.len().over("gvkey", "year") == 1)
+)
+```
+
+Use CRSP–Compustat links valid on the fiscal year-end. When a direct
+link is unavailable, try an unambiguous historical CUSIP match. We use
+the legacy monthly names file for this fallback.
+
+{{< include _bem10-links.qmd >}}
+
+Divide book equity by the nominal December capitalization for the same
+calendar year, from the [size chapter](size-replication.qmd). Make that
+ratio available at the end of the following June and carry it through the
+next May. This gives a December fiscal year-end at least six months before
+the ratio enters a portfolio sort.
+
+```{python}
+all_sizes = load_parquet("sizes", "eap")
+december_cap = (
+    all_sizes.filter(pl.col("month").dt.month() == 12)
+    .select("permno", year=pl.col("month").dt.year(), me="cap")
+)
+book_to_market = (
+    book.join(december_cap, on=["permno", "year"], validate="1:1")
+    .with_columns(
+        available=pl.date(pl.col("year") + 1, 6, 1),
+        bm_raw=pl.col("be") / pl.col("me"),
+    )
+    .with_columns(
+        month=pl.date_ranges(
+            pl.col("available"), pl.col("available").dt.offset_by("11mo"),
+            interval="1mo",
+        ),
+        bm=pl.when(pl.col("bm_raw") > 0).then(pl.col("bm_raw")),
+    )
+    .explode("month")
+    .filter(pl.col("month") <= last.dt.offset_by("1mo"))
+    .select(*keys, book_year="year", be="be", me="me", bm_raw="bm_raw",
+            bm="bm", log_bm=pl.col("bm").log())
+    .collect()
+)
+```
+
+For this chapter, use positive book equity so the logarithm is defined.
+The optional `eap.book_to_market` export keeps the signed ratio as well
+for the [annual summaries](summary-statistics.qmd).
+
+{{< include _write-eap.qmd >}}
+
+```{python}
+#| include: false
+
+assert book_to_market.select(pl.struct(keys).n_unique()).item() == book_to_market.height
+if os.environ.get("EAP_WRITE_BOOK_TO_MARKET") == "1":
+    write_eap_table(book_to_market, "book_to_market")
+
+sizes = all_sizes.filter(
+    pl.col("common"), pl.col("month").is_between(first, last)
+).collect()
+```
+
+## Summary Statistics
+
+The numerator and denominator come from the same annual vintage.
+For the dollar amounts in the table, express both in December 2012
+dollars using the CPI for the observation month. The common
+deflator leaves the book-to-market ratio unchanged.
+
+{{< include _show-table.qmd >}}
+
+```{python}
+from _bem_monthly import mean_cross_sections, monthly_panel
+
+panel = monthly_panel(sizes, first, last).join(book_to_market, on=keys, how="left", validate="1:1")
+cpi = pl.read_csv("data/cpi-aucns.csv", try_parse_dates=True).rename(
+    {"observation_date": "month", "CPIAUCNS": "cpi"}
+)
+cpi_2012 = cpi.filter(pl.col("month") == pl.date(2012, 12, 1))["cpi"].item()
+value_panel = (
+    panel.filter(pl.col("bm").is_not_null())
+    .join(cpi, on="month", validate="m:1")
+    .with_columns(
+        be_real=pl.col("be") * cpi_2012 / pl.col("cpi"),
+        me_real=pl.col("me") * cpi_2012 / pl.col("cpi"),
+    )
+)
+```
+
+```{python}
+#| label: tbl-bem10-summary
+#| tbl-cap: Monthly summary statistics for book-to-market (BEM Table 10.1)
+#| echo: false
+
+show_table(mean_cross_sections(value_panel, {
+    "bm": "BM", "log_bm": "ln BM", "be_real": "Book equity",
+    "me_real": "December market equity", "cap": "Current market cap",
+}))
+```
+
+Availability depends on finding both a fiscal book value and a prior
+December capitalization. We find an average of 3,413 stocks per
+month, against 3,409 in BEM. The mean and median BM round to 0.94
+and 0.72 in both samples.
+
+## Correlations {#correlation-and-persistence}
+
+The Pearson correlations use 0.5% winsorization at both ends of each
+pair's monthly sample. The Spearman correlations use the original ranks.
+Since the logarithm preserves order for positive ratios, BM and ln BM
+have a Spearman correlation of one and the same rank correlation with
+each other variable.
+
+```{python}
+from _bem_monthly import correlation_matrix, period_correlations, persistence
+
+measures = {"bm": "BM", "log_bm": "ln BM", "beta": "Beta", "log_cap": "Size"}
+corr = period_correlations(value_panel, measures, "month").select(pl.exclude("month").mean())
+```
+
+```{python}
+#| label: tbl-bem10-correlations
+#| tbl-cap: Monthly cross-sectional correlations with book-to-market (BEM Table 10.2)
+#| echo: false
+show_table(correlation_matrix(corr.row(0, named=True), measures))
+```
+
+## Persistence
+
+Book-to-market updates once a year, so we start the persistence analysis
+at a lag of twelve months. Shorter lags would often compare the same
+book-to-market observation with itself. As in the annual persistence
+analysis, winsorize each side after matching the sample by date and stock.
+
+```{python}
+#| label: tbl-bem10-persistence
+#| tbl-cap: Persistence of book-to-market (BEM Table 10.3)
+#| echo: false
+show_table(persistence(value_panel, {"bm": "BM", "log_bm": "ln BM"}, [12, 24, 36, 48, 60, 120]))
+```
+
+## Book-to-Market Ratio and Stock Returns {#book-to-market-and-future-returns}
+
+### Univariate Portfolio Analysis
+
+Form ten portfolios at the end of each month using the book-to-market
+ratio. Compare breakpoints from all eligible stocks with breakpoints
+from NYSE stocks. Holding returns use the next month's CRSP returns
+and the delisting adjustment in [Chapter 7](crsp-replication.qmd).
+Value weights use current market capitalization at formation.
+Returns and CAPM alphas are percentages per month, and $t$-statistics
+use six Newey–West lags.
+
+```{python}
+from _bem_monthly import bivariate_months, bivariate_panel, fama_macbeth_table, univariate_panel
+
+characteristics = [
+    pl.col("bm").mean().alias("BM"), pl.col("log_bm").mean().alias("ln BM"),
+    pl.col("cap").mean().alias("Market cap"), pl.col("beta").mean().alias("Beta"),
+    (100 * (pl.col("exchcd") == 1).fill_null(False).mean()).alias("% NYSE"),
+    pl.len().alias("Stocks"),
+]
+```
+
+```{python}
+#| label: tbl-bem10-deciles
+#| tbl-cap: Book-to-market deciles with all-stock and NYSE breakpoints (BEM Table 10.4)
+#| echo: false
+show_table(pl.concat([
+    univariate_panel(value_panel, "bm", nyse, characteristics)
+    .with_columns(pl.lit(label).alias("Breakpoints"))
+    for nyse, label in [(False, "All stocks"), (True, "NYSE")]
+]).select("Breakpoints", pl.exclude("Breakpoints")))
+```
+
+The equal-weighted high-minus-low spread with all-stock breakpoints is
+1.33% per month, compared with 1.34% in BEM. With value weighting, the
+spread is 0.57% per month in this build.
+
+### Bivariate Portfolio Analysis {#control-for-beta-or-size}
+
+Sort first on a control variable, then on book-to-market within each
+control quintile. This asks whether the return difference between
+high and low book-to-market stocks persists among stocks of similar
+beta or size.
+
+```{python}
+#| label: tbl-bem10-dependent
+#| tbl-cap: Dependent book-to-market sorts controlling for beta or size (BEM Table 10.5)
+#| echo: false
+
+average_portfolios, differences = [], []
+for control, label in [("beta", "Beta"), ("cap", "Market cap")]:
+    portfolios = bivariate_months(panel, control, "bm", nyse=False, dependent=True)
+    for weight in ("EW", "VW"):
+        averages, spreads = bivariate_panel(portfolios, weight, independent=False, spread_only=True)
+        average_portfolios.append(averages.rename({"Target": "Portfolio"}).with_columns(
+            pl.lit("Across control quintiles").alias("Panel"),
+            pl.lit(label).alias("Sort"), pl.lit(weight).alias("Weights"),
+        ))
+        differences.append(spreads.rename({
+            "Control": "Portfolio", "5–1 excess return": "Excess return", "5–1 CAPM alpha": "CAPM alpha",
+        }).with_columns(
+            pl.lit("BM 5–1 within control quintile").alias("Panel"),
+            pl.lit(label).alias("Sort"), pl.lit(weight).alias("Weights"),
+        ))
+show_table(pl.concat(differences + average_portfolios).select(
+    "Panel", "Sort", "Weights", "Portfolio", "Excess return", "CAPM alpha",
+))
+```
+
+With independent sorts, the book-to-market cutoffs are the same in
+each control quintile. Each portfolio is the intersection of the two
+quintile assignments. An average portfolio equally weights the five
+constituent portfolio returns each month.
+
+```{python}
+def value_quintiles(control):
+    portfolios = bivariate_months(panel, control, "bm", nyse=False, dependent=False)
+    return pl.concat([
+        bivariate_panel(portfolios, weight, independent=True)
+        .with_columns(pl.lit(weight).alias("Weights"))
+        for weight in ("EW", "VW")
+    ]).select("Weights", pl.exclude("Weights")).rename({"Target": "BM"})
+```
+
+```{python}
+#| label: tbl-bem10-independent-beta
+#| tbl-cap: Independent book-to-market and beta sorts (BEM Table 10.6)
+#| echo: false
+show_table(value_quintiles("beta"))
+```
+
+```{python}
+#| label: tbl-bem10-independent-size
+#| tbl-cap: Independent book-to-market and size sorts (BEM Table 10.7)
+#| echo: false
+show_table(value_quintiles("cap"))
+```
+
+### Fama–MacBeth Regression Analysis {#famamacbeth-regressions}
+
+Compare the slopes on raw and logged book-to-market with and without
+beta and log size. The explanatory variables are winsorized within
+month at the 0.5th and 99.5th percentiles.
+
+```{python}
+#| label: tbl-bem10-fm
+#| tbl-cap: Fama–MacBeth regressions of returns on book-to-market (BEM Table 10.8)
+#| echo: false
+
+specifications = [
+    [measure, *controls]
+    for measure in ["bm", "log_bm"]
+    for controls in [[], ["beta"], ["log_cap"], ["beta", "log_cap"]]
+]
+show_table(fama_macbeth_table(panel, specifications, measures))
+```
+
+## The Value Factor
+
+HML averages the high-book-to-market portfolios across the two size
+groups and subtracts the average of their low-book-to-market counterparts.
+Using small and big stocks on both sides reduces the weight of the size
+effect in the comparison. We use the published monthly Fama–French HML
+series from July 1926 through December 2012.
+
+```{python}
+#| label: fig-bem10-hml
+#| fig-cap: Cumulative returns on the Fama–French HML factor (BEM Figure 10.1)
+#| echo: false
+from _bem_monthly import plot_factor
+
+plot_factor("hml")
+```
+
+In the Fama–French three-factor model, the intercept measures the
+portfolio's return after accounting for exposures to market, size, and
+value factors. For excess portfolio return $r_{p,t}$, the regression is
+
+$$
+r_{p,t}=\alpha_p+\beta_{p,M}MKT_t+\beta_{p,S}SMB_t+\beta_{p,H}HML_t+\varepsilon_{p,t}.
+$$
+
+## The Fama and French Three-Factor Model
+
+## Summary
+
+## References {.unnumbered}

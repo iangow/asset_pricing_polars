@@ -1,64 +1,59 @@
 # Empirical Asset Pricing with Polars
 
-A local Quarto book, not a Python package. The examples use CRSP CIZ and Fama–French factors from local Parquet: size
-quintiles and factor-adjusted returns, size–momentum sorts and diagnostics,
-Fama–MacBeth regressions, and size–illiquidity sorts. No data or rendered outputs are tracked.
+A Quarto book following Bali, Engle, and Murray's *Empirical Asset Pricing*.
+The rendered chapters use Python Polars, legacy CRSP, Compustat, and
+Fama–French factors.
 
 ## Render
 
-With Quarto and uv, prepare `.env` (below), then render:
+Copy `.env.example` to `.env` and set `DATA_DIR` to your Parquet root.
+An exported `DATA_DIR` takes precedence. [Preliminaries](data.qmd) lists the
+WRDS inputs and their source vintages.
 
 ```sh
 uv sync
 mkdir -p data
 curl -fLsS 'https://fred.stlouisfed.org/graph/fredgraph.csv?id=CPIAUCNS&cosd=1925-12-01&coed=2012-12-01' \
   -o data/cpi-aucns.csv
-QUARTO_PYTHON="$PWD/.venv/bin/python" quarto render --to html
+curl -fLsS 'https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/Data_Library/Historical_Archives/08%202016%20Update/ftp/F-F_Research_Data_Factors_CSV.zip' \
+  | funzip > data/ff3-201607.csv
+curl -fLsS 'https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/ftp_202412/F-F_Momentum_Factor_CSV.zip' \
+  | funzip > data/momentum-202412.csv
 ```
 
-Before rendering, copy `.env.example` to `.env` in the project and set
-`DATA_DIR` to your Parquet root. The book uses `era_pl.load_parquet()` to read `crsp/msf_v2.parquet`,
-`crsp/dsf_v2.parquet`, and `ff/factors_monthly.parquet` under that root.
-The BEM replications use legacy CRSP, including `crsp/dsf.parquet` for
-Chapter 8. The Chapter 7 and Table 9.1 replications also use the public CPI
-CSV fetched above.
-An exported `DATA_DIR` overrides the gitignored `.env`.
-
-Open `_book/index.html` after rendering.
-
-## Numerical comparison
-
-For developers, install the optional reference dependencies with
-`uv sync --group parity`. Clone the reference separately and check out
-commit [ab045b8](https://github.com/FinPhD/AnomalyLab/commit/ab045b8e1aa4de8d4c2c854538013f00f420f2de).
-Set `ANOMALYLAB_CHECKOUT` to its absolute path when rendering:
+Build the reusable stock-month tables from Chapters 8, 9, and 10 in order.
+Run these commands for the initial build and after changing an upstream
+source or calculation. They write `betas.parquet`, `sizes.parquet`, and
+`book_to_market.parquet` under `DATA_DIR/eap/`.
 
 ```sh
-ANOMALYLAB_CHECKOUT="$HOME/git/AnomalyLab" \
+EAP_WRITE_BETAS=1 QUARTO_PYTHON="$PWD/.venv/bin/python" \
+  quarto render beta-replication.qmd --to html
+EAP_WRITE_SIZES=1 QUARTO_PYTHON="$PWD/.venv/bin/python" \
+  quarto render size-replication.qmd --to html
+EAP_WRITE_BOOK_TO_MARKET=1 QUARTO_PYTHON="$PWD/.venv/bin/python" \
+  quarto render value-replication.qmd --to html
+```
+
+Then render the full book and open `_book/index.html`.
+
+```sh
 QUARTO_PYTHON="$PWD/.venv/bin/python" quarto render --to html
 ```
 
-This enables chapter-by-chapter comparisons with the upstream numeric
-results on identical inputs. The examples are not replications of the
-textbook's historical tables. StatsPAI is used in the Fama–MacBeth chapter.
+## CIZ examples
 
-The initial Mac mini check (January 2000 through December 2002) matched all
-215,991 stock-month assignments and all 216 portfolio-months per weighting
-method (five quintiles plus the spread in each of 36 months). The largest
-absolute return difference was 1.67e-16 in decimal units.
-
-The expanded check matched all 12 three-factor alphas and HAC t-statistics,
-both momentum sorts (202,682 memberships per design), and both illiquidity
-sorts (208,501 memberships per design), including their populated return
-cells and spreads. Fama–MacBeth matched all 36 monthly coefficient vectors;
-HAC standard errors agreed after aligning the finite-sample correction.
-Momentum persistence is calendar-aligned rather than shifting by observed rows.
-
+The original CIZ examples remain in `size.qmd`, `momentum.qmd`,
+`fama-macbeth.qmd`, and `illiquidity.qmd` outside the active book
+configuration. They use AnomalyLab as an optional numerical reference.
+The original comparisons used [commit ab045b8](https://github.com/FinPhD/AnomalyLab/commit/ab045b8e1aa4de8d4c2c854538013f00f420f2de).
+The 2000–2002 size check matched all 215,991 stock-month assignments,
+all 216 portfolio-months per weighting method, and all 12 three-factor
+alphas and HAC t-statistics.
 
 ## Publish
 
-Render locally with access to the inputs above, inspect the generated
-`_book/` HTML, then run
+Render locally and inspect the HTML in `_book/`. Push the source and run
 `quarto publish gh-pages --no-render --no-prompt --no-browser`.
-GitHub Pages serves the already-rendered output from `gh-pages`; it does
-not run the CRSP analyses. Do not put licensed data or `.env` on either branch.
+GitHub Pages serves the rendered output. Keep licensed inputs, generated
+Parquet, and `.env` off both public branches.

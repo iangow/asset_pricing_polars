@@ -1,0 +1,46 @@
+```{python}
+#| echo: false
+
+annual_keys = ["permno", "year"]
+msf = (
+    load_parquet("msf", "crsp")
+    .filter(pl.col("date").is_between(pl.date(1987, 12, 1), pl.date(2012, 12, 31)))
+    .with_columns(year=pl.col("date").dt.year())
+)
+capitalizations = (
+    load_parquet("sizes", "eap")
+    .filter(pl.col("month").dt.month() == 12)
+    .select("permno", year=pl.col("month").dt.year(), MktCap="cap", Size="log_cap")
+)
+book_to_market = (
+    load_parquet("book_to_market", "eap")
+    .filter(pl.col("month").dt.month() == 12)
+    .select("permno", year=pl.col("month").dt.year(), BM="bm_raw")
+)
+
+annual_stock_returns = (
+    msf.filter(pl.col("year") >= 1989, pl.col("ret").is_finite())
+    .group_by(annual_keys)
+    .agg(gross_stock=(1 + pl.col("ret")).product())
+)
+annual_risk_free = (
+    load_parquet("factors_monthly", "ff")
+    .with_columns(year=pl.col("date").dt.year())
+    .filter(pl.col("year").is_between(1989, 2012))
+    .group_by("year")
+    .agg(gross_rf=(1 + pl.col("rf")).product(), n=pl.col("rf").count())
+    .filter(pl.col("n") == 12)
+)
+next_year = (
+    annual_stock_returns.join(annual_risk_free, on="year", validate="m:1")
+    .select("permno", year=pl.col("year") - 1,
+            excess=100 * (pl.col("gross_stock") - pl.col("gross_rf")))
+)
+annual_panel = (
+    annual_beta
+    .join(capitalizations, on=annual_keys, how="left", validate="1:1")
+    .join(book_to_market, on=annual_keys, how="left", validate="1:1")
+    .join(next_year, on=annual_keys, how="left", validate="1:1")
+    .collect()
+)
+```

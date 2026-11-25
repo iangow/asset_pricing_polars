@@ -1,15 +1,12 @@
-# About {.unnumbered}
+# Preface {#about .unnumbered}
 
-A worked book for empirical asset pricing using Python Polars and local WRDS
-Parquet files. The chapters build from size portfolios to factor adjustment,
-double sorts, and Fama–MacBeth regression, inspired by Bali, Engle, and Murray's *Empirical Asset Pricing: The Cross Section
-of Stock Returns*. [AnomalyLab](https://github.com/FinPhD/AnomalyLab) is an
-independent numerical reference, not a reader dependency.
+A worked book in Python Polars following Bali, Engle, and Murray's
+*Empirical Asset Pricing: The Cross Section of Stock Returns*. The
+methods chapters use their 1988–2012 annual teaching sample. The
+empirical chapters reconstruct the CRSP sample, estimate market beta,
+and examine the size effect and value premium using legacy CRSP.
+Render with your own copies of the WRDS data.
 
-The methods examples compare implementations on the same inputs. The final
-chapters reconstruct Bali, Engle, and Murray's Chapter 7 results, Chapter 8 tables, and Table 9.1.
-The book does not redistribute WRDS data.
-
-See the [Data chapter](data.qmd) for the inputs. The [WRDS table list](data.qmd#data-vintages) includes their source update dates.
+See [Preliminaries](data.qmd) for the inputs and the [WRDS table list](data.qmd#data-vintages) for their source update dates.
 
 []{#data-vintages}

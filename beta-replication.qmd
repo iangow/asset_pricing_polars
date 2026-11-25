@@ -2,7 +2,7 @@
 jupyter: python3
 ---
 
-# Market beta {#sec-bem-beta}
+# Beta {#sec-bem-beta}
 
 ```{=html}
 <style>
@@ -21,9 +21,9 @@ We reconstruct Tables 8.1–8.6 of Bali, Engle, and Murray (2016),
 The sample consists of CRSP common stocks at the end of each month from
 June 1963 through November 2012. We use legacy CRSP daily and monthly
 stock returns and the corresponding Fama–French factors.
-See the [Data chapter](data.qmd#data-vintages) for the source vintages.
+See [Preliminaries](data.qmd#data-vintages) for the source vintages.
 
-## Estimate market beta
+## Estimating Beta {#estimate-market-beta}
 
 The CAPM predicts that a stock's expected excess return is its market beta
 times the market risk premium, $\mathbb E[r_i]=\beta_i\mathbb E[MKT]$.
@@ -73,3 +73,7 @@ observations. This keeps all beta inputs observable at formation.
 {{< include _bem8-estimation.qmd >}}
 
 {{< include _bem8-tables.qmd >}}
+
+## Summary
+
+## References {.unnumbered}

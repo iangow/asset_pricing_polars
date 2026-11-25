@@ -1,4 +1,4 @@
-## The market factor {#sec-bem7-market}
+## The Market Factor {#sec-bem7-market}
 
 The Fama–French market factor (MKT) is the excess return on a broad
 value-weighted portfolio of U.S. common stocks. CRSP's value-weighted
@@ -54,7 +54,7 @@ market_summary = pl.DataFrame(
 market_summary
 ```
 
-### Cumulative market excess returns
+**[Cumulative market excess returns]{#cumulative-market-excess-returns}**
 
 For comparison with BEM Figure 7.5, we compound the monthly market
 factor, $\prod_{s\leq t}(1+\mathrm{MKT}_s)-1$, and sum its log
@@ -109,7 +109,7 @@ in monthly inputs compound over 1,038 observations. These figures
 use the local factor vintage, not necessarily the one available to
 the authors.
 
-### Drawdowns
+**[Drawdowns]{#drawdowns}**
 
 The compounded line makes early losses look small compared with later
 ones. To measure a drawdown, divide the value at the trough by the
@@ -162,7 +162,7 @@ daily_market.filter(
 ).select("date", market_excess_pct=(100 * pl.col("mktrf")).round(2)).sort("date").collect()
 ```
 
-## The CAPM risk model {#sec-bem7-capm}
+## The CAPM Risk Model {#sec-bem7-capm}
 
 BEM §7.4 introduces the specification rather than reporting another
 empirical table. To adjust a portfolio for its market exposure, regress

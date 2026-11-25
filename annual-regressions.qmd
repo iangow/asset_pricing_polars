@@ -1,0 +1,96 @@
+---
+jupyter: python3
+---
+
+# Fama and Macbeth Regression Analysis {#sec-bem-annual-fm}
+
+This chapter uses BEM's annual methodology sample to illustrate the
+two steps of a Fama–MacBeth regression. The first step fits a
+cross-sectional regression in each formation year. The second averages
+the coefficients across years and estimates their standard errors from
+the time series of annual coefficients.
+
+{{< include _show-table.qmd >}}
+{{< include _bem-annual-betas.qmd >}}
+{{< include _bem2-characteristics.qmd >}}
+
+## Implementation
+
+### Periodic Cross-Sectional Regressions
+
+Compare three univariate regressions with a regression that includes
+beta, size, and book-to-market together. The outcome is the next year's
+excess return in percent. Following BEM, winsorize the regressors at
+0.5% in each year's regression sample. Use six Newey–West lags when
+estimating standard errors for the averages.
+
+```{python}
+import statspai as sp
+from _bem_monthly import clip_tails
+
+specifications = [["Beta"], ["Size"], ["BM"], ["Beta", "Size", "BM"]]
+fits = []
+for terms in specifications:
+    sample = (
+        annual_panel.select("year", "excess", *terms).drop_nulls()
+        .with_columns(clip_tails(pl.col(x)).over("year").alias(x) for x in terms)
+    )
+    fits.append(sp.fama_macbeth("excess ~ " + " + ".join(terms),
+                               data=sample, time="year", lags=6))
+```
+
+```{python}
+#| label: tbl-bem6-periodic
+#| tbl-cap: Annual cross-sectional regressions (BEM Table 6.1)
+#| echo: false
+
+def periodic_results(fit, terms):
+    result = pl.from_pandas(fit.model_info["period_coefs"].reset_index())
+    return result.with_columns(
+        adj_r2=1 - (1 - pl.col("r2")) * (pl.col("nobs") - 1) / (pl.col("nobs") - len(terms) - 1)
+    )
+
+periodic = [periodic_results(fit, terms) for fit, terms in zip(fits, specifications)]
+show_table(pl.concat([
+    frame.with_columns(pl.lit(str(i)).alias("Model"))
+    for i, frame in enumerate(periodic, 1)
+], how="diagonal").select("Model", pl.exclude("Model")))
+```
+
+### Average Cross-Sectional Regression Results
+
+```{python}
+#| label: tbl-bem6-summary
+#| tbl-cap: Average coefficients and Newey–West inference (BEM Table 6.2)
+#| echo: false
+
+rows = [
+    [i, term, fit.params[term], fit.std_errors[term], fit.tvalues[term], f"{fit.pvalues[term]:.3f}"]
+    for i, fit in enumerate(fits, 1) for term in fit.params.index
+]
+show_table(pl.DataFrame(rows, schema=["Model", "Term", "Average", "SE", "t", "p"], orient="row"))
+```
+
+## Interpreting FM Regressions
+
+## Presenting FM Regressions
+
+```{python}
+#| label: tbl-bem6-compact
+#| tbl-cap: Compact Fama–MacBeth regression table (BEM Table 6.3)
+#| echo: false
+
+from _bem_monthly import format_fit
+
+terms = ["Beta", "Size", "BM", "Intercept"]
+columns = {"Term": [*terms, "R²", "Adjusted R²", "n"]}
+for i, (fit, frame) in enumerate(zip(fits, periodic), 1):
+    columns[f"({i})"] = [
+        format_fit(fit, term) if term in fit.params else "" for term in terms
+    ] + [f"{frame['r2'].mean():.3f}", f"{frame['adj_r2'].mean():.3f}", f"{frame['nobs'].mean():.0f}"]
+show_table(pl.DataFrame(columns))
+```
+
+## Summary
+
+## References {.unnumbered}

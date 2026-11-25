@@ -5,15 +5,16 @@ from era_pl import load_parquet
 
 first = pl.date(1963, 6, 1)
 last = pl.date(2012, 11, 1)
+last_estimate = last.dt.offset_by("1mo")
 keys = ["permno", "month"]
 
 names = load_parquet("msenames", "crsp").filter(pl.col("shrcd").is_in([10, 11]))
 universe = (
     names
-    .filter(pl.col("namedt") <= last.dt.month_end(), pl.col("nameendt") >= first)
+    .filter(pl.col("namedt") <= last_estimate.dt.month_end(), pl.col("nameendt") >= first)
     .with_columns(month=pl.date_ranges(
         pl.max_horizontal(pl.col("namedt").dt.month_start(), first),
-        pl.min_horizontal(pl.col("nameendt").dt.month_start(), last),
+        pl.min_horizontal(pl.col("nameendt").dt.month_start(), last_estimate),
         interval="1mo",
     ))
     .explode("month")
@@ -34,7 +35,7 @@ the next-month returns used to evaluate the beta estimates.
 monthly_stock = (
     load_parquet("msf", "crsp")
     .filter(pl.col("date").is_between(
-        first.dt.offset_by("-59mo"), last.dt.offset_by("1mo").dt.month_end()
+        first.dt.offset_by("-59mo"), last_estimate.dt.month_end()
     ))
     .select(
         "permno",
@@ -118,7 +119,7 @@ daily_factors = (
 )
 daily_excess = (
     load_parquet("dsf", "crsp")
-    .filter(pl.col("date").is_between(first.dt.offset_by("-23mo"), last.dt.month_end()))
+    .filter(pl.col("date").is_between(first.dt.offset_by("-23mo"), last_estimate.dt.month_end()))
     .select("permno", "date", "ret")
     .join(daily_factors.lazy(), on="date", validate="m:1")
     .with_columns(retrf=pl.col("ret") - pl.col("rf"))
@@ -251,4 +252,22 @@ for label, (months, minimum) in monthly_windows.items():
 beta_labels = [*daily_windows, *monthly_windows, "SW", "D"]
 window_months = {label: months for label, (months, _) in (daily_windows | monthly_windows).items()}
 window_months.update(SW=12, D=12)
+```
+
+The tables in this chapter end with November 2012 formation, followed by
+December 2012 holding returns. We also estimate betas as of December 2012
+so the [annual summary](summary-statistics.qmd) can use the same estimates
+for its last year. The optional export saves all eleven estimates per
+stock-month to the local `DATA_DIR/eap/betas.parquet` file.
+
+{{< include _write-eap.qmd >}}
+
+```{python}
+#| include: false
+
+if os.environ.get("EAP_WRITE_BETAS") == "1":
+    write_eap_table(betas.select(*keys, *beta_labels), "betas")
+
+betas = betas.filter(pl.col("month") <= last)
+universe = universe.filter(pl.col("month") <= last)
 ```
