@@ -68,7 +68,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="site_libs/quarto-search/fuse.min.js"></script>
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
-<link href="./size-replication.html" rel="next">
+<link href="./crsp-replication.html" rel="next">
 <link href="./fama-macbeth.html" rel="prev">
 <script src="site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
@@ -215,8 +215,14 @@ window.Quarto = {
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="./crsp-replication.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">The CRSP sample and market factor</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="./size-replication.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Replicating the size summary</span></span></a>
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Replicating the size summary</span></span></a>
   </div>
 </li>
     </ul>
@@ -262,7 +268,7 @@ window.Quarto = {
 <section id="from-daily-data-to-monthly-illiquidity" class="level2" data-number="5.1">
 <h2 data-number="5.1" class="anchored" data-anchor-id="from-daily-data-to-monthly-illiquidity"><span class="header-section-number">5.1</span> From daily data to monthly illiquidity</h2>
 <p>Following <a href="https://doi.org/10.1016/S1386-4181(01)00024-6">Amihud (2002)</a>, divide each absolute daily return by daily dollar volume, then average the ratios. Here we average within each stock-month, require 10 usable days, and scale by one million for readability. CRSP’s <a href="https://www.crsp.org/wp-content/uploads/guides/CRSP_US_Stock_%26_Indexes_Database_Guide_Flat_File_Format_2.0.pdf"><code>dlyprcvol</code></a> approximates dollar volume as price times shares traded. We exclude zero volume and use only information through the formation month.</p>
-<div id="acfd6179" class="cell" data-execution_count="1">
+<div id="35e8b046" class="cell" data-execution_count="1">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> polars <span class="im">as</span> pl</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> era_pl <span class="im">import</span> load_parquet</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -292,7 +298,7 @@ window.Quarto = {
 <section id="align-formation-and-holding-months" class="level2" data-number="5.2">
 <h2 data-number="5.2" class="anchored" data-anchor-id="align-formation-and-holding-months"><span class="header-section-number">5.2</span> Align formation and holding months</h2>
 <p>We apply the same formation screen as in the size chapter. Both characteristics are measured in month <span class="math inline">\(t\)</span>; the return is for month <span class="math inline">\(t+1\)</span>. For the AnomalyLab comparison we keep only rows with a usable holding return before sorting. As in the size chapter, this complete-case convention is not a recommended way to form portfolios in a real-time backtest.</p>
-<div id="38424611" class="cell" data-execution_count="2">
+<div id="8bc6357e" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>monthly <span class="op">=</span> (</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    load_parquet(<span class="st">"msf_v2"</span>, <span class="st">"crsp"</span>)</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    .with_columns(month<span class="op">=</span>pl.col(<span class="st">"mthcaldt"</span>).dt.month_start())</span>
@@ -329,7 +335,7 @@ window.Quarto = {
 <section id="sort-independently-and-within-size-groups" class="level2" data-number="5.3">
 <h2 data-number="5.3" class="anchored" data-anchor-id="sort-independently-and-within-size-groups"><span class="header-section-number">5.3</span> Sort independently and within size groups</h2>
 <p>For independent sorts, compute both sets of breakpoints for the full cross-section each month. For dependent sorts, compute the illiquidity breakpoints within each size quintile. The dependent sort therefore compares the relatively illiquid and liquid stocks of similar size. We use the same linear quantile and right-closed convention as AnomalyLab.</p>
-<div id="c8f285db" class="cell" data-execution_count="3">
+<div id="8d2306db" class="cell" data-execution_count="3">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> quintile(data, var, by):</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> pl.col(var)</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    cuts <span class="op">=</span> [x.quantile(q <span class="op">/</span> <span class="dv">5</span>, interpolation<span class="op">=</span><span class="st">"linear"</span>).over(by) <span class="cf">for</span> q <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">6</span>)]</span>
@@ -351,7 +357,7 @@ window.Quarto = {
 <section id="compare-monthly-returns" class="level2" data-number="5.4">
 <h2 data-number="5.4" class="anchored" data-anchor-id="compare-monthly-returns"><span class="header-section-number">5.4</span> Compare monthly returns</h2>
 <p>For each size group, take the monthly return on its most illiquid quintile minus that on its most liquid quintile. The table reports average spreads in percentage points per month.</p>
-<div id="a6564772" class="cell" data-execution_count="4">
+<div id="805c57fc" class="cell" data-execution_count="4">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> portfolio_returns(grouped):</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> (</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>        grouped</span>
@@ -895,8 +901,8 @@ window.Quarto = {
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./size-replication.html" class="pagination-link" aria-label="Replicating the size summary">
-        <span class="nav-page-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Replicating the size summary</span></span> <i class="bi bi-arrow-right-short"></i>
+      <a href="./crsp-replication.html" class="pagination-link" aria-label="The CRSP sample and market factor">
+        <span class="nav-page-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">The CRSP sample and market factor</span></span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>

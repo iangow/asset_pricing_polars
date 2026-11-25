@@ -215,8 +215,14 @@ window.Quarto = {
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="./crsp-replication.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">The CRSP sample and market factor</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="./size-replication.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Replicating the size summary</span></span></a>
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Replicating the size summary</span></span></a>
   </div>
 </li>
     </ul>
@@ -264,7 +270,7 @@ window.Quarto = {
 <h2 data-number="3.1" class="anchored" data-anchor-id="measure-momentum"><span class="header-section-number">3.1</span> Measure momentum</h2>
 <p>For a portfolio held in month <span class="math inline">\(t\)</span>, we measure size at the end of month <span class="math inline">\(t-1\)</span> and compound returns from months <span class="math inline">\(t-12\)</span> through <span class="math inline">\(t-2\)</span> to measure momentum. Skipping month <span class="math inline">\(t-1\)</span> separates the momentum signal from the most recent return. The holding-period outcome is the return in month <span class="math inline">\(t\)</span>.</p>
 <p>Work with the same holding months as in <a href="size.html" class="quarto-xref"><span>Chapter 2</span></a>. For holding month <span class="math inline">\(t\)</span>, market equity is observed at the end of <span class="math inline">\(t-1\)</span>. Momentum compounds returns from <span class="math inline">\(t-12\)</span> through <span class="math inline">\(t-2\)</span>, skipping <span class="math inline">\(t-1\)</span>. The calendar window must have all 11 monthly returns, so it cannot jump over a missing month.</p>
-<div id="9b59ccfa" class="cell" data-execution_count="1">
+<div id="e92cb44c" class="cell" data-execution_count="1">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> polars <span class="im">as</span> pl</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> era_pl <span class="im">import</span> load_parquet</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -323,7 +329,7 @@ window.Quarto = {
 <section id="summarize-the-characteristics" class="level2" data-number="3.2">
 <h2 data-number="3.2" class="anchored" data-anchor-id="summarize-the-characteristics"><span class="header-section-number">3.2</span> Summarize the characteristics</h2>
 <p>We first restrict attention to observations for which both characteristics are available. These descriptive calculations do not use the holding-month return.</p>
-<div id="a3e1b0b8" class="cell" data-execution_count="2">
+<div id="54cafbaa" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>signals <span class="op">=</span> (</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    characteristics</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    .<span class="bu">filter</span>(pl.col(<span class="st">"size"</span>).is_finite() <span class="op">&amp;</span> pl.col(<span class="st">"momentum"</span>).is_finite())</span>
@@ -379,7 +385,7 @@ window.Quarto = {
 </div>
 </div>
 <p>The correlation is cross-sectional in each month; we give each month equal weight. Persistence asks a different question: how closely does a stock’s momentum today resemble its own momentum at an earlier date? Match the dates rather than shifting by a number of rows, so a stock missing a month does not silently appear to have been observed in it.</p>
-<div id="8b3b15f6" class="cell" data-execution_count="3">
+<div id="ccfae180" class="cell" data-execution_count="3">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> momentum_persistence(months):</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    past <span class="op">=</span> signals.select(</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>        <span class="st">"permno"</span>,</span>
@@ -449,7 +455,7 @@ window.Quarto = {
 <h2 data-number="3.3" class="anchored" data-anchor-id="sort-the-stocks-into-portfolios"><span class="header-section-number">3.3</span> Sort the stocks into portfolios</h2>
 <p>An <strong>independent sort</strong> finds size and momentum breakpoints separately in each month. A <strong>dependent sort</strong> finds momentum breakpoints <em>within</em> each size group. The second approach ranks firms against other firms of similar size.</p>
 <p>As in AnomalyLab’s three-group implementation, we use 30th and 70th percentile cutoffs, with observations exactly on a cutoff assigned to the lower group. For this comparison we drop observations with missing holding-month returns before forming groups, as AnomalyLab does. In an investable backtest, form the groups before checking which returns are available, then handle missing returns separately.</p>
-<div id="9ade22e6" class="cell" data-execution_count="4">
+<div id="913ef389" class="cell" data-execution_count="4">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> sort_into_three(data, characteristic, by, group):</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> pl.col(characteristic)</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    low <span class="op">=</span> x.quantile(<span class="fl">0.30</span>, interpolation<span class="op">=</span><span class="st">"linear"</span>).over(by)</span>
@@ -472,7 +478,7 @@ window.Quarto = {
 <section id="compare-the-portfolio-returns" class="level2" data-number="3.4">
 <h2 data-number="3.4" class="anchored" data-anchor-id="compare-the-portfolio-returns"><span class="header-section-number">3.4</span> Compare the portfolio returns</h2>
 <p>For each sort, first compute the nine monthly returns. Then subtract the low-momentum return from the high-momentum return within each size group. The table averages those monthly spreads and reports percentage points per month. Value weights are the market capitalizations used at formation.</p>
-<div id="31dbefc0" class="cell" data-execution_count="5">
+<div id="d93eacd6" class="cell" data-execution_count="5">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> portfolio_returns(groups):</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> (</span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>        groups</span>
@@ -593,7 +599,7 @@ window.Quarto = {
 <h2 data-number="3.5" class="anchored" data-anchor-id="track-changes-in-momentum-groups"><span class="header-section-number">3.5</span> Track changes in momentum groups</h2>
 <p>The persistence correlations summarize how closely the <em>levels</em> of momentum move together. A transition matrix asks instead how often a stock remains in the same <em>group</em>. Assign each stock to a momentum group every month using the same 30th and 70th percentile cutoffs, without conditioning on the holding-month return.</p>
 <p>Match the same stock exactly 12 calendar months later. The percentages are conditional on having a momentum group in both months. We pool stock-month pairs before calculating each row’s shares, rather than averaging monthly shares. A month with more matched stocks therefore gets more weight.</p>
-<div id="2e8160cb" class="cell" data-execution_count="6">
+<div id="8ca13a14" class="cell" data-execution_count="6">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>momentum_groups <span class="op">=</span> (</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    sort_into_three(signals, <span class="st">"momentum"</span>, <span class="st">"month"</span>, <span class="st">"momentum_group"</span>)</span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    .select(<span class="st">"permno"</span>, <span class="st">"month"</span>, <span class="st">"momentum_group"</span>)</span>

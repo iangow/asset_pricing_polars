@@ -186,8 +186,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="./crsp-replication.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">The CRSP sample and market factor</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="./size-replication.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Replicating the size summary</span></span></a>
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Replicating the size summary</span></span></a>
   </div>
 </li>
     </ul>
@@ -233,7 +239,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="read-the-stock-month-panel" class="level2" data-number="2.1">
 <h2 data-number="2.1" class="anchored" data-anchor-id="read-the-stock-month-panel"><span class="header-section-number">2.1</span> Read the stock-month panel</h2>
 <p>Use ordinary U.S.-incorporated common shares of corporations on the NYSE, AMEX, and Nasdaq at <strong>formation</strong>. Use positive market capitalization for both the sort and the portfolio weights. Don’t require a stock to meet the same screen in the holding month: keep its reported CIZ return if present, including a return for a delisting month when available.</p>
-<div id="538a54bf" class="cell" data-execution_count="1">
+<div id="e5da6a83" class="cell" data-execution_count="1">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> polars <span class="im">as</span> pl</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> era_pl <span class="im">import</span> load_parquet</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -279,7 +285,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="sort-within-each-month" class="level2" data-number="2.2">
 <h2 data-number="2.2" class="anchored" data-anchor-id="sort-within-each-month"><span class="header-section-number">2.2</span> Sort within each month</h2>
 <p>Use linear quantiles and right-closed bins, like the reference’s <code>pandas.qcut</code> quintiles. Values equal to a breakpoint stay in the lower bin. Stop rather than silently breaking ties if quantile edges coincide.</p>
-<div id="d398eca5" class="cell" data-execution_count="2">
+<div id="7643d61e" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>probs <span class="op">=</span> [<span class="dv">0</span>, <span class="fl">.2</span>, <span class="fl">.4</span>, <span class="fl">.6</span>, <span class="fl">.8</span>, <span class="dv">1</span>]</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>edges <span class="op">=</span> [<span class="ss">f"q</span><span class="sc">{</span>i<span class="sc">}</span><span class="ss">"</span> <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="bu">len</span>(probs))]</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>cutoffs <span class="op">=</span> complete.group_by(<span class="st">"month"</span>).agg(</span>
@@ -305,7 +311,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="compare-returns" class="level2" data-number="2.3">
 <h2 data-number="2.3" class="anchored" data-anchor-id="compare-returns"><span class="header-section-number">2.3</span> Compare returns</h2>
 <p>Compute one equal-weighted and one value-weighted return per month and quintile. Then take the arithmetic mean over months. The spread is large minus small. Returns in the table are percentages per month; the calculations use decimals.</p>
-<div id="d770658f" class="cell" data-execution_count="3">
+<div id="8f6d7563" class="cell" data-execution_count="3">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>monthly_returns <span class="op">=</span> members.group_by(<span class="st">"month"</span>, <span class="st">"quintile"</span>).agg(</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    equal_weighted<span class="op">=</span>pl.col(<span class="st">"ret"</span>).mean(),</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    value_weighted<span class="op">=</span>(pl.col(<span class="st">"ret"</span>) <span class="op">*</span> pl.col(<span class="st">"size"</span>)).<span class="bu">sum</span>() <span class="op">/</span> pl.col(<span class="st">"size"</span>).<span class="bu">sum</span>(),</span>
@@ -400,7 +406,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="risk-adjusted-returns" class="level2" data-number="2.4">
 <h2 data-number="2.4" class="anchored" data-anchor-id="risk-adjusted-returns"><span class="header-section-number">2.4</span> Risk-adjusted returns</h2>
 <p>A portfolio’s average return includes compensation for exposures to common risk factors. We estimate Fama–French three-factor alphas by regressing each portfolio’s <strong>excess</strong> return on the market excess return, SMB, and HML. Subtract the risk-free rate from each quintile’s return. For the long–short spread the two risk-free rates cancel.</p>
-<div id="aee3210b" class="cell" data-execution_count="4">
+<div id="c7413430" class="cell" data-execution_count="4">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>factors <span class="op">=</span> (</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    load_parquet(<span class="st">"factors_monthly"</span>, <span class="st">"ff"</span>)</span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    .with_columns(month<span class="op">=</span>pl.col(<span class="st">"date"</span>).dt.month_start())</span>
@@ -426,7 +432,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>The intercept is monthly alpha. We use Bartlett Newey–West standard errors with three lags and no small-sample correction, matching the numeric AnomalyLab calculation. The regressions use only 36 months, so these are illustrations of the method rather than a test of the size premium.</p>
-<div id="429dc9cb" class="cell" data-execution_count="5">
+<div id="2904b773" class="cell" data-execution_count="5">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> statsmodels.formula.api <span class="im">as</span> smf</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> factor_data.height <span class="op">==</span> <span class="dv">2</span> <span class="op">*</span> all_returns.height</span>

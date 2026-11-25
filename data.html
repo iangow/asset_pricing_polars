@@ -148,8 +148,14 @@ ul.task-list li input[type="checkbox"] {
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="./crsp-replication.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">The CRSP sample and market factor</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="./size-replication.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Replicating the size summary</span></span></a>
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Replicating the size summary</span></span></a>
   </div>
 </li>
     </ul>
@@ -193,7 +199,7 @@ ul.task-list li input[type="checkbox"] {
 <section id="data-vintages" class="level2" data-number="1.1">
 <h2 data-number="1.1" class="anchored" data-anchor-id="data-vintages"><span class="header-section-number">1.1</span> WRDS tables</h2>
 <p>The table lists the inputs used in this build. The source update date comes from the metadata embedded in each Parquet file, read with <a href="https://iangow.github.io/db2pq/">db2pq</a>. It is not the sample end date or the date the file was downloaded.</p>
-<div id="cce32147" class="cell" data-execution_count="1">
+<div id="f723acdf" class="cell" data-execution_count="1">
 <div class="cell-output cell-output-display cell-output-markdown">
 <table class="caption-top table table-sm table-striped small">
 <colgroup>
@@ -226,30 +232,48 @@ ul.task-list li input[type="checkbox"] {
 <tr class="odd">
 <td style="text-align: left;"><code>ff.factors_monthly</code></td>
 <td style="text-align: left;">Fama–French</td>
-<td style="text-align: left;">Monthly factors and the risk-free rate for portfolio alphas.</td>
+<td style="text-align: left;">Monthly factors and the risk-free rate for alphas and market checks.</td>
 <td style="text-align: left;">2026-05-23</td>
 </tr>
 <tr class="even">
+<td style="text-align: left;"><code>ff.factors_daily</code></td>
+<td style="text-align: left;">Fama–French</td>
+<td style="text-align: left;">Daily market excess returns for Chapter 7 crash checks.</td>
+<td style="text-align: left;">2026-06-16</td>
+</tr>
+<tr class="odd">
 <td style="text-align: left;"><code>crsp.msf</code></td>
 <td style="text-align: left;">CRSP legacy (SIZ)</td>
-<td style="text-align: left;">Alternate prices and shares outstanding for Table 9.1.</td>
+<td style="text-align: left;">Legacy prices, shares outstanding, and monthly returns.</td>
+<td style="text-align: left;">2025-02-08</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>crsp.msenames</code></td>
+<td style="text-align: left;">CRSP legacy (SIZ)</td>
+<td style="text-align: left;">Historical share codes, exchanges, and industries.</td>
 <td style="text-align: left;">2025-02-08</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;"><code>crsp.msenames</code></td>
+<td style="text-align: left;"><code>crsp.msedelist</code></td>
 <td style="text-align: left;">CRSP legacy (SIZ)</td>
-<td style="text-align: left;">Historical share codes for the Table 9.1 sample.</td>
+<td style="text-align: left;">Delisting returns and codes for the Chapter 7 return tables.</td>
+<td style="text-align: left;">2025-02-08</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>crsp.msi</code></td>
+<td style="text-align: left;">CRSP legacy (SIZ)</td>
+<td style="text-align: left;">CRSP value-weighted index for the market factor comparison.</td>
 <td style="text-align: left;">2025-02-08</td>
 </tr>
 </tbody>
 </table>
 </div>
 </div>
-<p>Most examples use CRSP’s newer CIZ files. The <a href="./size-replication.html">Table 9.1 replication</a> instead uses legacy CRSP (SIZ), the format available when Bali, Engle, and Murray wrote the book. The local legacy exports are newer than their original snapshot. CIZ is not a drop-in substitute for legacy monthly returns: the two formats differ, for example, in the timing of dividend reinvestment. See <a href="https://www.crsp.org/crsp_pdf/crsp-us-stock-indexes-databases-siz-to-ciz-executive-summary/">CRSP’s comparison of the formats</a>.</p>
+<p>Most examples use CRSP’s newer CIZ files. The <a href="./crsp-replication.html">Chapter 7 replication</a> and <a href="./size-replication.html">Table 9.1 replication</a> instead use legacy CRSP (SIZ), the format available when Bali, Engle, and Murray wrote the book. The local legacy exports are newer than their original snapshot. CIZ is not a drop-in substitute for legacy monthly returns: the two formats differ, for example, in the timing of dividend reinvestment. See <a href="https://www.crsp.org/crsp_pdf/crsp-us-stock-indexes-databases-siz-to-ciz-executive-summary/">CRSP’s comparison of the formats</a>.</p>
 </section>
 <section id="other-input" class="level2" data-number="1.2">
 <h2 data-number="1.2" class="anchored" data-anchor-id="other-input"><span class="header-section-number">1.2</span> Other input</h2>
-<p>The Table 9.1 replication also uses the <a href="https://fred.stlouisfed.org/series/CPIAUCNS">BLS all-items CPI for urban consumers, not seasonally adjusted</a>, from FRED, to express market capitalizations in December 2012 dollars. This file does not come from WRDS.</p>
+<p>Both BEM replication chapters also use the <a href="https://fred.stlouisfed.org/series/CPIAUCNS">BLS all-items CPI for urban consumers, not seasonally adjusted</a>, from FRED, to express market capitalizations in December 2012 dollars. This file does not come from WRDS.</p>
 
 
 </section>

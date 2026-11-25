@@ -215,8 +215,14 @@ window.Quarto = {
 </li>
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="./crsp-replication.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">The CRSP sample and market factor</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="./size-replication.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Replicating the size summary</span></span></a>
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Replicating the size summary</span></span></a>
   </div>
 </li>
     </ul>
@@ -261,7 +267,7 @@ window.Quarto = {
 <h2 data-number="4.1" class="anchored" data-anchor-id="prepare-the-monthly-panel"><span class="header-section-number">4.1</span> Prepare the monthly panel</h2>
 <p>We use market equity measured at formation and momentum from months <span class="math inline">\(t-12\)</span> through <span class="math inline">\(t-2\)</span> to explain the return in holding month <span class="math inline">\(t\)</span>.</p>
 <p>Work with the same holding months as in <a href="size.html" class="quarto-xref"><span>Chapter 2</span></a>. For holding month <span class="math inline">\(t\)</span>, market equity is observed at the end of <span class="math inline">\(t-1\)</span>. Momentum compounds returns from <span class="math inline">\(t-12\)</span> through <span class="math inline">\(t-2\)</span>, skipping <span class="math inline">\(t-1\)</span>. The calendar window must have all 11 monthly returns, so it cannot jump over a missing month.</p>
-<div id="35c177d5" class="cell" data-execution_count="1">
+<div id="d7f1d905" class="cell" data-execution_count="1">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> polars <span class="im">as</span> pl</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> era_pl <span class="im">import</span> load_parquet</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -316,7 +322,7 @@ window.Quarto = {
 <span id="cb1-52"><a href="#cb1-52" aria-hidden="true" tabindex="-1"></a>    .join(rets, on<span class="op">=</span>[<span class="st">"permno"</span>, <span class="st">"month"</span>], how<span class="op">=</span><span class="st">"left"</span>, validate<span class="op">=</span><span class="st">"1:1"</span>)</span>
 <span id="cb1-53"><a href="#cb1-53" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div id="0cf225a9" class="cell" data-execution_count="2">
+<div id="1cc02be5" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> statspai <span class="im">as</span> sp</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>fm_data <span class="op">=</span> (</span>
@@ -332,7 +338,7 @@ window.Quarto = {
 <section id="estimate-the-two-step-regression" class="level2" data-number="4.2">
 <h2 data-number="4.2" class="anchored" data-anchor-id="estimate-the-two-step-regression"><span class="header-section-number">4.2</span> Estimate the two-step regression</h2>
 <p>Set <code>time="month"</code> to identify the cross-sections. <code>lags=3</code> applies a Newey–West adjustment to the <strong>monthly coefficient series</strong>, not to each cross-sectional regression. The estimates are the same in both columns; the standard errors need not be.</p>
-<div id="32878d27" class="cell" data-execution_count="3">
+<div id="95994957" class="cell" data-execution_count="3">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>fm <span class="op">=</span> sp.fama_macbeth(<span class="st">"ret ~ log_size + momentum"</span>, data<span class="op">=</span>fm_data, time<span class="op">=</span><span class="st">"month"</span>)</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>fm_nw <span class="op">=</span> sp.fama_macbeth(</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"ret ~ log_size + momentum"</span>, data<span class="op">=</span>fm_data, time<span class="op">=</span><span class="st">"month"</span>, lags<span class="op">=</span><span class="dv">3</span></span>
