@@ -18,23 +18,15 @@ screen in the holding month: keep its reported CIZ return if present, including
 a return for a delisting month when available.
 
 ```{python}
-import os
-from datetime import date
-from pathlib import Path
-
 import polars as pl
-from dotenv import load_dotenv
+from era_pl import load_parquet
 
-load_dotenv(Path(".env"))
-if not (data_dir := os.environ.get("DATA_DIR")):
-    raise RuntimeError("Set DATA_DIR in the project .env or in your shell.")
-root = Path(data_dir).expanduser()
-first = date(2000, 1, 1)
-last = date(2002, 12, 1)
+first = pl.date(2000, 1, 1)
+last = pl.date(2002, 12, 1)
 monthly = (
-    pl.scan_parquet(root / "crsp" / "msf_v2.parquet")
+    load_parquet("msf_v2", "crsp")
     .with_columns(month=pl.col("mthcaldt").dt.month_start())
-    .filter(pl.col("month").is_between(date(1999, 12, 1), last))
+    .filter(pl.col("month").is_between(first.dt.offset_by("-1mo"), last))
 )
 stock_months = monthly.select("permno", "month")
 assert stock_months.collect().is_duplicated().sum() == 0, "Duplicate stock-months"
@@ -54,11 +46,11 @@ formation = (
     .select(
         "permno",
         pl.col("month").dt.offset_by("1mo").alias("month"),
-        pl.col("mthcap").cast(pl.Float64).alias("size"),
+        pl.col("mthcap").alias("size"),
     )
     .filter(pl.col("month").is_between(first, last))
 )
-returns = monthly.select("permno", "month", pl.col("mthret").cast(pl.Float64).alias("ret"))
+returns = monthly.select("permno", "month", pl.col("mthret").alias("ret"))
 panel = formation.join(returns, on=["permno", "month"], how="left").collect()
 complete = panel.filter(pl.col("ret").is_finite())
 print(f"{panel.height:,} formation observations; {complete.height:,} with a usable return.")
@@ -139,8 +131,11 @@ No factor adjustment or inference is applied in this chapter.
 #| include: false
 
 # Optional parity check, against an unmodified upstream checkout.
+import os
+
 if checkout := os.environ.get("ANOMALYLAB_CHECKOUT"):
     import sys
+    from pathlib import Path
 
     import numpy as np
     import pandas as pd

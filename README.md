@@ -13,7 +13,7 @@ QUARTO_PYTHON="$PWD/.venv/bin/python" quarto render --to html
 ```
 
 Before rendering, copy `.env.example` to `.env` in the project and set
-`DATA_DIR` to your Parquet root. The book reads `$DATA_DIR/crsp/msf_v2.parquet`.
+`DATA_DIR` to your Parquet root. The book reads `$DATA_DIR/crsp/msf_v2.parquet` with `era_pl.load_parquet()`.
 An exported `DATA_DIR` overrides the gitignored `.env`.
 
 Open `_book/index.html` after rendering.
