@@ -31,6 +31,7 @@ Use six Newey–West lags when estimating standard errors for the averages.
 import statspai as sp
 
 specifications = [["Beta"], ["Size"], ["BM"], ["Beta", "Size", "BM"]]
+term_labels = {"BM": "Book-to-market"}
 fits = []
 for terms in specifications:
     sample = (
@@ -58,7 +59,7 @@ periodic = [periodic_results(fit, terms) for fit, terms in zip(fits, specificati
 show_table(pl.concat([
     frame.with_columns(pl.lit(str(i)).alias("Model"))
     for i, frame in enumerate(periodic, 1)
-], how="diagonal").select("Model", pl.exclude("Model")))
+], how="diagonal").select("Model", pl.exclude("Model")).rename(term_labels))
 ```
 
 ### Average Cross-Sectional Regression Results
@@ -69,7 +70,8 @@ show_table(pl.concat([
 #| echo: false
 
 rows = [
-    [i, term, fit.params[term], fit.std_errors[term], fit.tvalues[term], f"{fit.pvalues[term]:.3f}"]
+    [i, term_labels.get(term, term), fit.params[term], fit.std_errors[term],
+     fit.tvalues[term], f"{fit.pvalues[term]:.3f}"]
     for i, fit in enumerate(fits, 1) for term in fit.params.index
 ]
 show_table(pl.DataFrame(rows, schema=["Model", "Term", "Average", "SE", "t", "p"], orient="row"))
@@ -101,7 +103,8 @@ The six-lag adjustment changes the significance decision at the 5% level in this
 from eap_pl import format_fit
 
 terms = ["Beta", "Size", "BM", "Intercept"]
-columns = {"Term": [*terms, "R²", "Adjusted R²", "n"]}
+labels = [term_labels.get(term, term) for term in terms]
+columns = {"Term": [*labels, "R²", "Adjusted R²", "n"]}
 for i, (fit, frame) in enumerate(zip(fits, periodic), 1):
     columns[f"({i})"] = [
         format_fit(fit, term) if term in fit.params else "" for term in terms

@@ -117,7 +117,7 @@ value_panel = (
 #| echo: false
 
 show_table(mean_cross_sections(value_panel, {
-    "bm": "BM", "log_bm": "ln BM", "be_real": "Book equity",
+    "bm": "`bm`", "log_bm": "`log_bm`", "be_real": "Book equity",
     "me_real": "December market equity", "cap": "Current market cap",
 }))
 ```
@@ -128,12 +128,12 @@ Availability depends on finding both a fiscal book value and a prior December ca
 
 The Pearson correlations use 0.5% winsorization at both ends of each pair's monthly sample.
 The Spearman correlations use the original ranks.
-Since the logarithm preserves order for positive ratios, BM and ln BM have a Spearman correlation of one and the same rank correlation with each other variable.
+Since the logarithm preserves order for positive ratios, `bm` and `log_bm` have a Spearman correlation of one and the same rank correlation with each other variable.
 
 ```{python}
 from eap_pl import correlation_matrix, period_correlations, persistence
 
-measures = {"bm": "BM", "log_bm": "ln BM", "beta": "Beta", "log_cap": "Size"}
+measures = {"bm": "`bm`", "log_bm": "`log_bm`", "beta": "Beta", "log_cap": "Size"}
 corr = period_correlations(value_panel, measures, "month").select(pl.exclude("month").mean())
 ```
 
@@ -154,7 +154,7 @@ As in the annual persistence analysis, winsorize each side after matching the sa
 #| label: tbl-bem10-persistence
 #| tbl-cap: Persistence of book-to-market (BEM Table 10.3)
 #| echo: false
-show_table(persistence(value_panel, {"bm": "BM", "log_bm": "ln BM"}, [12, 24, 36, 48, 60, 120]))
+show_table(persistence(value_panel, {"bm": "`bm`", "log_bm": "`log_bm`"}, [12, 24, 36, 48, 60, 120]))
 ```
 
 ## Book-to-Market Ratio and Stock Returns {#book-to-market-and-future-returns}
@@ -171,7 +171,7 @@ Returns and CAPM alphas are percentages per month, and $t$-statistics use six Ne
 from eap_pl import bivariate_months, bivariate_panel, fama_macbeth_table, univariate_panel
 
 characteristics = [
-    pl.col("bm").mean().alias("BM"), pl.col("log_bm").mean().alias("ln BM"),
+    pl.col("bm").mean().alias("`bm`"), pl.col("log_bm").mean().alias("`log_bm`"),
     pl.col("cap").mean().alias("Market cap"), pl.col("beta").mean().alias("Beta"),
     (100 * (pl.col("exchcd") == 1).fill_null(False).mean()).alias("% NYSE"),
     pl.len().alias("Stocks"),
@@ -213,7 +213,7 @@ for control, label in [("beta", "Beta"), ("cap", "Market cap")]:
         differences.append(spreads.rename({
             "Control": "Portfolio", "5–1 excess return": "Excess return", "5–1 CAPM alpha": "CAPM alpha",
         }).with_columns(
-            pl.lit("BM 5–1 within control quintile").alias("Panel"),
+            pl.lit("`bm` 5–1 within control quintile").alias("Panel"),
             pl.lit(label).alias("Sort"), pl.lit(weight).alias("Weights"),
         ))
 show_table(pl.concat(differences + average_portfolios).select(
@@ -232,7 +232,7 @@ def value_quintiles(control):
         bivariate_panel(portfolios, weight, independent=True)
         .with_columns(pl.lit(weight).alias("Weights"))
         for weight in ("EW", "VW")
-    ]).select("Weights", pl.exclude("Weights")).rename({"Target": "BM"})
+    ]).select("Weights", pl.exclude("Weights")).rename({"Target": "`bm`"})
 ```
 
 ```{python}
@@ -269,13 +269,13 @@ show_table(fama_macbeth_table(panel, specifications, measures))
 
 ## The Value Factor
 
-HML averages the high-book-to-market portfolios across the two size groups and subtracts the average of their low-book-to-market counterparts.
+`hml` averages the high-book-to-market portfolios across the two size groups and subtracts the average of their low-book-to-market counterparts.
 Using small and big stocks on both sides reduces the weight of the size effect in the comparison.
-We use the published monthly Fama–French HML series from July 1926 through December 2012.
+We use the published monthly Fama–French `hml` series from July 1926 through December 2012.
 
 ```{python}
 #| label: fig-bem10-hml
-#| fig-cap: Cumulative returns on the Fama–French HML factor (BEM Figure 10.1)
+#| fig-cap: Cumulative returns on the Fama–French `hml` factor (BEM Figure 10.1)
 #| echo: false
 from eap_pl import plot_factor
 

@@ -29,7 +29,7 @@ from eap_pl import build_book_to_market, build_momentum, build_sizes, monthly_pa
 first = pl.date(1963, 6, 1)
 last = pl.date(2012, 11, 1)
 keys = ["permno", "month"]
-lag_labels = {"rev": "Rev", **{f"lag{k}": f"R(t−{k})" for k in range(1, 12)}}
+lag_labels = {"rev": "`rev`", **{f"lag{k}": f"R(t−{k})" for k in range(1, 12)}}
 stock_returns = (
     load_parquet("msf", "crsp")
     .filter(pl.col("date").is_between(first.dt.offset_by("-11mo"), last.dt.month_end()))
@@ -71,7 +71,7 @@ Spearman correlations use the original ranks.
 
 from eap_pl import mean_cross_sections
 
-show_table(mean_cross_sections(panel, {"rev": "Rev"}))
+show_table(mean_cross_sections(panel, {"rev": "`rev`"}))
 ```
 
 ```{python}
@@ -80,7 +80,7 @@ show_table(mean_cross_sections(panel, {"rev": "Rev"}))
 
 from eap_pl import period_correlations
 
-controls = {"beta": "Beta", "log_cap": "Size", "bm": "BM", "mom": "Mom"}
+controls = {"beta": "Beta", "log_cap": "Size", "bm": "`bm`", "mom": "`mom`"}
 correlations = (
     period_correlations(panel, ["rev", *controls], "month")
     .select(pl.exclude("month").mean())
@@ -159,7 +159,7 @@ def portfolio_statistics(series, weight, specifications):
     }
 
 
-characteristics = {"rev": "Rev", "beta": "Beta", "cap": "MktCap (millions)", "bm": "BM", "mom": "Mom"}
+characteristics = {"rev": "`rev`", "beta": "Beta", "cap": "Market cap (millions)", "bm": "`bm`", "mom": "`mom`"}
 deciles = [str(i) for i in range(1, 11)]
 metrics = [pl.col(column).mean().alias(label) for column, label in characteristics.items()]
 decile_returns = {}
@@ -238,7 +238,7 @@ The average column equally weights the control quintiles within each month befor
 ```{python}
 from eap_pl import bivariate_months
 
-sort_variables = {"beta": "Beta", "cap": "MktCap", "bm": "BM", "mom": "Mom"}
+sort_variables = {"beta": "Beta", "cap": "Market cap", "bm": "`bm`", "mom": "`mom`"}
 quintiles = [str(i) for i in range(1, 6)]
 
 
@@ -252,7 +252,7 @@ def two_way_results(monthly, weight, specifications, *, show_cells=False):
     if show_cells:
         for target in range(1, 6):
             rows.append({
-                "Statistic": f"Rev {target}",
+                "Statistic": f"`rev` {target}",
                 **{label: f'{cell.filter(pl.col("target") == target)[weight].mean():.2f}'
                    for label, cell in series.items()},
             })
@@ -320,8 +320,8 @@ show_table(pl.concat([
 ### Controlling for Reversal
 
 Now examine beta, size, book-to-market, and momentum spreads within reversal quintiles.
-For size spreads, omit SMB from the factor model.
-For book-to-market spreads, omit HML.
+For size spreads, omit `smb` from the factor model.
+For book-to-market spreads, omit `hml`.
 For momentum spreads, use the three-factor model.
 For the dependent sort, follow BEM's discussion and the heading of Table 12.8 and set the second breakpoints within each reversal quintile.
 
@@ -329,8 +329,8 @@ For the dependent sort, follow BEM's discussion and the heading of Table 12.8 an
 def spreads_within_reversal(sorts):
     alpha = {
         "beta": {"FFC α": models["FFC α"]},
-        "cap": {"FFC α (excl. SMB)": "mkt + hml + mom_factor"},
-        "bm": {"FFC α (excl. HML)": "mkt + smb + mom_factor"},
+        "cap": {"FFC α (excl. `smb`)": "mkt + hml + mom_factor"},
+        "bm": {"FFC α (excl. `hml`)": "mkt + smb + mom_factor"},
         "mom": {"FF α": models["FF α"]},
     }
     results = []
@@ -381,7 +381,7 @@ Winsorize the regressors at 0.5% in each tail within each formation month and us
 
 from eap_pl import fama_macbeth_table
 
-terms = {"rev": "Rev", **controls}
+terms = {"rev": "`rev`", **controls}
 specifications = [["rev"], *[["rev", term] for term in controls], list(terms)]
 show_table(fama_macbeth_table(panel, specifications, terms, digits=3))
 ```
@@ -407,7 +407,7 @@ show_table(fama_macbeth_table(panel, specifications, terms, digits=3))
 ```
 
 In the joint regression with all twelve returns and no other controls, the return from exactly one year before the outcome month has a coefficient of 0.019.
-With all controls included, the coefficients on months $t-2$ through $t-11$ are statistically indistinguishable from zero at the 5% level, and the coefficients on Rev and $R_{t-1}$ remain negative.
+With all controls included, the coefficients on months $t-2$ through $t-11$ are statistically indistinguishable from zero at the 5% level, and the coefficients on `rev` and $R_{t-1}$ remain negative.
 
 ## The Short-Term Reversal Factor
 
@@ -452,7 +452,7 @@ assert reversal_factor["date"].equals(
     pl.date_range(pl.date(1926, 7, 1), pl.date(2012, 12, 1), "1mo", eager=True)
 )
 assert reversal_factor.select(pl.col("str").is_finite().fill_null(False).all()).item()
-plot_cumulative_returns(reversal_factor, y_label="Cumulative STR return")
+plot_cumulative_returns(reversal_factor, y_label="Cumulative reversal factor return")
 ```
 
 The archived series compounds to 121,099% and reaches a cumulative log return of 710.00%.

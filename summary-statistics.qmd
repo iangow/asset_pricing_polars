@@ -179,7 +179,9 @@ table_2_3 = (
     pl.DataFrame({"Measure": variables}).join(all_stats, on="Measure", maintain_order="left")
     .with_columns(
         pl.col("n").round().cast(pl.Int64),
-        pl.col("Measure").replace({"excess": "Next-year excess return (%)"}),
+        pl.col("Measure").replace({
+            "MktCap": "Market cap", "BM": "Book-to-market", "excess": "Next-year excess return (%)",
+        }),
     )
 )
 show_table(table_2_3)

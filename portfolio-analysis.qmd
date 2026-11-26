@@ -48,6 +48,7 @@ factor_models = {
     "FF": ["MKT", "SMB", "HML"],
     "FFC": ["MKT", "SMB", "HML", "MOM"],
 }
+variable_labels = {"Beta": "Beta", "MktCap": "Market cap", "BM": "Book-to-market"}
 
 
 def fit_portfolios(returns, columns, model="Excess return"):
@@ -74,12 +75,13 @@ def show_holding_year(returns):
 
 
 def target_label(variable, group):
-    return f"{variable} " + {5: "4–1", 6: "average"}.get(group, str(group))
+    return f"{variable_labels[variable]} " + {5: "4–1", 6: "average"}.get(group, str(group))
 
 
 def show_grid(cells, control, target, *, holding=False):
-    headings = {column: f"{control} {column}" for column in control_ports}
-    headings.update({"Diff": f"{control} 3–1", "Avg": f"{control} average"})
+    control_label = variable_labels[control]
+    headings = {column: f"{control_label} {column}" for column in control_ports}
+    headings.update({"Diff": f"{control_label} 3–1", "Avg": f"{control_label} average"})
     table = cells.with_columns(
         pl.col("target").replace_strict(
             {group: target_label(target, group) for group in range(1, 7)}
@@ -115,7 +117,8 @@ def show_grid_fits(fits, *, dependent=False):
 def show_spreads(results, label):
     columns = [*control_ports, "Avg", "Diff"]
     rows = [
-        [variable, statistic, *[format_fit(fits[5, model][column], "Intercept") for column in columns]]
+        [variable_labels[variable], statistic,
+         *[format_fit(fits[5, model][column], "Intercept") for column in columns]]
         for variable, fits in results.items()
         for model, statistic in [("Excess return", "Excess return"), ("FFC", "FFC alpha")]
     ]
@@ -126,7 +129,7 @@ def show_spreads(results, label):
 
 def show_average_portfolios(results, label):
     rows = [
-        [variable, statistic,
+        [variable_labels[variable], statistic,
          *[format_fit(fits[group, model]["Avg"], "Intercept") for group in range(1, 6)]]
         for variable, fits in results.items()
         for model, statistic in [("Excess return", "Excess return"), ("FFC", "FFC alpha")]
@@ -338,7 +341,7 @@ rows = []
 for variable in characteristics:
     series = univariate_series(beta_characteristics, variable)
     spread_fit = fit_portfolios(series, ["7–1"])["7–1"]
-    rows.append([variable, *series.select(pl.exclude("year").mean()).row(0),
+    rows.append([variable_labels[variable], *series.select(pl.exclude("year").mean()).row(0),
                  spread_fit.tvalues["Intercept"]])
 show_table(pl.DataFrame(rows, schema=["Outcome", *univariate_columns, "7–1 t-statistic"], orient="row"))
 ```
@@ -372,7 +375,7 @@ for variable in ["MktCap", "BM"]:
 #| echo: false
 
 show_table(pl.DataFrame(
-    [[variable, *[format_fit(fit, "Intercept") for fit in fits.values()]]
+    [[variable_labels[variable], *[format_fit(fit, "Intercept") for fit in fits.values()]]
      for variable, fits in univariate_means.items()],
     schema=["Sort variable", *univariate_columns], orient="row",
 ))
@@ -390,18 +393,17 @@ Book-to-market has its highest return in the highest-ratio portfolio.
 
 from plotnine_polars import aes, element_blank
 
-sort_variables = {"Beta": "Beta", "MktCap": "Market cap", "BM": "Book-to-market"}
 portfolio_returns = pl.DataFrame({
     "portfolio": range(1, 8),
     **{
         name: [univariate_means[variable][p].params["Intercept"] for p in portfolio_columns]
-        for variable, name in sort_variables.items()
+        for variable, name in variable_labels.items()
     },
 })
 (
     portfolio_returns
     .unpivot(index="portfolio", variable_name="characteristic", value_name="excess")
-    .with_columns(pl.col("characteristic").cast(pl.Enum(list(sort_variables.values()))))
+    .with_columns(pl.col("characteristic").cast(pl.Enum(list(variable_labels.values()))))
     .ggplot(aes(x="portfolio", y="excess", color="characteristic"))
     .geom_line()
     .geom_point(aes(shape="characteristic"))
@@ -448,8 +450,9 @@ For a zero-cost spread, the outcome is the difference between the two legs' exce
 rows = []
 for model, terms in factor_models.items():
     fits = beta_means if model == "Excess return" else fit_portfolios(beta_ew, univariate_columns, model)
+    intercept_label = "Mean" if model == "Excess return" else "Alpha"
     for term in ["Intercept", *terms]:
-        label = ("Mean" if model == "Excess return" else "Alpha") if term == "Intercept" else term
+        label = intercept_label if term == "Intercept" else f"`{term.lower()}`"
         rows.append([model, label, *[format_fit(fit, term) for fit in fits.values()]])
 show_table(pl.DataFrame(rows, schema=["Model", "Coefficient", *univariate_columns], orient="row"))
 ```
@@ -499,8 +502,8 @@ independent, first_breaks, second_breaks = bivariate_sort("Beta", "MktCap")
 #| echo: false
 
 show_table(first_breaks.join(second_breaks, on="year", validate="1:1").sort("year").rename({
-    "year": "Year", "30%": "Beta 30%", "70%": "Beta 70%", "25%": "MktCap 25%",
-    "50%": "MktCap 50%", "75%": "MktCap 75%",
+    "year": "Year", "30%": "Beta 30%", "70%": "Beta 70%", "25%": "Market cap 25%",
+    "50%": "Market cap 50%", "75%": "Market cap 75%",
 }))
 ```
 
@@ -753,7 +756,7 @@ show_table(
     .sort("year", "control")
     .select("year", "control", "30%", "70%", "25%", "50%", "75%")
     .rename({"year": "Year", "control": "Beta group", "30%": "Beta 30%", "70%": "Beta 70%",
-             "25%": "MktCap 25%", "50%": "MktCap 50%", "75%": "MktCap 75%"})
+             "25%": "Market cap 25%", "50%": "Market cap 50%", "75%": "Market cap 75%"})
 )
 ```
 
@@ -869,7 +872,7 @@ rows = [
 ]
 rows += [
     [label, *[format_fit(dependent_fits[5, model][column], "Intercept") for column in columns]]
-    for label, model in [("MktCap 4–1", "Excess return"), ("FFC alpha", "FFC")]
+    for label, model in [("Market cap 4–1", "Excess return"), ("FFC alpha", "FFC")]
 ]
 show_table(pl.DataFrame(rows, schema=["Portfolio", "Beta 1", "Beta 2", "Beta 3", "Beta average"],
                         orient="row"))

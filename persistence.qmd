@@ -5,7 +5,7 @@ jupyter: python3
 # Persistence Analysis {#sec-bem-persistence}
 
 In Chapter 4, @bali2016 measure persistence by correlating a stock characteristic with its own future value across stocks.
-We use the December 1988–2012 panel from @sec-summary-statistics, including its signed book-to-market ratio (BM).
+We use the December 1988–2012 panel from @sec-summary-statistics, including its signed book-to-market ratio.
 
 {{< include _show-table.qmd >}}
 
@@ -138,7 +138,7 @@ The set of stocks with valid measurements at both dates can also change with the
 #| tbl-cap: Average persistence of beta, size, and book-to-market (BEM Table 4.3)
 #| echo: false
 
-show_table(average.rename({"Lag": "Lag (years)"}))
+show_table(average.rename({"Lag": "Lag (years)", "BM": "Book-to-market"}))
 ```
 
 @fig-bem4-averages plots the averages from @tbl-bem4-characteristics.

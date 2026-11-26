@@ -31,8 +31,8 @@ keys = ["permno", "month"]
 first = pl.date(1963, 6, 1)
 last = pl.date(2012, 11, 1)
 minimum_days = {1: 15, 3: 50, 6: 100, 12: 200}
-raw = {f"illiq{k}": f"Illiq {k}M" for k in minimum_days}
-logged = {f"log_{term}": f"ln {label}" for term, label in raw.items()}
+raw = {f"illiq{k}": f"`illiq{k}`" for k in minimum_days}
+logged = {f"log_{term}": f"`log_{term}`" for term in raw}
 measures = raw | logged
 
 sizes = build_sizes()
@@ -126,7 +126,7 @@ For Pearson correlations we winsorize each variable at the 0.5th and 99.5th perc
 
 from eap_pl import correlation_matrix, period_correlations
 
-controls = {"beta": "Beta", "log_cap": "Size", "bm": "BM", "mom": "Mom", "rev": "Rev"}
+controls = {"beta": "Beta", "log_cap": "Size", "bm": "`bm`", "mom": "`mom`", "rev": "`rev`"}
 variables = measures | controls
 correlations = period_correlations(panel, list(variables), "month")
 show_table(correlation_matrix(correlations.select(pl.exclude("month").mean()).row(0, named=True), variables))
@@ -206,8 +206,8 @@ We form monthly deciles using all eligible stocks with each measure, then comput
 ```{python}
 deciles = [str(i) for i in range(1, 11)]
 characteristics = {"illiq12": raw["illiq12"], "log_illiq12": logged["log_illiq12"],
-                   "beta": "Beta", "cap": "MktCap ($ millions)",
-                   "bm": "BM", "mom": "Mom", "rev": "Rev"}
+                   "beta": "Beta", "cap": "Market cap ($ millions)",
+                   "bm": "`bm`", "mom": "`mom`", "rev": "`rev`"}
 decile_results = {}
 for term in raw:
     members = assign_portfolio(panel.filter(pl.col(term).is_finite()), term, 10, "month")
@@ -251,8 +251,8 @@ monthly = decile_results["illiq1"]
 groups = monthly.partition_by("portfolio", as_dict=True)
 fits = {str(i): factor_fit(groups[i,], "VW", ffcstr) for i in range(1, 11)}
 fits["10–1"] = factor_fit(spread(monthly, 10, 1, "portfolio", "VW"), "VW", ffcstr)
-terms = {"Intercept": "FFCSTR α", "mkt": "MKT", "smb": "SMB", "hml": "HML",
-         "mom_factor": "MOM", "str_factor": "STR"}
+terms = {"Intercept": "FFCSTR α", "mkt": "`mkt`", "smb": "`smb`", "hml": "`hml`",
+         "mom_factor": "`mom_factor`", "str_factor": "`str_factor`"}
 show_table(pl.DataFrame([
     {"Statistic": label, **{decile: format_fit(fit, term) for decile, fit in fits.items()}}
     for term, label in terms.items()
@@ -330,7 +330,7 @@ def size_grid(value):
     return (
         grid.join(month_averages, on="target", validate="1:1")
         .sort("target")
-        .select(pl.format("Illiq 12M {}", pl.col("target")).alias("Portfolio"), *group_labels)
+        .select(pl.format("`illiq12` {}", pl.col("target")).alias("Portfolio"), *group_labels)
     )
 
 
@@ -365,7 +365,7 @@ show_table(two_way_spreads(illiq_spreads, dependent=False))
 ```
 
 Reversing the roles of the sort variables shows whether the other characteristics predict returns within illiquidity quintiles. The independent sorts use the same intersections as @tbl-bem13-independent and take the spread along the other dimension.
-The benchmark omits HML for the book-to-market spread and the momentum factor for the momentum spread. For the reversal spread we report the four-factor alpha.
+The benchmark omits `hml` for the book-to-market spread and the momentum factor for the momentum spread. For the reversal spread we report the four-factor alpha.
 
 ```{python}
 #| label: tbl-bem13-control-dependent
@@ -374,7 +374,7 @@ The benchmark omits HML for the book-to-market spread and the momentum factor fo
 control_spreads = [("illiq12", term, label) for term, label in sort_controls.items()]
 without_hml = "mkt + smb + mom_factor"
 reverse_models = {
-    "bm": {"Return": "1", "FFC ex HML α": without_hml, "FFCSTR ex HML α": f"{without_hml} + str_factor"},
+    "bm": {"Return": "1", "FFC ex `hml` α": without_hml, "FFCSTR ex `hml` α": f"{without_hml} + str_factor"},
     "mom": {"Return": "1", "FF α": ff, "FFSTR α": f"{ff} + str_factor"},
     "rev": {"Return": "1", "FFC α": ffc},
 }
@@ -533,7 +533,7 @@ traded = (
     )
 )
 assert traded.select((pl.col("psl").is_finite() & (pl.col("psl") > -1)).fill_null(False).all()).item()
-plot_cumulative_returns(traded, y_label="Cumulative PSL return")
+plot_cumulative_returns(traded, y_label="Cumulative liquidity factor return")
 ```
 
 The series ends December 2012 at `{python} f'{traded["compounded"][-1]:.2%}'` compounded and `{python} f'{traded["cumulative_log"][-1]:.2%}'` in cumulative log returns.

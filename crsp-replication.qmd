@@ -379,14 +379,15 @@ assert (return_months["adjusted"] > 0).all()
 
 ## The Market Factor {#sec-bem7-market}
 
-The Fama–French market factor (MKT) is the excess return on a broad value-weighted portfolio of U.S. common stocks.
-CRSP's value-weighted market index (VWRETD) has a broader set of eligible securities.
-We put both measures on an excess-return basis by subtracting the risk-free rate from VWRETD.
-MKT already has the risk-free rate subtracted.
+The Fama–French market factor (`mkt`) is the excess return on a broad value-weighted portfolio of U.S. common stocks.
+CRSP's value-weighted market index (`vwretd`) has a broader set of eligible securities.
+We put both measures on an excess-return basis by subtracting the risk-free rate (`rf`) from `vwretd`.
+`mkt` already has the risk-free rate subtracted.
 
 ```{python}
 market = (
     factors
+    .rename({"mktrf": "mkt"})
     .filter(pl.col("month").is_between(pl.date(1926, 7, 1), pl.date(2012, 12, 1)))
     .join(
         load_parquet("msi", "crsp")
@@ -395,22 +396,24 @@ market = (
     )
     .with_columns(
         vw_excess=pl.col("vwretd") - pl.col("rf"),
-        log_excess=pl.col("mktrf").log1p(),
+        log_excess=pl.col("mkt").log1p(),
     )
     .sort("month")
     .collect()
 )
 ```
 
-The monthly correlation between MKT and the CRSP value-weighted excess return is 0.9995 in this data vintage.
+The monthly correlation between `mkt` and the adjusted CRSP return (`vw_excess`) is 0.9995 in this data vintage.
 Following @bali2016 [sec. 7.3], we summarize the monthly returns from July 1926 through December 2012.
 The annualized Sharpe ratio uses $\sqrt{12}$ times the ratio of the monthly mean to the monthly standard deviation, as in the book.
 
+{{< include _show-table.qmd >}}
+
 ```{python}
 series_labels = {
-    "mktrf": "MKT",
-    "vw_excess": "VWRETD less RF",
-    "log_excess": "Log MKT",
+    "mkt": "`mkt`",
+    "vw_excess": "`vwretd` less `rf`",
+    "log_excess": "Log `mkt`",
 }
 returns = pl.col(*series_labels)
 market_summary = (
@@ -424,7 +427,7 @@ market_summary = (
     .explode(pl.all())
     .with_columns(pl.col(pl.Float64).round(3))
 )
-market_summary
+show_table(market_summary.with_columns(pl.col(pl.Float64).cast(pl.String)))
 ```
 
 **[Cumulative market excess returns]{#cumulative-market-excess-returns}**
@@ -439,7 +442,7 @@ Here we follow the book's definition.
 ```{python}
 market_path = market.with_columns(
     date=pl.col("month").dt.month_end(),
-    compounded=(1 + pl.col("mktrf")).cum_prod() - 1,
+    compounded=(1 + pl.col("mkt")).cum_prod() - 1,
     cumulative_log=pl.col("log_excess").cum_sum(),
 )
 ```

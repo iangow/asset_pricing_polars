@@ -4,7 +4,7 @@ jupyter: python3
 
 # Correlation {#sec-bem-correlation}
 
-In Chapter 3, @bali2016 compare the cross-sectional associations among beta, size, book-to-market (BM), and next-year excess return.
+In Chapter 3, @bali2016 compare the cross-sectional associations among beta, size, book-to-market, and next-year excess return.
 We use the 1988–2012 annual panel from @sec-summary-statistics.
 
 {{< include _show-table.qmd >}}
@@ -48,7 +48,7 @@ This is the calculation used by `pl.corr(method="spearman")`, including when @eq
 ```{python}
 from eap_pl import correlation_matrix, period_correlations
 
-variables = {"Beta": "Beta", "Size": "Size", "BM": "BM", "excess": "Next-year return"}
+variables = {"Beta": "Beta", "Size": "Size", "BM": "Book-to-market", "excess": "Next-year return"}
 annual = period_correlations(annual_panel, variables, "year").sort("year")
 ```
 
@@ -56,8 +56,11 @@ annual = period_correlations(annual_panel, variables, "year").sort("year")
 #| label: tbl-bem3-annual
 #| tbl-cap: Annual Pearson and Spearman correlations (BEM Table 3.1)
 #| echo: false
-return_labels = {c: c.replace("excess", "Return") for c in annual.columns if "excess" in c}
-show_table(annual.rename(return_labels).rename({"year": "Year"}))
+pair_labels = {
+    c: c.replace("excess", "Return").replace("BM", "Book-to-market")
+    for c in annual.columns if "excess" in c or "BM" in c
+}
+show_table(annual.rename(pair_labels).rename({"year": "Year"}))
 ```
 
 ### Average Cross-Sectional Correlations {#average-across-years}
@@ -87,7 +90,7 @@ average = annual.select(pl.exclude("year").mean())
 #| label: tbl-bem3-average
 #| tbl-cap: Average annual correlations by pair (BEM Table 3.2)
 #| echo: false
-show_table(average.rename(return_labels))
+show_table(average.rename(pair_labels))
 ```
 
 ## Interpreting Correlations {#interpret-the-correlations}
@@ -130,7 +133,7 @@ plot_correlations([("Beta", "Size"), ("Beta", "BM"), ("Size", "BM")])
 
 Larger stocks tend to have higher betas.
 Both measures of correlation also show that larger stocks tend to have lower book-to-market ratios.
-Market capitalization enters the denominator of BM, which helps explain part of the association.
+Market capitalization enters the denominator of book-to-market, which helps explain part of the association.
 
 ```{python}
 #| label: fig-bem3-returns

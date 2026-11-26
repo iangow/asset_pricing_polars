@@ -102,10 +102,10 @@ It is not a median calculated once on the pooled stock-month data.
 from eap_pl import mean_cross_sections
 
 stats = mean_cross_sections(sizes, {
-    "cap": "MktCap", "cap_real": "MktCap CPI",
-    "log_cap": "Size", "log_cap_real": "Size CPI",
-    "cap_june": "MktCap FF", "cap_june_real": "MktCap FF CPI",
-    "log_cap_june": "Size FF", "log_cap_june_real": "Size FF CPI",
+    "cap": "`cap`", "cap_real": "`cap_real`",
+    "log_cap": "`log_cap`", "log_cap_real": "`log_cap_real`",
+    "cap_june": "`cap_june`", "cap_june_real": "`cap_june_real`",
+    "log_cap_june": "`log_cap_june`", "log_cap_june_real": "`log_cap_june_real`",
 })
 ```
 
@@ -165,8 +165,8 @@ Below the diagonal are Pearson correlations on winsorized observations, and abov
 from eap_pl import correlation_matrix, monthly_panel, period_correlations, persistence
 
 panel = monthly_panel(sizes, first, last)
-measures = {"cap": "MktCap", "log_cap": "Size", "cap_june": "MktCap FF",
-            "log_cap_june": "Size FF", "beta": "Beta"}
+measures = {"cap": "`cap`", "log_cap": "`log_cap`", "cap_june": "`cap_june`",
+            "log_cap_june": "`log_cap_june`", "beta": "Beta"}
 corr = period_correlations(panel, measures, "month").select(pl.exclude("month").mean())
 ```
 
@@ -304,15 +304,15 @@ show_table(fama_macbeth_table(panel, specifications,
 
 ## The Size Factor
 
-SMB is the average of three small-stock portfolios less the average of three big-stock portfolios.
+`smb` is the average of three small-stock portfolios less the average of three big-stock portfolios.
 The three portfolios in each size group cover low, middle, and high book-to-market.
 Using the same book-to-market groups on both sides reduces the factor's exposure to the value spread.
 
-For the historical factor series we use the monthly Fama–French SMB from July 1926 through December 2012.
+For the historical factor series we use the monthly Fama–French `smb` from July 1926 through December 2012.
 
 ```{python}
 #| label: fig-bem9-smb
-#| fig-cap: Cumulative returns on the Fama–French SMB factor (BEM Figure 9.2)
+#| fig-cap: Cumulative returns on the Fama–French `smb` factor (BEM Figure 9.2)
 #| echo: false
 from eap_pl import plot_factor
 

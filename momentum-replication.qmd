@@ -60,8 +60,8 @@ first = pl.date(1963, 6, 1)
 last = pl.date(2012, 11, 1)
 keys = ["permno", "month"]
 signals = {
-    "mom": "Mom", "lag12": "Rₜ₋₁₂:ₜ₋₁", "lag6": "Rₜ₋₆:ₜ₋₁",
-    "r12m": "R12M", "r9m": "R9M", "r6m": "R6M", "r3m": "R3M",
+    "mom": "`mom`", "lag12": "Rₜ₋₁₂:ₜ₋₁", "lag6": "Rₜ₋₆:ₜ₋₁",
+    "r12m": "`r12m`", "r9m": "`r9m`", "r6m": "`r6m`", "r3m": "`r3m`",
 }
 
 sizes = build_sizes()
@@ -106,7 +106,7 @@ The Spearman correlations use the original ranks.
 
 from eap_pl import period_correlations
 
-controls = {"beta": "Beta", "log_cap": "Size", "bm": "BM"}
+controls = {"beta": "Beta", "log_cap": "Size", "bm": "`bm`"}
 correlations = (
     period_correlations(panel, [*controls, *signals], "month")
     .select(pl.exclude("month").mean())
@@ -124,7 +124,7 @@ show_table(pl.DataFrame([
 ]))
 ```
 
-Mom is more strongly correlated with size than with beta or book-to-market.
+`mom` is more strongly correlated with size than with beta or book-to-market.
 
 ## Momentum and Stock Returns
 
@@ -195,11 +195,11 @@ decile_returns = {
 #| label: tbl-bem11-deciles
 #| tbl-cap: Momentum-sorted decile portfolios (BEM Table 11.3)
 #| tbl-subcap:
-#|   - Mom-sorted portfolio characteristics
+#|   - Momentum-sorted portfolio characteristics
 #|   - Portfolio returns and winner-minus-loser spreads
 #| echo: false
 
-characteristics = {"mom": "Mom", "beta": "Beta", "cap": "MktCap (millions)", "bm": "BM"}
+characteristics = {"mom": "`mom`", "beta": "Beta", "cap": "Market cap (millions)", "bm": "`bm`"}
 mom_groups = (
     members["mom"].drop("cap")
     .join(panel.select(*keys, *characteristics), on=keys, validate="1:1")
@@ -225,7 +225,7 @@ for weight, label in weights.items():
 show_table(pl.DataFrame(decile_rows))
 ```
 
-The Mom winner-minus-loser spread averages 1.94% per month with value weights and 1.14% with equal weights.
+The `mom` winner-minus-loser spread averages 1.94% per month with value weights and 1.14% with equal weights.
 
 ### Returns at Longer Horizons
 
@@ -282,13 +282,13 @@ show_table(pl.DataFrame([
 ]))
 ```
 
-The value-weighted Mom spread turns negative at the longer horizons, reaching −0.63% in month $t+12$.
+The value-weighted `mom` spread turns negative at the longer horizons, reaching −0.63% in month $t+12$.
 Its FF alpha in that month is close to zero.
 
 ### Controlling for Market Capitalization
 
 First divide stocks into five capitalization groups.
-Then compute Mom quintile breakpoints separately within each capitalization group.
+Then compute `mom` quintile breakpoints separately within each capitalization group.
 The last column averages the control portfolios each month before calculating the mean return or estimating an alpha.
 
 ```{python}
@@ -311,7 +311,7 @@ def two_way_results(
     if show_cells:
         for target in range(1, 6):
             rows.append({
-                "Statistic": f"Mom {target}",
+                "Statistic": f"`mom` {target}",
                 **{label: f'{cell.filter(pl.col("target") == target)[weight].mean():.2f}'
                    for label, cell in series.items()},
             })
@@ -350,7 +350,7 @@ show_table(pl.DataFrame([
 ### Momentum Among Small Stocks
 
 Restrict the first sort to the bottom fifth of the capitalization distribution.
-Split that group into four portfolios and sort each portfolio into Mom quintiles.
+Split that group into four portfolios and sort each portfolio into `mom` quintiles.
 
 ```{python}
 #| label: tbl-bem11-small
@@ -372,12 +372,12 @@ show_table(pl.DataFrame([
 
 ### Controlling for Beta and Book-to-Market
 
-The dependent sorts calculate Mom breakpoints within each beta or BM quintile.
+The dependent sorts calculate `mom` breakpoints within each beta or `bm` quintile.
 The independent sorts use the intersection of two sets of breakpoints computed separately across stocks for each variable.
-The tables show the high-minus-low Mom spread within each control quintile and its average across the control quintiles.
+The tables show the high-minus-low `mom` spread within each control quintile and its average across the control quintiles.
 
 ```{python}
-sort_variables = {"beta": "Beta", "cap": "MktCap", "bm": "BM"}
+sort_variables = {"beta": "Beta", "cap": "Market cap", "bm": "`bm`"}
 
 
 def two_way_spreads(pairs, *, dependent, momentum_first=False):
@@ -413,10 +413,10 @@ show_table(two_way_spreads([(control, "mom") for control in sort_variables], dep
 
 ### Controlling for Momentum
 
-Reverse the sort order to ask whether differences associated with beta, capitalization, or BM remain within Mom quintiles.
-For Table 11.9, we follow BEM's discussion and calculate the second set of breakpoints within each Mom quintile.
-For capitalization spreads, omit SMB from the FF regression.
-For BM spreads, omit HML.
+Reverse the sort order to ask whether differences associated with beta, capitalization, or `bm` remain within `mom` quintiles.
+For Table 11.9, we follow BEM's discussion and calculate the second set of breakpoints within each `mom` quintile.
+For capitalization spreads, omit `smb` from the FF regression.
+For `bm` spreads, omit `hml`.
 
 ```{python}
 #| label: tbl-bem11-reverse-dependent
@@ -437,7 +437,7 @@ show_table(two_way_spreads(reverse_pairs, dependent=False, momentum_first=True))
 
 ### Fama–MacBeth Regressions
 
-Regress next month's excess return on Mom and combinations of beta, log capitalization, and BM.
+Regress next month's excess return on `mom` and combinations of beta, log capitalization, and `bm`.
 Winsorize the regressors at 0.5% in each tail within each month.
 Report the average monthly coefficients and estimate their standard errors using six Newey–West lags.
 
@@ -449,7 +449,7 @@ from itertools import combinations
 
 from eap_pl import fama_macbeth_table
 
-terms = {"mom": "Mom", **controls}
+terms = {"mom": "`mom`", **controls}
 specifications = [
     ["mom", *subset]
     for n in range(len(controls) + 1)
@@ -458,18 +458,18 @@ specifications = [
 show_table(fama_macbeth_table(panel, specifications, terms, digits=3))
 ```
 
-In the full specification, a 100-percentage-point difference in Mom corresponds to about 0.70 percentage points in next month's fitted excess return.
+In the full specification, a 100-percentage-point difference in `mom` corresponds to about 0.70 percentage points in next month's fitted excess return.
 
 ## The Momentum Factor
 
-The [Kenneth French Data Library](https://mba.tuck.dartmouth.edu/pages/faculty/Ken.French/Data_Library/det_mom_factor.html) constructs MOM using six value-weighted portfolios formed on size and prior return.
+The [Kenneth French Data Library](https://mba.tuck.dartmouth.edu/pages/faculty/Ken.French/Data_Library/det_mom_factor.html) constructs its momentum factor using six value-weighted portfolios formed on size and prior return.
 The sorts use an NYSE median for size and NYSE 30th and 70th percentiles for prior return.
 The factor averages the returns of the small- and large-stock winner portfolios and subtracts the average return of the corresponding loser portfolios.
 We use the December 2024 release listed in the book's setup instructions and plot January 1927 through December 2012, the period in BEM.
 
 ```{python}
 #| label: fig-bem11-mom
-#| fig-cap: Compounded and cumulative log returns of the MOM factor, January 1927–December 2012 (BEM Figure 11.1)
+#| fig-cap: Compounded and cumulative log returns of the momentum factor, January 1927–December 2012 (BEM Figure 11.1)
 
 from io import StringIO
 from pathlib import Path
@@ -497,7 +497,7 @@ momentum_factor = (
 )
 assert momentum_factor.height == 1032
 assert momentum_factor.select(pl.col("mom").is_finite().all()).item()
-plot_cumulative_returns(momentum_factor, y_label="Cumulative MOM return")
+plot_cumulative_returns(momentum_factor, y_label="Cumulative momentum factor return")
 ```
 
 The compounded series shows a sharp drawdown in 2009.
