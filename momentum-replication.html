@@ -1,0 +1,3691 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.36">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>11&nbsp; The Momentum Effect – Empirical Asset Pricing with Polars</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./reversal-replication.html" rel="next">
+<link href="./value-replication.html" rel="prev">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-845c23b38eaddc0f92fda52bfe77a8c8.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-ae5bfd2a28a766e8842bcde6b84df935.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-sidebar floating quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./crsp-replication.html">Part II. The Cross Section of Stock Returns</a></li><li class="breadcrumb-item"><a href="./momentum-replication.html"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">The Momentum Effect</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="./">Empirical Asset Pricing with Polars</a> 
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Preface</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part I. Statistical Methodologies</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./data.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Preliminaries</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./summary-statistics.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Summary Statistics</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./correlation.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Correlation</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./persistence.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Persistence Analysis</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./portfolio-analysis.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Portfolio Analysis</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./annual-regressions.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Fama and Macbeth Regression Analysis</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Part II. The Cross Section of Stock Returns</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./crsp-replication.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">The CRSP Sample and Market Factor</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./beta-replication.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Beta</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./size-replication.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">The Size Effect</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./value-replication.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">The Value Premium</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./momentum-replication.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">The Momentum Effect</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./reversal-replication.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Short-Term Reversal</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./references.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">References</span></a>
+  </div>
+</li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#measuring-momentum" id="toc-measuring-momentum" class="nav-link active" data-scroll-target="#measuring-momentum"><span class="header-section-number">11.1</span> Measuring Momentum</a></li>
+  <li><a href="#summary-statistics" id="toc-summary-statistics" class="nav-link" data-scroll-target="#summary-statistics"><span class="header-section-number">11.2</span> Summary Statistics</a></li>
+  <li><a href="#correlations" id="toc-correlations" class="nav-link" data-scroll-target="#correlations"><span class="header-section-number">11.3</span> Correlations</a></li>
+  <li><a href="#momentum-and-stock-returns" id="toc-momentum-and-stock-returns" class="nav-link" data-scroll-target="#momentum-and-stock-returns"><span class="header-section-number">11.4</span> Momentum and Stock Returns</a>
+  <ul class="collapse">
+  <li><a href="#univariate-portfolio-analysis" id="toc-univariate-portfolio-analysis" class="nav-link" data-scroll-target="#univariate-portfolio-analysis"><span class="header-section-number">11.4.1</span> Univariate Portfolio Analysis</a></li>
+  <li><a href="#returns-at-longer-horizons" id="toc-returns-at-longer-horizons" class="nav-link" data-scroll-target="#returns-at-longer-horizons"><span class="header-section-number">11.4.2</span> Returns at Longer Horizons</a></li>
+  <li><a href="#controlling-for-market-capitalization" id="toc-controlling-for-market-capitalization" class="nav-link" data-scroll-target="#controlling-for-market-capitalization"><span class="header-section-number">11.4.3</span> Controlling for Market Capitalization</a></li>
+  <li><a href="#momentum-among-small-stocks" id="toc-momentum-among-small-stocks" class="nav-link" data-scroll-target="#momentum-among-small-stocks"><span class="header-section-number">11.4.4</span> Momentum Among Small Stocks</a></li>
+  <li><a href="#controlling-for-beta-and-book-to-market" id="toc-controlling-for-beta-and-book-to-market" class="nav-link" data-scroll-target="#controlling-for-beta-and-book-to-market"><span class="header-section-number">11.4.5</span> Controlling for Beta and Book-to-Market</a></li>
+  <li><a href="#controlling-for-momentum" id="toc-controlling-for-momentum" class="nav-link" data-scroll-target="#controlling-for-momentum"><span class="header-section-number">11.4.6</span> Controlling for Momentum</a></li>
+  <li><a href="#famamacbeth-regressions" id="toc-famamacbeth-regressions" class="nav-link" data-scroll-target="#famamacbeth-regressions"><span class="header-section-number">11.4.7</span> Fama–MacBeth Regressions</a></li>
+  </ul></li>
+  <li><a href="#the-momentum-factor" id="toc-the-momentum-factor" class="nav-link" data-scroll-target="#the-momentum-factor"><span class="header-section-number">11.5</span> The Momentum Factor</a></li>
+  <li><a href="#the-famafrenchcarhart-four-factor-model" id="toc-the-famafrenchcarhart-four-factor-model" class="nav-link" data-scroll-target="#the-famafrenchcarhart-four-factor-model"><span class="header-section-number">11.6</span> The Fama–French–Carhart Four-Factor Model</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./crsp-replication.html">Part II. The Cross Section of Stock Returns</a></li><li class="breadcrumb-item"><a href="./momentum-replication.html"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">The Momentum Effect</span></a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title"><span id="sec-momentum-replication" class="quarto-section-identifier"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">The Momentum Effect</span></span></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>Do stocks that recently outperformed continue to outperform? Following Chapter 11 of <span class="citation" data-cites="bali2016">Bali et al. (<a href="references.html#ref-bali2016" role="doc-biblioref">2016</a>)</span>, we compare seven measures of prior returns and examine how their predictive power changes with the return horizon. <span class="citation" data-cites="jegadeeshTitman1993">Jegadeesh and Titman (<a href="references.html#ref-jegadeeshTitman1993" role="doc-biblioref">1993</a>)</span> document that portfolios buying recent winners and selling recent losers earn positive returns over several months.</p>
+<section id="measuring-momentum" class="level2" data-number="11.1">
+<h2 data-number="11.1" class="anchored" data-anchor-id="measuring-momentum"><span class="header-section-number">11.1</span> Measuring Momentum</h2>
+<p>At the end of month <span class="math inline">\(t\)</span>, the main measure compounds returns from <span class="math inline">\(t-11\)</span> through <span class="math inline">\(t-1\)</span>. Skipping month <span class="math inline">\(t\)</span> separates the signal from the most recent return, which is used to measure short-term reversal.</p>
+<p><span id="eq-bem11-momentum"><span class="math display">\[
+\operatorname{Mom}_{i,t}
+=100\left[\prod_{m=t-11}^{t-1}(1+R_{i,m})-1\right].
+\tag{11.1}\]</span></span></p>
+<p>In BEM’s Equation (11.1), <span class="math inline">\(R_{i,m}\)</span> is the stock’s monthly return in decimal form and <span class="math inline">\(\operatorname{Mom}_{i,t}\)</span> is measured in percentage points. We compound the available returns and require at least nine observations. For the lagged 12- and six-month alternatives, the minimum counts are ten and five. For the 12-, nine-, six-, and three-month windows that include month <span class="math inline">\(t\)</span>, the minimum counts are ten, seven, five, and three, respectively.</p>
+<p>A calendar window counts months even when the CRSP file has a gap. The offset determines whether the window ends in month <span class="math inline">\(t\)</span> or in month <span class="math inline">\(t-1\)</span>.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>windows <span class="op">=</span> [</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"mom"</span>, <span class="dv">11</span>, <span class="dv">1</span>, <span class="dv">9</span>),</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"lag12"</span>, <span class="dv">12</span>, <span class="dv">1</span>, <span class="dv">10</span>),</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"lag6"</span>, <span class="dv">6</span>, <span class="dv">1</span>, <span class="dv">5</span>),</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"r12m"</span>, <span class="dv">12</span>, <span class="dv">0</span>, <span class="dv">10</span>),</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"r9m"</span>, <span class="dv">9</span>, <span class="dv">0</span>, <span class="dv">7</span>),</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"r6m"</span>, <span class="dv">6</span>, <span class="dv">0</span>, <span class="dv">5</span>),</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"r3m"</span>, <span class="dv">3</span>, <span class="dv">0</span>, <span class="dv">3</span>),</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>returns <span class="op">=</span> (</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>    load_parquet(<span class="st">"msf"</span>, <span class="st">"crsp"</span>)</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>    .<span class="bu">filter</span>(pl.col(<span class="st">"date"</span>).is_between(first.dt.offset_by(<span class="st">"-12mo"</span>), last.dt.month_end()))</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>    .select(</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>        <span class="st">"permno"</span>, month<span class="op">=</span>pl.col(<span class="st">"date"</span>).dt.month_start(),</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>        gross<span class="op">=</span>pl.when(pl.col(<span class="st">"ret"</span>).is_finite()).then(<span class="dv">1</span> <span class="op">+</span> pl.col(<span class="st">"ret"</span>)),</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>    .sort(KEYS)</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>    .collect()</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Count the nonmissing gross returns before taking their product.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> _compound_trailing_return(returns, name, length, skip, minimum):</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    gross <span class="op">=</span> pl.col(<span class="st">"gross"</span>)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> returns.rolling(</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>        <span class="st">"month"</span>, period<span class="op">=</span><span class="ss">f"</span><span class="sc">{</span>length<span class="sc">}</span><span class="ss">mo"</span>, offset<span class="op">=</span><span class="ss">f"-</span><span class="sc">{</span>length <span class="op">+</span> skip<span class="sc">}</span><span class="ss">mo"</span>,</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>        group_by<span class="op">=</span><span class="st">"permno"</span>, closed<span class="op">=</span><span class="st">"right"</span>,</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    ).agg(</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>        pl.when(gross.count() <span class="op">&gt;=</span> minimum).then(<span class="dv">100</span> <span class="op">*</span> (gross.product() <span class="op">-</span> <span class="dv">1</span>)).alias(name)</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="aa6c51fd" class="cell" data-execution_count="5">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> polars <span class="im">as</span> pl</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> eap_pl <span class="im">import</span> build_book_to_market, build_momentum, build_sizes, monthly_panel</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>first <span class="op">=</span> pl.date(<span class="dv">1963</span>, <span class="dv">6</span>, <span class="dv">1</span>)</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>last <span class="op">=</span> pl.date(<span class="dv">2012</span>, <span class="dv">11</span>, <span class="dv">1</span>)</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>keys <span class="op">=</span> [<span class="st">"permno"</span>, <span class="st">"month"</span>]</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>signals <span class="op">=</span> {</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    <span class="st">"mom"</span>: <span class="st">"Mom"</span>, <span class="st">"lag12"</span>: <span class="st">"Rₜ₋₁₂:ₜ₋₁"</span>, <span class="st">"lag6"</span>: <span class="st">"Rₜ₋₆:ₜ₋₁"</span>,</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    <span class="st">"r12m"</span>: <span class="st">"R12M"</span>, <span class="st">"r9m"</span>: <span class="st">"R9M"</span>, <span class="st">"r6m"</span>: <span class="st">"R6M"</span>, <span class="st">"r3m"</span>: <span class="st">"R3M"</span>,</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>sizes <span class="op">=</span> build_sizes()</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>book_to_market <span class="op">=</span> build_book_to_market(sizes).select(<span class="op">*</span>keys, <span class="st">"bm"</span>)</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>panel <span class="op">=</span> (</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>    monthly_panel(sizes, first, last)</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>    .join(build_momentum(first, last), on<span class="op">=</span>keys, how<span class="op">=</span><span class="st">"left"</span>, validate<span class="op">=</span><span class="st">"1:1"</span>)</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>    .join(book_to_market, on<span class="op">=</span>keys, how<span class="op">=</span><span class="st">"left"</span>, validate<span class="op">=</span><span class="st">"1:1"</span>)</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>The formation sample runs from June 1963 through November 2012. The panel uses the beta, size, and positive book-to-market measures from <a href="beta-replication.html" class="quarto-xref"><span>Chapter 8</span></a>, <a href="size-replication.html" class="quarto-xref"><span>Chapter 9</span></a>, and <a href="value-replication.html" class="quarto-xref"><span>Chapter 10</span></a>. Holding-month excess returns use the delisting treatment in <a href="crsp-replication.html#sec-bem-returns" class="quarto-xref"><span>Section 7.2</span></a>.</p>
+</section>
+<section id="summary-statistics" class="level2" data-number="11.2">
+<h2 data-number="11.2" class="anchored" data-anchor-id="summary-statistics"><span class="header-section-number">11.2</span> Summary Statistics</h2>
+<p>Compute the statistics separately each month and then average them across months. The final column gives the average number of available observations for the signal.</p>
+<style>
+.cell-output-markdown:has(> table) {
+  max-width: 100%;
+  overflow-x: auto;
+}
+.cell-output-markdown > table {
+  white-space: nowrap;
+}
+</style>
+<div class="cell" data-execution_count="7">
+<div id="tbl-bem11-summary" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="7">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bem11-summary-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;11.1: Monthly summary statistics for momentum measures (BEM Table 11.1)
+</figcaption>
+<div aria-describedby="tbl-bem11-summary-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output cell-output-display cell-output-markdown">
+<table class="cell caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 7%">
+<col style="width: 7%">
+<col style="width: 7%">
+<col style="width: 7%">
+<col style="width: 7%">
+<col style="width: 7%">
+<col style="width: 7%">
+<col style="width: 7%">
+<col style="width: 7%">
+<col style="width: 7%">
+<col style="width: 7%">
+<col style="width: 7%">
+<col style="width: 7%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Measure</th>
+<th style="text-align: right;">Mean</th>
+<th style="text-align: right;">SD</th>
+<th style="text-align: right;">Skew</th>
+<th style="text-align: right;">Kurt.</th>
+<th style="text-align: right;">Min</th>
+<th style="text-align: right;">5%</th>
+<th style="text-align: right;">25%</th>
+<th style="text-align: right;">Median</th>
+<th style="text-align: right;">75%</th>
+<th style="text-align: right;">95%</th>
+<th style="text-align: right;">Max</th>
+<th style="text-align: right;">n</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Mom</td>
+<td style="text-align: right;">14.12</td>
+<td style="text-align: right;">58.40</td>
+<td style="text-align: right;">4.12</td>
+<td style="text-align: right;">61.69</td>
+<td style="text-align: right;">-89.41</td>
+<td style="text-align: right;">-49.89</td>
+<td style="text-align: right;">-17.12</td>
+<td style="text-align: right;">5.69</td>
+<td style="text-align: right;">31.97</td>
+<td style="text-align: right;">102.72</td>
+<td style="text-align: right;">1064.02</td>
+<td style="text-align: right;">4424</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Rₜ₋₁₂:ₜ₋₁</td>
+<td style="text-align: right;">15.55</td>
+<td style="text-align: right;">62.23</td>
+<td style="text-align: right;">4.31</td>
+<td style="text-align: right;">66.56</td>
+<td style="text-align: right;">-90.03</td>
+<td style="text-align: right;">-51.35</td>
+<td style="text-align: right;">-17.59</td>
+<td style="text-align: right;">6.29</td>
+<td style="text-align: right;">34.07</td>
+<td style="text-align: right;">109.47</td>
+<td style="text-align: right;">1164.03</td>
+<td style="text-align: right;">4388</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Rₜ₋₆:ₜ₋₁</td>
+<td style="text-align: right;">7.38</td>
+<td style="text-align: right;">39.52</td>
+<td style="text-align: right;">3.63</td>
+<td style="text-align: right;">57.60</td>
+<td style="text-align: right;">-84.36</td>
+<td style="text-align: right;">-39.84</td>
+<td style="text-align: right;">-13.55</td>
+<td style="text-align: right;">2.84</td>
+<td style="text-align: right;">21.00</td>
+<td style="text-align: right;">67.10</td>
+<td style="text-align: right;">689.20</td>
+<td style="text-align: right;">4567</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">R12M</td>
+<td style="text-align: right;">15.54</td>
+<td style="text-align: right;">62.39</td>
+<td style="text-align: right;">4.30</td>
+<td style="text-align: right;">66.32</td>
+<td style="text-align: right;">-90.40</td>
+<td style="text-align: right;">-51.70</td>
+<td style="text-align: right;">-17.71</td>
+<td style="text-align: right;">6.30</td>
+<td style="text-align: right;">34.18</td>
+<td style="text-align: right;">109.73</td>
+<td style="text-align: right;">1168.12</td>
+<td style="text-align: right;">4421</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">R9M</td>
+<td style="text-align: right;">11.34</td>
+<td style="text-align: right;">51.02</td>
+<td style="text-align: right;">3.84</td>
+<td style="text-align: right;">55.96</td>
+<td style="text-align: right;">-88.40</td>
+<td style="text-align: right;">-46.80</td>
+<td style="text-align: right;">-15.99</td>
+<td style="text-align: right;">4.55</td>
+<td style="text-align: right;">27.82</td>
+<td style="text-align: right;">88.89</td>
+<td style="text-align: right;">908.54</td>
+<td style="text-align: right;">4532</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">R6M</td>
+<td style="text-align: right;">7.39</td>
+<td style="text-align: right;">39.68</td>
+<td style="text-align: right;">3.61</td>
+<td style="text-align: right;">57.14</td>
+<td style="text-align: right;">-85.18</td>
+<td style="text-align: right;">-40.13</td>
+<td style="text-align: right;">-13.61</td>
+<td style="text-align: right;">2.85</td>
+<td style="text-align: right;">21.07</td>
+<td style="text-align: right;">67.40</td>
+<td style="text-align: right;">690.85</td>
+<td style="text-align: right;">4601</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">R3M</td>
+<td style="text-align: right;">3.63</td>
+<td style="text-align: right;">26.69</td>
+<td style="text-align: right;">3.16</td>
+<td style="text-align: right;">48.75</td>
+<td style="text-align: right;">-78.54</td>
+<td style="text-align: right;">-30.25</td>
+<td style="text-align: right;">-10.22</td>
+<td style="text-align: right;">1.18</td>
+<td style="text-align: right;">13.52</td>
+<td style="text-align: right;">43.95</td>
+<td style="text-align: right;">449.21</td>
+<td style="text-align: right;">4665</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+<p>Mom has an average monthly cross-sectional mean of 14.12% and standard deviation of 58.40%, both matching BEM to two decimals. The average monthly count is 4,424 stocks versus 4,426 in BEM.</p>
+</section>
+<section id="correlations" class="level2" data-number="11.3">
+<h2 data-number="11.3" class="anchored" data-anchor-id="correlations"><span class="header-section-number">11.3</span> Correlations</h2>
+<p>Calculate cross-sectional correlations in each formation month and average them over time. The Pearson correlations use 0.5% winsorization in each tail of the paired observations. The Spearman correlations use the original ranks.</p>
+<div class="cell" data-execution_count="8">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> eap_pl <span class="im">import</span> period_correlations</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>controls <span class="op">=</span> {<span class="st">"beta"</span>: <span class="st">"Beta"</span>, <span class="st">"log_cap"</span>: <span class="st">"Size"</span>, <span class="st">"bm"</span>: <span class="st">"BM"</span>}</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>correlations <span class="op">=</span> (</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    period_correlations(panel, [<span class="op">*</span>controls, <span class="op">*</span>signals], <span class="st">"month"</span>)</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    .select(pl.exclude(<span class="st">"month"</span>).mean())</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    .row(<span class="dv">0</span>, named<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>show_table(pl.DataFrame([</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    {</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>        <span class="st">"Method"</span>: method, <span class="st">"Characteristic"</span>: label,</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>        <span class="op">**</span>{name: correlations[<span class="ss">f"</span><span class="sc">{</span>method<span class="sc">}</span><span class="ss"> </span><span class="sc">{</span>control<span class="sc">}</span><span class="ss">–</span><span class="sc">{</span>signal<span class="sc">}</span><span class="ss">"</span>]</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>           <span class="cf">for</span> signal, name <span class="kw">in</span> signals.items()},</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> method <span class="kw">in</span> (<span class="st">"Pearson"</span>, <span class="st">"Spearman"</span>)</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> control, label <span class="kw">in</span> controls.items()</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>]))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="tbl-bem11-correlations" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="8">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bem11-correlations-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;11.2: Correlations of momentum with beta, size, and book-to-market (BEM Table 11.2)
+</figcaption>
+<div aria-describedby="tbl-bem11-correlations-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output cell-output-display cell-output-markdown">
+<table class="cell caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Method</th>
+<th style="text-align: right;">Characteristic</th>
+<th style="text-align: right;">Mom</th>
+<th style="text-align: right;">Rₜ₋₁₂:ₜ₋₁</th>
+<th style="text-align: right;">Rₜ₋₆:ₜ₋₁</th>
+<th style="text-align: right;">R12M</th>
+<th style="text-align: right;">R9M</th>
+<th style="text-align: right;">R6M</th>
+<th style="text-align: right;">R3M</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Pearson</td>
+<td style="text-align: right;">Beta</td>
+<td style="text-align: right;">0.07</td>
+<td style="text-align: right;">0.08</td>
+<td style="text-align: right;">0.01</td>
+<td style="text-align: right;">0.06</td>
+<td style="text-align: right;">0.03</td>
+<td style="text-align: right;">-0.00</td>
+<td style="text-align: right;">-0.02</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Pearson</td>
+<td style="text-align: right;">Size</td>
+<td style="text-align: right;">0.18</td>
+<td style="text-align: right;">0.19</td>
+<td style="text-align: right;">0.14</td>
+<td style="text-align: right;">0.19</td>
+<td style="text-align: right;">0.17</td>
+<td style="text-align: right;">0.15</td>
+<td style="text-align: right;">0.11</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Pearson</td>
+<td style="text-align: right;">BM</td>
+<td style="text-align: right;">0.02</td>
+<td style="text-align: right;">0.01</td>
+<td style="text-align: right;">0.06</td>
+<td style="text-align: right;">0.03</td>
+<td style="text-align: right;">0.06</td>
+<td style="text-align: right;">0.06</td>
+<td style="text-align: right;">0.04</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Spearman</td>
+<td style="text-align: right;">Beta</td>
+<td style="text-align: right;">0.04</td>
+<td style="text-align: right;">0.05</td>
+<td style="text-align: right;">-0.00</td>
+<td style="text-align: right;">0.03</td>
+<td style="text-align: right;">0.01</td>
+<td style="text-align: right;">-0.01</td>
+<td style="text-align: right;">-0.02</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Spearman</td>
+<td style="text-align: right;">Size</td>
+<td style="text-align: right;">0.25</td>
+<td style="text-align: right;">0.26</td>
+<td style="text-align: right;">0.20</td>
+<td style="text-align: right;">0.26</td>
+<td style="text-align: right;">0.24</td>
+<td style="text-align: right;">0.20</td>
+<td style="text-align: right;">0.16</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Spearman</td>
+<td style="text-align: right;">BM</td>
+<td style="text-align: right;">0.04</td>
+<td style="text-align: right;">0.02</td>
+<td style="text-align: right;">0.07</td>
+<td style="text-align: right;">0.05</td>
+<td style="text-align: right;">0.07</td>
+<td style="text-align: right;">0.08</td>
+<td style="text-align: right;">0.05</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+<p>The monthly calculation reproduces all entries in BEM Table 11.2 at the printed precision. Mom is more strongly correlated with size than with beta or book-to-market.</p>
+</section>
+<section id="momentum-and-stock-returns" class="level2" data-number="11.4">
+<h2 data-number="11.4" class="anchored" data-anchor-id="momentum-and-stock-returns"><span class="header-section-number">11.4</span> Momentum and Stock Returns</h2>
+<section id="univariate-portfolio-analysis" class="level3" data-number="11.4.1">
+<h3 data-number="11.4.1" class="anchored" data-anchor-id="univariate-portfolio-analysis"><span class="header-section-number">11.4.1</span> Univariate Portfolio Analysis</h3>
+<p>Each month, sort the stocks with a valid signal into ten portfolios using breakpoints from all stocks with that signal. Value weights use market capitalization at formation. Returns and alphas are in percentage points per month. For each winner-minus-loser spread, regress the monthly return series on an intercept, on the market factor, or on the three Fama–French factors to estimate its mean, CAPM alpha, or FF alpha. Parentheses report six-lag Newey–West <span class="math inline">\(t\)</span>-statistics <span class="citation" data-cites="neweywest1987">(<a href="references.html#ref-neweywest1987" role="doc-biblioref">Newey and West 1987</a>)</span>.</p>
+<div id="532e6d4f" class="cell" data-execution_count="9">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> era_pl <span class="im">import</span> load_parquet</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> eap_pl <span class="im">import</span> format_fit, hac</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> eap_pl._portfolios <span class="im">import</span> assign_portfolio, portfolio_months, spread</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>factors <span class="op">=</span> (</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    load_parquet(<span class="st">"factors_monthly"</span>, <span class="st">"ff"</span>)</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    .select(</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>        month<span class="op">=</span>pl.col(<span class="st">"date"</span>).dt.month_start(),</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>        market<span class="op">=</span><span class="dv">100</span> <span class="op">*</span> pl.col(<span class="st">"mktrf"</span>),</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>        smb<span class="op">=</span><span class="dv">100</span> <span class="op">*</span> pl.col(<span class="st">"smb"</span>),</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>        hml<span class="op">=</span><span class="dv">100</span> <span class="op">*</span> pl.col(<span class="st">"hml"</span>),</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>        rf<span class="op">=</span><span class="dv">100</span> <span class="op">*</span> pl.col(<span class="st">"rf"</span>),</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>    .collect()</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>ff3 <span class="op">=</span> [<span class="st">"market"</span>, <span class="st">"smb"</span>, <span class="st">"hml"</span>]</span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>weights <span class="op">=</span> {<span class="st">"VW"</span>: <span class="st">"Value weighted"</span>, <span class="st">"EW"</span>: <span class="st">"Equal weighted"</span>}</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> spread_statistics(series, weight, <span class="op">*</span>, ff_factors<span class="op">=</span>ff3, capm<span class="op">=</span><span class="va">True</span>):</span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>    sample <span class="op">=</span> (series.select(<span class="st">"month"</span>, weight)</span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>              .join(factors, on<span class="op">=</span><span class="st">"month"</span>, validate<span class="op">=</span><span class="st">"m:1"</span>).sort(<span class="st">"month"</span>))</span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>    models <span class="op">=</span> {<span class="st">"Return"</span>: <span class="st">"1"</span>}</span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> capm:</span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>        models[<span class="st">"CAPM α"</span>] <span class="op">=</span> <span class="st">"market"</span></span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a>    models[<span class="st">"FF α"</span>] <span class="op">=</span> <span class="st">" + "</span>.join(ff_factors)</span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> {</span>
+<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a>        name: format_fit(hac(<span class="ss">f"</span><span class="sc">{</span>weight<span class="sc">}</span><span class="ss"> ~ </span><span class="sc">{</span>rhs<span class="sc">}</span><span class="ss">"</span>, sample), <span class="st">"Intercept"</span>)</span>
+<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> name, rhs <span class="kw">in</span> models.items()</span>
+<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a>    }</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div id="867a2cdd" class="cell" data-execution_count="10">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>deciles <span class="op">=</span> {<span class="bu">str</span>(i): i <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">1</span>, <span class="dv">11</span>)}</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>formation <span class="op">=</span> panel.select(<span class="op">*</span>keys, <span class="st">"cap"</span>, <span class="op">*</span>signals)</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>members <span class="op">=</span> {</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    signal: assign_portfolio(</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>        formation.select(<span class="op">*</span>keys, <span class="st">"cap"</span>, signal).<span class="bu">filter</span>(pl.col(signal).is_finite()),</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>        signal, <span class="dv">10</span>, <span class="st">"month"</span>,</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    ).drop(signal)</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> signal <span class="kw">in</span> signals</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>one_month <span class="op">=</span> panel.select(<span class="op">*</span>keys, <span class="st">"market"</span>, <span class="st">"excess"</span>)</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>decile_returns <span class="op">=</span> {</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>    signal: portfolio_months(</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>        stocks.join(one_month, on<span class="op">=</span>keys, validate<span class="op">=</span><span class="st">"1:1"</span>)</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>        .with_columns(pl.col(<span class="st">"month"</span>).dt.offset_by(<span class="st">"1mo"</span>)),</span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>        [<span class="st">"portfolio"</span>],</span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> signal, stocks <span class="kw">in</span> members.items()</span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="cell" data-execution_count="11">
+<div id="tbl-bem11-deciles" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="11">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bem11-deciles-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;11.3: Momentum-sorted decile portfolios (BEM Table 11.3)
+</figcaption>
+<div aria-describedby="tbl-bem11-deciles-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output cell-output-display cell-output-markdown">
+<div id="tbl-bem11-deciles-1" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-subfloat-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-subfloat-caption quarto-subfloat-tbl" id="tbl-bem11-deciles-1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(a) Mom-sorted portfolio characteristics
+</figcaption>
+<div aria-describedby="tbl-bem11-deciles-1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<table id="tbl-bem11-deciles-1" class="caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 9%">
+<col style="width: 9%">
+<col style="width: 9%">
+<col style="width: 9%">
+<col style="width: 9%">
+<col style="width: 9%">
+<col style="width: 9%">
+<col style="width: 9%">
+<col style="width: 9%">
+<col style="width: 9%">
+<col style="width: 9%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Characteristic</th>
+<th style="text-align: right;">1</th>
+<th style="text-align: right;">2</th>
+<th style="text-align: right;">3</th>
+<th style="text-align: right;">4</th>
+<th style="text-align: right;">5</th>
+<th style="text-align: right;">6</th>
+<th style="text-align: right;">7</th>
+<th style="text-align: right;">8</th>
+<th style="text-align: right;">9</th>
+<th style="text-align: right;">10</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Mom</td>
+<td style="text-align: right;">-52.41</td>
+<td style="text-align: right;">-29.84</td>
+<td style="text-align: right;">-17.21</td>
+<td style="text-align: right;">-7.33</td>
+<td style="text-align: right;">1.44</td>
+<td style="text-align: right;">10.11</td>
+<td style="text-align: right;">19.81</td>
+<td style="text-align: right;">32.24</td>
+<td style="text-align: right;">52.22</td>
+<td style="text-align: right;">132.09</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Beta</td>
+<td style="text-align: right;">0.85</td>
+<td style="text-align: right;">0.80</td>
+<td style="text-align: right;">0.75</td>
+<td style="text-align: right;">0.72</td>
+<td style="text-align: right;">0.71</td>
+<td style="text-align: right;">0.71</td>
+<td style="text-align: right;">0.73</td>
+<td style="text-align: right;">0.76</td>
+<td style="text-align: right;">0.83</td>
+<td style="text-align: right;">0.97</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">MktCap (millions)</td>
+<td style="text-align: right;">154.17</td>
+<td style="text-align: right;">487.92</td>
+<td style="text-align: right;">873.20</td>
+<td style="text-align: right;">1179.72</td>
+<td style="text-align: right;">1440.94</td>
+<td style="text-align: right;">1647.90</td>
+<td style="text-align: right;">1708.24</td>
+<td style="text-align: right;">1701.08</td>
+<td style="text-align: right;">1471.17</td>
+<td style="text-align: right;">849.82</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">BM</td>
+<td style="text-align: right;">0.89</td>
+<td style="text-align: right;">0.93</td>
+<td style="text-align: right;">0.94</td>
+<td style="text-align: right;">0.94</td>
+<td style="text-align: right;">0.93</td>
+<td style="text-align: right;">0.94</td>
+<td style="text-align: right;">0.95</td>
+<td style="text-align: right;">0.95</td>
+<td style="text-align: right;">0.96</td>
+<td style="text-align: right;">1.00</td>
+</tr>
+</tbody>
+</table>
+</div>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display cell-output-markdown">
+<div id="tbl-bem11-deciles-2" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-subfloat-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-subfloat-caption quarto-subfloat-tbl" id="tbl-bem11-deciles-2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+(b) Portfolio returns and winner-minus-loser spreads
+</figcaption>
+<div aria-describedby="tbl-bem11-deciles-2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<table id="tbl-bem11-deciles-2" class="caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 6%">
+<col style="width: 6%">
+<col style="width: 6%">
+<col style="width: 6%">
+<col style="width: 6%">
+<col style="width: 6%">
+<col style="width: 6%">
+<col style="width: 6%">
+<col style="width: 6%">
+<col style="width: 6%">
+<col style="width: 6%">
+<col style="width: 6%">
+<col style="width: 6%">
+<col style="width: 6%">
+<col style="width: 6%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Weights</th>
+<th style="text-align: right;">Signal</th>
+<th style="text-align: right;">1</th>
+<th style="text-align: right;">2</th>
+<th style="text-align: right;">3</th>
+<th style="text-align: right;">4</th>
+<th style="text-align: right;">5</th>
+<th style="text-align: right;">6</th>
+<th style="text-align: right;">7</th>
+<th style="text-align: right;">8</th>
+<th style="text-align: right;">9</th>
+<th style="text-align: right;">10</th>
+<th style="text-align: right;">10–1</th>
+<th style="text-align: right;">CAPM α</th>
+<th style="text-align: right;">FF α</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Value weighted</td>
+<td style="text-align: right;">Mom</td>
+<td style="text-align: right;">-0.76</td>
+<td style="text-align: right;">-0.12</td>
+<td style="text-align: right;">0.04</td>
+<td style="text-align: right;">0.35</td>
+<td style="text-align: right;">0.39</td>
+<td style="text-align: right;">0.37</td>
+<td style="text-align: right;">0.54</td>
+<td style="text-align: right;">0.67</td>
+<td style="text-align: right;">0.76</td>
+<td style="text-align: right;">1.18</td>
+<td style="text-align: right;">1.94<br>(5.38)</td>
+<td style="text-align: right;">2.12<br>(6.46)</td>
+<td style="text-align: right;">2.38<br>(7.58)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Value weighted</td>
+<td style="text-align: right;">Rₜ₋₁₂:ₜ₋₁</td>
+<td style="text-align: right;">-0.71</td>
+<td style="text-align: right;">-0.12</td>
+<td style="text-align: right;">0.18</td>
+<td style="text-align: right;">0.31</td>
+<td style="text-align: right;">0.42</td>
+<td style="text-align: right;">0.40</td>
+<td style="text-align: right;">0.48</td>
+<td style="text-align: right;">0.66</td>
+<td style="text-align: right;">0.74</td>
+<td style="text-align: right;">1.08</td>
+<td style="text-align: right;">1.79<br>(5.13)</td>
+<td style="text-align: right;">1.96<br>(6.22)</td>
+<td style="text-align: right;">2.25<br>(7.43)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Value weighted</td>
+<td style="text-align: right;">Rₜ₋₆:ₜ₋₁</td>
+<td style="text-align: right;">-0.53</td>
+<td style="text-align: right;">0.22</td>
+<td style="text-align: right;">0.38</td>
+<td style="text-align: right;">0.40</td>
+<td style="text-align: right;">0.51</td>
+<td style="text-align: right;">0.48</td>
+<td style="text-align: right;">0.52</td>
+<td style="text-align: right;">0.51</td>
+<td style="text-align: right;">0.54</td>
+<td style="text-align: right;">0.97</td>
+<td style="text-align: right;">1.50<br>(4.17)</td>
+<td style="text-align: right;">1.71<br>(5.16)</td>
+<td style="text-align: right;">1.87<br>(5.98)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Value weighted</td>
+<td style="text-align: right;">R12M</td>
+<td style="text-align: right;">-0.37</td>
+<td style="text-align: right;">0.00</td>
+<td style="text-align: right;">0.26</td>
+<td style="text-align: right;">0.39</td>
+<td style="text-align: right;">0.37</td>
+<td style="text-align: right;">0.43</td>
+<td style="text-align: right;">0.54</td>
+<td style="text-align: right;">0.62</td>
+<td style="text-align: right;">0.73</td>
+<td style="text-align: right;">1.05</td>
+<td style="text-align: right;">1.42<br>(3.67)</td>
+<td style="text-align: right;">1.67<br>(4.82)</td>
+<td style="text-align: right;">1.95<br>(5.84)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Value weighted</td>
+<td style="text-align: right;">R9M</td>
+<td style="text-align: right;">0.01</td>
+<td style="text-align: right;">0.40</td>
+<td style="text-align: right;">0.40</td>
+<td style="text-align: right;">0.40</td>
+<td style="text-align: right;">0.43</td>
+<td style="text-align: right;">0.44</td>
+<td style="text-align: right;">0.44</td>
+<td style="text-align: right;">0.58</td>
+<td style="text-align: right;">0.65</td>
+<td style="text-align: right;">0.97</td>
+<td style="text-align: right;">0.96<br>(2.53)</td>
+<td style="text-align: right;">1.25<br>(3.69)</td>
+<td style="text-align: right;">1.46<br>(4.48)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Value weighted</td>
+<td style="text-align: right;">R6M</td>
+<td style="text-align: right;">0.21</td>
+<td style="text-align: right;">0.48</td>
+<td style="text-align: right;">0.48</td>
+<td style="text-align: right;">0.50</td>
+<td style="text-align: right;">0.53</td>
+<td style="text-align: right;">0.47</td>
+<td style="text-align: right;">0.51</td>
+<td style="text-align: right;">0.47</td>
+<td style="text-align: right;">0.53</td>
+<td style="text-align: right;">0.78</td>
+<td style="text-align: right;">0.57<br>(1.70)</td>
+<td style="text-align: right;">0.85<br>(2.74)</td>
+<td style="text-align: right;">0.97<br>(3.17)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Value weighted</td>
+<td style="text-align: right;">R3M</td>
+<td style="text-align: right;">0.33</td>
+<td style="text-align: right;">0.54</td>
+<td style="text-align: right;">0.60</td>
+<td style="text-align: right;">0.60</td>
+<td style="text-align: right;">0.61</td>
+<td style="text-align: right;">0.51</td>
+<td style="text-align: right;">0.46</td>
+<td style="text-align: right;">0.48</td>
+<td style="text-align: right;">0.48</td>
+<td style="text-align: right;">0.63</td>
+<td style="text-align: right;">0.30<br>(1.03)</td>
+<td style="text-align: right;">0.56<br>(2.04)</td>
+<td style="text-align: right;">0.69<br>(2.34)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Equal weighted</td>
+<td style="text-align: right;">Mom</td>
+<td style="text-align: right;">0.23</td>
+<td style="text-align: right;">0.35</td>
+<td style="text-align: right;">0.48</td>
+<td style="text-align: right;">0.63</td>
+<td style="text-align: right;">0.68</td>
+<td style="text-align: right;">0.78</td>
+<td style="text-align: right;">0.92</td>
+<td style="text-align: right;">1.04</td>
+<td style="text-align: right;">1.19</td>
+<td style="text-align: right;">1.37</td>
+<td style="text-align: right;">1.14<br>(3.63)</td>
+<td style="text-align: right;">1.24<br>(4.34)</td>
+<td style="text-align: right;">1.46<br>(5.17)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Equal weighted</td>
+<td style="text-align: right;">Rₜ₋₁₂:ₜ₋₁</td>
+<td style="text-align: right;">0.34</td>
+<td style="text-align: right;">0.36</td>
+<td style="text-align: right;">0.51</td>
+<td style="text-align: right;">0.63</td>
+<td style="text-align: right;">0.72</td>
+<td style="text-align: right;">0.80</td>
+<td style="text-align: right;">0.91</td>
+<td style="text-align: right;">1.01</td>
+<td style="text-align: right;">1.13</td>
+<td style="text-align: right;">1.28</td>
+<td style="text-align: right;">0.94<br>(3.01)</td>
+<td style="text-align: right;">1.04<br>(3.66)</td>
+<td style="text-align: right;">1.29<br>(4.54)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Equal weighted</td>
+<td style="text-align: right;">Rₜ₋₆:ₜ₋₁</td>
+<td style="text-align: right;">0.41</td>
+<td style="text-align: right;">0.38</td>
+<td style="text-align: right;">0.56</td>
+<td style="text-align: right;">0.71</td>
+<td style="text-align: right;">0.71</td>
+<td style="text-align: right;">0.80</td>
+<td style="text-align: right;">0.80</td>
+<td style="text-align: right;">0.87</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: right;">1.23</td>
+<td style="text-align: right;">0.82<br>(2.86)</td>
+<td style="text-align: right;">0.95<br>(3.59)</td>
+<td style="text-align: right;">1.11<br>(4.47)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Equal weighted</td>
+<td style="text-align: right;">R12M</td>
+<td style="text-align: right;">1.04</td>
+<td style="text-align: right;">0.30</td>
+<td style="text-align: right;">0.45</td>
+<td style="text-align: right;">0.52</td>
+<td style="text-align: right;">0.59</td>
+<td style="text-align: right;">0.72</td>
+<td style="text-align: right;">0.84</td>
+<td style="text-align: right;">0.94</td>
+<td style="text-align: right;">1.08</td>
+<td style="text-align: right;">1.20</td>
+<td style="text-align: right;">0.16<br>(0.45)</td>
+<td style="text-align: right;">0.30<br>(0.97)</td>
+<td style="text-align: right;">0.55<br>(1.75)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Equal weighted</td>
+<td style="text-align: right;">R9M</td>
+<td style="text-align: right;">1.22</td>
+<td style="text-align: right;">0.43</td>
+<td style="text-align: right;">0.45</td>
+<td style="text-align: right;">0.50</td>
+<td style="text-align: right;">0.63</td>
+<td style="text-align: right;">0.67</td>
+<td style="text-align: right;">0.75</td>
+<td style="text-align: right;">0.77</td>
+<td style="text-align: right;">0.93</td>
+<td style="text-align: right;">1.18</td>
+<td style="text-align: right;">-0.04<br>(-0.12)</td>
+<td style="text-align: right;">0.14<br>(0.44)</td>
+<td style="text-align: right;">0.38<br>(1.21)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Equal weighted</td>
+<td style="text-align: right;">R6M</td>
+<td style="text-align: right;">1.43</td>
+<td style="text-align: right;">0.53</td>
+<td style="text-align: right;">0.54</td>
+<td style="text-align: right;">0.54</td>
+<td style="text-align: right;">0.55</td>
+<td style="text-align: right;">0.69</td>
+<td style="text-align: right;">0.70</td>
+<td style="text-align: right;">0.72</td>
+<td style="text-align: right;">0.81</td>
+<td style="text-align: right;">0.90</td>
+<td style="text-align: right;">-0.53<br>(-1.62)</td>
+<td style="text-align: right;">-0.34<br>(-1.15)</td>
+<td style="text-align: right;">-0.14<br>(-0.46)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Equal weighted</td>
+<td style="text-align: right;">R3M</td>
+<td style="text-align: right;">1.84</td>
+<td style="text-align: right;">0.67</td>
+<td style="text-align: right;">0.60</td>
+<td style="text-align: right;">0.58</td>
+<td style="text-align: right;">0.66</td>
+<td style="text-align: right;">0.63</td>
+<td style="text-align: right;">0.60</td>
+<td style="text-align: right;">0.64</td>
+<td style="text-align: right;">0.66</td>
+<td style="text-align: right;">0.51</td>
+<td style="text-align: right;">-1.33<br>(-4.61)</td>
+<td style="text-align: right;">-1.14<br>(-4.22)</td>
+<td style="text-align: right;">-1.01<br>(-3.47)</td>
+</tr>
+</tbody>
+</table>
+</div>
+</figure>
+</div>
+</div>
+</div>
+</figure>
+</div>
+</div>
+<p>The Mom winner-minus-loser spread averages 1.94% per month with value weights and 1.14% with equal weights. BEM report 1.95% and 1.08%, respectively.</p>
+</section>
+<section id="returns-at-longer-horizons" class="level3" data-number="11.4.2">
+<h3 data-number="11.4.2" class="anchored" data-anchor-id="returns-at-longer-horizons"><span class="header-section-number">11.4.2</span> Returns at Longer Horizons</h3>
+<p>Keep the formation-month decile assignments and capitalization weights. For each <span class="math inline">\(k\)</span>, attach the return in month <span class="math inline">\(t+k\)</span> and compute the spread across stocks with a return in that month. A delisting contributes its adjusted return in the month it occurs. We use realized returns through December 2012 and match the factors to the month in which each return is realized.</p>
+<div id="74e87f18" class="cell" data-execution_count="12">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> eap_pl._data <span class="im">import</span> monthly_stock_returns</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>holding_returns <span class="op">=</span> (</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    monthly_stock_returns(first.dt.offset_by(<span class="st">"1mo"</span>), last.dt.offset_by(<span class="st">"1mo"</span>))</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    .collect()</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>    .join(factors.select(<span class="st">"month"</span>, <span class="st">"rf"</span>, <span class="st">"market"</span>), on<span class="op">=</span><span class="st">"month"</span>, validate<span class="op">=</span><span class="st">"m:1"</span>)</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>    .select(<span class="st">"permno"</span>, <span class="st">"market"</span>, holding<span class="op">=</span><span class="st">"month"</span>, excess<span class="op">=</span><span class="dv">100</span> <span class="op">*</span> pl.col(<span class="st">"ret"</span>) <span class="op">-</span> pl.col(<span class="st">"rf"</span>))</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> returns_at_horizon(stocks, k):</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>    realized <span class="op">=</span> (</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>        stocks.with_columns(holding<span class="op">=</span>pl.col(<span class="st">"month"</span>).dt.offset_by(<span class="ss">f"</span><span class="sc">{</span>k<span class="sc">}</span><span class="ss">mo"</span>))</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>        .drop(<span class="st">"month"</span>)</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>        .join(holding_returns, on<span class="op">=</span>[<span class="st">"permno"</span>, <span class="st">"holding"</span>], validate<span class="op">=</span><span class="st">"1:1"</span>)</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>        .rename({<span class="st">"holding"</span>: <span class="st">"month"</span>})</span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> portfolio_months(realized, [<span class="st">"portfolio"</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="cell" data-execution_count="13">
+<div id="tbl-bem11-horizons" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="13">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bem11-horizons-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;11.4: Winner-minus-loser returns and FF alphas by horizon (BEM Table 11.4)
+</figcaption>
+<div aria-describedby="tbl-bem11-horizons-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output cell-output-display cell-output-markdown">
+<table class="cell caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 6%">
+<col style="width: 6%">
+<col style="width: 6%">
+<col style="width: 6%">
+<col style="width: 6%">
+<col style="width: 6%">
+<col style="width: 6%">
+<col style="width: 6%">
+<col style="width: 6%">
+<col style="width: 6%">
+<col style="width: 6%">
+<col style="width: 6%">
+<col style="width: 6%">
+<col style="width: 6%">
+<col style="width: 6%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Weights</th>
+<th style="text-align: right;">Signal</th>
+<th style="text-align: right;">Statistic</th>
+<th style="text-align: right;">t+1</th>
+<th style="text-align: right;">t+2</th>
+<th style="text-align: right;">t+3</th>
+<th style="text-align: right;">t+4</th>
+<th style="text-align: right;">t+5</th>
+<th style="text-align: right;">t+6</th>
+<th style="text-align: right;">t+7</th>
+<th style="text-align: right;">t+8</th>
+<th style="text-align: right;">t+9</th>
+<th style="text-align: right;">t+10</th>
+<th style="text-align: right;">t+11</th>
+<th style="text-align: right;">t+12</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Value weighted</td>
+<td style="text-align: right;">Mom</td>
+<td style="text-align: right;">Return</td>
+<td style="text-align: right;">1.94<br>(5.38)</td>
+<td style="text-align: right;">1.71<br>(5.06)</td>
+<td style="text-align: right;">1.23<br>(3.42)</td>
+<td style="text-align: right;">1.19<br>(3.25)</td>
+<td style="text-align: right;">0.91<br>(2.86)</td>
+<td style="text-align: right;">0.69<br>(2.45)</td>
+<td style="text-align: right;">0.54<br>(1.67)</td>
+<td style="text-align: right;">0.25<br>(0.79)</td>
+<td style="text-align: right;">0.03<br>(0.12)</td>
+<td style="text-align: right;">-0.07<br>(-0.22)</td>
+<td style="text-align: right;">-0.62<br>(-1.99)</td>
+<td style="text-align: right;">-0.63<br>(-1.99)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Value weighted</td>
+<td style="text-align: right;">Mom</td>
+<td style="text-align: right;">FF α</td>
+<td style="text-align: right;">2.38<br>(7.58)</td>
+<td style="text-align: right;">2.16<br>(7.19)</td>
+<td style="text-align: right;">1.62<br>(4.73)</td>
+<td style="text-align: right;">1.72<br>(5.58)</td>
+<td style="text-align: right;">1.45<br>(5.39)</td>
+<td style="text-align: right;">1.23<br>(4.95)</td>
+<td style="text-align: right;">1.10<br>(4.30)</td>
+<td style="text-align: right;">0.77<br>(2.95)</td>
+<td style="text-align: right;">0.55<br>(2.20)</td>
+<td style="text-align: right;">0.50<br>(1.93)</td>
+<td style="text-align: right;">-0.03<br>(-0.13)</td>
+<td style="text-align: right;">0.01<br>(0.05)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Value weighted</td>
+<td style="text-align: right;">Rₜ₋₁₂:ₜ₋₁</td>
+<td style="text-align: right;">Return</td>
+<td style="text-align: right;">1.79<br>(5.13)</td>
+<td style="text-align: right;">1.42<br>(4.12)</td>
+<td style="text-align: right;">1.21<br>(3.44)</td>
+<td style="text-align: right;">1.08<br>(3.06)</td>
+<td style="text-align: right;">0.85<br>(2.55)</td>
+<td style="text-align: right;">0.67<br>(2.30)</td>
+<td style="text-align: right;">0.43<br>(1.38)</td>
+<td style="text-align: right;">0.08<br>(0.25)</td>
+<td style="text-align: right;">0.03<br>(0.09)</td>
+<td style="text-align: right;">-0.26<br>(-0.86)</td>
+<td style="text-align: right;">-0.46<br>(-1.42)</td>
+<td style="text-align: right;">-0.41<br>(-1.25)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Value weighted</td>
+<td style="text-align: right;">Rₜ₋₁₂:ₜ₋₁</td>
+<td style="text-align: right;">FF α</td>
+<td style="text-align: right;">2.25<br>(7.43)</td>
+<td style="text-align: right;">1.89<br>(6.19)</td>
+<td style="text-align: right;">1.69<br>(5.41)</td>
+<td style="text-align: right;">1.64<br>(5.80)</td>
+<td style="text-align: right;">1.42<br>(5.11)</td>
+<td style="text-align: right;">1.25<br>(5.03)</td>
+<td style="text-align: right;">0.98<br>(3.78)</td>
+<td style="text-align: right;">0.65<br>(2.49)</td>
+<td style="text-align: right;">0.63<br>(2.50)</td>
+<td style="text-align: right;">0.32<br>(1.26)</td>
+<td style="text-align: right;">0.18<br>(0.66)</td>
+<td style="text-align: right;">0.24<br>(0.92)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Value weighted</td>
+<td style="text-align: right;">Rₜ₋₆:ₜ₋₁</td>
+<td style="text-align: right;">Return</td>
+<td style="text-align: right;">1.50<br>(4.17)</td>
+<td style="text-align: right;">1.29<br>(3.91)</td>
+<td style="text-align: right;">1.14<br>(3.58)</td>
+<td style="text-align: right;">1.16<br>(3.56)</td>
+<td style="text-align: right;">1.23<br>(4.11)</td>
+<td style="text-align: right;">1.70<br>(6.10)</td>
+<td style="text-align: right;">1.40<br>(4.55)</td>
+<td style="text-align: right;">0.97<br>(3.25)</td>
+<td style="text-align: right;">0.77<br>(3.00)</td>
+<td style="text-align: right;">0.43<br>(1.60)</td>
+<td style="text-align: right;">-0.25<br>(-0.90)</td>
+<td style="text-align: right;">-0.80<br>(-2.49)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Value weighted</td>
+<td style="text-align: right;">Rₜ₋₆:ₜ₋₁</td>
+<td style="text-align: right;">FF α</td>
+<td style="text-align: right;">1.87<br>(5.98)</td>
+<td style="text-align: right;">1.61<br>(5.45)</td>
+<td style="text-align: right;">1.39<br>(4.48)</td>
+<td style="text-align: right;">1.51<br>(4.95)</td>
+<td style="text-align: right;">1.56<br>(5.61)</td>
+<td style="text-align: right;">2.01<br>(7.81)</td>
+<td style="text-align: right;">1.75<br>(6.47)</td>
+<td style="text-align: right;">1.32<br>(5.09)</td>
+<td style="text-align: right;">1.16<br>(5.08)</td>
+<td style="text-align: right;">0.92<br>(4.13)</td>
+<td style="text-align: right;">0.25<br>(1.08)</td>
+<td style="text-align: right;">-0.27<br>(-1.06)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Value weighted</td>
+<td style="text-align: right;">R12M</td>
+<td style="text-align: right;">Return</td>
+<td style="text-align: right;">1.42<br>(3.67)</td>
+<td style="text-align: right;">1.60<br>(4.39)</td>
+<td style="text-align: right;">1.36<br>(3.82)</td>
+<td style="text-align: right;">1.26<br>(3.46)</td>
+<td style="text-align: right;">1.01<br>(2.84)</td>
+<td style="text-align: right;">0.93<br>(2.81)</td>
+<td style="text-align: right;">0.56<br>(1.72)</td>
+<td style="text-align: right;">0.40<br>(1.25)</td>
+<td style="text-align: right;">0.07<br>(0.22)</td>
+<td style="text-align: right;">0.05<br>(0.18)</td>
+<td style="text-align: right;">-0.30<br>(-0.96)</td>
+<td style="text-align: right;">-0.61<br>(-1.57)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Value weighted</td>
+<td style="text-align: right;">R12M</td>
+<td style="text-align: right;">FF α</td>
+<td style="text-align: right;">1.95<br>(5.84)</td>
+<td style="text-align: right;">2.08<br>(6.73)</td>
+<td style="text-align: right;">1.85<br>(5.82)</td>
+<td style="text-align: right;">1.77<br>(5.61)</td>
+<td style="text-align: right;">1.59<br>(5.57)</td>
+<td style="text-align: right;">1.51<br>(5.50)</td>
+<td style="text-align: right;">1.18<br>(4.55)</td>
+<td style="text-align: right;">0.96<br>(3.61)</td>
+<td style="text-align: right;">0.68<br>(2.55)</td>
+<td style="text-align: right;">0.65<br>(2.58)</td>
+<td style="text-align: right;">0.26<br>(0.98)</td>
+<td style="text-align: right;">0.08<br>(0.28)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Value weighted</td>
+<td style="text-align: right;">R9M</td>
+<td style="text-align: right;">Return</td>
+<td style="text-align: right;">0.96<br>(2.53)</td>
+<td style="text-align: right;">1.29<br>(3.45)</td>
+<td style="text-align: right;">1.55<br>(4.43)</td>
+<td style="text-align: right;">1.69<br>(4.85)</td>
+<td style="text-align: right;">1.44<br>(4.12)</td>
+<td style="text-align: right;">1.33<br>(4.06)</td>
+<td style="text-align: right;">1.02<br>(3.12)</td>
+<td style="text-align: right;">0.80<br>(2.51)</td>
+<td style="text-align: right;">0.38<br>(1.13)</td>
+<td style="text-align: right;">0.22<br>(0.75)</td>
+<td style="text-align: right;">0.05<br>(0.19)</td>
+<td style="text-align: right;">-0.59<br>(-1.70)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Value weighted</td>
+<td style="text-align: right;">R9M</td>
+<td style="text-align: right;">FF α</td>
+<td style="text-align: right;">1.46<br>(4.48)</td>
+<td style="text-align: right;">1.74<br>(5.40)</td>
+<td style="text-align: right;">1.96<br>(6.35)</td>
+<td style="text-align: right;">2.09<br>(6.87)</td>
+<td style="text-align: right;">1.88<br>(6.27)</td>
+<td style="text-align: right;">1.77<br>(5.92)</td>
+<td style="text-align: right;">1.59<br>(5.73)</td>
+<td style="text-align: right;">1.37<br>(5.24)</td>
+<td style="text-align: right;">0.91<br>(3.38)</td>
+<td style="text-align: right;">0.70<br>(2.77)</td>
+<td style="text-align: right;">0.55<br>(2.32)</td>
+<td style="text-align: right;">0.02<br>(0.08)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Value weighted</td>
+<td style="text-align: right;">R6M</td>
+<td style="text-align: right;">Return</td>
+<td style="text-align: right;">0.57<br>(1.70)</td>
+<td style="text-align: right;">1.26<br>(3.36)</td>
+<td style="text-align: right;">1.22<br>(3.57)</td>
+<td style="text-align: right;">1.17<br>(3.63)</td>
+<td style="text-align: right;">1.19<br>(3.72)</td>
+<td style="text-align: right;">1.34<br>(4.45)</td>
+<td style="text-align: right;">1.64<br>(5.43)</td>
+<td style="text-align: right;">1.37<br>(4.31)</td>
+<td style="text-align: right;">0.93<br>(3.00)</td>
+<td style="text-align: right;">0.79<br>(3.14)</td>
+<td style="text-align: right;">0.42<br>(1.56)</td>
+<td style="text-align: right;">-0.34<br>(-1.03)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Value weighted</td>
+<td style="text-align: right;">R6M</td>
+<td style="text-align: right;">FF α</td>
+<td style="text-align: right;">0.97<br>(3.17)</td>
+<td style="text-align: right;">1.64<br>(5.07)</td>
+<td style="text-align: right;">1.52<br>(4.93)</td>
+<td style="text-align: right;">1.43<br>(4.57)</td>
+<td style="text-align: right;">1.54<br>(5.10)</td>
+<td style="text-align: right;">1.69<br>(5.99)</td>
+<td style="text-align: right;">1.99<br>(7.65)</td>
+<td style="text-align: right;">1.72<br>(6.19)</td>
+<td style="text-align: right;">1.30<br>(4.87)</td>
+<td style="text-align: right;">1.15<br>(5.10)</td>
+<td style="text-align: right;">0.89<br>(4.06)</td>
+<td style="text-align: right;">0.21<br>(0.85)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Value weighted</td>
+<td style="text-align: right;">R3M</td>
+<td style="text-align: right;">Return</td>
+<td style="text-align: right;">0.30<br>(1.03)</td>
+<td style="text-align: right;">1.04<br>(3.71)</td>
+<td style="text-align: right;">0.95<br>(3.21)</td>
+<td style="text-align: right;">0.91<br>(3.12)</td>
+<td style="text-align: right;">0.72<br>(2.49)</td>
+<td style="text-align: right;">0.94<br>(3.49)</td>
+<td style="text-align: right;">0.85<br>(3.33)</td>
+<td style="text-align: right;">0.97<br>(3.28)</td>
+<td style="text-align: right;">1.04<br>(3.33)</td>
+<td style="text-align: right;">1.32<br>(4.90)</td>
+<td style="text-align: right;">1.08<br>(4.26)</td>
+<td style="text-align: right;">0.07<br>(0.26)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Value weighted</td>
+<td style="text-align: right;">R3M</td>
+<td style="text-align: right;">FF α</td>
+<td style="text-align: right;">0.69<br>(2.34)</td>
+<td style="text-align: right;">1.33<br>(4.91)</td>
+<td style="text-align: right;">1.17<br>(4.29)</td>
+<td style="text-align: right;">1.06<br>(3.57)</td>
+<td style="text-align: right;">0.94<br>(3.50)</td>
+<td style="text-align: right;">1.14<br>(4.30)</td>
+<td style="text-align: right;">1.14<br>(4.26)</td>
+<td style="text-align: right;">1.27<br>(4.55)</td>
+<td style="text-align: right;">1.32<br>(5.05)</td>
+<td style="text-align: right;">1.48<br>(6.01)</td>
+<td style="text-align: right;">1.23<br>(5.17)</td>
+<td style="text-align: right;">0.35<br>(1.43)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Equal weighted</td>
+<td style="text-align: right;">Mom</td>
+<td style="text-align: right;">Return</td>
+<td style="text-align: right;">1.14<br>(3.63)</td>
+<td style="text-align: right;">1.02<br>(3.37)</td>
+<td style="text-align: right;">0.71<br>(2.33)</td>
+<td style="text-align: right;">0.54<br>(1.77)</td>
+<td style="text-align: right;">0.38<br>(1.31)</td>
+<td style="text-align: right;">0.12<br>(0.42)</td>
+<td style="text-align: right;">-0.06<br>(-0.20)</td>
+<td style="text-align: right;">-0.20<br>(-0.74)</td>
+<td style="text-align: right;">-0.34<br>(-1.44)</td>
+<td style="text-align: right;">-0.55<br>(-2.25)</td>
+<td style="text-align: right;">-0.79<br>(-3.33)</td>
+<td style="text-align: right;">-1.00<br>(-3.96)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Equal weighted</td>
+<td style="text-align: right;">Mom</td>
+<td style="text-align: right;">FF α</td>
+<td style="text-align: right;">1.46<br>(5.17)</td>
+<td style="text-align: right;">1.35<br>(4.99)</td>
+<td style="text-align: right;">1.04<br>(3.71)</td>
+<td style="text-align: right;">0.90<br>(3.33)</td>
+<td style="text-align: right;">0.75<br>(2.85)</td>
+<td style="text-align: right;">0.48<br>(1.92)</td>
+<td style="text-align: right;">0.32<br>(1.26)</td>
+<td style="text-align: right;">0.20<br>(0.80)</td>
+<td style="text-align: right;">0.03<br>(0.11)</td>
+<td style="text-align: right;">-0.16<br>(-0.68)</td>
+<td style="text-align: right;">-0.40<br>(-1.82)</td>
+<td style="text-align: right;">-0.57<br>(-2.52)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Equal weighted</td>
+<td style="text-align: right;">Rₜ₋₁₂:ₜ₋₁</td>
+<td style="text-align: right;">Return</td>
+<td style="text-align: right;">0.94<br>(3.01)</td>
+<td style="text-align: right;">0.87<br>(2.82)</td>
+<td style="text-align: right;">0.59<br>(1.92)</td>
+<td style="text-align: right;">0.46<br>(1.50)</td>
+<td style="text-align: right;">0.24<br>(0.82)</td>
+<td style="text-align: right;">0.07<br>(0.24)</td>
+<td style="text-align: right;">-0.10<br>(-0.37)</td>
+<td style="text-align: right;">-0.29<br>(-1.07)</td>
+<td style="text-align: right;">-0.45<br>(-1.79)</td>
+<td style="text-align: right;">-0.63<br>(-2.60)</td>
+<td style="text-align: right;">-0.78<br>(-3.19)</td>
+<td style="text-align: right;">-0.80<br>(-3.21)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Equal weighted</td>
+<td style="text-align: right;">Rₜ₋₁₂:ₜ₋₁</td>
+<td style="text-align: right;">FF α</td>
+<td style="text-align: right;">1.29<br>(4.54)</td>
+<td style="text-align: right;">1.22<br>(4.52)</td>
+<td style="text-align: right;">0.96<br>(3.42)</td>
+<td style="text-align: right;">0.85<br>(3.16)</td>
+<td style="text-align: right;">0.63<br>(2.38)</td>
+<td style="text-align: right;">0.44<br>(1.76)</td>
+<td style="text-align: right;">0.29<br>(1.14)</td>
+<td style="text-align: right;">0.12<br>(0.48)</td>
+<td style="text-align: right;">-0.04<br>(-0.17)</td>
+<td style="text-align: right;">-0.23<br>(-1.03)</td>
+<td style="text-align: right;">-0.38<br>(-1.70)</td>
+<td style="text-align: right;">-0.39<br>(-1.72)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Equal weighted</td>
+<td style="text-align: right;">Rₜ₋₆:ₜ₋₁</td>
+<td style="text-align: right;">Return</td>
+<td style="text-align: right;">0.82<br>(2.86)</td>
+<td style="text-align: right;">0.94<br>(3.38)</td>
+<td style="text-align: right;">0.84<br>(3.01)</td>
+<td style="text-align: right;">0.76<br>(2.66)</td>
+<td style="text-align: right;">0.71<br>(2.60)</td>
+<td style="text-align: right;">0.97<br>(3.76)</td>
+<td style="text-align: right;">0.65<br>(2.55)</td>
+<td style="text-align: right;">0.31<br>(1.24)</td>
+<td style="text-align: right;">0.18<br>(0.79)</td>
+<td style="text-align: right;">0.01<br>(0.05)</td>
+<td style="text-align: right;">-0.40<br>(-1.82)</td>
+<td style="text-align: right;">-0.85<br>(-3.64)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Equal weighted</td>
+<td style="text-align: right;">Rₜ₋₆:ₜ₋₁</td>
+<td style="text-align: right;">FF α</td>
+<td style="text-align: right;">1.11<br>(4.47)</td>
+<td style="text-align: right;">1.20<br>(5.03)</td>
+<td style="text-align: right;">1.10<br>(4.47)</td>
+<td style="text-align: right;">1.04<br>(4.12)</td>
+<td style="text-align: right;">0.95<br>(3.86)</td>
+<td style="text-align: right;">1.14<br>(4.78)</td>
+<td style="text-align: right;">0.86<br>(3.60)</td>
+<td style="text-align: right;">0.55<br>(2.32)</td>
+<td style="text-align: right;">0.43<br>(1.98)</td>
+<td style="text-align: right;">0.30<br>(1.41)</td>
+<td style="text-align: right;">-0.10<br>(-0.48)</td>
+<td style="text-align: right;">-0.49<br>(-2.29)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Equal weighted</td>
+<td style="text-align: right;">R12M</td>
+<td style="text-align: right;">Return</td>
+<td style="text-align: right;">0.16<br>(0.45)</td>
+<td style="text-align: right;">0.95<br>(3.00)</td>
+<td style="text-align: right;">0.85<br>(2.77)</td>
+<td style="text-align: right;">0.59<br>(1.91)</td>
+<td style="text-align: right;">0.45<br>(1.46)</td>
+<td style="text-align: right;">0.24<br>(0.79)</td>
+<td style="text-align: right;">0.04<br>(0.14)</td>
+<td style="text-align: right;">-0.10<br>(-0.35)</td>
+<td style="text-align: right;">-0.29<br>(-1.07)</td>
+<td style="text-align: right;">-0.45<br>(-1.79)</td>
+<td style="text-align: right;">-0.63<br>(-2.60)</td>
+<td style="text-align: right;">-0.80<br>(-3.26)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Equal weighted</td>
+<td style="text-align: right;">R12M</td>
+<td style="text-align: right;">FF α</td>
+<td style="text-align: right;">0.55<br>(1.75)</td>
+<td style="text-align: right;">1.29<br>(4.50)</td>
+<td style="text-align: right;">1.21<br>(4.46)</td>
+<td style="text-align: right;">0.96<br>(3.39)</td>
+<td style="text-align: right;">0.85<br>(3.11)</td>
+<td style="text-align: right;">0.63<br>(2.36)</td>
+<td style="text-align: right;">0.42<br>(1.66)</td>
+<td style="text-align: right;">0.29<br>(1.16)</td>
+<td style="text-align: right;">0.11<br>(0.45)</td>
+<td style="text-align: right;">-0.05<br>(-0.19)</td>
+<td style="text-align: right;">-0.24<br>(-1.03)</td>
+<td style="text-align: right;">-0.40<br>(-1.79)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Equal weighted</td>
+<td style="text-align: right;">R9M</td>
+<td style="text-align: right;">Return</td>
+<td style="text-align: right;">-0.04<br>(-0.12)</td>
+<td style="text-align: right;">0.83<br>(2.60)</td>
+<td style="text-align: right;">0.99<br>(3.24)</td>
+<td style="text-align: right;">1.07<br>(3.68)</td>
+<td style="text-align: right;">0.89<br>(3.03)</td>
+<td style="text-align: right;">0.58<br>(1.99)</td>
+<td style="text-align: right;">0.34<br>(1.24)</td>
+<td style="text-align: right;">0.12<br>(0.42)</td>
+<td style="text-align: right;">-0.09<br>(-0.32)</td>
+<td style="text-align: right;">-0.25<br>(-1.02)</td>
+<td style="text-align: right;">-0.37<br>(-1.56)</td>
+<td style="text-align: right;">-0.61<br>(-2.68)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Equal weighted</td>
+<td style="text-align: right;">R9M</td>
+<td style="text-align: right;">FF α</td>
+<td style="text-align: right;">0.38<br>(1.21)</td>
+<td style="text-align: right;">1.17<br>(4.24)</td>
+<td style="text-align: right;">1.31<br>(4.87)</td>
+<td style="text-align: right;">1.31<br>(4.96)</td>
+<td style="text-align: right;">1.16<br>(4.42)</td>
+<td style="text-align: right;">0.88<br>(3.33)</td>
+<td style="text-align: right;">0.66<br>(2.73)</td>
+<td style="text-align: right;">0.46<br>(1.80)</td>
+<td style="text-align: right;">0.27<br>(1.10)</td>
+<td style="text-align: right;">0.08<br>(0.32)</td>
+<td style="text-align: right;">-0.02<br>(-0.08)</td>
+<td style="text-align: right;">-0.25<br>(-1.15)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Equal weighted</td>
+<td style="text-align: right;">R6M</td>
+<td style="text-align: right;">Return</td>
+<td style="text-align: right;">-0.53<br>(-1.62)</td>
+<td style="text-align: right;">0.83<br>(2.91)</td>
+<td style="text-align: right;">0.93<br>(3.33)</td>
+<td style="text-align: right;">0.84<br>(2.97)</td>
+<td style="text-align: right;">0.77<br>(2.67)</td>
+<td style="text-align: right;">0.71<br>(2.58)</td>
+<td style="text-align: right;">0.97<br>(3.73)</td>
+<td style="text-align: right;">0.66<br>(2.54)</td>
+<td style="text-align: right;">0.31<br>(1.23)</td>
+<td style="text-align: right;">0.18<br>(0.79)</td>
+<td style="text-align: right;">0.01<br>(0.05)</td>
+<td style="text-align: right;">-0.42<br>(-1.88)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Equal weighted</td>
+<td style="text-align: right;">R6M</td>
+<td style="text-align: right;">FF α</td>
+<td style="text-align: right;">-0.14<br>(-0.46)</td>
+<td style="text-align: right;">1.11<br>(4.50)</td>
+<td style="text-align: right;">1.19<br>(4.95)</td>
+<td style="text-align: right;">1.10<br>(4.43)</td>
+<td style="text-align: right;">1.04<br>(4.13)</td>
+<td style="text-align: right;">0.95<br>(3.85)</td>
+<td style="text-align: right;">1.13<br>(4.76)</td>
+<td style="text-align: right;">0.86<br>(3.59)</td>
+<td style="text-align: right;">0.55<br>(2.29)</td>
+<td style="text-align: right;">0.43<br>(1.99)</td>
+<td style="text-align: right;">0.30<br>(1.40)</td>
+<td style="text-align: right;">-0.11<br>(-0.54)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Equal weighted</td>
+<td style="text-align: right;">R3M</td>
+<td style="text-align: right;">Return</td>
+<td style="text-align: right;">-1.33<br>(-4.61)</td>
+<td style="text-align: right;">0.54<br>(2.53)</td>
+<td style="text-align: right;">0.69<br>(3.24)</td>
+<td style="text-align: right;">0.59<br>(2.49)</td>
+<td style="text-align: right;">0.67<br>(2.78)</td>
+<td style="text-align: right;">0.66<br>(2.91)</td>
+<td style="text-align: right;">0.54<br>(2.55)</td>
+<td style="text-align: right;">0.37<br>(1.59)</td>
+<td style="text-align: right;">0.48<br>(2.09)</td>
+<td style="text-align: right;">0.83<br>(3.97)</td>
+<td style="text-align: right;">0.57<br>(2.98)</td>
+<td style="text-align: right;">0.08<br>(0.47)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Equal weighted</td>
+<td style="text-align: right;">R3M</td>
+<td style="text-align: right;">FF α</td>
+<td style="text-align: right;">-1.01<br>(-3.47)</td>
+<td style="text-align: right;">0.74<br>(3.53)</td>
+<td style="text-align: right;">0.89<br>(4.61)</td>
+<td style="text-align: right;">0.79<br>(3.60)</td>
+<td style="text-align: right;">0.86<br>(4.17)</td>
+<td style="text-align: right;">0.83<br>(4.21)</td>
+<td style="text-align: right;">0.72<br>(3.70)</td>
+<td style="text-align: right;">0.55<br>(2.56)</td>
+<td style="text-align: right;">0.63<br>(2.94)</td>
+<td style="text-align: right;">0.87<br>(4.26)</td>
+<td style="text-align: right;">0.68<br>(3.61)</td>
+<td style="text-align: right;">0.27<br>(1.47)</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+<p>The value-weighted Mom spread turns negative at the longer horizons, reaching −0.63% in month <span class="math inline">\(t+12\)</span>. Its FF alpha in that month is close to zero.</p>
+</section>
+<section id="controlling-for-market-capitalization" class="level3" data-number="11.4.3">
+<h3 data-number="11.4.3" class="anchored" data-anchor-id="controlling-for-market-capitalization"><span class="header-section-number">11.4.3</span> Controlling for Market Capitalization</h3>
+<p>First divide stocks into five capitalization groups. Then compute Mom quintile breakpoints separately within each capitalization group. The last column averages the control portfolios each month before calculating the mean return or estimating an alpha.</p>
+<div id="a40763d0" class="cell" data-execution_count="14">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> eap_pl <span class="im">import</span> bivariate_months</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>sort_panel <span class="op">=</span> panel.select(<span class="op">*</span>keys, <span class="st">"mom"</span>, <span class="st">"beta"</span>, <span class="st">"cap"</span>, <span class="st">"bm"</span>, <span class="st">"excess"</span>, <span class="st">"market"</span>)</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> two_way_results(</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>    monthly, weight, control_labels, <span class="op">*</span>, ff_factors<span class="op">=</span>ff3, show_cells<span class="op">=</span><span class="va">False</span>, show_average<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>):</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>    groups <span class="op">=</span> monthly.partition_by(<span class="st">"control"</span>, as_dict<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>    series <span class="op">=</span> {label: groups[i,] <span class="cf">for</span> i, label <span class="kw">in</span> <span class="bu">enumerate</span>(control_labels, <span class="dv">1</span>)}</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> show_average:</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>        series[<span class="st">"Average"</span>] <span class="op">=</span> monthly.group_by(<span class="st">"month"</span>, <span class="st">"target"</span>).agg(</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>            pl.col(weight).mean(), pl.col(<span class="st">"market"</span>).first(),</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>    rows <span class="op">=</span> []</span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> show_cells:</span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> target <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">1</span>, <span class="dv">6</span>):</span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>            rows.append({</span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>                <span class="st">"Statistic"</span>: <span class="ss">f"Mom </span><span class="sc">{</span>target<span class="sc">}</span><span class="ss">"</span>,</span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>                <span class="op">**</span>{label: <span class="ss">f'</span><span class="sc">{</span>cell<span class="sc">.</span><span class="bu">filter</span>(pl.col(<span class="st">"target"</span>) <span class="op">==</span> target)[weight]<span class="sc">.</span>mean()<span class="sc">:.2f}</span><span class="ss">'</span></span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>                   <span class="cf">for</span> label, cell <span class="kw">in</span> series.items()},</span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>            })</span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a>    stats <span class="op">=</span> {</span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a>        label: spread_statistics(</span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a>            spread(cell, <span class="dv">5</span>, <span class="dv">1</span>, <span class="st">"target"</span>, weight).with_columns(</span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a>                pl.col(<span class="st">"month"</span>).dt.offset_by(<span class="st">"1mo"</span>)</span>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a>            ),</span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a>            weight, ff_factors<span class="op">=</span>ff_factors,</span>
+<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> label, cell <span class="kw">in</span> series.items()</span>
+<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb8-34"><a href="#cb8-34" aria-hidden="true" tabindex="-1"></a>    rows.extend({</span>
+<span id="cb8-35"><a href="#cb8-35" aria-hidden="true" tabindex="-1"></a>        <span class="st">"Statistic"</span>: <span class="ss">f"5–1 </span><span class="sc">{</span>metric<span class="sc">}</span><span class="ss">"</span>,</span>
+<span id="cb8-36"><a href="#cb8-36" aria-hidden="true" tabindex="-1"></a>        <span class="op">**</span>{label: value[metric] <span class="cf">for</span> label, value <span class="kw">in</span> stats.items()},</span>
+<span id="cb8-37"><a href="#cb8-37" aria-hidden="true" tabindex="-1"></a>    } <span class="cf">for</span> metric <span class="kw">in</span> (<span class="st">"Return"</span>, <span class="st">"CAPM α"</span>, <span class="st">"FF α"</span>))</span>
+<span id="cb8-38"><a href="#cb8-38" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> [{<span class="st">"Weights"</span>: weights[weight], <span class="op">**</span>row} <span class="cf">for</span> row <span class="kw">in</span> rows]</span>
+<span id="cb8-39"><a href="#cb8-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-40"><a href="#cb8-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-41"><a href="#cb8-41" aria-hidden="true" tabindex="-1"></a>quintiles <span class="op">=</span> [<span class="bu">str</span>(i) <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">1</span>, <span class="dv">6</span>)]</span>
+<span id="cb8-42"><a href="#cb8-42" aria-hidden="true" tabindex="-1"></a>size_momentum <span class="op">=</span> bivariate_months(sort_panel, <span class="st">"cap"</span>, <span class="st">"mom"</span>, nyse<span class="op">=</span><span class="va">False</span>, dependent<span class="op">=</span><span class="va">True</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="cell" data-execution_count="15">
+<div id="tbl-bem11-size" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="15">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bem11-size-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;11.5: Dependent sorts on capitalization and momentum (BEM Table 11.5)
+</figcaption>
+<div aria-describedby="tbl-bem11-size-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output cell-output-display cell-output-markdown">
+<table class="cell caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Weights</th>
+<th style="text-align: right;">Statistic</th>
+<th style="text-align: right;">1</th>
+<th style="text-align: right;">2</th>
+<th style="text-align: right;">3</th>
+<th style="text-align: right;">4</th>
+<th style="text-align: right;">5</th>
+<th style="text-align: right;">Average</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Value weighted</td>
+<td style="text-align: right;">Mom 1</td>
+<td style="text-align: right;">0.34</td>
+<td style="text-align: right;">-0.64</td>
+<td style="text-align: right;">-0.30</td>
+<td style="text-align: right;">-0.00</td>
+<td style="text-align: right;">0.23</td>
+<td style="text-align: right;">-0.07</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Value weighted</td>
+<td style="text-align: right;">Mom 2</td>
+<td style="text-align: right;">0.61</td>
+<td style="text-align: right;">0.35</td>
+<td style="text-align: right;">0.46</td>
+<td style="text-align: right;">0.54</td>
+<td style="text-align: right;">0.35</td>
+<td style="text-align: right;">0.46</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Value weighted</td>
+<td style="text-align: right;">Mom 3</td>
+<td style="text-align: right;">0.92</td>
+<td style="text-align: right;">0.74</td>
+<td style="text-align: right;">0.75</td>
+<td style="text-align: right;">0.74</td>
+<td style="text-align: right;">0.36</td>
+<td style="text-align: right;">0.70</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Value weighted</td>
+<td style="text-align: right;">Mom 4</td>
+<td style="text-align: right;">1.09</td>
+<td style="text-align: right;">1.03</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: right;">0.88</td>
+<td style="text-align: right;">0.54</td>
+<td style="text-align: right;">0.91</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Value weighted</td>
+<td style="text-align: right;">Mom 5</td>
+<td style="text-align: right;">1.39</td>
+<td style="text-align: right;">1.36</td>
+<td style="text-align: right;">1.31</td>
+<td style="text-align: right;">1.16</td>
+<td style="text-align: right;">0.81</td>
+<td style="text-align: right;">1.21</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Value weighted</td>
+<td style="text-align: right;">5–1 Return</td>
+<td style="text-align: right;">1.05<br>(3.26)</td>
+<td style="text-align: right;">2.01<br>(7.39)</td>
+<td style="text-align: right;">1.61<br>(6.17)</td>
+<td style="text-align: right;">1.16<br>(4.89)</td>
+<td style="text-align: right;">0.58<br>(2.53)</td>
+<td style="text-align: right;">1.28<br>(5.57)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Value weighted</td>
+<td style="text-align: right;">5–1 CAPM α</td>
+<td style="text-align: right;">1.26<br>(4.38)</td>
+<td style="text-align: right;">2.16<br>(8.71)</td>
+<td style="text-align: right;">1.72<br>(7.02)</td>
+<td style="text-align: right;">1.21<br>(5.55)</td>
+<td style="text-align: right;">0.61<br>(2.69)</td>
+<td style="text-align: right;">1.39<br>(6.70)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Value weighted</td>
+<td style="text-align: right;">5–1 FF α</td>
+<td style="text-align: right;">1.34<br>(4.84)</td>
+<td style="text-align: right;">2.30<br>(9.57)</td>
+<td style="text-align: right;">1.87<br>(8.02)</td>
+<td style="text-align: right;">1.40<br>(6.38)</td>
+<td style="text-align: right;">0.81<br>(3.73)</td>
+<td style="text-align: right;">1.55<br>(7.74)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Equal weighted</td>
+<td style="text-align: right;">Mom 1</td>
+<td style="text-align: right;">1.53</td>
+<td style="text-align: right;">-0.62</td>
+<td style="text-align: right;">-0.29</td>
+<td style="text-align: right;">-0.02</td>
+<td style="text-align: right;">0.19</td>
+<td style="text-align: right;">0.16</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Equal weighted</td>
+<td style="text-align: right;">Mom 2</td>
+<td style="text-align: right;">1.17</td>
+<td style="text-align: right;">0.36</td>
+<td style="text-align: right;">0.44</td>
+<td style="text-align: right;">0.55</td>
+<td style="text-align: right;">0.48</td>
+<td style="text-align: right;">0.60</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Equal weighted</td>
+<td style="text-align: right;">Mom 3</td>
+<td style="text-align: right;">1.24</td>
+<td style="text-align: right;">0.74</td>
+<td style="text-align: right;">0.77</td>
+<td style="text-align: right;">0.74</td>
+<td style="text-align: right;">0.53</td>
+<td style="text-align: right;">0.80</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Equal weighted</td>
+<td style="text-align: right;">Mom 4</td>
+<td style="text-align: right;">1.35</td>
+<td style="text-align: right;">1.03</td>
+<td style="text-align: right;">1.00</td>
+<td style="text-align: right;">0.89</td>
+<td style="text-align: right;">0.63</td>
+<td style="text-align: right;">0.98</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Equal weighted</td>
+<td style="text-align: right;">Mom 5</td>
+<td style="text-align: right;">1.57</td>
+<td style="text-align: right;">1.37</td>
+<td style="text-align: right;">1.30</td>
+<td style="text-align: right;">1.17</td>
+<td style="text-align: right;">1.01</td>
+<td style="text-align: right;">1.29</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Equal weighted</td>
+<td style="text-align: right;">5–1 Return</td>
+<td style="text-align: right;">0.04<br>(0.12)</td>
+<td style="text-align: right;">1.99<br>(7.42)</td>
+<td style="text-align: right;">1.60<br>(6.13)</td>
+<td style="text-align: right;">1.19<br>(4.95)</td>
+<td style="text-align: right;">0.82<br>(3.63)</td>
+<td style="text-align: right;">1.13<br>(4.95)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Equal weighted</td>
+<td style="text-align: right;">5–1 CAPM α</td>
+<td style="text-align: right;">0.25<br>(0.80)</td>
+<td style="text-align: right;">2.14<br>(8.76)</td>
+<td style="text-align: right;">1.71<br>(7.01)</td>
+<td style="text-align: right;">1.25<br>(5.62)</td>
+<td style="text-align: right;">0.85<br>(3.85)</td>
+<td style="text-align: right;">1.24<br>(6.02)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Equal weighted</td>
+<td style="text-align: right;">5–1 FF α</td>
+<td style="text-align: right;">0.32<br>(1.02)</td>
+<td style="text-align: right;">2.28<br>(9.61)</td>
+<td style="text-align: right;">1.87<br>(8.07)</td>
+<td style="text-align: right;">1.43<br>(6.44)</td>
+<td style="text-align: right;">1.06<br>(4.72)</td>
+<td style="text-align: right;">1.39<br>(6.93)</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+</section>
+<section id="momentum-among-small-stocks" class="level3" data-number="11.4.4">
+<h3 data-number="11.4.4" class="anchored" data-anchor-id="momentum-among-small-stocks"><span class="header-section-number">11.4.4</span> Momentum Among Small Stocks</h3>
+<p>Restrict the first sort to the bottom fifth of the capitalization distribution. Split that group into four portfolios and sort each portfolio into Mom quintiles.</p>
+<div class="cell" data-execution_count="16">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>small <span class="op">=</span> sort_panel.<span class="bu">filter</span>(pl.col(<span class="st">"cap"</span>) <span class="op">&lt;=</span> pl.col(<span class="st">"cap"</span>).quantile(<span class="fl">0.20</span>).over(<span class="st">"month"</span>))</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>small <span class="op">=</span> assign_portfolio(small, <span class="st">"cap"</span>, <span class="dv">4</span>, <span class="st">"month"</span>, label<span class="op">=</span><span class="st">"control"</span>)</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>small <span class="op">=</span> assign_portfolio(small, <span class="st">"mom"</span>, <span class="dv">5</span>, [<span class="st">"month"</span>, <span class="st">"control"</span>], label<span class="op">=</span><span class="st">"target"</span>)</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>small_momentum <span class="op">=</span> portfolio_months(small.drop_nulls(<span class="st">"target"</span>), [<span class="st">"control"</span>, <span class="st">"target"</span>])</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>show_table(pl.DataFrame([</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>    row <span class="cf">for</span> weight <span class="kw">in</span> weights</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> row <span class="kw">in</span> two_way_results(</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>        small_momentum, weight, [<span class="st">"0–5%"</span>, <span class="st">"5–10%"</span>, <span class="st">"10–15%"</span>, <span class="st">"15–20%"</span>],</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>        show_cells<span class="op">=</span><span class="va">True</span>, show_average<span class="op">=</span><span class="va">False</span>,</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>]))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="tbl-bem11-small" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="16">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bem11-small-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;11.6: Dependent momentum sorts within the smallest capitalization quintile (BEM Table 11.6)
+</figcaption>
+<div aria-describedby="tbl-bem11-small-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output cell-output-display cell-output-markdown">
+<table class="cell caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+<col style="width: 16%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Weights</th>
+<th style="text-align: right;">Statistic</th>
+<th style="text-align: right;">0–5%</th>
+<th style="text-align: right;">5–10%</th>
+<th style="text-align: right;">10–15%</th>
+<th style="text-align: right;">15–20%</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Value weighted</td>
+<td style="text-align: right;">Mom 1</td>
+<td style="text-align: right;">3.11</td>
+<td style="text-align: right;">0.39</td>
+<td style="text-align: right;">-0.34</td>
+<td style="text-align: right;">-0.30</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Value weighted</td>
+<td style="text-align: right;">Mom 2</td>
+<td style="text-align: right;">2.51</td>
+<td style="text-align: right;">1.12</td>
+<td style="text-align: right;">0.41</td>
+<td style="text-align: right;">0.37</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Value weighted</td>
+<td style="text-align: right;">Mom 3</td>
+<td style="text-align: right;">2.23</td>
+<td style="text-align: right;">1.10</td>
+<td style="text-align: right;">0.90</td>
+<td style="text-align: right;">0.88</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Value weighted</td>
+<td style="text-align: right;">Mom 4</td>
+<td style="text-align: right;">2.22</td>
+<td style="text-align: right;">1.31</td>
+<td style="text-align: right;">0.99</td>
+<td style="text-align: right;">1.11</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Value weighted</td>
+<td style="text-align: right;">Mom 5</td>
+<td style="text-align: right;">2.35</td>
+<td style="text-align: right;">1.48</td>
+<td style="text-align: right;">1.35</td>
+<td style="text-align: right;">1.19</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Value weighted</td>
+<td style="text-align: right;">5–1 Return</td>
+<td style="text-align: right;">-0.76<br>(-1.41)</td>
+<td style="text-align: right;">1.09<br>(3.22)</td>
+<td style="text-align: right;">1.69<br>(5.19)</td>
+<td style="text-align: right;">1.48<br>(4.20)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Value weighted</td>
+<td style="text-align: right;">5–1 CAPM α</td>
+<td style="text-align: right;">-0.48<br>(-0.97)</td>
+<td style="text-align: right;">1.34<br>(4.31)</td>
+<td style="text-align: right;">1.88<br>(6.12)</td>
+<td style="text-align: right;">1.67<br>(5.08)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Value weighted</td>
+<td style="text-align: right;">5–1 FF α</td>
+<td style="text-align: right;">-0.44<br>(-0.87)</td>
+<td style="text-align: right;">1.44<br>(4.61)</td>
+<td style="text-align: right;">1.92<br>(6.40)</td>
+<td style="text-align: right;">1.74<br>(5.66)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Equal weighted</td>
+<td style="text-align: right;">Mom 1</td>
+<td style="text-align: right;">4.09</td>
+<td style="text-align: right;">0.43</td>
+<td style="text-align: right;">-0.32</td>
+<td style="text-align: right;">-0.28</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Equal weighted</td>
+<td style="text-align: right;">Mom 2</td>
+<td style="text-align: right;">3.13</td>
+<td style="text-align: right;">1.15</td>
+<td style="text-align: right;">0.44</td>
+<td style="text-align: right;">0.37</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Equal weighted</td>
+<td style="text-align: right;">Mom 3</td>
+<td style="text-align: right;">2.67</td>
+<td style="text-align: right;">1.09</td>
+<td style="text-align: right;">0.90</td>
+<td style="text-align: right;">0.88</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Equal weighted</td>
+<td style="text-align: right;">Mom 4</td>
+<td style="text-align: right;">2.54</td>
+<td style="text-align: right;">1.33</td>
+<td style="text-align: right;">0.98</td>
+<td style="text-align: right;">1.11</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Equal weighted</td>
+<td style="text-align: right;">Mom 5</td>
+<td style="text-align: right;">2.59</td>
+<td style="text-align: right;">1.47</td>
+<td style="text-align: right;">1.37</td>
+<td style="text-align: right;">1.17</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Equal weighted</td>
+<td style="text-align: right;">5–1 Return</td>
+<td style="text-align: right;">-1.50<br>(-2.62)</td>
+<td style="text-align: right;">1.05<br>(3.07)</td>
+<td style="text-align: right;">1.69<br>(5.15)</td>
+<td style="text-align: right;">1.45<br>(4.13)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Equal weighted</td>
+<td style="text-align: right;">5–1 CAPM α</td>
+<td style="text-align: right;">-1.23<br>(-2.29)</td>
+<td style="text-align: right;">1.29<br>(4.16)</td>
+<td style="text-align: right;">1.87<br>(6.10)</td>
+<td style="text-align: right;">1.64<br>(5.02)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Equal weighted</td>
+<td style="text-align: right;">5–1 FF α</td>
+<td style="text-align: right;">-1.18<br>(-2.14)</td>
+<td style="text-align: right;">1.38<br>(4.42)</td>
+<td style="text-align: right;">1.91<br>(6.41)</td>
+<td style="text-align: right;">1.72<br>(5.60)</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+</section>
+<section id="controlling-for-beta-and-book-to-market" class="level3" data-number="11.4.5">
+<h3 data-number="11.4.5" class="anchored" data-anchor-id="controlling-for-beta-and-book-to-market"><span class="header-section-number">11.4.5</span> Controlling for Beta and Book-to-Market</h3>
+<p>The dependent sorts calculate Mom breakpoints within each beta or BM quintile. The independent sorts use the intersection of two sets of breakpoints computed separately across stocks for each variable. The tables show the high-minus-low Mom spread within each control quintile and its average across the control quintiles.</p>
+<div id="a168c3a4" class="cell" data-execution_count="17">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>sort_variables <span class="op">=</span> {<span class="st">"beta"</span>: <span class="st">"Beta"</span>, <span class="st">"cap"</span>: <span class="st">"MktCap"</span>, <span class="st">"bm"</span>: <span class="st">"BM"</span>}</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> two_way_spreads(pairs, <span class="op">*</span>, dependent, momentum_first<span class="op">=</span><span class="va">False</span>):</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>    rows <span class="op">=</span> []</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> control, target <span class="kw">in</span> pairs:</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>        monthly <span class="op">=</span> bivariate_months(sort_panel, control, target, nyse<span class="op">=</span><span class="va">False</span>, dependent<span class="op">=</span>dependent)</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>        omit <span class="op">=</span> {<span class="st">"cap"</span>: <span class="st">"smb"</span>, <span class="st">"bm"</span>: <span class="st">"hml"</span>}.get(target)</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>        ff_factors <span class="op">=</span> [factor <span class="cf">for</span> factor <span class="kw">in</span> ff3 <span class="cf">if</span> factor <span class="op">!=</span> omit]</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>        characteristic <span class="op">=</span> target <span class="cf">if</span> momentum_first <span class="cf">else</span> control</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> weight <span class="kw">in</span> weights:</span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>            rows.extend(</span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>                {<span class="st">"Characteristic"</span>: sort_variables[characteristic], <span class="op">**</span>row}</span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>                <span class="cf">for</span> row <span class="kw">in</span> two_way_results(monthly, weight, quintiles, ff_factors<span class="op">=</span>ff_factors)</span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>            )</span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> pl.DataFrame(rows)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="cell" data-execution_count="18">
+<div id="tbl-bem11-dependent" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="18">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bem11-dependent-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;11.7: Momentum spreads from dependent sorts controlling for beta or book-to-market (BEM Table 11.7)
+</figcaption>
+<div aria-describedby="tbl-bem11-dependent-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output cell-output-display cell-output-markdown">
+<table class="cell caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Characteristic</th>
+<th style="text-align: right;">Weights</th>
+<th style="text-align: right;">Statistic</th>
+<th style="text-align: right;">1</th>
+<th style="text-align: right;">2</th>
+<th style="text-align: right;">3</th>
+<th style="text-align: right;">4</th>
+<th style="text-align: right;">5</th>
+<th style="text-align: right;">Average</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Beta</td>
+<td style="text-align: right;">Value weighted</td>
+<td style="text-align: right;">5–1 Return</td>
+<td style="text-align: right;">1.08<br>(3.98)</td>
+<td style="text-align: right;">0.95<br>(4.01)</td>
+<td style="text-align: right;">0.78<br>(3.05)</td>
+<td style="text-align: right;">1.14<br>(4.33)</td>
+<td style="text-align: right;">1.78<br>(5.06)</td>
+<td style="text-align: right;">1.14<br>(4.97)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Beta</td>
+<td style="text-align: right;">Value weighted</td>
+<td style="text-align: right;">5–1 CAPM α</td>
+<td style="text-align: right;">1.18<br>(4.66)</td>
+<td style="text-align: right;">1.04<br>(4.58)</td>
+<td style="text-align: right;">0.89<br>(3.58)</td>
+<td style="text-align: right;">1.25<br>(4.81)</td>
+<td style="text-align: right;">1.89<br>(5.77)</td>
+<td style="text-align: right;">1.25<br>(5.83)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Beta</td>
+<td style="text-align: right;">Value weighted</td>
+<td style="text-align: right;">5–1 FF α</td>
+<td style="text-align: right;">1.34<br>(5.57)</td>
+<td style="text-align: right;">1.18<br>(5.29)</td>
+<td style="text-align: right;">1.05<br>(4.33)</td>
+<td style="text-align: right;">1.39<br>(5.31)</td>
+<td style="text-align: right;">2.14<br>(6.41)</td>
+<td style="text-align: right;">1.42<br>(6.74)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Beta</td>
+<td style="text-align: right;">Equal weighted</td>
+<td style="text-align: right;">5–1 Return</td>
+<td style="text-align: right;">0.31<br>(1.19)</td>
+<td style="text-align: right;">0.88<br>(3.83)</td>
+<td style="text-align: right;">0.83<br>(3.70)</td>
+<td style="text-align: right;">1.32<br>(5.80)</td>
+<td style="text-align: right;">1.47<br>(4.47)</td>
+<td style="text-align: right;">0.96<br>(4.21)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Beta</td>
+<td style="text-align: right;">Equal weighted</td>
+<td style="text-align: right;">5–1 CAPM α</td>
+<td style="text-align: right;">0.44<br>(1.88)</td>
+<td style="text-align: right;">0.96<br>(4.62)</td>
+<td style="text-align: right;">0.91<br>(4.46)</td>
+<td style="text-align: right;">1.38<br>(6.54)</td>
+<td style="text-align: right;">1.52<br>(5.11)</td>
+<td style="text-align: right;">1.04<br>(5.08)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Beta</td>
+<td style="text-align: right;">Equal weighted</td>
+<td style="text-align: right;">5–1 FF α</td>
+<td style="text-align: right;">0.56<br>(2.54)</td>
+<td style="text-align: right;">1.09<br>(5.26)</td>
+<td style="text-align: right;">1.04<br>(5.14)</td>
+<td style="text-align: right;">1.56<br>(7.19)</td>
+<td style="text-align: right;">1.83<br>(6.07)</td>
+<td style="text-align: right;">1.22<br>(6.04)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">BM</td>
+<td style="text-align: right;">Value weighted</td>
+<td style="text-align: right;">5–1 Return</td>
+<td style="text-align: right;">1.76<br>(5.49)</td>
+<td style="text-align: right;">0.56<br>(1.94)</td>
+<td style="text-align: right;">0.74<br>(2.33)</td>
+<td style="text-align: right;">0.55<br>(1.63)</td>
+<td style="text-align: right;">0.74<br>(2.37)</td>
+<td style="text-align: right;">0.87<br>(3.25)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">BM</td>
+<td style="text-align: right;">Value weighted</td>
+<td style="text-align: right;">5–1 CAPM α</td>
+<td style="text-align: right;">1.92<br>(6.43)</td>
+<td style="text-align: right;">0.69<br>(2.53)</td>
+<td style="text-align: right;">0.86<br>(2.83)</td>
+<td style="text-align: right;">0.66<br>(2.05)</td>
+<td style="text-align: right;">0.86<br>(3.07)</td>
+<td style="text-align: right;">1.00<br>(4.12)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">BM</td>
+<td style="text-align: right;">Value weighted</td>
+<td style="text-align: right;">5–1 FF α</td>
+<td style="text-align: right;">2.19<br>(7.30)</td>
+<td style="text-align: right;">0.87<br>(3.12)</td>
+<td style="text-align: right;">1.04<br>(3.43)</td>
+<td style="text-align: right;">0.89<br>(2.89)</td>
+<td style="text-align: right;">1.17<br>(4.47)</td>
+<td style="text-align: right;">1.23<br>(5.27)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">BM</td>
+<td style="text-align: right;">Equal weighted</td>
+<td style="text-align: right;">5–1 Return</td>
+<td style="text-align: right;">1.14<br>(3.93)</td>
+<td style="text-align: right;">0.70<br>(2.57)</td>
+<td style="text-align: right;">0.63<br>(2.55)</td>
+<td style="text-align: right;">0.54<br>(2.16)</td>
+<td style="text-align: right;">0.45<br>(1.59)</td>
+<td style="text-align: right;">0.69<br>(2.79)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">BM</td>
+<td style="text-align: right;">Equal weighted</td>
+<td style="text-align: right;">5–1 CAPM α</td>
+<td style="text-align: right;">1.24<br>(4.68)</td>
+<td style="text-align: right;">0.79<br>(3.18)</td>
+<td style="text-align: right;">0.69<br>(3.08)</td>
+<td style="text-align: right;">0.61<br>(2.69)</td>
+<td style="text-align: right;">0.51<br>(2.01)</td>
+<td style="text-align: right;">0.77<br>(3.46)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">BM</td>
+<td style="text-align: right;">Equal weighted</td>
+<td style="text-align: right;">5–1 FF α</td>
+<td style="text-align: right;">1.47<br>(5.43)</td>
+<td style="text-align: right;">0.99<br>(3.79)</td>
+<td style="text-align: right;">0.88<br>(3.96)</td>
+<td style="text-align: right;">0.79<br>(3.52)</td>
+<td style="text-align: right;">0.67<br>(2.93)</td>
+<td style="text-align: right;">0.96<br>(4.39)</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+<div class="cell" data-execution_count="19">
+<div id="tbl-bem11-independent" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="19">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bem11-independent-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;11.8: Momentum spreads from independent sorts controlling for beta, capitalization, or book-to-market (BEM Table 11.8)
+</figcaption>
+<div aria-describedby="tbl-bem11-independent-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output cell-output-display cell-output-markdown">
+<table class="cell caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Characteristic</th>
+<th style="text-align: right;">Weights</th>
+<th style="text-align: right;">Statistic</th>
+<th style="text-align: right;">1</th>
+<th style="text-align: right;">2</th>
+<th style="text-align: right;">3</th>
+<th style="text-align: right;">4</th>
+<th style="text-align: right;">5</th>
+<th style="text-align: right;">Average</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Beta</td>
+<td style="text-align: right;">Value weighted</td>
+<td style="text-align: right;">5–1 Return</td>
+<td style="text-align: right;">1.10<br>(3.78)</td>
+<td style="text-align: right;">1.22<br>(4.92)</td>
+<td style="text-align: right;">0.74<br>(2.22)</td>
+<td style="text-align: right;">0.93<br>(3.18)</td>
+<td style="text-align: right;">1.40<br>(4.54)</td>
+<td style="text-align: right;">1.08<br>(4.41)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Beta</td>
+<td style="text-align: right;">Value weighted</td>
+<td style="text-align: right;">5–1 CAPM α</td>
+<td style="text-align: right;">1.19<br>(4.39)</td>
+<td style="text-align: right;">1.32<br>(5.42)</td>
+<td style="text-align: right;">0.88<br>(2.80)</td>
+<td style="text-align: right;">1.06<br>(3.85)</td>
+<td style="text-align: right;">1.51<br>(5.28)</td>
+<td style="text-align: right;">1.19<br>(5.31)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Beta</td>
+<td style="text-align: right;">Value weighted</td>
+<td style="text-align: right;">5–1 FF α</td>
+<td style="text-align: right;">1.31<br>(4.89)</td>
+<td style="text-align: right;">1.51<br>(6.45)</td>
+<td style="text-align: right;">1.04<br>(3.32)</td>
+<td style="text-align: right;">1.29<br>(4.85)</td>
+<td style="text-align: right;">1.73<br>(5.93)</td>
+<td style="text-align: right;">1.38<br>(6.34)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Beta</td>
+<td style="text-align: right;">Equal weighted</td>
+<td style="text-align: right;">5–1 Return</td>
+<td style="text-align: right;">0.44<br>(1.64)</td>
+<td style="text-align: right;">0.99<br>(3.97)</td>
+<td style="text-align: right;">0.81<br>(3.09)</td>
+<td style="text-align: right;">1.28<br>(5.47)</td>
+<td style="text-align: right;">1.41<br>(4.85)</td>
+<td style="text-align: right;">0.99<br>(4.13)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Beta</td>
+<td style="text-align: right;">Equal weighted</td>
+<td style="text-align: right;">5–1 CAPM α</td>
+<td style="text-align: right;">0.56<br>(2.25)</td>
+<td style="text-align: right;">1.08<br>(4.75)</td>
+<td style="text-align: right;">0.90<br>(3.77)</td>
+<td style="text-align: right;">1.35<br>(6.32)</td>
+<td style="text-align: right;">1.44<br>(5.50)</td>
+<td style="text-align: right;">1.07<br>(4.97)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Beta</td>
+<td style="text-align: right;">Equal weighted</td>
+<td style="text-align: right;">5–1 FF α</td>
+<td style="text-align: right;">0.67<br>(2.76)</td>
+<td style="text-align: right;">1.20<br>(5.31)</td>
+<td style="text-align: right;">1.03<br>(4.32)</td>
+<td style="text-align: right;">1.55<br>(7.19)</td>
+<td style="text-align: right;">1.76<br>(6.85)</td>
+<td style="text-align: right;">1.24<br>(5.90)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">MktCap</td>
+<td style="text-align: right;">Value weighted</td>
+<td style="text-align: right;">5–1 Return</td>
+<td style="text-align: right;">0.95<br>(3.89)</td>
+<td style="text-align: right;">1.84<br>(7.31)</td>
+<td style="text-align: right;">1.71<br>(6.30)</td>
+<td style="text-align: right;">1.42<br>(5.55)</td>
+<td style="text-align: right;">0.97<br>(3.15)</td>
+<td style="text-align: right;">1.38<br>(5.80)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">MktCap</td>
+<td style="text-align: right;">Value weighted</td>
+<td style="text-align: right;">5–1 CAPM α</td>
+<td style="text-align: right;">1.07<br>(4.85)</td>
+<td style="text-align: right;">1.96<br>(8.47)</td>
+<td style="text-align: right;">1.83<br>(7.27)</td>
+<td style="text-align: right;">1.53<br>(6.60)</td>
+<td style="text-align: right;">1.12<br>(3.91)</td>
+<td style="text-align: right;">1.50<br>(7.05)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">MktCap</td>
+<td style="text-align: right;">Value weighted</td>
+<td style="text-align: right;">5–1 FF α</td>
+<td style="text-align: right;">1.16<br>(5.45)</td>
+<td style="text-align: right;">2.10<br>(9.33)</td>
+<td style="text-align: right;">1.99<br>(8.38)</td>
+<td style="text-align: right;">1.71<br>(7.82)</td>
+<td style="text-align: right;">1.31<br>(4.79)</td>
+<td style="text-align: right;">1.66<br>(8.28)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">MktCap</td>
+<td style="text-align: right;">Equal weighted</td>
+<td style="text-align: right;">5–1 Return</td>
+<td style="text-align: right;">0.30<br>(1.20)</td>
+<td style="text-align: right;">1.83<br>(7.26)</td>
+<td style="text-align: right;">1.70<br>(6.25)</td>
+<td style="text-align: right;">1.45<br>(5.47)</td>
+<td style="text-align: right;">1.15<br>(4.10)</td>
+<td style="text-align: right;">1.29<br>(5.49)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">MktCap</td>
+<td style="text-align: right;">Equal weighted</td>
+<td style="text-align: right;">5–1 CAPM α</td>
+<td style="text-align: right;">0.41<br>(1.81)</td>
+<td style="text-align: right;">1.95<br>(8.42)</td>
+<td style="text-align: right;">1.82<br>(7.26)</td>
+<td style="text-align: right;">1.57<br>(6.53)</td>
+<td style="text-align: right;">1.28<br>(4.82)</td>
+<td style="text-align: right;">1.41<br>(6.66)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">MktCap</td>
+<td style="text-align: right;">Equal weighted</td>
+<td style="text-align: right;">5–1 FF α</td>
+<td style="text-align: right;">0.50<br>(2.14)</td>
+<td style="text-align: right;">2.09<br>(9.29)</td>
+<td style="text-align: right;">2.00<br>(8.47)</td>
+<td style="text-align: right;">1.75<br>(7.72)</td>
+<td style="text-align: right;">1.44<br>(5.78)</td>
+<td style="text-align: right;">1.56<br>(7.84)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">BM</td>
+<td style="text-align: right;">Value weighted</td>
+<td style="text-align: right;">5–1 Return</td>
+<td style="text-align: right;">1.54<br>(5.31)</td>
+<td style="text-align: right;">0.52<br>(1.75)</td>
+<td style="text-align: right;">0.90<br>(2.51)</td>
+<td style="text-align: right;">0.70<br>(1.88)</td>
+<td style="text-align: right;">0.72<br>(2.33)</td>
+<td style="text-align: right;">0.87<br>(3.16)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">BM</td>
+<td style="text-align: right;">Value weighted</td>
+<td style="text-align: right;">5–1 CAPM α</td>
+<td style="text-align: right;">1.70<br>(6.28)</td>
+<td style="text-align: right;">0.66<br>(2.32)</td>
+<td style="text-align: right;">1.05<br>(3.05)</td>
+<td style="text-align: right;">0.83<br>(2.37)</td>
+<td style="text-align: right;">0.83<br>(2.83)</td>
+<td style="text-align: right;">1.01<br>(4.03)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">BM</td>
+<td style="text-align: right;">Value weighted</td>
+<td style="text-align: right;">5–1 FF α</td>
+<td style="text-align: right;">1.93<br>(7.46)</td>
+<td style="text-align: right;">0.84<br>(3.08)</td>
+<td style="text-align: right;">1.22<br>(3.56)</td>
+<td style="text-align: right;">1.04<br>(3.07)</td>
+<td style="text-align: right;">1.10<br>(3.91)</td>
+<td style="text-align: right;">1.22<br>(5.13)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">BM</td>
+<td style="text-align: right;">Equal weighted</td>
+<td style="text-align: right;">5–1 Return</td>
+<td style="text-align: right;">1.29<br>(4.73)</td>
+<td style="text-align: right;">0.74<br>(2.63)</td>
+<td style="text-align: right;">0.64<br>(2.37)</td>
+<td style="text-align: right;">0.57<br>(2.11)</td>
+<td style="text-align: right;">0.44<br>(1.69)</td>
+<td style="text-align: right;">0.73<br>(2.94)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">BM</td>
+<td style="text-align: right;">Equal weighted</td>
+<td style="text-align: right;">5–1 CAPM α</td>
+<td style="text-align: right;">1.38<br>(5.52)</td>
+<td style="text-align: right;">0.81<br>(3.22)</td>
+<td style="text-align: right;">0.70<br>(2.85)</td>
+<td style="text-align: right;">0.64<br>(2.62)</td>
+<td style="text-align: right;">0.49<br>(2.05)</td>
+<td style="text-align: right;">0.80<br>(3.62)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">BM</td>
+<td style="text-align: right;">Equal weighted</td>
+<td style="text-align: right;">5–1 FF α</td>
+<td style="text-align: right;">1.59<br>(6.54)</td>
+<td style="text-align: right;">1.00<br>(3.90)</td>
+<td style="text-align: right;">0.92<br>(3.75)</td>
+<td style="text-align: right;">0.83<br>(3.40)</td>
+<td style="text-align: right;">0.64<br>(2.84)</td>
+<td style="text-align: right;">0.99<br>(4.55)</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+</section>
+<section id="controlling-for-momentum" class="level3" data-number="11.4.6">
+<h3 data-number="11.4.6" class="anchored" data-anchor-id="controlling-for-momentum"><span class="header-section-number">11.4.6</span> Controlling for Momentum</h3>
+<p>Reverse the sort order to ask whether differences associated with beta, capitalization, or BM remain within Mom quintiles. For Table 11.9, we follow BEM’s discussion and calculate the second set of breakpoints within each Mom quintile. For capitalization spreads, omit SMB from the FF regression. For BM spreads, omit HML.</p>
+<div class="cell" data-execution_count="20">
+<div id="tbl-bem11-reverse-dependent" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="20">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bem11-reverse-dependent-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;11.9: Characteristic spreads from dependent sorts controlling for momentum (BEM Table 11.9)
+</figcaption>
+<div aria-describedby="tbl-bem11-reverse-dependent-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output cell-output-display cell-output-markdown">
+<table class="cell caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Characteristic</th>
+<th style="text-align: right;">Weights</th>
+<th style="text-align: right;">Statistic</th>
+<th style="text-align: right;">1</th>
+<th style="text-align: right;">2</th>
+<th style="text-align: right;">3</th>
+<th style="text-align: right;">4</th>
+<th style="text-align: right;">5</th>
+<th style="text-align: right;">Average</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Beta</td>
+<td style="text-align: right;">Value weighted</td>
+<td style="text-align: right;">5–1 Return</td>
+<td style="text-align: right;">-0.19<br>(-0.61)</td>
+<td style="text-align: right;">-0.35<br>(-1.58)</td>
+<td style="text-align: right;">-0.24<br>(-1.27)</td>
+<td style="text-align: right;">-0.21<br>(-1.10)</td>
+<td style="text-align: right;">-0.18<br>(-0.66)</td>
+<td style="text-align: right;">-0.23<br>(-1.21)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Beta</td>
+<td style="text-align: right;">Value weighted</td>
+<td style="text-align: right;">5–1 CAPM α</td>
+<td style="text-align: right;">-0.56<br>(-1.90)</td>
+<td style="text-align: right;">-0.69<br>(-3.43)</td>
+<td style="text-align: right;">-0.55<br>(-3.04)</td>
+<td style="text-align: right;">-0.51<br>(-2.76)</td>
+<td style="text-align: right;">-0.51<br>(-2.06)</td>
+<td style="text-align: right;">-0.56<br>(-3.27)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Beta</td>
+<td style="text-align: right;">Value weighted</td>
+<td style="text-align: right;">5–1 FF α</td>
+<td style="text-align: right;">-0.33<br>(-1.11)</td>
+<td style="text-align: right;">-0.51<br>(-2.47)</td>
+<td style="text-align: right;">-0.40<br>(-2.25)</td>
+<td style="text-align: right;">-0.33<br>(-1.84)</td>
+<td style="text-align: right;">-0.22<br>(-0.82)</td>
+<td style="text-align: right;">-0.36<br>(-2.13)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Beta</td>
+<td style="text-align: right;">Equal weighted</td>
+<td style="text-align: right;">5–1 Return</td>
+<td style="text-align: right;">-1.46<br>(-6.54)</td>
+<td style="text-align: right;">-0.46<br>(-2.41)</td>
+<td style="text-align: right;">-0.27<br>(-1.40)</td>
+<td style="text-align: right;">-0.31<br>(-1.56)</td>
+<td style="text-align: right;">-0.34<br>(-1.37)</td>
+<td style="text-align: right;">-0.57<br>(-3.05)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Beta</td>
+<td style="text-align: right;">Equal weighted</td>
+<td style="text-align: right;">5–1 CAPM α</td>
+<td style="text-align: right;">-1.81<br>(-8.23)</td>
+<td style="text-align: right;">-0.84<br>(-4.70)</td>
+<td style="text-align: right;">-0.66<br>(-4.05)</td>
+<td style="text-align: right;">-0.71<br>(-4.12)</td>
+<td style="text-align: right;">-0.74<br>(-3.29)</td>
+<td style="text-align: right;">-0.95<br>(-5.75)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Beta</td>
+<td style="text-align: right;">Equal weighted</td>
+<td style="text-align: right;">5–1 FF α</td>
+<td style="text-align: right;">-1.75<br>(-8.19)</td>
+<td style="text-align: right;">-0.75<br>(-4.71)</td>
+<td style="text-align: right;">-0.62<br>(-4.08)</td>
+<td style="text-align: right;">-0.60<br>(-3.84)</td>
+<td style="text-align: right;">-0.48<br>(-2.21)</td>
+<td style="text-align: right;">-0.84<br>(-5.62)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">MktCap</td>
+<td style="text-align: right;">Value weighted</td>
+<td style="text-align: right;">5–1 Return</td>
+<td style="text-align: right;">-1.95<br>(-5.63)</td>
+<td style="text-align: right;">-0.62<br>(-2.48)</td>
+<td style="text-align: right;">-0.60<br>(-2.82)</td>
+<td style="text-align: right;">-0.68<br>(-3.05)</td>
+<td style="text-align: right;">-0.57<br>(-2.52)</td>
+<td style="text-align: right;">-0.89<br>(-4.00)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">MktCap</td>
+<td style="text-align: right;">Value weighted</td>
+<td style="text-align: right;">5–1 CAPM α</td>
+<td style="text-align: right;">-2.06<br>(-5.73)</td>
+<td style="text-align: right;">-0.68<br>(-2.68)</td>
+<td style="text-align: right;">-0.64<br>(-2.96)</td>
+<td style="text-align: right;">-0.71<br>(-3.13)</td>
+<td style="text-align: right;">-0.58<br>(-2.50)</td>
+<td style="text-align: right;">-0.94<br>(-4.11)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">MktCap</td>
+<td style="text-align: right;">Value weighted</td>
+<td style="text-align: right;">5–1 FF α</td>
+<td style="text-align: right;">-2.08<br>(-5.39)</td>
+<td style="text-align: right;">-0.69<br>(-2.67)</td>
+<td style="text-align: right;">-0.59<br>(-2.66)</td>
+<td style="text-align: right;">-0.65<br>(-2.69)</td>
+<td style="text-align: right;">-0.44<br>(-1.86)</td>
+<td style="text-align: right;">-0.89<br>(-3.71)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">MktCap</td>
+<td style="text-align: right;">Equal weighted</td>
+<td style="text-align: right;">5–1 Return</td>
+<td style="text-align: right;">-2.82<br>(-7.67)</td>
+<td style="text-align: right;">-0.90<br>(-3.93)</td>
+<td style="text-align: right;">-0.74<br>(-3.60)</td>
+<td style="text-align: right;">-0.76<br>(-3.46)</td>
+<td style="text-align: right;">-0.55<br>(-2.64)</td>
+<td style="text-align: right;">-1.15<br>(-5.48)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">MktCap</td>
+<td style="text-align: right;">Equal weighted</td>
+<td style="text-align: right;">5–1 CAPM α</td>
+<td style="text-align: right;">-2.95<br>(-7.68)</td>
+<td style="text-align: right;">-1.00<br>(-4.17)</td>
+<td style="text-align: right;">-0.82<br>(-3.86)</td>
+<td style="text-align: right;">-0.82<br>(-3.62)</td>
+<td style="text-align: right;">-0.60<br>(-2.79)</td>
+<td style="text-align: right;">-1.24<br>(-5.56)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">MktCap</td>
+<td style="text-align: right;">Equal weighted</td>
+<td style="text-align: right;">5–1 FF α</td>
+<td style="text-align: right;">-2.95<br>(-7.30)</td>
+<td style="text-align: right;">-1.00<br>(-4.11)</td>
+<td style="text-align: right;">-0.82<br>(-3.76)</td>
+<td style="text-align: right;">-0.79<br>(-3.32)</td>
+<td style="text-align: right;">-0.46<br>(-2.11)</td>
+<td style="text-align: right;">-1.20<br>(-5.23)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">BM</td>
+<td style="text-align: right;">Value weighted</td>
+<td style="text-align: right;">5–1 Return</td>
+<td style="text-align: right;">0.96<br>(3.73)</td>
+<td style="text-align: right;">0.63<br>(2.52)</td>
+<td style="text-align: right;">0.40<br>(2.42)</td>
+<td style="text-align: right;">0.32<br>(1.79)</td>
+<td style="text-align: right;">0.22<br>(0.95)</td>
+<td style="text-align: right;">0.51<br>(3.12)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">BM</td>
+<td style="text-align: right;">Value weighted</td>
+<td style="text-align: right;">5–1 CAPM α</td>
+<td style="text-align: right;">1.06<br>(3.92)</td>
+<td style="text-align: right;">0.68<br>(2.55)</td>
+<td style="text-align: right;">0.45<br>(2.57)</td>
+<td style="text-align: right;">0.34<br>(1.88)</td>
+<td style="text-align: right;">0.27<br>(1.13)</td>
+<td style="text-align: right;">0.56<br>(3.28)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">BM</td>
+<td style="text-align: right;">Value weighted</td>
+<td style="text-align: right;">5–1 FF α</td>
+<td style="text-align: right;">1.04<br>(3.83)</td>
+<td style="text-align: right;">0.65<br>(2.43)</td>
+<td style="text-align: right;">0.42<br>(2.43)</td>
+<td style="text-align: right;">0.31<br>(1.74)</td>
+<td style="text-align: right;">0.26<br>(1.10)</td>
+<td style="text-align: right;">0.54<br>(3.17)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">BM</td>
+<td style="text-align: right;">Equal weighted</td>
+<td style="text-align: right;">5–1 Return</td>
+<td style="text-align: right;">1.51<br>(7.16)</td>
+<td style="text-align: right;">1.01<br>(5.44)</td>
+<td style="text-align: right;">1.05<br>(6.87)</td>
+<td style="text-align: right;">0.88<br>(4.93)</td>
+<td style="text-align: right;">0.71<br>(3.36)</td>
+<td style="text-align: right;">1.03<br>(6.43)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">BM</td>
+<td style="text-align: right;">Equal weighted</td>
+<td style="text-align: right;">5–1 CAPM α</td>
+<td style="text-align: right;">1.66<br>(7.55)</td>
+<td style="text-align: right;">1.15<br>(6.01)</td>
+<td style="text-align: right;">1.18<br>(7.82)</td>
+<td style="text-align: right;">1.01<br>(5.78)</td>
+<td style="text-align: right;">0.83<br>(3.96)</td>
+<td style="text-align: right;">1.17<br>(7.17)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">BM</td>
+<td style="text-align: right;">Equal weighted</td>
+<td style="text-align: right;">5–1 FF α</td>
+<td style="text-align: right;">1.67<br>(7.63)</td>
+<td style="text-align: right;">1.13<br>(5.94)</td>
+<td style="text-align: right;">1.16<br>(7.73)</td>
+<td style="text-align: right;">1.00<br>(5.70)</td>
+<td style="text-align: right;">0.83<br>(3.98)</td>
+<td style="text-align: right;">1.16<br>(7.13)</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+<div class="cell" data-execution_count="21">
+<div id="tbl-bem11-reverse-independent" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="21">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bem11-reverse-independent-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;11.10: Characteristic spreads from independent sorts controlling for momentum (BEM Table 11.10)
+</figcaption>
+<div aria-describedby="tbl-bem11-reverse-independent-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output cell-output-display cell-output-markdown">
+<table class="cell caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Characteristic</th>
+<th style="text-align: right;">Weights</th>
+<th style="text-align: right;">Statistic</th>
+<th style="text-align: right;">1</th>
+<th style="text-align: right;">2</th>
+<th style="text-align: right;">3</th>
+<th style="text-align: right;">4</th>
+<th style="text-align: right;">5</th>
+<th style="text-align: right;">Average</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Beta</td>
+<td style="text-align: right;">Value weighted</td>
+<td style="text-align: right;">5–1 Return</td>
+<td style="text-align: right;">-0.54<br>(-1.96)</td>
+<td style="text-align: right;">-0.27<br>(-1.14)</td>
+<td style="text-align: right;">-0.31<br>(-1.25)</td>
+<td style="text-align: right;">-0.31<br>(-1.30)</td>
+<td style="text-align: right;">-0.24<br>(-0.93)</td>
+<td style="text-align: right;">-0.34<br>(-1.57)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Beta</td>
+<td style="text-align: right;">Value weighted</td>
+<td style="text-align: right;">5–1 CAPM α</td>
+<td style="text-align: right;">-0.91<br>(-3.48)</td>
+<td style="text-align: right;">-0.63<br>(-2.99)</td>
+<td style="text-align: right;">-0.67<br>(-2.90)</td>
+<td style="text-align: right;">-0.67<br>(-3.13)</td>
+<td style="text-align: right;">-0.59<br>(-2.42)</td>
+<td style="text-align: right;">-0.69<br>(-3.69)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Beta</td>
+<td style="text-align: right;">Value weighted</td>
+<td style="text-align: right;">5–1 FF α</td>
+<td style="text-align: right;">-0.74<br>(-2.98)</td>
+<td style="text-align: right;">-0.44<br>(-2.03)</td>
+<td style="text-align: right;">-0.47<br>(-2.13)</td>
+<td style="text-align: right;">-0.43<br>(-2.15)</td>
+<td style="text-align: right;">-0.32<br>(-1.23)</td>
+<td style="text-align: right;">-0.48<br>(-2.66)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Beta</td>
+<td style="text-align: right;">Equal weighted</td>
+<td style="text-align: right;">5–1 Return</td>
+<td style="text-align: right;">-1.34<br>(-6.18)</td>
+<td style="text-align: right;">-0.48<br>(-2.23)</td>
+<td style="text-align: right;">-0.36<br>(-1.55)</td>
+<td style="text-align: right;">-0.35<br>(-1.51)</td>
+<td style="text-align: right;">-0.38<br>(-1.55)</td>
+<td style="text-align: right;">-0.58<br>(-2.88)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Beta</td>
+<td style="text-align: right;">Equal weighted</td>
+<td style="text-align: right;">5–1 CAPM α</td>
+<td style="text-align: right;">-1.67<br>(-7.73)</td>
+<td style="text-align: right;">-0.88<br>(-4.37)</td>
+<td style="text-align: right;">-0.79<br>(-3.93)</td>
+<td style="text-align: right;">-0.79<br>(-3.88)</td>
+<td style="text-align: right;">-0.79<br>(-3.55)</td>
+<td style="text-align: right;">-0.98<br>(-5.39)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Beta</td>
+<td style="text-align: right;">Equal weighted</td>
+<td style="text-align: right;">5–1 FF α</td>
+<td style="text-align: right;">-1.62<br>(-7.70)</td>
+<td style="text-align: right;">-0.77<br>(-4.57)</td>
+<td style="text-align: right;">-0.68<br>(-3.96)</td>
+<td style="text-align: right;">-0.63<br>(-3.48)</td>
+<td style="text-align: right;">-0.54<br>(-2.42)</td>
+<td style="text-align: right;">-0.85<br>(-5.33)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">MktCap</td>
+<td style="text-align: right;">Value weighted</td>
+<td style="text-align: right;">5–1 Return</td>
+<td style="text-align: right;">-0.59<br>(-1.91)</td>
+<td style="text-align: right;">-0.66<br>(-2.60)</td>
+<td style="text-align: right;">-0.76<br>(-3.42)</td>
+<td style="text-align: right;">-0.77<br>(-3.27)</td>
+<td style="text-align: right;">-0.57<br>(-2.39)</td>
+<td style="text-align: right;">-0.67<br>(-2.97)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">MktCap</td>
+<td style="text-align: right;">Value weighted</td>
+<td style="text-align: right;">5–1 CAPM α</td>
+<td style="text-align: right;">-0.66<br>(-2.10)</td>
+<td style="text-align: right;">-0.72<br>(-2.77)</td>
+<td style="text-align: right;">-0.81<br>(-3.57)</td>
+<td style="text-align: right;">-0.82<br>(-3.40)</td>
+<td style="text-align: right;">-0.61<br>(-2.50)</td>
+<td style="text-align: right;">-0.72<br>(-3.13)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">MktCap</td>
+<td style="text-align: right;">Value weighted</td>
+<td style="text-align: right;">5–1 FF α</td>
+<td style="text-align: right;">-0.67<br>(-2.03)</td>
+<td style="text-align: right;">-0.71<br>(-2.74)</td>
+<td style="text-align: right;">-0.77<br>(-3.36)</td>
+<td style="text-align: right;">-0.75<br>(-2.90)</td>
+<td style="text-align: right;">-0.46<br>(-1.88)</td>
+<td style="text-align: right;">-0.67<br>(-2.82)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">MktCap</td>
+<td style="text-align: right;">Equal weighted</td>
+<td style="text-align: right;">5–1 Return</td>
+<td style="text-align: right;">-1.46<br>(-4.80)</td>
+<td style="text-align: right;">-0.91<br>(-3.97)</td>
+<td style="text-align: right;">-0.88<br>(-4.15)</td>
+<td style="text-align: right;">-0.84<br>(-3.66)</td>
+<td style="text-align: right;">-0.61<br>(-2.77)</td>
+<td style="text-align: right;">-0.94<br>(-4.41)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">MktCap</td>
+<td style="text-align: right;">Equal weighted</td>
+<td style="text-align: right;">5–1 CAPM α</td>
+<td style="text-align: right;">-1.55<br>(-4.91)</td>
+<td style="text-align: right;">-1.01<br>(-4.17)</td>
+<td style="text-align: right;">-0.97<br>(-4.42)</td>
+<td style="text-align: right;">-0.92<br>(-3.85)</td>
+<td style="text-align: right;">-0.69<br>(-3.02)</td>
+<td style="text-align: right;">-1.03<br>(-4.59)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">MktCap</td>
+<td style="text-align: right;">Equal weighted</td>
+<td style="text-align: right;">5–1 FF α</td>
+<td style="text-align: right;">-1.56<br>(-4.65)</td>
+<td style="text-align: right;">-1.00<br>(-4.12)</td>
+<td style="text-align: right;">-0.97<br>(-4.39)</td>
+<td style="text-align: right;">-0.89<br>(-3.55)</td>
+<td style="text-align: right;">-0.52<br>(-2.30)</td>
+<td style="text-align: right;">-0.99<br>(-4.31)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">BM</td>
+<td style="text-align: right;">Value weighted</td>
+<td style="text-align: right;">5–1 Return</td>
+<td style="text-align: right;">0.95<br>(3.72)</td>
+<td style="text-align: right;">0.65<br>(2.59)</td>
+<td style="text-align: right;">0.51<br>(2.89)</td>
+<td style="text-align: right;">0.34<br>(1.83)</td>
+<td style="text-align: right;">0.13<br>(0.58)</td>
+<td style="text-align: right;">0.52<br>(3.18)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">BM</td>
+<td style="text-align: right;">Value weighted</td>
+<td style="text-align: right;">5–1 CAPM α</td>
+<td style="text-align: right;">1.05<br>(4.01)</td>
+<td style="text-align: right;">0.71<br>(2.62)</td>
+<td style="text-align: right;">0.58<br>(3.20)</td>
+<td style="text-align: right;">0.38<br>(1.95)</td>
+<td style="text-align: right;">0.18<br>(0.78)</td>
+<td style="text-align: right;">0.58<br>(3.42)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">BM</td>
+<td style="text-align: right;">Value weighted</td>
+<td style="text-align: right;">5–1 FF α</td>
+<td style="text-align: right;">1.02<br>(3.91)</td>
+<td style="text-align: right;">0.68<br>(2.50)</td>
+<td style="text-align: right;">0.55<br>(3.08)</td>
+<td style="text-align: right;">0.35<br>(1.81)</td>
+<td style="text-align: right;">0.16<br>(0.72)</td>
+<td style="text-align: right;">0.55<br>(3.30)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">BM</td>
+<td style="text-align: right;">Equal weighted</td>
+<td style="text-align: right;">5–1 Return</td>
+<td style="text-align: right;">1.52<br>(7.26)</td>
+<td style="text-align: right;">1.03<br>(5.35)</td>
+<td style="text-align: right;">1.11<br>(6.16)</td>
+<td style="text-align: right;">0.92<br>(4.92)</td>
+<td style="text-align: right;">0.67<br>(3.33)</td>
+<td style="text-align: right;">1.05<br>(6.38)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">BM</td>
+<td style="text-align: right;">Equal weighted</td>
+<td style="text-align: right;">5–1 CAPM α</td>
+<td style="text-align: right;">1.68<br>(7.68)</td>
+<td style="text-align: right;">1.18<br>(5.99)</td>
+<td style="text-align: right;">1.24<br>(7.11)</td>
+<td style="text-align: right;">1.06<br>(5.74)</td>
+<td style="text-align: right;">0.79<br>(3.93)</td>
+<td style="text-align: right;">1.19<br>(7.15)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">BM</td>
+<td style="text-align: right;">Equal weighted</td>
+<td style="text-align: right;">5–1 FF α</td>
+<td style="text-align: right;">1.68<br>(7.72)</td>
+<td style="text-align: right;">1.16<br>(5.95)</td>
+<td style="text-align: right;">1.23<br>(7.04)</td>
+<td style="text-align: right;">1.04<br>(5.67)</td>
+<td style="text-align: right;">0.79<br>(3.95)</td>
+<td style="text-align: right;">1.18<br>(7.12)</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+</section>
+<section id="famamacbeth-regressions" class="level3" data-number="11.4.7">
+<h3 data-number="11.4.7" class="anchored" data-anchor-id="famamacbeth-regressions"><span class="header-section-number">11.4.7</span> Fama–MacBeth Regressions</h3>
+<p>Regress next month’s excess return on Mom and combinations of beta, log capitalization, and BM. Winsorize the regressors at 0.5% in each tail within each month. Report the average monthly coefficients and estimate their standard errors using six Newey–West lags.</p>
+<div class="cell" data-execution_count="22">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> itertools <span class="im">import</span> combinations</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> eap_pl <span class="im">import</span> fama_macbeth_table</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>terms <span class="op">=</span> {<span class="st">"mom"</span>: <span class="st">"Mom"</span>, <span class="op">**</span>controls}</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>specifications <span class="op">=</span> [</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>    [<span class="st">"mom"</span>, <span class="op">*</span>subset]</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> n <span class="kw">in</span> <span class="bu">range</span>(<span class="bu">len</span>(controls) <span class="op">+</span> <span class="dv">1</span>)</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> subset <span class="kw">in</span> combinations(controls, n)</span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>show_table(fama_macbeth_table(panel, specifications, terms, digits<span class="op">=</span><span class="dv">3</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="tbl-bem11-fama-macbeth" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="22">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bem11-fama-macbeth-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;11.11: Monthly Fama–MacBeth regressions of next-month excess returns (BEM Table 11.11)
+</figcaption>
+<div aria-describedby="tbl-bem11-fama-macbeth-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output cell-output-display cell-output-markdown">
+<table class="cell caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 11%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Term</th>
+<th style="text-align: right;">(1)</th>
+<th style="text-align: right;">(2)</th>
+<th style="text-align: right;">(3)</th>
+<th style="text-align: right;">(4)</th>
+<th style="text-align: right;">(5)</th>
+<th style="text-align: right;">(6)</th>
+<th style="text-align: right;">(7)</th>
+<th style="text-align: right;">(8)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Mom</td>
+<td style="text-align: right;">0.007<br>(3.09)</td>
+<td style="text-align: right;">0.006<br>(3.14)</td>
+<td style="text-align: right;">0.007<br>(3.85)</td>
+<td style="text-align: right;">0.006<br>(2.56)</td>
+<td style="text-align: right;">0.007<br>(4.37)</td>
+<td style="text-align: right;">0.005<br>(2.56)</td>
+<td style="text-align: right;">0.007<br>(3.36)</td>
+<td style="text-align: right;">0.007<br>(3.72)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Beta</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;">-0.379<br>(-2.93)</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;">-0.144<br>(-0.85)</td>
+<td style="text-align: right;">-0.286<br>(-2.32)</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;">-0.079<br>(-0.51)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Size</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;">-0.178<br>(-3.96)</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;">-0.172<br>(-3.22)</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;">-0.168<br>(-3.64)</td>
+<td style="text-align: right;">-0.170<br>(-3.20)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">BM</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;">0.405<br>(5.58)</td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;">0.320<br>(5.15)</td>
+<td style="text-align: right;">0.250<br>(3.25)</td>
+<td style="text-align: right;">0.187<br>(3.04)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Intercept</td>
+<td style="text-align: right;">0.599<br>(2.28)</td>
+<td style="text-align: right;">0.873<br>(3.84)</td>
+<td style="text-align: right;">1.334<br>(3.23)</td>
+<td style="text-align: right;">0.249<br>(0.93)</td>
+<td style="text-align: right;">1.426<br>(3.73)</td>
+<td style="text-align: right;">0.532<br>(2.42)</td>
+<td style="text-align: right;">1.147<br>(2.53)</td>
+<td style="text-align: right;">1.278<br>(3.17)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Adjusted R²</td>
+<td style="text-align: right;">0.01</td>
+<td style="text-align: right;">0.03</td>
+<td style="text-align: right;">0.02</td>
+<td style="text-align: right;">0.02</td>
+<td style="text-align: right;">0.04</td>
+<td style="text-align: right;">0.03</td>
+<td style="text-align: right;">0.03</td>
+<td style="text-align: right;">0.04</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">n</td>
+<td style="text-align: right;">4409</td>
+<td style="text-align: right;">4408</td>
+<td style="text-align: right;">4408</td>
+<td style="text-align: right;">3374</td>
+<td style="text-align: right;">4408</td>
+<td style="text-align: right;">3373</td>
+<td style="text-align: right;">3374</td>
+<td style="text-align: right;">3373</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+<p>The Mom coefficient rounds to 0.007 in the univariate regression and in the regression with all three controls, matching BEM in both specifications. In the full specification, a 100-percentage-point difference in Mom corresponds to about 0.70 percentage points in next month’s fitted excess return.</p>
+</section>
+</section>
+<section id="the-momentum-factor" class="level2" data-number="11.5">
+<h2 data-number="11.5" class="anchored" data-anchor-id="the-momentum-factor"><span class="header-section-number">11.5</span> The Momentum Factor</h2>
+<p>The <a href="https://mba.tuck.dartmouth.edu/pages/faculty/Ken.French/Data_Library/det_mom_factor.html">Kenneth French Data Library</a> constructs MOM using six value-weighted portfolios formed on size and prior return. The sorts use an NYSE median for size and NYSE 30th and 70th percentiles for prior return. The factor averages the returns of the small- and large-stock winner portfolios and subtracts the average return of the corresponding loser portfolios. We use the December 2024 release listed in the book’s setup instructions and plot January 1927 through December 2012, the period in BEM.</p>
+<div id="cell-fig-bem11-mom" class="cell" data-execution_count="23">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> io <span class="im">import</span> StringIO</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> re</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> eap_pl <span class="im">import</span> plot_cumulative_returns</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>archive <span class="op">=</span> Path(<span class="st">"data/momentum-202412.csv"</span>).read_text()</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>monthly_rows <span class="op">=</span> re.findall(<span class="vs">r"</span><span class="fu">(?m)</span><span class="dv">^\s</span><span class="op">*</span><span class="kw">(</span><span class="dv">\d</span><span class="op">{6}</span><span class="vs">,</span><span class="pp">[^</span><span class="ch">\r\n</span><span class="pp">]</span><span class="op">+</span><span class="kw">)</span><span class="vs">"</span>, archive)</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>momentum_factor <span class="op">=</span> (</span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>    pl.read_csv(</span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>        StringIO(<span class="st">"</span><span class="ch">\n</span><span class="st">"</span>.join(monthly_rows)), has_header<span class="op">=</span><span class="va">False</span>, new_columns<span class="op">=</span>[<span class="st">"ym"</span>, <span class="st">"mom"</span>],</span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>        schema_overrides<span class="op">=</span>{<span class="st">"mom"</span>: pl.String},</span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>    .<span class="bu">filter</span>(pl.col(<span class="st">"ym"</span>).is_between(<span class="dv">192701</span>, <span class="dv">201212</span>))</span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>    .select(</span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>        date<span class="op">=</span>(pl.col(<span class="st">"ym"</span>).cast(pl.String) <span class="op">+</span> <span class="st">"01"</span>).<span class="bu">str</span>.to_date(<span class="st">"%Y%m</span><span class="sc">%d</span><span class="st">"</span>),</span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>        mom<span class="op">=</span>pl.col(<span class="st">"mom"</span>).<span class="bu">str</span>.strip_chars().cast(pl.Float64) <span class="op">/</span> <span class="dv">100</span>,</span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a>    .sort(<span class="st">"date"</span>)</span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a>    .with_columns(</span>
+<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a>        compounded<span class="op">=</span>(<span class="dv">1</span> <span class="op">+</span> pl.col(<span class="st">"mom"</span>)).cum_prod() <span class="op">-</span> <span class="dv">1</span>,</span>
+<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a>        cumulative_log<span class="op">=</span>pl.col(<span class="st">"mom"</span>).log1p().cum_sum(),</span>
+<span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb12-24"><a href="#cb12-24" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb12-25"><a href="#cb12-25" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> momentum_factor.height <span class="op">==</span> <span class="dv">1032</span></span>
+<span id="cb12-26"><a href="#cb12-26" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> momentum_factor.select(pl.col(<span class="st">"mom"</span>).is_finite().<span class="bu">all</span>()).item()</span>
+<span id="cb12-27"><a href="#cb12-27" aria-hidden="true" tabindex="-1"></a>plot_cumulative_returns(momentum_factor, y_label<span class="op">=</span><span class="st">"Cumulative MOM return"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="23">
+<div id="fig-bem11-mom" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-bem11-mom-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="momentum-replication_files/figure-html/fig-bem11-mom-output-1.png" width="787" height="480" class="figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-bem11-mom-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;11.1: Compounded and cumulative log returns of the MOM factor, January 1927–December 2012 (BEM Figure 11.1)
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>The compounded series ends at about 30,312%, compared with 31,207% in BEM. Both series show a sharp drawdown in 2009.</p>
+</section>
+<section id="the-famafrenchcarhart-four-factor-model" class="level2" data-number="11.6">
+<h2 data-number="11.6" class="anchored" data-anchor-id="the-famafrenchcarhart-four-factor-model"><span class="header-section-number">11.6</span> The Fama–French–Carhart Four-Factor Model</h2>
+<p><span class="citation" data-cites="carhart1997">Carhart (<a href="references.html#ref-carhart1997" role="doc-biblioref">1997</a>)</span> adds a momentum factor to the three stock-market factors of <span class="citation" data-cites="famaFrench1993">Fama and French (<a href="references.html#ref-famaFrench1993" role="doc-biblioref">1993</a>)</span>. The four-factor model is BEM’s Equation (11.2).</p>
+<p><span id="eq-bem11-ffc"><span class="math display">\[
+r_{p,t}=\alpha_p+\beta_{\mathrm{MKT},p}\mathrm{MKT}_t
++\beta_{\mathrm{SMB},p}\mathrm{SMB}_t+\beta_{\mathrm{HML},p}\mathrm{HML}_t
++\beta_{\mathrm{MOM},p}\mathrm{MOM}_t+\varepsilon_{p,t}.
+\tag{11.2}\]</span></span></p>
+<p>Here <span class="math inline">\(r_{p,t}\)</span> is the excess return of portfolio <span class="math inline">\(p\)</span>, and <span class="math inline">\(\alpha_p\)</span> is the intercept after accounting for its exposures to the market, size, value, and momentum factors.</p>
+
+
+<div id="refs" class="references csl-bib-body hanging-indent" role="list" style="display: none">
+<div id="ref-bali2016" class="csl-entry" role="listitem">
+Bali, Turan G., Robert F. Engle, and Scott Murray. 2016. <em>Empirical Asset Pricing: The Cross Section of Stock Returns</em>. John Wiley &amp; Sons. <a href="https://www.wiley.com/en-us/empirical-asset-pricing-the-cross-section-of-stock-returns-p-9781118095041">https://www.wiley.com/en-us/empirical-asset-pricing-the-cross-section-of-stock-returns-p-9781118095041</a>.
+</div>
+<div id="ref-carhart1997" class="csl-entry" role="listitem">
+Carhart, Mark M. 1997. <span>“On Persistence in Mutual Fund Performance.”</span> <em>The Journal of Finance</em> 52 (1): 57–82. <a href="https://doi.org/10.1111/j.1540-6261.1997.tb03808.x">https://doi.org/10.1111/j.1540-6261.1997.tb03808.x</a>.
+</div>
+<div id="ref-famaFrench1993" class="csl-entry" role="listitem">
+Fama, Eugene F., and Kenneth R. French. 1993. <span>“Common Risk Factors in the Returns on Stocks and Bonds.”</span> <em>Journal of Financial Economics</em> 33 (1): 3–56. <a href="https://doi.org/10.1016/0304-405X(93)90023-5">https://doi.org/10.1016/0304-405X(93)90023-5</a>.
+</div>
+<div id="ref-jegadeeshTitman1993" class="csl-entry" role="listitem">
+Jegadeesh, Narasimhan, and Sheridan Titman. 1993. <span>“Returns to Buying Winners and Selling Losers: Implications for Stock Market Efficiency.”</span> <em>The Journal of Finance</em> 48 (1): 65–91. <a href="https://doi.org/10.1111/j.1540-6261.1993.tb04702.x">https://doi.org/10.1111/j.1540-6261.1993.tb04702.x</a>.
+</div>
+<div id="ref-neweywest1987" class="csl-entry" role="listitem">
+Newey, Whitney K., and Kenneth D. West. 1987. <span>“A Simple, Positive Semi-Definite, Heteroskedasticity and Autocorrelation Consistent Covariance Matrix.”</span> <em>Econometrica</em> 55 (3): 703–8. <a href="https://doi.org/10.2307/1913610">https://doi.org/10.2307/1913610</a>.
+</div>
+</div>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="./value-replication.html" class="pagination-link" aria-label="The Value Premium">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">The Value Premium</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./reversal-replication.html" class="pagination-link" aria-label="Short-Term Reversal">
+        <span class="nav-page-text"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Short-Term Reversal</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

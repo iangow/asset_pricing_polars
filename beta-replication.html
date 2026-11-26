@@ -279,6 +279,18 @@ window.Quarto = {
  <span class="menu-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">The Value Premium</span></span></a>
   </div>
 </li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./momentum-replication.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">The Momentum Effect</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./reversal-replication.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Short-Term Reversal</span></span></a>
+  </div>
+</li>
       </ul>
   </li>
         <li class="sidebar-item">
@@ -383,7 +395,7 @@ r_{i,s}=\alpha_i+\beta_i MKT_s+\varepsilon_{i,s},
 \widehat\beta^{D}_{i,t}=\sum_{k=-5}^{5}\widehat\gamma_k,
 \]</span></p>
 <p>where <span class="math inline">\(\widehat\rho_M\)</span> is the market return’s first-order autocorrelation over the estimation window. We shift the market series on the trading calendar before joining it to stock returns. A lag can precede the first stock-return date in the window. We omit response dates whose market lead falls after formation and apply the minimum to the remaining complete observations. This keeps all beta inputs observable at formation.</p>
-<div id="43ff19a8" class="cell" data-execution_count="2">
+<div id="2551edaa" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> polars <span class="im">as</span> pl</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> era_pl <span class="im">import</span> load_parquet</span>
@@ -411,7 +423,7 @@ r_{i,s}=\alpha_i+\beta_i MKT_s+\varepsilon_{i,s},
 <span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>    .unique()</span>
 <span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>We screen for common shares at formation using historical share codes 10 and 11. A stock can contribute its earlier returns to the estimation window even if its historical share code changed. We use CRSP’s reported returns for estimation and apply the delisting convention in <a href="crsp-replication.html#sec-bem-returns" class="quarto-xref"><span>Section 7.2</span></a> to the next-month returns used to evaluate the beta estimates.</p>
-<div id="d6018765" class="cell" data-execution_count="4">
+<div id="d094a674" class="cell" data-execution_count="4">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>monthly_stock <span class="op">=</span> (</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    load_parquet(<span class="st">"msf"</span>, <span class="st">"crsp"</span>)</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    .<span class="bu">filter</span>(pl.col(<span class="st">"date"</span>).is_between(</span>
@@ -438,7 +450,7 @@ r_{i,s}=\alpha_i+\beta_i MKT_s+\varepsilon_{i,s},
 <span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> pl.cov(stock, market) <span class="op">/</span> pl.col(market).var()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>For monthly returns, we can apply the covariance-over-variance formula directly. We include the formation dates in the rolling index so a window is evaluated even if the current month’s return is missing. The window is open at its left endpoint and includes the formation month.</p>
-<div id="1b01255b" class="cell" data-execution_count="5">
+<div id="35214d81" class="cell" data-execution_count="5">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>monthly_windows <span class="op">=</span> {<span class="st">"1Y"</span>: (<span class="dv">12</span>, <span class="dv">10</span>), <span class="st">"2Y"</span>: (<span class="dv">24</span>, <span class="dv">20</span>), <span class="st">"3Y"</span>: (<span class="dv">36</span>, <span class="dv">24</span>), <span class="st">"5Y"</span>: (<span class="dv">60</span>, <span class="dv">24</span>)}</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>daily_windows <span class="op">=</span> {<span class="st">"1M"</span>: (<span class="dv">1</span>, <span class="dv">15</span>), <span class="st">"3M"</span>: (<span class="dv">3</span>, <span class="dv">50</span>), <span class="st">"6M"</span>: (<span class="dv">6</span>, <span class="dv">100</span>),</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"12M"</span>: (<span class="dv">12</span>, <span class="dv">200</span>), <span class="st">"24M"</span>: (<span class="dv">24</span>, <span class="dv">450</span>)}</span>
@@ -466,7 +478,7 @@ r_{i,s}=\alpha_i+\beta_i MKT_s+\varepsilon_{i,s},
 <span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>    )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>For daily returns, each trading day enters many windows. We sum the regression inputs once per stock and month, then roll those sums across months. For example, the slope uses <span class="math inline">\(\sum xy-(\sum x)(\sum y)/n\)</span> divided by <span class="math inline">\(\sum x^2-(\sum x)^2/n\)</span>. The adjusted regressions use the same idea with cross-products between market returns at different offsets.</p>
-<div id="f0d43ae8" class="cell" data-execution_count="6">
+<div id="8379c8d6" class="cell" data-execution_count="6">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>daily_factors, daily_excess <span class="op">=</span> load_daily_beta_inputs(</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    first.dt.offset_by(<span class="st">"-23mo"</span>), last_estimate.dt.month_end(),</span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -504,7 +516,7 @@ r_{i,s}=\alpha_i+\beta_i MKT_s+\varepsilon_{i,s},
 <section id="compare-the-beta-estimates" class="level2" data-number="8.2">
 <h2 data-number="8.2" class="anchored" data-anchor-id="compare-the-beta-estimates"><span class="header-section-number">8.2</span> Summary Statistics</h2>
 <p><a href="#tbl-bem8-summary" class="quarto-xref">Table&nbsp;<span>8.1</span></a> averages monthly cross-sectional statistics. The count is the average number of stocks with an available estimate in a month. For example, the dispersion of the one-month daily beta reflects both differences in stocks’ exposures and estimation noise from short return histories. We use sample standard deviations, bias-adjusted skewness and excess kurtosis, and linearly interpolated quantiles.</p>
-<div id="ef8e132b" class="cell" data-execution_count="13">
+<div id="cb46f3eb" class="cell" data-execution_count="13">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>beta_long <span class="op">=</span> betas.unpivot(</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    on<span class="op">=</span>beta_labels, index<span class="op">=</span>keys, variable_name<span class="op">=</span><span class="st">"measure"</span>, value_name<span class="op">=</span><span class="st">"beta"</span>,</span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>)</span>
@@ -742,7 +754,7 @@ Table&nbsp;8.1: Cross-sectional summary statistics for market beta (BEM Table 8.
 <section id="correlations" class="level2" data-number="8.3">
 <h2 data-number="8.3" class="anchored" data-anchor-id="correlations"><span class="header-section-number">8.3</span> Correlations</h2>
 <p><a href="#tbl-bem8-correlations" class="quarto-xref">Table&nbsp;<span>8.2</span></a> reports the mean of the monthly correlations. For each pair, we use stocks for which both estimates are available. Winsorize each beta within month at the 0.5th and 99.5th percentiles for Pearson correlations below the diagonal. Use the original values for Spearman rank correlations above the diagonal.</p>
-<div id="5f86e50f" class="cell" data-execution_count="15">
+<div id="ec521a92" class="cell" data-execution_count="15">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>clipped <span class="op">=</span> betas.with_columns(</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    pl.col(beta_labels).era.winsorize(prob<span class="op">=</span><span class="fl">0.005</span>, quantile_method<span class="op">=</span><span class="st">"linear"</span>).over(<span class="st">"month"</span>)</span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>)</span>
@@ -967,7 +979,7 @@ Table&nbsp;8.2: Monthly Pearson (below diagonal) and Spearman (above diagonal) c
 <section id="measure-persistence" class="level2" data-number="8.4">
 <h2 data-number="8.4" class="anchored" data-anchor-id="measure-persistence"><span class="header-section-number">8.4</span> Persistence</h2>
 <p><a href="#tbl-bem8-persistence" class="quarto-xref">Table&nbsp;<span>8.3</span></a> compares a stock’s winsorized beta with its beta exactly <span class="math inline">\(\tau\)</span> calendar months later. We calculate a Pearson correlation across stocks in each month and average over months. We leave cells blank when the stock-return windows overlap. This helps distinguish persistence from the effect of using some of the same returns twice.</p>
-<div id="47e778dd" class="cell" data-execution_count="17">
+<div id="84121cac" class="cell" data-execution_count="17">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> persistence(lag):</span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>    columns <span class="op">=</span> [b <span class="cf">for</span> b <span class="kw">in</span> beta_labels <span class="cf">if</span> window_months[b] <span class="op">&lt;=</span> lag]</span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    current <span class="op">=</span> clipped.select(<span class="op">*</span>keys, <span class="op">*</span>columns)</span>
@@ -1164,7 +1176,7 @@ Table&nbsp;8.3: Persistence of beta across nonoverlapping stock-return windows (
 <section id="sort-stocks-into-beta-deciles" class="level3" data-number="8.5.1">
 <h3 data-number="8.5.1" class="anchored" data-anchor-id="sort-stocks-into-beta-deciles"><span class="header-section-number">8.5.1</span> Portfolio Analysis</h3>
 <p>We form deciles using all eligible stocks with an estimate of the given beta in month <span class="math inline">\(t\)</span>. A stock’s decile is one plus the number of breakpoints its beta exceeds. After forming the groups, we join the next month’s excess return. We keep a holding-period return even if a stock leaves the common-share universe during that month. The value weights use market capitalization measured at formation.</p>
-<div id="618ce1b6" class="cell" data-execution_count="20">
+<div id="7998e2e4" class="cell" data-execution_count="20">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>deciles <span class="op">=</span> [<span class="bu">str</span>(i) <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">1</span>, <span class="dv">11</span>)]</span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>decile <span class="op">=</span> <span class="dv">1</span> <span class="op">+</span> pl.sum_horizontal(</span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    (b <span class="op">&gt;</span> b.quantile(i <span class="op">/</span> <span class="dv">10</span>, interpolation<span class="op">=</span><span class="st">"linear"</span>)).cast(pl.UInt8)</span>
@@ -1193,7 +1205,7 @@ Table&nbsp;8.3: Persistence of beta across nonoverlapping stock-return windows (
 <span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>We compute the high-minus-low return each month. Its CAPM alpha is the intercept when that return is regressed on the holding month’s market excess return. For each portfolio, we report returns and alphas in percent per month and use six Newey–West lags for their <span class="math inline">\(t\)</span>-statistics.</p>
-<div id="7e23fe6e" class="cell" data-execution_count="21">
+<div id="d0779d2f" class="cell" data-execution_count="21">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> statspai <span class="im">as</span> sp</span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>spread <span class="op">=</span> (</span>
@@ -2150,7 +2162,7 @@ Table&nbsp;8.5: Value-weighted returns to beta deciles (BEM Table 8.5)
 r_{i,t+1}=a_{t+1}+b_{t+1}\widehat\beta_{i,t}+u_{i,t+1}.
 \]</span></p>
 <p>We use the same winsorization as for the Pearson correlations and apply six Newey–West lags to the monthly coefficient series. The CAPM predicts that the mean slope estimates the market risk premium and the mean intercept is zero.</p>
-<div id="78bfa822" class="cell" data-execution_count="25">
+<div id="64aefb6b" class="cell" data-execution_count="25">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>fm_data <span class="op">=</span> (</span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>    clipped.unpivot(on<span class="op">=</span>beta_labels, index<span class="op">=</span>keys, variable_name<span class="op">=</span><span class="st">"measure"</span>, value_name<span class="op">=</span><span class="st">"beta"</span>)</span>
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>    .join(outcomes.select(<span class="op">*</span>keys, <span class="st">"excess"</span>), on<span class="op">=</span>keys, validate<span class="op">=</span><span class="st">"m:1"</span>)</span>

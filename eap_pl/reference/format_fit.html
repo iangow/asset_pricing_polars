@@ -210,6 +210,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="../reference/build_momentum.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">build_momentum</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="../reference/load_beta_universe.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">load_beta_universe</span></a>
   </div>
@@ -371,7 +377,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <section id="eap_pl.format_fit" class="level1">
 <h1>format_fit</h1>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>eap_pl.format_fit(fit, term)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>eap_pl.format_fit(fit, term, <span class="op">*</span>, digits<span class="op">=</span><span class="dv">2</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Format a coefficient and its t statistic for a book table.</p>
 <section id="parameters" class="level2 doc-section doc-section-parameters">
 <h2 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters">Parameters</h2>
@@ -403,6 +409,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>Coefficient name in the fit.</td>
 <td><em>required</em></td>
 </tr>
+<tr class="odd">
+<td>digits</td>
+<td>int</td>
+<td>Decimal places for the coefficient.</td>
+<td><code>2</code></td>
+</tr>
 </tbody>
 </table>
 </section>
@@ -412,7 +424,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <colgroup>
 <col style="width: 6%">
 <col style="width: 6%">
-<col style="width: 86%">
+<col style="width: 87%">
 </colgroup>
 <thead>
 <tr class="header">
@@ -425,7 +437,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <tr class="odd">
 <td></td>
 <td>str</td>
-<td>Coefficient and parenthesized t statistic rounded to two decimal places, separated by an HTML line break.</td>
+<td>Coefficient and parenthesized t statistic separated by an HTML line break. The t statistic uses two decimal places.</td>
 </tr>
 </tbody>
 </table>

@@ -208,7 +208,7 @@
     "href": "reference/index.html",
     "title": "Function reference",
     "section": "",
-    "text": "load_annual_betas\nLoad the December values of the 12-month daily beta.\n\n\nbuild_annual_panel\nJoin December stock characteristics to next-year excess returns.\n\n\nbuild_sizes\nBuild monthly and June-based market capitalization for the BEM sample.\n\n\nbuild_book_to_market\nConstruct monthly book-to-market using prior-year fiscal book equity.\n\n\nload_beta_universe\nSelect stock-month formation dates with common share codes.\n\n\nload_daily_beta_inputs\nPrepare the daily factors and stock observations used to estimate beta.\n\n\nmonthly_panel\nJoin formation-month characteristics to next-month excess returns.\n\n\nwrite_eap_table\nWrite a derived stock-month table to DATA_DIR/eap.\n\n\n\n\n\n\n\n\n\nmean_cross_sections\nAverage each descriptive statistic across monthly cross-sections.\n\n\nperiod_correlations\nCompute cross-sectional correlations separately for each period.\n\n\ncorrelation_matrix\nPut Pearson correlations below the diagonal and Spearman above it.\n\n\nwinsorized_corr\nCompute a Pearson correlation after pairwise finite-value filtering.\n\n\npersistence\nAverage cross-sectional correlations with future observations.\n\n\n\n\n\n\n\n\n\nunivariate_panel\nSummarize monthly characteristic deciles and the high-minus-low spread.\n\n\nbivariate_months\nForm monthly quintile portfolios on a control and a target.\n\n\nbivariate_panel\nReport means and quintile spreads from a monthly two-way sort.\n\n\nfama_macbeth_table\nBuild a table of monthly Fama–MacBeth regressions.\n\n\nhac\nFit a StatsPAI regression with six Newey–West lags.\n\n\nformat_fit\nFormat a coefficient and its t statistic for a book table.\n\n\n\n\n\n\n\n\n\nplot_cumulative_returns\nPlot compounded and cumulative log returns in separate panels.\n\n\nplot_factor\nPlot cumulative Fama–French factor returns from July 1926 to December 2012.",
+    "text": "load_annual_betas\nLoad the December values of the 12-month daily beta.\n\n\nbuild_annual_panel\nJoin December stock characteristics to next-year excess returns.\n\n\nbuild_sizes\nBuild monthly and June-based market capitalization for the BEM sample.\n\n\nbuild_book_to_market\nConstruct monthly book-to-market using prior-year fiscal book equity.\n\n\nbuild_momentum\nBuild the seven BEM momentum signals from legacy CRSP monthly returns.\n\n\nload_beta_universe\nSelect stock-month formation dates with common share codes.\n\n\nload_daily_beta_inputs\nPrepare the daily factors and stock observations used to estimate beta.\n\n\nmonthly_panel\nJoin formation-month characteristics to next-month excess returns.\n\n\nwrite_eap_table\nWrite a derived stock-month table to DATA_DIR/eap.\n\n\n\n\n\n\n\n\n\nmean_cross_sections\nAverage each descriptive statistic across monthly cross-sections.\n\n\nperiod_correlations\nCompute cross-sectional correlations separately for each period.\n\n\ncorrelation_matrix\nPut Pearson correlations below the diagonal and Spearman above it.\n\n\nwinsorized_corr\nCompute a Pearson correlation after pairwise finite-value filtering.\n\n\npersistence\nAverage cross-sectional correlations with future observations.\n\n\n\n\n\n\n\n\n\nunivariate_panel\nSummarize monthly characteristic deciles and the high-minus-low spread.\n\n\nbivariate_months\nForm monthly quintile portfolios on a control and a target.\n\n\nbivariate_panel\nReport means and quintile spreads from a monthly two-way sort.\n\n\nfama_macbeth_table\nBuild a table of monthly Fama–MacBeth regressions.\n\n\nhac\nFit a StatsPAI regression with six Newey–West lags.\n\n\nformat_fit\nFormat a coefficient and its t statistic for a book table.\n\n\n\n\n\n\n\n\n\nplot_cumulative_returns\nPlot compounded and cumulative log returns in separate panels.\n\n\nplot_factor\nPlot cumulative Fama–French factor returns from July 1926 to December 2012.",
     "crumbs": [
       "Reference",
       "Function reference"
@@ -219,7 +219,7 @@
     "href": "reference/index.html#data-and-parquet",
     "title": "Function reference",
     "section": "",
-    "text": "load_annual_betas\nLoad the December values of the 12-month daily beta.\n\n\nbuild_annual_panel\nJoin December stock characteristics to next-year excess returns.\n\n\nbuild_sizes\nBuild monthly and June-based market capitalization for the BEM sample.\n\n\nbuild_book_to_market\nConstruct monthly book-to-market using prior-year fiscal book equity.\n\n\nload_beta_universe\nSelect stock-month formation dates with common share codes.\n\n\nload_daily_beta_inputs\nPrepare the daily factors and stock observations used to estimate beta.\n\n\nmonthly_panel\nJoin formation-month characteristics to next-month excess returns.\n\n\nwrite_eap_table\nWrite a derived stock-month table to DATA_DIR/eap.",
+    "text": "load_annual_betas\nLoad the December values of the 12-month daily beta.\n\n\nbuild_annual_panel\nJoin December stock characteristics to next-year excess returns.\n\n\nbuild_sizes\nBuild monthly and June-based market capitalization for the BEM sample.\n\n\nbuild_book_to_market\nConstruct monthly book-to-market using prior-year fiscal book equity.\n\n\nbuild_momentum\nBuild the seven BEM momentum signals from legacy CRSP monthly returns.\n\n\nload_beta_universe\nSelect stock-month formation dates with common share codes.\n\n\nload_daily_beta_inputs\nPrepare the daily factors and stock observations used to estimate beta.\n\n\nmonthly_panel\nJoin formation-month characteristics to next-month excess returns.\n\n\nwrite_eap_table\nWrite a derived stock-month table to DATA_DIR/eap.",
     "crumbs": [
       "Reference",
       "Function reference"
@@ -263,7 +263,7 @@
     "href": "reference/format_fit.html",
     "title": "format_fit",
     "section": "",
-    "text": "eap_pl.format_fit(fit, term)\nFormat a coefficient and its t statistic for a book table.\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nfit\nstatspai.EconometricResults\nFit exposing params and tvalues by term.\nrequired\n\n\nterm\nstr\nCoefficient name in the fit.\nrequired\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\n\n\n\n\n\nstr\nCoefficient and parenthesized t statistic rounded to two decimal places, separated by an HTML line break.",
+    "text": "eap_pl.format_fit(fit, term, *, digits=2)\nFormat a coefficient and its t statistic for a book table.\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nfit\nstatspai.EconometricResults\nFit exposing params and tvalues by term.\nrequired\n\n\nterm\nstr\nCoefficient name in the fit.\nrequired\n\n\ndigits\nint\nDecimal places for the coefficient.\n2\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\n\n\n\n\n\nstr\nCoefficient and parenthesized t statistic separated by an HTML line break. The t statistic uses two decimal places.",
     "crumbs": [
       "Reference",
       "Portfolios and inference",
@@ -275,7 +275,7 @@
     "href": "reference/format_fit.html#parameters",
     "title": "format_fit",
     "section": "",
-    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nfit\nstatspai.EconometricResults\nFit exposing params and tvalues by term.\nrequired\n\n\nterm\nstr\nCoefficient name in the fit.\nrequired",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nfit\nstatspai.EconometricResults\nFit exposing params and tvalues by term.\nrequired\n\n\nterm\nstr\nCoefficient name in the fit.\nrequired\n\n\ndigits\nint\nDecimal places for the coefficient.\n2",
     "crumbs": [
       "Reference",
       "Portfolios and inference",
@@ -287,7 +287,7 @@
     "href": "reference/format_fit.html#returns",
     "title": "format_fit",
     "section": "",
-    "text": "Name\nType\nDescription\n\n\n\n\n\nstr\nCoefficient and parenthesized t statistic rounded to two decimal places, separated by an HTML line break.",
+    "text": "Name\nType\nDescription\n\n\n\n\n\nstr\nCoefficient and parenthesized t statistic separated by an HTML line break. The t statistic uses two decimal places.",
     "crumbs": [
       "Reference",
       "Portfolios and inference",
@@ -331,97 +331,76 @@
     ]
   },
   {
-    "objectID": "reference/build_book_to_market.html",
-    "href": "reference/build_book_to_market.html",
-    "title": "build_book_to_market",
+    "objectID": "reference/build_momentum.html",
+    "href": "reference/build_momentum.html",
+    "title": "build_momentum",
     "section": "",
-    "text": "eap_pl.build_book_to_market(sizes)\nConstruct monthly book-to-market using prior-year fiscal book equity.\nUses valid CRSP–Compustat links or unambiguous historical CUSIPs. Each ratio becomes available the June after the book year. The output includes signed ratios for the annual methods chapters and positive ratios for the monthly value replication.\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nsizes\npl.DataFrame | pl.LazyFrame\nThe stock-month capitalization table from build_sizes().\nrequired\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\n\n\n\n\n\npolars.DataFrame\nStock-month keys, book year, book equity, prior December market capitalization, and book-to-market measures.",
+    "text": "eap_pl.build_momentum(first=pl.date(1963, 6, 1), last=pl.date(2012, 11, 1))\nBuild the seven BEM momentum signals from legacy CRSP monthly returns.\nEach signal compounds finite returns in its calendar-month window. A signal is missing when its window has too few observed returns. The output covers rows in the CRSP monthly stock file. Join it to the formation-month universe separately.\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nfirst\npolars.Expr\nFirst formation month, inclusive.\npl.date(1963, 6, 1)\n\n\nlast\npolars.Expr\nLast formation month, inclusive.\npl.date(2012, 11, 1)\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\n\n\n\n\n\npolars.DataFrame\nStock-month keys and seven signals in percentage points. mom, lag12, and lag6 exclude the formation month. r12m, r9m, r6m, and r3m include it.",
     "crumbs": [
       "Reference",
       "Data and Parquet",
-      "build_book_to_market"
+      "build_momentum"
     ]
   },
   {
-    "objectID": "reference/build_book_to_market.html#parameters",
-    "href": "reference/build_book_to_market.html#parameters",
-    "title": "build_book_to_market",
+    "objectID": "reference/build_momentum.html#parameters",
+    "href": "reference/build_momentum.html#parameters",
+    "title": "build_momentum",
     "section": "",
-    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nsizes\npl.DataFrame | pl.LazyFrame\nThe stock-month capitalization table from build_sizes().\nrequired",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nfirst\npolars.Expr\nFirst formation month, inclusive.\npl.date(1963, 6, 1)\n\n\nlast\npolars.Expr\nLast formation month, inclusive.\npl.date(2012, 11, 1)",
     "crumbs": [
       "Reference",
       "Data and Parquet",
-      "build_book_to_market"
+      "build_momentum"
     ]
   },
   {
-    "objectID": "reference/build_book_to_market.html#returns",
-    "href": "reference/build_book_to_market.html#returns",
-    "title": "build_book_to_market",
+    "objectID": "reference/build_momentum.html#returns",
+    "href": "reference/build_momentum.html#returns",
+    "title": "build_momentum",
     "section": "",
-    "text": "Name\nType\nDescription\n\n\n\n\n\npolars.DataFrame\nStock-month keys, book year, book equity, prior December market capitalization, and book-to-market measures.",
+    "text": "Name\nType\nDescription\n\n\n\n\n\npolars.DataFrame\nStock-month keys and seven signals in percentage points. mom, lag12, and lag6 exclude the formation month. r12m, r9m, r6m, and r3m include it.",
     "crumbs": [
       "Reference",
       "Data and Parquet",
-      "build_book_to_market"
+      "build_momentum"
     ]
   },
   {
-    "objectID": "reference/bivariate_panel.html",
-    "href": "reference/bivariate_panel.html",
-    "title": "bivariate_panel",
+    "objectID": "reference/build_annual_panel.html",
+    "href": "reference/build_annual_panel.html",
+    "title": "build_annual_panel",
     "section": "",
-    "text": "eap_pl.bivariate_panel(monthly, value, *, independent, spread_only=False)\nReport means and quintile spreads from a monthly two-way sort.\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nmonthly\npolars.DataFrame\nMonthly cell returns from bivariate_months().\nrequired\n\n\nvalue\nstr\nReturn column, usually EW or VW.\nrequired\n\n\nindependent\nbool\nInclude averages and spreads in both sort dimensions for independently sorted portfolios.\nrequired\n\n\nspread_only\nbool\nReturn two abbreviated tables covering target portfolios averaged across controls and target spreads by control.\nFalse\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\n\n\n\n\n\npolars.DataFrame or tuple[polars.DataFrame, polars.DataFrame]\nA formatted panel of means and spreads, or two abbreviated panels when spread_only is true.",
+    "text": "eap_pl.build_annual_panel(start_year=1988, end_year=2012, *, annual_betas=None)\nJoin December stock characteristics to next-year excess returns.\nThe beta sample defines the stock-year rows. Compounds available monthly CRSP returns and subtracts the compounded risk-free return, which requires all 12 months. The final formation year has no next-year return because the sample ends in that calendar year.\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nstart_year\nint\nFirst formation year, inclusive.\n1988\n\n\nend_year\nint\nLast formation year and last calendar year of returns, inclusive.\n2012\n\n\nannual_betas\npl.DataFrame | pl.LazyFrame | None\nOptional December estimates to reuse from load_annual_betas(). Supply every stock-year needed for the panel.\nNone\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\n\n\n\n\n\npolars.DataFrame\nStock-year observations with permno, year, Beta, market capitalization in millions (MktCap), its log (Size), signed book-to-market (BM), and next-year excess return in percentage points (excess).",
     "crumbs": [
       "Reference",
-      "Portfolios and inference",
-      "bivariate_panel"
+      "Data and Parquet",
+      "build_annual_panel"
     ]
   },
   {
-    "objectID": "reference/bivariate_panel.html#parameters",
-    "href": "reference/bivariate_panel.html#parameters",
-    "title": "bivariate_panel",
+    "objectID": "reference/build_annual_panel.html#parameters",
+    "href": "reference/build_annual_panel.html#parameters",
+    "title": "build_annual_panel",
     "section": "",
-    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nmonthly\npolars.DataFrame\nMonthly cell returns from bivariate_months().\nrequired\n\n\nvalue\nstr\nReturn column, usually EW or VW.\nrequired\n\n\nindependent\nbool\nInclude averages and spreads in both sort dimensions for independently sorted portfolios.\nrequired\n\n\nspread_only\nbool\nReturn two abbreviated tables covering target portfolios averaged across controls and target spreads by control.\nFalse",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nstart_year\nint\nFirst formation year, inclusive.\n1988\n\n\nend_year\nint\nLast formation year and last calendar year of returns, inclusive.\n2012\n\n\nannual_betas\npl.DataFrame | pl.LazyFrame | None\nOptional December estimates to reuse from load_annual_betas(). Supply every stock-year needed for the panel.\nNone",
     "crumbs": [
       "Reference",
-      "Portfolios and inference",
-      "bivariate_panel"
+      "Data and Parquet",
+      "build_annual_panel"
     ]
   },
   {
-    "objectID": "reference/bivariate_panel.html#returns",
-    "href": "reference/bivariate_panel.html#returns",
-    "title": "bivariate_panel",
+    "objectID": "reference/build_annual_panel.html#returns",
+    "href": "reference/build_annual_panel.html#returns",
+    "title": "build_annual_panel",
     "section": "",
-    "text": "Name\nType\nDescription\n\n\n\n\n\npolars.DataFrame or tuple[polars.DataFrame, polars.DataFrame]\nA formatted panel of means and spreads, or two abbreviated panels when spread_only is true.",
+    "text": "Name\nType\nDescription\n\n\n\n\n\npolars.DataFrame\nStock-year observations with permno, year, Beta, market capitalization in millions (MktCap), its log (Size), signed book-to-market (BM), and next-year excess return in percentage points (excess).",
     "crumbs": [
       "Reference",
-      "Portfolios and inference",
-      "bivariate_panel"
+      "Data and Parquet",
+      "build_annual_panel"
     ]
-  },
-  {
-    "objectID": "index.html",
-    "href": "index.html",
-    "title": "eap_pl",
-    "section": "",
-    "text": "eap_pl provides the shared Polars calculations used in Empirical Asset Pricing with Polars. The function reference lists the expected columns, return units, and output for each helper."
-  },
-  {
-    "objectID": "index.html#installation",
-    "href": "index.html#installation",
-    "title": "eap_pl",
-    "section": "Installation",
-    "text": "Installation\nFrom the book checkout, uv sync installs the local package in the book environment. To install just the package into another environment, run this command from the checkout with that environment’s Python.\npython -m pip install ./packages/eap_pl"
-  },
-  {
-    "objectID": "index.html#example",
-    "href": "index.html#example",
-    "title": "eap_pl",
-    "section": "Example",
-    "text": "Example\nCompute cross-sectional correlations within each month. Pearson uses the 0.5th and 99.5th percentile cutoffs, and Spearman uses ranks of the original values.\nfrom datetime import date\n\nimport polars as pl\n\nfrom eap_pl import period_correlations\n\nstocks = pl.DataFrame({\n    \"month\": [date(2012, 1, 1)] * 4 + [date(2012, 2, 1)] * 4,\n    \"beta\": [0.6, 0.8, 1.1, 1.4, 0.5, 0.9, 1.0, 1.3],\n    \"size\": [20.0, 55.0, 40.0, 120.0, 100.0, 50.0, 80.0, 30.0],\n})\nperiod_correlations(stocks, [\"beta\", \"size\"], \"month\").sort(\"month\")\nThe data-loading helpers read the local Parquet repository configured in DATA_DIR. See Preliminaries in the book for the required WRDS tables and derived files."
   },
   {
     "objectID": "reference/bivariate_months.html",
@@ -460,39 +439,96 @@
     ]
   },
   {
-    "objectID": "reference/build_annual_panel.html",
-    "href": "reference/build_annual_panel.html",
-    "title": "build_annual_panel",
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "eap_pl",
     "section": "",
-    "text": "eap_pl.build_annual_panel(start_year=1988, end_year=2012, *, annual_betas=None)\nJoin December stock characteristics to next-year excess returns.\nThe beta sample defines the stock-year rows. Compounds available monthly CRSP returns and subtracts the compounded risk-free return, which requires all 12 months. The final formation year has no next-year return because the sample ends in that calendar year.\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nstart_year\nint\nFirst formation year, inclusive.\n1988\n\n\nend_year\nint\nLast formation year and last calendar year of returns, inclusive.\n2012\n\n\nannual_betas\npl.DataFrame | pl.LazyFrame | None\nOptional December estimates to reuse from load_annual_betas(). Supply every stock-year needed for the panel.\nNone\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\n\n\n\n\n\npolars.DataFrame\nStock-year observations with permno, year, Beta, market capitalization in millions (MktCap), its log (Size), signed book-to-market (BM), and next-year excess return in percentage points (excess).",
+    "text": "eap_pl provides the shared Polars calculations used in Empirical Asset Pricing with Polars. The function reference lists the expected columns, return units, and output for each helper."
+  },
+  {
+    "objectID": "index.html#installation",
+    "href": "index.html#installation",
+    "title": "eap_pl",
+    "section": "Installation",
+    "text": "Installation\nFrom the book checkout, uv sync installs the local package in the book environment. To install just the package into another environment, run this command from the checkout with that environment’s Python.\npython -m pip install ./packages/eap_pl"
+  },
+  {
+    "objectID": "index.html#example",
+    "href": "index.html#example",
+    "title": "eap_pl",
+    "section": "Example",
+    "text": "Example\nCompute cross-sectional correlations within each month. Pearson uses the 0.5th and 99.5th percentile cutoffs, and Spearman uses ranks of the original values.\nfrom datetime import date\n\nimport polars as pl\n\nfrom eap_pl import period_correlations\n\nstocks = pl.DataFrame({\n    \"month\": [date(2012, 1, 1)] * 4 + [date(2012, 2, 1)] * 4,\n    \"beta\": [0.6, 0.8, 1.1, 1.4, 0.5, 0.9, 1.0, 1.3],\n    \"size\": [20.0, 55.0, 40.0, 120.0, 100.0, 50.0, 80.0, 30.0],\n})\nperiod_correlations(stocks, [\"beta\", \"size\"], \"month\").sort(\"month\")\nThe data-loading helpers read the local Parquet repository configured in DATA_DIR. See Preliminaries in the book for the required WRDS tables and derived files."
+  },
+  {
+    "objectID": "reference/bivariate_panel.html",
+    "href": "reference/bivariate_panel.html",
+    "title": "bivariate_panel",
+    "section": "",
+    "text": "eap_pl.bivariate_panel(monthly, value, *, independent, spread_only=False)\nReport means and quintile spreads from a monthly two-way sort.\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nmonthly\npolars.DataFrame\nMonthly cell returns from bivariate_months().\nrequired\n\n\nvalue\nstr\nReturn column, usually EW or VW.\nrequired\n\n\nindependent\nbool\nInclude averages and spreads in both sort dimensions for independently sorted portfolios.\nrequired\n\n\nspread_only\nbool\nReturn two abbreviated tables covering target portfolios averaged across controls and target spreads by control.\nFalse\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\n\n\n\n\n\npolars.DataFrame or tuple[polars.DataFrame, polars.DataFrame]\nA formatted panel of means and spreads, or two abbreviated panels when spread_only is true.",
     "crumbs": [
       "Reference",
-      "Data and Parquet",
-      "build_annual_panel"
+      "Portfolios and inference",
+      "bivariate_panel"
     ]
   },
   {
-    "objectID": "reference/build_annual_panel.html#parameters",
-    "href": "reference/build_annual_panel.html#parameters",
-    "title": "build_annual_panel",
+    "objectID": "reference/bivariate_panel.html#parameters",
+    "href": "reference/bivariate_panel.html#parameters",
+    "title": "bivariate_panel",
     "section": "",
-    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nstart_year\nint\nFirst formation year, inclusive.\n1988\n\n\nend_year\nint\nLast formation year and last calendar year of returns, inclusive.\n2012\n\n\nannual_betas\npl.DataFrame | pl.LazyFrame | None\nOptional December estimates to reuse from load_annual_betas(). Supply every stock-year needed for the panel.\nNone",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nmonthly\npolars.DataFrame\nMonthly cell returns from bivariate_months().\nrequired\n\n\nvalue\nstr\nReturn column, usually EW or VW.\nrequired\n\n\nindependent\nbool\nInclude averages and spreads in both sort dimensions for independently sorted portfolios.\nrequired\n\n\nspread_only\nbool\nReturn two abbreviated tables covering target portfolios averaged across controls and target spreads by control.\nFalse",
     "crumbs": [
       "Reference",
-      "Data and Parquet",
-      "build_annual_panel"
+      "Portfolios and inference",
+      "bivariate_panel"
     ]
   },
   {
-    "objectID": "reference/build_annual_panel.html#returns",
-    "href": "reference/build_annual_panel.html#returns",
-    "title": "build_annual_panel",
+    "objectID": "reference/bivariate_panel.html#returns",
+    "href": "reference/bivariate_panel.html#returns",
+    "title": "bivariate_panel",
     "section": "",
-    "text": "Name\nType\nDescription\n\n\n\n\n\npolars.DataFrame\nStock-year observations with permno, year, Beta, market capitalization in millions (MktCap), its log (Size), signed book-to-market (BM), and next-year excess return in percentage points (excess).",
+    "text": "Name\nType\nDescription\n\n\n\n\n\npolars.DataFrame or tuple[polars.DataFrame, polars.DataFrame]\nA formatted panel of means and spreads, or two abbreviated panels when spread_only is true.",
+    "crumbs": [
+      "Reference",
+      "Portfolios and inference",
+      "bivariate_panel"
+    ]
+  },
+  {
+    "objectID": "reference/build_book_to_market.html",
+    "href": "reference/build_book_to_market.html",
+    "title": "build_book_to_market",
+    "section": "",
+    "text": "eap_pl.build_book_to_market(sizes)\nConstruct monthly book-to-market using prior-year fiscal book equity.\nUses valid CRSP–Compustat links or unambiguous historical CUSIPs. Each ratio becomes available the June after the book year. The output includes signed ratios for the annual methods chapters and positive ratios for the monthly value replication.\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nsizes\npl.DataFrame | pl.LazyFrame\nThe stock-month capitalization table from build_sizes().\nrequired\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\n\n\n\n\n\npolars.DataFrame\nStock-month keys, book year, book equity, prior December market capitalization, and book-to-market measures.",
     "crumbs": [
       "Reference",
       "Data and Parquet",
-      "build_annual_panel"
+      "build_book_to_market"
+    ]
+  },
+  {
+    "objectID": "reference/build_book_to_market.html#parameters",
+    "href": "reference/build_book_to_market.html#parameters",
+    "title": "build_book_to_market",
+    "section": "",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nsizes\npl.DataFrame | pl.LazyFrame\nThe stock-month capitalization table from build_sizes().\nrequired",
+    "crumbs": [
+      "Reference",
+      "Data and Parquet",
+      "build_book_to_market"
+    ]
+  },
+  {
+    "objectID": "reference/build_book_to_market.html#returns",
+    "href": "reference/build_book_to_market.html#returns",
+    "title": "build_book_to_market",
+    "section": "",
+    "text": "Name\nType\nDescription\n\n\n\n\n\npolars.DataFrame\nStock-month keys, book year, book equity, prior December market capitalization, and book-to-market measures.",
+    "crumbs": [
+      "Reference",
+      "Data and Parquet",
+      "build_book_to_market"
     ]
   },
   {
@@ -536,7 +572,7 @@
     "href": "reference/fama_macbeth_table.html",
     "title": "fama_macbeth_table",
     "section": "",
-    "text": "eap_pl.fama_macbeth_table(panel, specifications, labels)\nBuild a table of monthly Fama–MacBeth regressions.\nWinsorizes the regressors within formation months at the 0.5th and 99.5th percentiles, then uses six Newey–West lags for inference on average coefficients.\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\npanel\npolars.DataFrame\nData containing month, next-month excess in percentage points, and the regressors.\nrequired\n\n\nspecifications\nIterable[list[str]]\nRegressor columns for each model.\nrequired\n\n\nlabels\ndict[str, str]\nRegressor columns mapped to display labels in table order.\nrequired\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\n\n\n\n\n\npolars.DataFrame\nFormatted coefficients and t statistics, average adjusted R², and mean monthly sample size by model.",
+    "text": "eap_pl.fama_macbeth_table(panel, specifications, labels, *, digits=2)\nBuild a table of monthly Fama–MacBeth regressions.\nWinsorizes the regressors within formation months at the 0.5th and 99.5th percentiles, then uses six Newey–West lags for inference on average coefficients.\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\npanel\npolars.DataFrame\nData containing month, next-month excess in percentage points, and the regressors.\nrequired\n\n\nspecifications\nIterable[list[str]]\nRegressor columns for each model.\nrequired\n\n\nlabels\ndict[str, str]\nRegressor columns mapped to display labels in table order.\nrequired\n\n\ndigits\nint\nDecimal places for coefficients and intercepts.\n2\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\n\n\n\n\n\npolars.DataFrame\nFormatted coefficients and t statistics, average adjusted R², and mean monthly sample size by model.",
     "crumbs": [
       "Reference",
       "Portfolios and inference",
@@ -548,7 +584,7 @@
     "href": "reference/fama_macbeth_table.html#parameters",
     "title": "fama_macbeth_table",
     "section": "",
-    "text": "Name\nType\nDescription\nDefault\n\n\n\n\npanel\npolars.DataFrame\nData containing month, next-month excess in percentage points, and the regressors.\nrequired\n\n\nspecifications\nIterable[list[str]]\nRegressor columns for each model.\nrequired\n\n\nlabels\ndict[str, str]\nRegressor columns mapped to display labels in table order.\nrequired",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\npanel\npolars.DataFrame\nData containing month, next-month excess in percentage points, and the regressors.\nrequired\n\n\nspecifications\nIterable[list[str]]\nRegressor columns for each model.\nrequired\n\n\nlabels\ndict[str, str]\nRegressor columns mapped to display labels in table order.\nrequired\n\n\ndigits\nint\nDecimal places for coefficients and intercepts.\n2",
     "crumbs": [
       "Reference",
       "Portfolios and inference",

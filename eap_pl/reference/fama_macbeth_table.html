@@ -210,6 +210,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="../reference/build_momentum.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">build_momentum</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="../reference/load_beta_universe.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">load_beta_universe</span></a>
   </div>
@@ -371,7 +377,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <section id="eap_pl.fama_macbeth_table" class="level1">
 <h1>fama_macbeth_table</h1>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>eap_pl.fama_macbeth_table(panel, specifications, labels)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>eap_pl.fama_macbeth_table(panel, specifications, labels, <span class="op">*</span>, digits<span class="op">=</span><span class="dv">2</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Build a table of monthly Fama–MacBeth regressions.</p>
 <p>Winsorizes the regressors within formation months at the 0.5th and 99.5th percentiles, then uses six Newey–West lags for inference on average coefficients.</p>
 <section id="parameters" class="level2 doc-section doc-section-parameters">
@@ -409,6 +415,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>dict[str, str]</td>
 <td>Regressor columns mapped to display labels in table order.</td>
 <td><em>required</em></td>
+</tr>
+<tr class="even">
+<td>digits</td>
+<td>int</td>
+<td>Decimal places for coefficients and intercepts.</td>
+<td><code>2</code></td>
 </tr>
 </tbody>
 </table>
