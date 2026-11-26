@@ -59,8 +59,8 @@ market_summary
 For comparison with BEM Figure 7.5, we compound the monthly market
 factor, $\prod_{s\leq t}(1+\mathrm{MKT}_s)-1$, and sum its log
 transformation, $\sum_{s\leq t}\log(1+\mathrm{MKT}_s)$. Both are
-transformations of the same underlying series. The plotted dates are
-month ends, and both y-axes use percentages.
+transformations of the same underlying series. The panels share a
+month-end date axis and use separate percentage scales.
 
 Compounding the market factor is **not** the same as subtracting
 the compounded risk-free return from the compounded market return.
@@ -77,29 +77,12 @@ market_path = market.with_columns(
 ```{python}
 #| label: fig-bem7-market-path
 #| fig-cap: "Cumulative market excess returns, July 1926–December 2012 (compare BEM Figure 7.5)."
-#| fig-alt: "Two lines show the same monthly market excess-return series on different scales. The log scale makes the large early drawdown around 1929–1932 visible; the compounded series rises much more steeply near the end."
+#| fig-alt: "Two panels show compounded and cumulative log market excess returns. The 1929–1932 drawdown is clearer in the cumulative log panel."
 #| echo: false
 
-import matplotlib.pyplot as plt
-from matplotlib.ticker import PercentFormatter
+from _bem_monthly import plot_cumulative_returns
 
-fig, ax = plt.subplots(figsize=(8.2, 4.2), layout="constrained")
-ax_log = ax.twinx()
-[compound_line] = ax.plot(
-    market_path["date"], market_path["compounded"],
-    color="#15627c", label="Compounded (left)",
-)
-[log_line] = ax_log.plot(
-    market_path["date"], market_path["cumulative_log"],
-    color="#9b552a", linestyle="--", label="Cumulative log (right)",
-)
-ax.set(xlabel="Month", ylabel="Compounded market excess return")
-ax_log.set_ylabel("Cumulative log market excess return")
-ax.yaxis.set_major_formatter(PercentFormatter(xmax=1, decimals=0))
-ax_log.yaxis.set_major_formatter(PercentFormatter(xmax=1, decimals=0))
-ax.grid(axis="y", alpha=0.25)
-ax.legend(handles=[compound_line, log_line], loc="upper left", frameon=False)
-plt.show()
+plot_cumulative_returns(market_path, y_label="Cumulative market excess return")
 ```
 
 The reconstructed series ends at about 14,411% compounded and 498%

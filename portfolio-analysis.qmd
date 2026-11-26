@@ -277,18 +277,30 @@ portfolio.
 #| fig-alt: Three lines show average excess returns across seven portfolios. The smallest-cap portfolio and the highest book-to-market portfolio have the largest returns in their respective sorts.
 #| echo: false
 
-import matplotlib.pyplot as plt
+from plotnine_polars import aes, element_blank
 
-with plt.rc_context({"font.family": "DejaVu Sans"}):
-    fig, ax = plt.subplots(figsize=(8, 3.8), layout="constrained")
-    for variable, name, marker in [("Beta", "Beta", "o"), ("MktCap", "Market cap", "s"),
-                                    ("BM", "Book-to-market", "^")]:
-        y = [univariate_means[variable][p].params["Intercept"] for p in portfolio_columns]
-        ax.plot(range(1, 8), y, marker=marker, label=name)
-    ax.set(xlabel="Portfolio (low to high)", ylabel="Average annual excess return (%)", xticks=range(1, 8))
-    ax.grid(axis="y", alpha=0.25)
-    ax.legend()
-    plt.show()
+sort_variables = {"Beta": "Beta", "MktCap": "Market cap", "BM": "Book-to-market"}
+portfolio_returns = pl.DataFrame({
+    "portfolio": range(1, 8),
+    **{
+        name: [univariate_means[variable][p].params["Intercept"] for p in portfolio_columns]
+        for variable, name in sort_variables.items()
+    },
+})
+(
+    portfolio_returns
+    .unpivot(index="portfolio", variable_name="characteristic", value_name="excess")
+    .with_columns(pl.col("characteristic").cast(pl.Enum(list(sort_variables.values()))))
+    .ggplot(aes(x="portfolio", y="excess", color="characteristic"))
+    .geom_line()
+    .geom_point(aes(shape="characteristic"))
+    .scale_x_continuous(breaks=range(1, 8))
+    .scale_color_brewer(type="qual", palette="Dark2")
+    .scale_shape_manual(values=["o", "s", "^"])
+    .labs(x="Portfolio (low to high)", y="Average annual excess return (%)", color="", shape="")
+    .theme_minimal()
+    .add_theme(figure_size=(8, 3.8), legend_position="top")
+)
 ```
 
 ### Analyzing Returns {#risk-adjusted-returns}
@@ -682,25 +694,31 @@ more common in the high-beta group than in the low-beta group.
 #| fig-alt: Heatmaps show uneven counts across cells under independent sorting and approximately equal counts down each beta-group column under dependent sorting.
 #| echo: false
 
-count_grids = [
-    control_grid(counts, "len").group_by("target").agg(pl.col(control_ports).mean())
-    .sort("target").select(control_ports).to_numpy()
-    for counts in [independent_counts, dependent_counts]
-]
-max_count = max(grid.max() for grid in count_grids)
-
-with plt.rc_context({"font.family": "DejaVu Sans"}):
-    fig, axes = plt.subplots(1, 2, figsize=(8, 4), layout="constrained", sharey=True)
-    for ax, title, grid in zip(axes, ["Independent", "Dependent"], count_grids, strict=True):
-        ax.imshow(grid, cmap="Blues", vmin=0, vmax=max_count, aspect="auto")
-        for k, row in enumerate(grid):
-            for j, count in enumerate(row):
-                ax.text(j, k, f"{count:.0f}", ha="center", va="center",
-                        color="white" if count > max_count * .65 else "#172b4d")
-        ax.set(title=title, xlabel="Beta group", xticks=range(3), xticklabels=[1, 2, 3],
-               yticks=range(4), yticklabels=[1, 2, 3, 4])
-    axes[0].set_ylabel("Market-cap quartile")
-    plt.show()
+sort_methods = ["Independent", "Dependent"]
+average_counts = pl.concat(
+    counts.group_by("control", "target").agg(count=pl.col("len").mean())
+    .with_columns(method=pl.lit(method, dtype=pl.Enum(sort_methods)))
+    for method, counts in zip(sort_methods, [independent_counts, dependent_counts], strict=True)
+)
+max_count = average_counts["count"].max()
+(
+    average_counts.with_columns(
+        label=pl.col("count").round().cast(pl.Int64),
+        label_color=pl.when(pl.col("count") > 0.58 * max_count)
+        .then(pl.lit("white")).otherwise(pl.lit("#172b4d")),
+    )
+    .ggplot(aes(x="control", y="target", fill="count"))
+    .geom_tile()
+    .geom_text(aes(label="label", color="label_color"))
+    .facet_wrap("method", nrow=1)
+    .scale_fill_gradient(low="#f7fbff", high="#08306b", limits=(0, max_count), guide=None)
+    .scale_color_identity()
+    .scale_x_continuous(breaks=range(1, 4), expand=(0, 0))
+    .scale_y_reverse(breaks=range(1, 5), expand=(0, 0))
+    .labs(x="Beta group", y="Market-cap quartile")
+    .theme_minimal()
+    .add_theme(figure_size=(8, 4), panel_grid=element_blank())
+)
 ```
 
 ### Average Portfolio Values {#returns-and-inference}
@@ -858,17 +876,25 @@ show_grid(dependent_caps.with_columns(pl.col(control_ports).round().cast(pl.Int6
 #| fig-alt: Within market-cap quartiles, average market caps are similar across beta groups in the independent sort. The dependent sort shows much wider differences across beta groups.
 #| echo: false
 
-with plt.rc_context({"font.family": "DejaVu Sans"}):
-    fig, axes = plt.subplots(1, 2, figsize=(8, 3.7), sharey=True, layout="constrained")
-    for ax, title, caps in zip(axes, ["Independent", "Dependent"],
-                               [independent_caps, dependent_caps], strict=True):
-        for group, marker in zip(control_ports, ["o", "s", "^"], strict=True):
-            ax.plot(caps["target"], caps[group], marker=marker, label=f"Beta {group}")
-        ax.set(title=title, xlabel="Market-cap quartile", yscale="log", xticks=range(1, 5))
-        ax.grid(axis="y", alpha=0.25)
-    axes[0].set_ylabel("Average market cap ($ millions, log scale)")
-    axes[0].legend(loc="upper left")
-    plt.show()
+capitalization = pl.concat(
+    caps.unpivot(index="target", variable_name="group", value_name="cap")
+    .with_columns(method=pl.lit(method, dtype=pl.Enum(sort_methods)))
+    for method, caps in zip(sort_methods, [independent_caps, dependent_caps], strict=True)
+)
+(
+    capitalization.ggplot(aes(x="target", y="cap", color="group"))
+    .geom_line()
+    .geom_point(aes(shape="group"))
+    .facet_wrap("method", nrow=1)
+    .scale_x_continuous(breaks=range(1, 5))
+    .scale_y_log10(labels=lambda values: [f"{value:,.0f}" for value in values])
+    .scale_color_brewer(type="qual", palette="Dark2")
+    .scale_shape_manual(values=["o", "s", "^"])
+    .labs(x="Market-cap quartile", y="Average market cap ($ millions, log scale)",
+          color="Beta group", shape="Beta group")
+    .theme_minimal()
+    .add_theme(figure_size=(8, 3.7), legend_position="top")
+)
 ```
 
 ## Trivariate-Sort Analysis

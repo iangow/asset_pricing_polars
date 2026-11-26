@@ -13,7 +13,7 @@ The book groups exchange codes 1 and 31 as NYSE, 2 and 32 as AMEX, and
 3 and 33 as Nasdaq. All remaining codes go into *Other*.
 
 ```{python}
-import matplotlib.pyplot as plt
+from plotnine_polars import aes, guide_legend
 
 exchange = (
     pl.when(pl.col("exchcd").is_in([1, 31])).then(pl.lit("NYSE"))
@@ -62,16 +62,23 @@ total = (
 by_exchange = pl.concat([total, by_exchange])
 
 def plot_composition(data, group, labels, measure, y_label):
-    fig, ax = plt.subplots(figsize=(9, 4), layout="constrained")
-    colors = plt.get_cmap("tab20").colors
-    for label, color in zip(labels, colors[::2] + colors[1::2]):
-        series = data.filter(pl.col(group) == label).sort("month")
-        ax.plot(series["month"], series[measure], label=label,
-                color="black" if label == "Total" else color)
-    ax.set(xlabel="Month", ylabel=y_label, ylim=(0, None))
-    ax.grid(axis="y", alpha=0.2)
-    ax.legend(ncol=3, frameon=False)
-    return fig
+    colors = [
+        "#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd", "#8c564b",
+        "#e377c2", "#7f7f7f", "#bcbd22", "#17becf", "#aec7e8", "#ffbb78",
+    ]
+    palette = dict(zip(labels, colors))
+    if "Total" in palette:
+        palette["Total"] = "black"
+    return (
+        data.ggplot(aes(x="month", y=measure, color=group))
+        .geom_line()
+        .scale_x_date(date_breaks="10 years", date_labels="%Y")
+        .scale_y_continuous(limits=(0, None), expand=(0, 0, 0.05, 0))
+        .scale_color_manual(values=palette, breaks=labels, guide=guide_legend(ncol=3))
+        .labs(x="Month", y=y_label, color="")
+        .theme_minimal()
+        .add_theme(figure_size=(9, 4.5), legend_position="bottom")
+    )
 ```
 
 ```{python}
@@ -80,7 +87,7 @@ def plot_composition(data, group, labels, measure, y_label):
 #| fig-alt: "Stock counts jump when AMEX and Nasdaq stocks enter the sample. Total count peaks in the late 1990s."
 
 plot_composition(by_exchange, "exchange", ["Total", *exchange_labels],
-                 "stocks", "Number of stocks");
+                 "stocks", "Number of stocks")
 ```
 
 ```{python}
@@ -89,7 +96,7 @@ plot_composition(by_exchange, "exchange", ["Total", *exchange_labels],
 #| fig-alt: "The NYSE accounts for most of the sample market value. Nasdaq grows considerably in the late 1990s."
 
 plot_composition(by_exchange, "exchange", ["Total", *exchange_labels],
-                 "value", "Market value ($ billions, December 2012)");
+                 "value", "Market value ($ billions, December 2012)")
 ```
 
 AMEX enters the data in July 1962. Most Nasdaq coverage starts in December
@@ -224,7 +231,7 @@ by_industry = summarize_composition(classified, "industry", industry_labels)
 #| fig-alt: "Manufacturing is the largest industry by stock count, with sharp changes in several industries when Nasdaq enters."
 
 plot_composition(by_industry, "industry", industry_labels,
-                 "stocks", "Number of stocks");
+                 "stocks", "Number of stocks")
 ```
 
 ```{python}
@@ -233,5 +240,5 @@ plot_composition(by_industry, "industry", industry_labels,
 #| fig-alt: "Manufacturing has the largest market value. Communications, grouped with transport and utilities, and services grow during the dot-com boom."
 
 plot_composition(by_industry, "industry", industry_labels,
-                 "value", "Market value ($ billions, December 2012)");
+                 "value", "Market value ($ billions, December 2012)")
 ```

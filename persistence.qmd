@@ -83,19 +83,21 @@ years, even at the same lag.
 #| fig-cap: Annual persistence of beta by lag
 #| fig-alt: Five lines show beta correlations by formation year. One-year correlations generally exceed the longer-lag correlations and are higher in the 2000s than in the early 1990s. Lines for longer lags end earlier.
 
-import matplotlib.pyplot as plt
+from plotnine_polars import aes
 
-with plt.rc_context({"font.family": "DejaVu Sans"}):
-    fig, ax = plt.subplots(figsize=(8, 4), layout="constrained")
-    styles = ["-", "--", "-.", ":", (0, (5, 2, 1, 2, 1, 2))]
-    for lag, style in zip(lags, styles, strict=True):
-        series = annual.filter(pl.col("Lag") == lag)
-        ax.plot(series["year"], series["Beta"], linestyle=style, label=f"{lag}")
-    ax.set(xlabel="Formation year", ylabel="Pearson correlation", ylim=(0, 1),
-           xticks=range(1988, 2013, 4))
-    ax.grid(axis="y", alpha=0.25)
-    ax.legend(title="Lag (years)", loc="upper center", ncols=5)
-    plt.show()
+(
+    annual.with_columns(lag=pl.col("Lag").cast(pl.String))
+    .ggplot(aes(x="year", y="Beta", color="lag", linetype="lag"))
+    .geom_line()
+    .scale_x_continuous(breaks=range(1988, 2013, 4))
+    .scale_y_continuous(expand=(0, 0))
+    .coord_cartesian(ylim=(0, 1))
+    .scale_color_brewer(type="qual", palette="Dark2")
+    .scale_linetype_manual(values=["solid", "dashed", "dashdot", "dotted", (0, (5, 2, 1, 2, 1, 2))])
+    .labs(x="Formation year", y="Pearson correlation", color="Lag (years)", linetype="Lag (years)")
+    .theme_minimal()
+    .add_theme(figure_size=(8, 4), legend_position="top")
+)
 ```
 
 ### Average Cross-Sectional Persistence {#average-across-years}
@@ -159,15 +161,22 @@ and 0.48 in BEM, and the other beta averages agree. BM correlations are
 #| fig-cap: Average persistence of beta, size, and book-to-market by lag
 #| fig-alt: Average size persistence stays near 0.9. Book-to-market falls from 0.76 to 0.47 and beta from 0.61 to 0.42 between the one- and five-year lags.
 
-with plt.rc_context({"font.family": "DejaVu Sans"}):
-    fig, ax = plt.subplots(figsize=(8, 4), layout="constrained")
-    for measure, label, marker in [("Beta", "Beta", "o"), ("Size", "Size", "s"),
-                                   ("BM", "Book-to-market", "^")]:
-        ax.plot(average["Lag"], average[measure], marker=marker, label=label)
-    ax.set(xlabel="Lag (years)", ylabel="Average Pearson correlation", ylim=(0, 1), xticks=lags)
-    ax.grid(axis="y", alpha=0.25)
-    ax.legend(loc="lower left")
-    plt.show()
+(
+    average.rename({"BM": "Book-to-market"})
+    .unpivot(index="Lag", variable_name="characteristic", value_name="correlation")
+    .with_columns(pl.col("characteristic").cast(pl.Enum(["Beta", "Size", "Book-to-market"])))
+    .ggplot(aes(x="Lag", y="correlation", color="characteristic"))
+    .geom_line()
+    .geom_point(aes(shape="characteristic"))
+    .scale_x_continuous(breaks=lags)
+    .scale_y_continuous(expand=(0, 0))
+    .coord_cartesian(ylim=(0, 1))
+    .scale_color_brewer(type="qual", palette="Dark2")
+    .scale_shape_manual(values=["o", "s", "^"])
+    .labs(x="Lag (years)", y="Average Pearson correlation", color="", shape="")
+    .theme_minimal()
+    .add_theme(figure_size=(8, 4), legend_position="top")
+)
 ```
 
 ## Summary

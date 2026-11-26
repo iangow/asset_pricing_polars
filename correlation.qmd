@@ -104,23 +104,29 @@ from year $t+1$.
 #| fig-cap: Annual correlations among beta, size, and book-to-market
 #| fig-alt: Three line plots compare Pearson and Spearman correlations by formation year. Beta and size move together, while their correlations with book-to-market are usually negative.
 
-import matplotlib.pyplot as plt
+from plotnine_polars import aes
 
 def plot_correlations(pairs):
-    with plt.rc_context({"font.family": "DejaVu Sans"}):
-        fig, axes = plt.subplots(3, 1, figsize=(8, 6), sharex=True, sharey=True,
-                                 layout="constrained")
-        for ax, (a, b) in zip(axes, pairs, strict=True):
-            ax.axhline(0, color="0.7", linewidth=0.8)
-            ax.plot(annual["year"], annual[f"Pearson {a}–{b}"], color="#24639a",
-                    label="Pearson")
-            ax.plot(annual["year"], annual[f"Spearman {a}–{b}"], color="#ac4c27",
-                    linestyle="--", label="Spearman")
-            ax.set_title(f"{variables[a]} and {variables[b]}", loc="left")
-        axes[-1].set(xlabel="Formation year", xticks=range(1988, 2013, 4))
-        fig.supylabel("Correlation")
-        fig.legend(*axes[0].get_legend_handles_labels(), loc="outside upper center", ncols=2)
-        plt.show()
+    labels = [f"{variables[a]} and {variables[b]}" for a, b in pairs]
+    correlations = pl.concat(
+        annual.select("year", Pearson=f"Pearson {a}–{b}", Spearman=f"Spearman {a}–{b}")
+        .unpivot(index="year", variable_name="method", value_name="correlation")
+        .with_columns(pair=pl.lit(label))
+        for (a, b), label in zip(pairs, labels, strict=True)
+    ).with_columns(pl.col("pair").cast(pl.Enum(labels)))
+    return (
+        correlations
+        .ggplot(aes(x="year", y="correlation", color="method", linetype="method"))
+        .geom_hline(yintercept=0, color="#b3b3b3", size=0.4)
+        .geom_line(na_rm=True)
+        .facet_wrap("pair", ncol=1)
+        .scale_x_continuous(breaks=range(1988, 2013, 4))
+        .scale_color_manual(values={"Pearson": "#24639a", "Spearman": "#ac4c27"})
+        .scale_linetype_manual(values={"Pearson": "solid", "Spearman": "dashed"})
+        .labs(x="Formation year", y="Correlation", color="", linetype="")
+        .theme_minimal()
+        .add_theme(figure_size=(8, 6), legend_position="top")
+    )
 
 plot_correlations([("Beta", "Size"), ("Beta", "BM"), ("Size", "BM")])
 ```

@@ -279,10 +279,28 @@ def fama_macbeth_table(panel, specifications, labels):
     return pl.DataFrame(result)
 
 
-def plot_factor(factor):
-    import matplotlib.pyplot as plt
-    from matplotlib.ticker import PercentFormatter
+def plot_cumulative_returns(returns, y_label="Cumulative return"):
+    from plotnine_polars import aes
 
+    labels = {"compounded": "Compounded", "cumulative_log": "Cumulative log"}
+    return (
+        returns.select("date", *labels).rename(labels)
+        .unpivot(index="date", variable_name="series", value_name="cumulative_return")
+        .with_columns(pl.col("series").cast(pl.Enum(list(labels.values()))))
+        .ggplot(aes(x="date", y="cumulative_return", color="series", linetype="series"))
+        .geom_line()
+        .facet_wrap("series", ncol=1, scales="free_y")
+        .scale_x_date(date_breaks="10 years", date_labels="%Y")
+        .scale_y_continuous(labels=lambda values: [f"{value:,.0%}" for value in values])
+        .scale_color_manual(values=["#15627c", "#9b552a"], guide=None)
+        .scale_linetype_manual(values=["solid", "dashed"], guide=None)
+        .labs(x="Month", y=y_label)
+        .theme_minimal()
+        .add_theme(figure_size=(8.2, 5))
+    )
+
+
+def plot_factor(factor):
     returns = (
         load_parquet("factors_monthly", "ff")
         .filter(pl.col("date").is_between(pl.date(1926, 7, 1), pl.date(2012, 12, 31)))
@@ -290,21 +308,9 @@ def plot_factor(factor):
         .sort("date")
         .with_columns(
             compounded=(1 + pl.col(factor)).cum_prod() - 1,
-            log_return=pl.col(factor).log1p().cum_sum(),
+            cumulative_log=pl.col(factor).log1p().cum_sum(),
         )
         .collect()
     )
     assert returns.height == 1038 and returns[factor].null_count() == 0
-    with plt.rc_context({"font.family": "DejaVu Sans"}):
-        fig, ax = plt.subplots(figsize=(8, 4))
-        log_ax = ax.twinx()
-        a, = ax.plot(returns["date"], returns["compounded"], label="Compounded")
-        b, = log_ax.plot(returns["date"], returns["log_return"], "--",
-                         color="tab:orange", label="Cumulative log return")
-        ax.set_ylabel("Compounded return")
-        log_ax.set_ylabel("Cumulative log return")
-        ax.yaxis.set_major_formatter(PercentFormatter(1))
-        log_ax.yaxis.set_major_formatter(PercentFormatter(1))
-        ax.legend(handles=[a, b], loc="upper left")
-        fig.tight_layout()
-        plt.show()
+    return plot_cumulative_returns(returns)

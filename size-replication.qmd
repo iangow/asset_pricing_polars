@@ -169,8 +169,7 @@ mean reflects the concentration of market capitalization in a few stocks.
 #| fig-cap: Share of market capitalization held by the largest stocks (BEM Figure 9.1)
 #| echo: false
 
-import matplotlib.pyplot as plt
-from matplotlib.ticker import PercentFormatter
+from plotnine_polars import aes
 
 caps = sizes.filter(pl.col("cap").is_not_null()).sort(
     ["month", "cap", "permno"], descending=[False, True, False],
@@ -180,20 +179,23 @@ shares = (
     caps.with_columns(rank=pl.col("cap").cum_count().over("month"))
     .group_by("month").agg(
         (pl.col("cap").filter(pl.col("rank") <= (p * pl.len()).round()).sum()
-         / pl.col("cap").sum()).alias(f"{p:.0%}")
+         / pl.col("cap").sum()).alias(f"Largest {p:.0%}")
         for p in fractions
     )
     .sort("month")
 )
-with plt.rc_context({"font.family": "DejaVu Sans"}):
-    fig, ax = plt.subplots(figsize=(8, 4))
-    for p in fractions:
-        ax.plot(shares["month"], shares[f"{p:.0%}"], label=f"Largest {p:.0%}")
-    ax.set(ylabel="Share of market capitalization", ylim=(0, 1))
-    ax.yaxis.set_major_formatter(PercentFormatter(1))
-    ax.legend(loc="lower right", ncol=2)
-    fig.tight_layout()
-    plt.show()
+(
+    shares.unpivot(index="month", variable_name="group", value_name="share")
+    .with_columns(pl.col("group").cast(pl.Enum([f"Largest {p:.0%}" for p in fractions])))
+    .ggplot(aes(x="month", y="share", color="group"))
+    .geom_line()
+    .scale_x_date(date_breaks="10 years", date_labels="%Y")
+    .scale_y_continuous(limits=(0, 1), labels=lambda values: [f"{value:.0%}" for value in values])
+    .scale_color_brewer(type="qual", palette="Dark2")
+    .labs(x="Month", y="Share of market capitalization", color="")
+    .theme_minimal()
+    .add_theme(figure_size=(8, 4), legend_position="top")
+)
 ```
 
 ## Correlations {#correlation-and-persistence}
