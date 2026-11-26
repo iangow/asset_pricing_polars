@@ -58,7 +58,26 @@ div.sourceCode
 @media screen {
 pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
-</style>
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
 
 
 <script src="site_libs/quarto-nav/quarto-nav.js"></script>
@@ -262,6 +281,12 @@ window.Quarto = {
 </li>
       </ul>
   </li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./references.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">References</span></a>
+  </div>
+</li>
     </ul>
     </div>
 </nav>
@@ -306,7 +331,7 @@ window.Quarto = {
 </header>
 
 
-<p>Bali, Engle, and Murray (2016), Chapter 4, measure persistence by correlating a stock characteristic with its own future value across stocks. We use the December 1988–2012 panel from <a href="summary-statistics.html" class="quarto-xref"><span>Chapter 2</span></a>, including its signed book-to-market ratio (BM).</p>
+<p>In Chapter 4, <span class="citation" data-cites="bali2016">Bali et al. (<a href="references.html#ref-bali2016" role="doc-biblioref">2016</a>)</span> measure persistence by correlating a stock characteristic with its own future value across stocks. We use the December 1988–2012 panel from <a href="summary-statistics.html" class="quarto-xref"><span>Chapter 2</span></a>, including its signed book-to-market ratio (BM).</p>
 <style>
 .cell-output-markdown:has(> table) {
   max-width: 100%;
@@ -316,17 +341,12 @@ window.Quarto = {
   white-space: nowrap;
 }
 </style>
-<div id="1d10658b" class="cell" data-execution_count="2">
+<div id="f11ee500" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> polars <span class="im">as</span> pl</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> era_pl <span class="im">import</span> load_parquet</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> eap_pl <span class="im">import</span> build_annual_panel</span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>annual_beta <span class="op">=</span> (</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    load_parquet(<span class="st">"betas"</span>, <span class="st">"eap"</span>)</span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    .with_columns(year<span class="op">=</span>pl.col(<span class="st">"month"</span>).dt.year())</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    .<span class="bu">filter</span>(pl.col(<span class="st">"month"</span>).dt.month() <span class="op">==</span> <span class="dv">12</span>, pl.col(<span class="st">"year"</span>).is_between(<span class="dv">1988</span>, <span class="dv">2012</span>))</span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    .select(<span class="st">"permno"</span>, <span class="st">"year"</span>, Beta<span class="op">=</span><span class="st">"12M"</span>)</span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>annual_panel <span class="op">=</span> build_annual_panel()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <section id="implementation" class="level2" data-number="4.1">
 <h2 data-number="4.1" class="anchored" data-anchor-id="implementation"><span class="header-section-number">4.1</span> Implementation</h2>
@@ -341,8 +361,8 @@ window.Quarto = {
                    \sqrt{\sum_{i\in\mathcal S_{t,\tau}}(X_{i,t+\tau}-\bar X_{t+\tau})^2}}.
 \tag{4.1}\]</span></span></p>
 <p>Shift the future year’s join key back by the lag so that each stock’s observation in <span class="math inline">\(t+\tau\)</span> joins its observation in <span class="math inline">\(t\)</span>. Use the same winsorized Pearson correlation as in <a href="correlation.html" class="quarto-xref"><span>Chapter 3</span></a>.</p>
-<div id="695d89ba" class="cell" data-execution_count="4">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> _bem_monthly <span class="im">import</span> winsorized_corr</span>
+<div id="1aade5d0" class="cell" data-execution_count="3">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> eap_pl <span class="im">import</span> winsorized_corr</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>measures <span class="op">=</span> [<span class="st">"Beta"</span>, <span class="st">"Size"</span>, <span class="st">"BM"</span>]</span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>lags <span class="op">=</span> <span class="bu">range</span>(<span class="dv">1</span>, <span class="dv">6</span>)</span>
@@ -362,8 +382,8 @@ window.Quarto = {
 <span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>annual <span class="op">=</span> pl.concat([annual_persistence(lag) <span class="cf">for</span> lag <span class="kw">in</span> lags]).sort(<span class="st">"Lag"</span>, <span class="st">"year"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div class="cell" data-execution_count="5">
-<div id="tbl-bem4-annual" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="5">
+<div class="cell" data-execution_count="4">
+<div id="tbl-bem4-annual" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="4">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bem4-annual-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table&nbsp;4.1: Annual cross-sectional persistence of beta (BEM Table 4.1)
@@ -582,7 +602,7 @@ Table&nbsp;4.1: Annual cross-sectional persistence of beta (BEM Table 4.1)
 </div>
 </div>
 <p>The lags are in years. The blank cells in <a href="#tbl-bem4-annual" class="quarto-xref">Table&nbsp;<span>4.1</span></a> require a comparison year beyond 2012. Of the 110 estimates, 107 agree with BEM to two decimal places and three differ by 0.01. The companion plot in <a href="#fig-bem4-annual" class="quarto-xref">Figure&nbsp;<span>4.1</span></a> shows how much beta persistence varies across formation years, even at the same lag.</p>
-<div id="cell-fig-bem4-annual" class="cell" data-execution_count="6">
+<div id="cell-fig-bem4-annual" class="cell" data-execution_count="5">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> plotnine_polars <span class="im">import</span> aes</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>(</span>
@@ -598,7 +618,7 @@ Table&nbsp;4.1: Annual cross-sectional persistence of beta (BEM Table 4.1)
 <span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    .theme_minimal()</span>
 <span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>    .add_theme(figure_size<span class="op">=</span>(<span class="dv">8</span>, <span class="dv">4</span>), legend_position<span class="op">=</span><span class="st">"top"</span>)</span>
 <span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-display" data-execution_count="6">
+<div class="cell-output cell-output-display" data-execution_count="5">
 <div id="fig-bem4-annual" class="quarto-float quarto-figure quarto-figure-center anchored" alt="Five lines show beta correlations by formation year. One-year correlations generally exceed the longer-lag correlations and are higher in the 2000s than in the early 1990s. Lines for longer lags end earlier.">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-bem4-annual-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
@@ -619,11 +639,11 @@ Figure&nbsp;4.1: Annual persistence of beta by lag
 \rho_\tau(X)=\frac{1}{N-\tau}\sum_{t=1}^{N-\tau}\rho_{t,t+\tau}(X).
 \tag{4.2}\]</span></span></p>
 <p>Here <span class="math inline">\(N=25\)</span>, so the one-year estimate averages 24 correlations and the five-year estimate averages 20. <a href="#tbl-bem4-beta" class="quarto-xref">Table&nbsp;<span>4.2</span></a> reports the averages for beta and <a href="#tbl-bem4-characteristics" class="quarto-xref">Table&nbsp;<span>4.3</span></a> puts all three characteristics side by side.</p>
-<div id="61e76c25" class="cell" data-execution_count="7">
+<div id="8962d6ca" class="cell" data-execution_count="6">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>average <span class="op">=</span> annual.group_by(<span class="st">"Lag"</span>).agg(pl.col(measures).mean()).sort(<span class="st">"Lag"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div class="cell" data-execution_count="8">
-<div id="tbl-bem4-beta" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="8">
+<div class="cell" data-execution_count="7">
+<div id="tbl-bem4-beta" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="7">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bem4-beta-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table&nbsp;4.2: Average annual persistence of beta (BEM Table 4.2)
@@ -663,8 +683,8 @@ Table&nbsp;4.2: Average annual persistence of beta (BEM Table 4.2)
 </section>
 <section id="presenting-persistence" class="level2" data-number="4.3">
 <h2 data-number="4.3" class="anchored" data-anchor-id="presenting-persistence"><span class="header-section-number">4.3</span> Presenting Persistence</h2>
-<div class="cell" data-execution_count="9">
-<div id="tbl-bem4-characteristics" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="9">
+<div class="cell" data-execution_count="8">
+<div id="tbl-bem4-characteristics" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="8">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bem4-characteristics-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table&nbsp;4.3: Average persistence of beta, size, and book-to-market (BEM Table 4.3)
@@ -719,7 +739,7 @@ Table&nbsp;4.3: Average persistence of beta, size, and book-to-market (BEM Table
 </div>
 </div>
 <p><a href="#fig-bem4-averages" class="quarto-xref">Figure&nbsp;<span>4.2</span></a> plots the averages from <a href="#tbl-bem4-characteristics" class="quarto-xref">Table&nbsp;<span>4.3</span></a>. Size is the most persistent characteristic at every lag. Its average correlation falls from 0.96 at one year to 0.88 at five years. At five years, beta and BM are at 0.42 and 0.47. The size averages agree with BEM at the reported precision. Beta’s three-year average is 0.49 here and 0.48 in BEM, and the other beta averages agree. BM correlations are 0.02 to 0.05 higher in this replication across the five lags.</p>
-<div id="cell-fig-bem4-averages" class="cell" data-execution_count="10">
+<div id="cell-fig-bem4-averages" class="cell" data-execution_count="9">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>(</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    average.rename({<span class="st">"BM"</span>: <span class="st">"Book-to-market"</span>})</span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    .unpivot(index<span class="op">=</span><span class="st">"Lag"</span>, variable_name<span class="op">=</span><span class="st">"characteristic"</span>, value_name<span class="op">=</span><span class="st">"correlation"</span>)</span>
@@ -736,7 +756,7 @@ Table&nbsp;4.3: Average persistence of beta, size, and book-to-market (BEM Table
 <span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>    .theme_minimal()</span>
 <span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>    .add_theme(figure_size<span class="op">=</span>(<span class="dv">8</span>, <span class="dv">4</span>), legend_position<span class="op">=</span><span class="st">"top"</span>)</span>
 <span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-display" data-execution_count="10">
+<div class="cell-output cell-output-display" data-execution_count="9">
 <div id="fig-bem4-averages" class="quarto-float quarto-figure quarto-figure-center anchored" alt="Average size persistence stays near 0.9. Book-to-market falls from 0.76 to 0.47 and beta from 0.61 to 0.42 between the one- and five-year lags.">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-bem4-averages-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
@@ -757,6 +777,11 @@ Figure&nbsp;4.2: Average persistence of beta, size, and book-to-market by lag
 <h2 class="unnumbered anchored" data-anchor-id="references">References</h2>
 
 
+<div id="refs" class="references csl-bib-body hanging-indent" role="list" style="display: none">
+<div id="ref-bali2016" class="csl-entry" role="listitem">
+Bali, Turan G., Robert F. Engle, and Scott Murray. 2016. <em>Empirical Asset Pricing: The Cross Section of Stock Returns</em>. John Wiley &amp; Sons. <a href="https://www.wiley.com/en-us/empirical-asset-pricing-the-cross-section-of-stock-returns-p-9781118095041">https://www.wiley.com/en-us/empirical-asset-pricing-the-cross-section-of-stock-returns-p-9781118095041</a>.
+</div>
+</div>
 </section>
 
 </main> <!-- /main -->

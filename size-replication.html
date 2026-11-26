@@ -58,7 +58,26 @@ div.sourceCode
 @media screen {
 pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
-</style>
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
 
 
 <script src="site_libs/quarto-nav/quarto-nav.js"></script>
@@ -262,6 +281,12 @@ window.Quarto = {
 </li>
       </ul>
   </li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./references.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">References</span></a>
+  </div>
+</li>
     </ul>
     </div>
 </nav>
@@ -311,105 +336,101 @@ window.Quarto = {
 
 
 <p><span id="sec-size"></span></p>
-<p>We follow Chapter 9 of Bali, Engle, and Murray (2016), <em>Empirical Asset Pricing</em>. We compare monthly and June-based size, then examine how each relates to subsequent stock returns. Formation months run from June 1963 through November 2012.</p>
+<p>We follow Chapter 9 of <span class="citation" data-cites="bali2016">Bali et al. (<a href="references.html#ref-bali2016" role="doc-biblioref">2016</a>)</span>. We compare monthly and June-based size, then examine how each relates to subsequent stock returns. Formation months run from June 1963 through November 2012.</p>
 <section id="reconstruct-the-published-sample" class="level2" data-number="9.1">
 <h2 data-number="9.1" class="anchored" data-anchor-id="reconstruct-the-published-sample"><span class="header-section-number">9.1</span> Calculating Market Capitalization</h2>
 <p>The book was published in 2016, well before CRSP’s CIZ format. This replication uses the legacy (SIZ) monthly stock and names files, not the CIZ files used in the earlier chapters. Our legacy snapshot is newer than the authors’ original data, even though we use the same sample dates. See <a href="data.html#sec-data-vintages" class="quarto-xref"><span>Section 1.1.1</span></a> for the embedded update dates.</p>
 <p>Use the share code in force at the end of each month. Keep share codes 10 and 11, without adding an exchange screen. The book’s measure uses the absolute alternate price and shares outstanding. CRSP records shares in thousands; dividing their product by 1,000 gives market capitalization in millions of dollars. Treat zeros as missing.</p>
-<div id="8d4013f7" class="cell" data-execution_count="1">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> polars <span class="im">as</span> pl</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> era_pl <span class="im">import</span> load_parquet</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>first <span class="op">=</span> pl.date(<span class="dv">1963</span>, <span class="dv">6</span>, <span class="dv">1</span>)</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>last <span class="op">=</span> pl.date(<span class="dv">2012</span>, <span class="dv">11</span>, <span class="dv">1</span>)</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>prices <span class="op">=</span> (</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    load_parquet(<span class="st">"msf"</span>, <span class="st">"crsp"</span>)</span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    .<span class="bu">filter</span>(pl.col(<span class="st">"date"</span>).is_between(pl.date(<span class="dv">1962</span>, <span class="dv">12</span>, <span class="dv">1</span>), pl.date(<span class="dv">2012</span>, <span class="dv">12</span>, <span class="dv">31</span>)))</span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    .with_columns(</span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>        month<span class="op">=</span>pl.col(<span class="st">"date"</span>).dt.month_start(),</span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>        cap<span class="op">=</span>pl.when((pl.col(<span class="st">"altprc"</span>) <span class="op">!=</span> <span class="dv">0</span>) <span class="op">&amp;</span> (pl.col(<span class="st">"shrout"</span>) <span class="op">&gt;</span> <span class="dv">0</span>))</span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>        .then((pl.col(<span class="st">"altprc"</span>) <span class="op">*</span> pl.col(<span class="st">"shrout"</span>)).<span class="bu">abs</span>() <span class="op">/</span> <span class="dv">1000</span>),</span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>    .select(<span class="st">"permno"</span>, <span class="st">"month"</span>, <span class="st">"cap"</span>)</span>
-<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>names <span class="op">=</span> (</span>
-<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>    load_parquet(<span class="st">"msenames"</span>, <span class="st">"crsp"</span>)</span>
-<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>    .select(<span class="st">"permno"</span>, <span class="st">"namedt"</span>, <span class="st">"nameendt"</span>, <span class="st">"shrcd"</span>, <span class="st">"exchcd"</span>)</span>
-<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>    .sort(<span class="st">"namedt"</span>)</span>
-<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>stock_months <span class="op">=</span> (</span>
-<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>    prices</span>
-<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>    .with_columns(month_end<span class="op">=</span>pl.col(<span class="st">"month"</span>).dt.month_end())</span>
-<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>    .sort(<span class="st">"month_end"</span>)</span>
-<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>    .join_asof(</span>
-<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>        names, left_on<span class="op">=</span><span class="st">"month_end"</span>, right_on<span class="op">=</span><span class="st">"namedt"</span>,</span>
-<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>        by<span class="op">=</span><span class="st">"permno"</span>, check_sortedness<span class="op">=</span><span class="va">False</span>,</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>prices <span class="op">=</span> (</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    load_parquet(<span class="st">"msf"</span>, <span class="st">"crsp"</span>)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    .<span class="bu">filter</span>(pl.col(<span class="st">"date"</span>).is_between(pl.date(<span class="dv">1962</span>, <span class="dv">12</span>, <span class="dv">1</span>), pl.date(<span class="dv">2012</span>, <span class="dv">12</span>, <span class="dv">31</span>)))</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    .with_columns(</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>        month<span class="op">=</span>pl.col(<span class="st">"date"</span>).dt.month_start(),</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>        cap<span class="op">=</span>pl.when((pl.col(<span class="st">"altprc"</span>) <span class="op">!=</span> <span class="dv">0</span>) <span class="op">&amp;</span> (pl.col(<span class="st">"shrout"</span>) <span class="op">&gt;</span> <span class="dv">0</span>))</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>        .then((pl.col(<span class="st">"altprc"</span>) <span class="op">*</span> pl.col(<span class="st">"shrout"</span>)).<span class="bu">abs</span>() <span class="op">/</span> <span class="dv">1000</span>),</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    .select(<span class="st">"permno"</span>, <span class="st">"month"</span>, <span class="st">"cap"</span>)</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>names <span class="op">=</span> (</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>    load_parquet(<span class="st">"msenames"</span>, <span class="st">"crsp"</span>)</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>    .select(<span class="st">"permno"</span>, <span class="st">"namedt"</span>, <span class="st">"nameendt"</span>, <span class="st">"shrcd"</span>, <span class="st">"exchcd"</span>)</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>    .sort(<span class="st">"namedt"</span>)</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>classified_months <span class="op">=</span> (</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>    prices</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>    .with_columns(month_end<span class="op">=</span>pl.col(<span class="st">"month"</span>).dt.month_end())</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>    .sort(<span class="st">"month_end"</span>)</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>    .join_asof(</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>        names, left_on<span class="op">=</span><span class="st">"month_end"</span>, right_on<span class="op">=</span><span class="st">"namedt"</span>,</span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>        by<span class="op">=</span><span class="st">"permno"</span>, check_sortedness<span class="op">=</span><span class="va">False</span>,</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>    .with_columns(</span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>        common<span class="op">=</span>(pl.col(<span class="st">"month_end"</span>).is_between(<span class="st">"namedt"</span>, <span class="st">"nameendt"</span>)</span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>                <span class="op">&amp;</span> pl.col(<span class="st">"shrcd"</span>).is_in([<span class="dv">10</span>, <span class="dv">11</span>])).fill_null(<span class="va">False</span>),</span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>        exchcd<span class="op">=</span>pl.when(pl.col(<span class="st">"month_end"</span>).is_between(<span class="st">"namedt"</span>, <span class="st">"nameendt"</span>))</span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>        .then(pl.col(<span class="st">"exchcd"</span>)),</span>
 <span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>    .with_columns(</span>
-<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>        common<span class="op">=</span>(pl.col(<span class="st">"month_end"</span>).is_between(<span class="st">"namedt"</span>, <span class="st">"nameendt"</span>)</span>
-<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>                <span class="op">&amp;</span> pl.col(<span class="st">"shrcd"</span>).is_in([<span class="dv">10</span>, <span class="dv">11</span>])).fill_null(<span class="va">False</span>),</span>
-<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>        exchcd<span class="op">=</span>pl.when(pl.col(<span class="st">"month_end"</span>).is_between(<span class="st">"namedt"</span>, <span class="st">"nameendt"</span>))</span>
-<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>        .then(pl.col(<span class="st">"exchcd"</span>)),</span>
-<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a>    .select(<span class="st">"permno"</span>, <span class="st">"month"</span>, <span class="st">"common"</span>, <span class="st">"exchcd"</span>, <span class="st">"cap"</span>)</span>
-<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</div>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>    .select(<span class="st">"permno"</span>, <span class="st">"month"</span>, <span class="st">"common"</span>, <span class="st">"exchcd"</span>, <span class="st">"cap"</span>)</span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>For the annual measure, join each stock to its capitalization at the most recent June. A stock without a record for that particular June has no annual value. We do not carry forward an older June observation.</p>
-<div id="96fcf1d7" class="cell" data-execution_count="2">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>june_caps <span class="op">=</span> (</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>june_caps <span class="op">=</span> (</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    prices</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    .<span class="bu">filter</span>(pl.col(<span class="st">"month"</span>).dt.month() <span class="op">==</span> <span class="dv">6</span>)</span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    .select(<span class="st">"permno"</span>, june<span class="op">=</span><span class="st">"month"</span>, cap_june<span class="op">=</span><span class="st">"cap"</span>)</span>
 <span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>june_year <span class="op">=</span> pl.col(<span class="st">"month"</span>).dt.year() <span class="op">-</span> (pl.col(<span class="st">"month"</span>).dt.month() <span class="op">&lt;</span> <span class="dv">6</span>)</span>
 <span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>stock_months <span class="op">=</span> (</span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    stock_months</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    classified_months</span>
 <span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    .with_columns(june<span class="op">=</span>pl.date(june_year, <span class="dv">6</span>, <span class="dv">1</span>))</span>
 <span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>    .join(june_caps, on<span class="op">=</span>[<span class="st">"permno"</span>, <span class="st">"june"</span>], how<span class="op">=</span><span class="st">"left"</span>, validate<span class="op">=</span><span class="st">"m:1"</span>)</span>
 <span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>    .drop(<span class="st">"june"</span>)</span>
 <span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</div>
 <p><span id="compare-four-measures-of-size-and-their-logs"></span></p>
 <p>Convert nominal market capitalization to December 2012 dollars using the <a href="https://fred.stlouisfed.org/series/CPIAUCNS">BLS CPI-U, not seasonally adjusted</a>. Use the CPI for the current observation month for both the monthly and the June-based measures, as in the book.</p>
-<div id="2e5d8f00" class="cell" data-execution_count="3">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>cpi <span class="op">=</span> pl.read_csv(<span class="st">"data/cpi-aucns.csv"</span>, try_parse_dates<span class="op">=</span><span class="va">True</span>).rename(</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>cpi <span class="op">=</span> pl.read_csv(cpi_path, try_parse_dates<span class="op">=</span><span class="va">True</span>).rename(</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    {<span class="st">"observation_date"</span>: <span class="st">"month"</span>, <span class="st">"CPIAUCNS"</span>: <span class="st">"cpi"</span>}</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>cpi_2012 <span class="op">=</span> cpi.<span class="bu">filter</span>(pl.col(<span class="st">"month"</span>) <span class="op">==</span> pl.date(<span class="dv">2012</span>, <span class="dv">12</span>, <span class="dv">1</span>))[<span class="st">"cpi"</span>].item()</span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>all_sizes <span class="op">=</span> (</span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    stock_months</span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    .join(cpi.lazy(), on<span class="op">=</span><span class="st">"month"</span>, how<span class="op">=</span><span class="st">"left"</span>, validate<span class="op">=</span><span class="st">"m:1"</span>)</span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    .with_columns(</span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>        cap_real<span class="op">=</span>pl.col(<span class="st">"cap"</span>) <span class="op">*</span> cpi_2012 <span class="op">/</span> pl.col(<span class="st">"cpi"</span>),</span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>        cap_june_real<span class="op">=</span>pl.col(<span class="st">"cap_june"</span>) <span class="op">*</span> cpi_2012 <span class="op">/</span> pl.col(<span class="st">"cpi"</span>),</span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    .drop(<span class="st">"cpi"</span>)</span>
-<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>    .with_columns(</span>
-<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>        pl.col(var).log().alias(<span class="ss">f"log_</span><span class="sc">{</span>var<span class="sc">}</span><span class="ss">"</span>)</span>
-<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> var <span class="kw">in</span> [<span class="st">"cap"</span>, <span class="st">"cap_real"</span>, <span class="st">"cap_june"</span>, <span class="st">"cap_june_real"</span>]</span>
-<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>    .collect()</span>
-<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>sizes <span class="op">=</span> all_sizes.<span class="bu">filter</span>(</span>
-<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>    pl.col(<span class="st">"common"</span>), pl.col(<span class="st">"month"</span>).is_between(first, last)</span>
-<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>all_sizes <span class="op">=</span> (</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    stock_months</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    .join(cpi.lazy(), on<span class="op">=</span><span class="st">"month"</span>, how<span class="op">=</span><span class="st">"left"</span>, validate<span class="op">=</span><span class="st">"m:1"</span>)</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    .with_columns(</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>        cap_real<span class="op">=</span>pl.col(<span class="st">"cap"</span>) <span class="op">*</span> cpi_2012 <span class="op">/</span> pl.col(<span class="st">"cpi"</span>),</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>        cap_june_real<span class="op">=</span>pl.col(<span class="st">"cap_june"</span>) <span class="op">*</span> cpi_2012 <span class="op">/</span> pl.col(<span class="st">"cpi"</span>),</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>    .drop(<span class="st">"cpi"</span>)</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    .with_columns(</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>        pl.col(var).log().alias(<span class="ss">f"log_</span><span class="sc">{</span>var<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> var <span class="kw">in</span> [<span class="st">"cap"</span>, <span class="st">"cap_real"</span>, <span class="st">"cap_june"</span>, <span class="st">"cap_june_real"</span>]</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>    .collect()</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="91d734a6" class="cell" data-execution_count="6">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> polars <span class="im">as</span> pl</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> eap_pl <span class="im">import</span> build_sizes</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>first <span class="op">=</span> pl.date(<span class="dv">1963</span>, <span class="dv">6</span>, <span class="dv">1</span>)</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>last <span class="op">=</span> pl.date(<span class="dv">2012</span>, <span class="dv">11</span>, <span class="dv">1</span>)</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>all_sizes <span class="op">=</span> build_sizes()</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>sizes <span class="op">=</span> all_sizes.<span class="bu">filter</span>(</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    pl.col(<span class="st">"common"</span>), pl.col(<span class="st">"month"</span>).is_between(first, last),</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<p>The optional export, <code>eap.sizes</code>, includes the earlier December market equity needed for book-to-market and December 2012 for the annual teaching sample. It records common-stock eligibility separately so the prior December price remains available when a stock’s share code changes.</p>
+<p>The table includes the earlier December market equity needed for book-to-market and December 2012 for the annual teaching sample. It records common-stock eligibility separately so the prior December price remains available when a stock’s share code changes.</p>
 </section>
 <section id="summary-statistics" class="level2" data-number="9.2">
 <h2 data-number="9.2" class="anchored" data-anchor-id="summary-statistics"><span class="header-section-number">9.2</span> Summary Statistics</h2>
 <p>The mean of the monthly medians describes the middle stock in a typical month. It is not a median calculated once on the pooled stock-month data.</p>
-<div id="25b1eb4a" class="cell" data-execution_count="6">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> _bem_monthly <span class="im">import</span> mean_cross_sections</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>stats <span class="op">=</span> mean_cross_sections(sizes, {</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">"cap"</span>: <span class="st">"MktCap"</span>, <span class="st">"cap_real"</span>: <span class="st">"MktCap CPI"</span>,</span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">"log_cap"</span>: <span class="st">"Size"</span>, <span class="st">"log_cap_real"</span>: <span class="st">"Size CPI"</span>,</span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">"cap_june"</span>: <span class="st">"MktCap FF"</span>, <span class="st">"cap_june_real"</span>: <span class="st">"MktCap FF CPI"</span>,</span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    <span class="st">"log_cap_june"</span>: <span class="st">"Size FF"</span>, <span class="st">"log_cap_june_real"</span>: <span class="st">"Size FF CPI"</span>,</span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>})</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="b5e15c92" class="cell" data-execution_count="8">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> eap_pl <span class="im">import</span> mean_cross_sections</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>stats <span class="op">=</span> mean_cross_sections(sizes, {</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">"cap"</span>: <span class="st">"MktCap"</span>, <span class="st">"cap_real"</span>: <span class="st">"MktCap CPI"</span>,</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">"log_cap"</span>: <span class="st">"Size"</span>, <span class="st">"log_cap_real"</span>: <span class="st">"Size CPI"</span>,</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">"cap_june"</span>: <span class="st">"MktCap FF"</span>, <span class="st">"cap_june_real"</span>: <span class="st">"MktCap FF CPI"</span>,</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    <span class="st">"log_cap_june"</span>: <span class="st">"Size FF"</span>, <span class="st">"log_cap_june_real"</span>: <span class="st">"Size FF CPI"</span>,</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>})</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <style>
 .cell-output-markdown:has(> table) {
@@ -420,8 +441,8 @@ window.Quarto = {
   white-space: nowrap;
 }
 </style>
-<div class="cell" data-execution_count="8">
-<div id="tbl-bem9-summary" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="8">
+<div class="cell" data-execution_count="10">
+<div id="tbl-bem9-summary" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="10">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bem9-summary-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table&nbsp;9.1: Monthly summary statistics for size (BEM Table 9.1)
@@ -590,8 +611,8 @@ Table&nbsp;9.1: Monthly summary statistics for size (BEM Table 9.1)
 </div>
 </div>
 <p>The published nominal market capitalization has a monthly mean of $1,101 million and an average monthly median of $107 million. The much larger mean reflects the concentration of market capitalization in a few stocks.</p>
-<div id="cell-fig-bem9-concentration" class="cell" data-execution_count="9">
-<div class="cell-output cell-output-display" data-execution_count="9">
+<div id="cell-fig-bem9-concentration" class="cell" data-execution_count="11">
+<div class="cell-output cell-output-display" data-execution_count="11">
 <div id="fig-bem9-concentration" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-bem9-concentration-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
@@ -608,16 +629,16 @@ Figure&nbsp;9.1: Share of market capitalization held by the largest stocks (BEM 
 <section id="correlation-and-persistence" class="level2" data-number="9.3">
 <h2 data-number="9.3" class="anchored" data-anchor-id="correlation-and-persistence"><span class="header-section-number">9.3</span> Correlations</h2>
 <p>Join the size measures to the twelve-month daily beta from <a href="beta-replication.html" class="quarto-xref"><span>Chapter 8</span></a>. We take the mean of the monthly cross-sectional correlations. Below the diagonal are Pearson correlations on winsorized observations, and above it are Spearman correlations on the original ranks.</p>
-<div id="024b1dc2" class="cell" data-execution_count="10">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> _bem_monthly <span class="im">import</span> correlation_matrix, monthly_panel, period_correlations, persistence</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>panel <span class="op">=</span> monthly_panel(sizes, first, last)</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>measures <span class="op">=</span> {<span class="st">"cap"</span>: <span class="st">"MktCap"</span>, <span class="st">"log_cap"</span>: <span class="st">"Size"</span>, <span class="st">"cap_june"</span>: <span class="st">"MktCap FF"</span>,</span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>            <span class="st">"log_cap_june"</span>: <span class="st">"Size FF"</span>, <span class="st">"beta"</span>: <span class="st">"Beta"</span>}</span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>corr <span class="op">=</span> period_correlations(panel, measures, <span class="st">"month"</span>).select(pl.exclude(<span class="st">"month"</span>).mean())</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="09433604" class="cell" data-execution_count="12">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> eap_pl <span class="im">import</span> correlation_matrix, monthly_panel, period_correlations, persistence</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>panel <span class="op">=</span> monthly_panel(sizes, first, last)</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>measures <span class="op">=</span> {<span class="st">"cap"</span>: <span class="st">"MktCap"</span>, <span class="st">"log_cap"</span>: <span class="st">"Size"</span>, <span class="st">"cap_june"</span>: <span class="st">"MktCap FF"</span>,</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>            <span class="st">"log_cap_june"</span>: <span class="st">"Size FF"</span>, <span class="st">"beta"</span>: <span class="st">"Beta"</span>}</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>corr <span class="op">=</span> period_correlations(panel, measures, <span class="st">"month"</span>).select(pl.exclude(<span class="st">"month"</span>).mean())</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div class="cell" data-execution_count="11">
-<div id="tbl-bem9-correlations" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="11">
+<div class="cell" data-execution_count="13">
+<div id="tbl-bem9-correlations" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="13">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bem9-correlations-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table&nbsp;9.2: Cross-sectional correlations for size and beta (BEM Table 9.2)
@@ -687,8 +708,8 @@ Table&nbsp;9.2: Cross-sectional correlations for size and beta (BEM Table 9.2)
 <section id="persistence" class="level2" data-number="9.4">
 <h2 data-number="9.4" class="anchored" data-anchor-id="persistence"><span class="header-section-number">9.4</span> Persistence</h2>
 <p>For persistence, match the same stock at a fixed calendar lag, then winsorize both sides within the matched sample at the 0.5th and 99.5th percentiles.</p>
-<div class="cell" data-execution_count="12">
-<div id="tbl-bem9-persistence" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="12">
+<div class="cell" data-execution_count="14">
+<div id="tbl-bem9-persistence" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="14">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bem9-persistence-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table&nbsp;9.3: Persistence of nominal size measures (BEM Table 9.3)
@@ -782,29 +803,29 @@ Table&nbsp;9.3: Persistence of nominal size measures (BEM Table 9.3)
 <section id="univariate-portfolio-analysis" class="level3" data-number="9.5.1">
 <h3 data-number="9.5.1" class="anchored" data-anchor-id="univariate-portfolio-analysis"><span class="header-section-number">9.5.1</span> Univariate Portfolio Analysis</h3>
 <p>Sort stocks at the end of month <span class="math inline">\(t\)</span> and measure their excess returns in <span class="math inline">\(t+1\)</span>, using the delisting rules in <a href="crsp-replication.html#sec-bem-returns" class="quarto-xref"><span>Section 7.2</span></a>. First use NYSE stocks to calculate the breakpoints, then use all eligible stocks. In both cases, assign stocks from the full eligible sample. For the June-based sort, the value weights use June capitalization, as in BEM. Returns and CAPM alphas are in percent per month. The <span class="math inline">\(t\)</span>-statistics use six Newey–West lags.</p>
-<div id="ab960a91" class="cell" data-execution_count="13">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> _bem_monthly <span class="im">import</span> bivariate_months, bivariate_panel, fama_macbeth_table, univariate_panel</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> size_deciles(nyse):</span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> pl.concat([</span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>        univariate_panel(</span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>            panel.with_columns(total<span class="op">=</span>pl.col(cap).<span class="bu">sum</span>().over(<span class="st">"month"</span>)), cap, nyse,</span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>            [</span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>                pl.col(cap).mean().alias(<span class="st">"Market cap"</span>),</span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>                pl.col(real).mean().alias(<span class="st">"Market cap, 2012 dollars"</span>),</span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>                (<span class="dv">100</span> <span class="op">*</span> pl.col(cap).<span class="bu">sum</span>() <span class="op">/</span> pl.col(<span class="st">"total"</span>).first()).alias(<span class="st">"</span><span class="sc">% o</span><span class="st">f market cap"</span>),</span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>                (<span class="dv">100</span> <span class="op">*</span> (pl.col(<span class="st">"exchcd"</span>) <span class="op">==</span> <span class="dv">1</span>).fill_null(<span class="va">False</span>).mean()).alias(<span class="st">"% NYSE"</span>),</span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>                pl.<span class="bu">len</span>().alias(<span class="st">"Stocks"</span>), pl.col(<span class="st">"beta"</span>).mean().alias(<span class="st">"Beta"</span>),</span>
-<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>            ],</span>
-<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>            weight<span class="op">=</span>cap,</span>
-<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>        ).with_columns(pl.lit(label).alias(<span class="st">"Sort"</span>))</span>
-<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> cap, real, label <span class="kw">in</span> [</span>
-<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>            (<span class="st">"cap"</span>, <span class="st">"cap_real"</span>, <span class="st">"Monthly"</span>), (<span class="st">"cap_june"</span>, <span class="st">"cap_june_real"</span>, <span class="st">"June"</span>),</span>
-<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>        ]</span>
-<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>    ]).select(<span class="st">"Sort"</span>, pl.exclude(<span class="st">"Sort"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="4c53a53a" class="cell" data-execution_count="15">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> eap_pl <span class="im">import</span> bivariate_months, bivariate_panel, fama_macbeth_table, univariate_panel</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> size_deciles(nyse):</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> pl.concat([</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>        univariate_panel(</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>            panel.with_columns(total<span class="op">=</span>pl.col(cap).<span class="bu">sum</span>().over(<span class="st">"month"</span>)), cap, nyse,</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>            [</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>                pl.col(cap).mean().alias(<span class="st">"Market cap"</span>),</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>                pl.col(real).mean().alias(<span class="st">"Market cap, 2012 dollars"</span>),</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>                (<span class="dv">100</span> <span class="op">*</span> pl.col(cap).<span class="bu">sum</span>() <span class="op">/</span> pl.col(<span class="st">"total"</span>).first()).alias(<span class="st">"</span><span class="sc">% o</span><span class="st">f market cap"</span>),</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>                (<span class="dv">100</span> <span class="op">*</span> (pl.col(<span class="st">"exchcd"</span>) <span class="op">==</span> <span class="dv">1</span>).fill_null(<span class="va">False</span>).mean()).alias(<span class="st">"% NYSE"</span>),</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>                pl.<span class="bu">len</span>().alias(<span class="st">"Stocks"</span>), pl.col(<span class="st">"beta"</span>).mean().alias(<span class="st">"Beta"</span>),</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>            ],</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>            weight<span class="op">=</span>cap,</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>        ).with_columns(pl.lit(label).alias(<span class="st">"Sort"</span>))</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> cap, real, label <span class="kw">in</span> [</span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>            (<span class="st">"cap"</span>, <span class="st">"cap_real"</span>, <span class="st">"Monthly"</span>), (<span class="st">"cap_june"</span>, <span class="st">"cap_june_real"</span>, <span class="st">"June"</span>),</span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>        ]</span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>    ]).select(<span class="st">"Sort"</span>, pl.exclude(<span class="st">"Sort"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div class="cell" data-execution_count="14">
-<div id="tbl-bem9-nyse-deciles" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="14">
+<div class="cell" data-execution_count="16">
+<div id="tbl-bem9-nyse-deciles" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="16">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bem9-nyse-deciles-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table&nbsp;9.4: Size deciles using NYSE breakpoints (BEM Table 9.4)
@@ -1152,8 +1173,8 @@ Table&nbsp;9.4: Size deciles using NYSE breakpoints (BEM Table 9.4)
 </figure>
 </div>
 </div>
-<div class="cell" data-execution_count="15">
-<div id="tbl-bem9-all-deciles" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="15">
+<div class="cell" data-execution_count="17">
+<div id="tbl-bem9-all-deciles" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="17">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bem9-all-deciles-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table&nbsp;9.5: Size deciles using all-stock breakpoints (BEM Table 9.5)
@@ -1506,17 +1527,17 @@ Table&nbsp;9.5: Size deciles using all-stock breakpoints (BEM Table 9.5)
 <section id="sort-on-beta-and-size" class="level3" data-number="9.5.2">
 <h3 data-number="9.5.2" class="anchored" data-anchor-id="sort-on-beta-and-size"><span class="header-section-number">9.5.2</span> Bivariate Portfolio Analysis</h3>
 <p>For a dependent sort, form beta quintiles first and compute size breakpoints within each beta quintile. For an independent sort, compute beta and size breakpoints separately across the reference universe. The rows are size quintiles and the columns are beta quintiles. Average portfolios give each constituent portfolio equal weight each month.</p>
-<div id="b3a34246" class="cell" data-execution_count="16">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> size_quintiles(nyse, dependent):</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    monthly <span class="op">=</span> bivariate_months(panel, <span class="st">"beta"</span>, <span class="st">"cap"</span>, nyse<span class="op">=</span>nyse, dependent<span class="op">=</span>dependent)</span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> pl.concat([</span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>        bivariate_panel(monthly, weight, independent<span class="op">=</span><span class="kw">not</span> dependent)</span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>        .with_columns(pl.lit(weight).alias(<span class="st">"Weights"</span>))</span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> weight <span class="kw">in</span> (<span class="st">"EW"</span>, <span class="st">"VW"</span>)</span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>    ]).select(<span class="st">"Weights"</span>, pl.exclude(<span class="st">"Weights"</span>)).rename({<span class="st">"Target"</span>: <span class="st">"Size"</span>})</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="87b427c2" class="cell" data-execution_count="18">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> size_quintiles(nyse, dependent):</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    monthly <span class="op">=</span> bivariate_months(panel, <span class="st">"beta"</span>, <span class="st">"cap"</span>, nyse<span class="op">=</span>nyse, dependent<span class="op">=</span>dependent)</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> pl.concat([</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>        bivariate_panel(monthly, weight, independent<span class="op">=</span><span class="kw">not</span> dependent)</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>        .with_columns(pl.lit(weight).alias(<span class="st">"Weights"</span>))</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> weight <span class="kw">in</span> (<span class="st">"EW"</span>, <span class="st">"VW"</span>)</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>    ]).select(<span class="st">"Weights"</span>, pl.exclude(<span class="st">"Weights"</span>)).rename({<span class="st">"Target"</span>: <span class="st">"Size"</span>})</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div class="cell" data-execution_count="17">
-<div id="tbl-bem9-nyse-dependent" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="17">
+<div class="cell" data-execution_count="19">
+<div id="tbl-bem9-nyse-dependent" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="19">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bem9-nyse-dependent-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table&nbsp;9.6: Dependent beta and size sorts using NYSE breakpoints (BEM Table 9.6)
@@ -1694,8 +1715,8 @@ Table&nbsp;9.6: Dependent beta and size sorts using NYSE breakpoints (BEM Table 
 </figure>
 </div>
 </div>
-<div class="cell" data-execution_count="18">
-<div id="tbl-bem9-all-dependent" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="18">
+<div class="cell" data-execution_count="20">
+<div id="tbl-bem9-all-dependent" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="20">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bem9-all-dependent-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table&nbsp;9.7: Dependent beta and size sorts using all-stock breakpoints (BEM Table 9.7)
@@ -1873,8 +1894,8 @@ Table&nbsp;9.7: Dependent beta and size sorts using all-stock breakpoints (BEM T
 </figure>
 </div>
 </div>
-<div class="cell" data-execution_count="19">
-<div id="tbl-bem9-nyse-independent" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="19">
+<div class="cell" data-execution_count="21">
+<div id="tbl-bem9-nyse-independent" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="21">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bem9-nyse-independent-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table&nbsp;9.8: Independent beta and size sorts using NYSE breakpoints (BEM Table 9.8)
@@ -2108,8 +2129,8 @@ Table&nbsp;9.8: Independent beta and size sorts using NYSE breakpoints (BEM Tabl
 </figure>
 </div>
 </div>
-<div class="cell" data-execution_count="20">
-<div id="tbl-bem9-all-independent" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="20">
+<div class="cell" data-execution_count="22">
+<div id="tbl-bem9-all-independent" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="22">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bem9-all-independent-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table&nbsp;9.9: Independent beta and size sorts using all-stock breakpoints (BEM Table 9.9)
@@ -2347,8 +2368,8 @@ Table&nbsp;9.9: Independent beta and size sorts using all-stock breakpoints (BEM
 <section id="famamacbeth-regressions" class="level3" data-number="9.5.3">
 <h3 data-number="9.5.3" class="anchored" data-anchor-id="famamacbeth-regressions"><span class="header-section-number">9.5.3</span> Fama–MacBeth Regression Analysis</h3>
 <p>Regress the next month’s excess return on log market capitalization, with and without beta. Winsorize the regressors by month at the 0.5th and 99.5th percentiles. Apply six Newey–West lags to the time series of monthly coefficient estimates.</p>
-<div class="cell" data-execution_count="21">
-<div id="tbl-bem9-fm" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="21">
+<div class="cell" data-execution_count="23">
+<div id="tbl-bem9-fm" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="23">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bem9-fm-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table&nbsp;9.10: Fama–MacBeth regressions of returns on size (BEM Table 9.10)
@@ -2428,8 +2449,8 @@ Table&nbsp;9.10: Fama–MacBeth regressions of returns on size (BEM Table 9.10)
 <h2 data-number="9.6" class="anchored" data-anchor-id="the-size-factor"><span class="header-section-number">9.6</span> The Size Factor</h2>
 <p>SMB is the average of three small-stock portfolios less the average of three big-stock portfolios. The three portfolios in each size group cover low, middle, and high book-to-market. Using the same book-to-market groups on both sides reduces the factor’s exposure to the value spread.</p>
 <p>For the historical factor series we use the monthly Fama–French SMB from July 1926 through December 2012.</p>
-<div id="cell-fig-bem9-smb" class="cell" data-execution_count="22">
-<div class="cell-output cell-output-display" data-execution_count="22">
+<div id="cell-fig-bem9-smb" class="cell" data-execution_count="24">
+<div class="cell-output cell-output-display" data-execution_count="24">
 <div id="fig-bem9-smb" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-bem9-smb-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
@@ -2450,6 +2471,11 @@ Figure&nbsp;9.2: Cumulative returns on the Fama–French SMB factor (BEM Figure 
 <h2 class="unnumbered anchored" data-anchor-id="references">References</h2>
 
 
+<div id="refs" class="references csl-bib-body hanging-indent" role="list" style="display: none">
+<div id="ref-bali2016" class="csl-entry" role="listitem">
+Bali, Turan G., Robert F. Engle, and Scott Murray. 2016. <em>Empirical Asset Pricing: The Cross Section of Stock Returns</em>. John Wiley &amp; Sons. <a href="https://www.wiley.com/en-us/empirical-asset-pricing-the-cross-section-of-stock-returns-p-9781118095041">https://www.wiley.com/en-us/empirical-asset-pricing-the-cross-section-of-stock-returns-p-9781118095041</a>.
+</div>
+</div>
 </section>
 
 </main> <!-- /main -->

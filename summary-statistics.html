@@ -58,7 +58,26 @@ div.sourceCode
 @media screen {
 pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
-</style>
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
 
 
 <script src="site_libs/quarto-nav/quarto-nav.js"></script>
@@ -262,6 +281,12 @@ window.Quarto = {
 </li>
       </ul>
   </li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./references.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">References</span></a>
+  </div>
+</li>
     </ul>
     </div>
 </nav>
@@ -323,26 +348,21 @@ window.Quarto = {
   white-space: nowrap;
 }
 </style>
-<p>Bali, Engle, and Murray (2016), Chapter 2, summarize the distribution of stock characteristics within each year, then average those statistics across years. This gives each year’s cross-section equal weight.</p>
+<p>In Chapter 2, <span class="citation" data-cites="bali2016">Bali et al. (<a href="references.html#ref-bali2016" role="doc-biblioref">2016</a>)</span> summarize the distribution of stock characteristics within each year, then average those statistics across years. This gives each year’s cross-section equal weight.</p>
 <section id="implementation" class="level2" data-number="2.1">
 <h2 data-number="2.1" class="anchored" data-anchor-id="implementation"><span class="header-section-number">2.1</span> Implementation</h2>
 <section id="annual-cross-sections" class="level3" data-number="2.1.1">
 <h3 data-number="2.1.1" class="anchored" data-anchor-id="annual-cross-sections"><span class="header-section-number">2.1.1</span> Periodic Cross-Sectional Summary Statistics</h3>
 <p>The sample covers U.S. common stocks at each December 31 from 1988 through 2012. We take the December value of the 12-month daily beta from <a href="beta-replication.html" class="quarto-xref"><span>Chapter 8</span></a>. It uses all available daily excess returns in the calendar year and requires at least 200 matched observations.</p>
-<div id="93c1c0e4" class="cell" data-execution_count="2">
+<div id="4ee7eaac" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> polars <span class="im">as</span> pl</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> era_pl <span class="im">import</span> load_parquet</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> eap_pl <span class="im">import</span> build_annual_panel, load_annual_betas</span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>annual_beta <span class="op">=</span> (</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    load_parquet(<span class="st">"betas"</span>, <span class="st">"eap"</span>)</span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    .with_columns(year<span class="op">=</span>pl.col(<span class="st">"month"</span>).dt.year())</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    .<span class="bu">filter</span>(pl.col(<span class="st">"month"</span>).dt.month() <span class="op">==</span> <span class="dv">12</span>, pl.col(<span class="st">"year"</span>).is_between(<span class="dv">1988</span>, <span class="dv">2012</span>))</span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    .select(<span class="st">"permno"</span>, <span class="st">"year"</span>, Beta<span class="op">=</span><span class="st">"12M"</span>)</span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>annual_beta <span class="op">=</span> load_annual_betas().collect()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>For each year, compute the statistics across the stocks with a beta. We use the sample standard deviation, bias-adjusted skewness and excess kurtosis, and linearly interpolated percentiles. The count is the number of available values in that cross-section.</p>
-<div id="5a28a02e" class="cell" data-execution_count="3">
+<div id="29668359" class="cell" data-execution_count="3">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> cross_section(variable):</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> pl.col(variable)</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> [</span>
@@ -364,8 +384,7 @@ window.Quarto = {
 <span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>    annual_beta.group_by(<span class="st">"year"</span>)</span>
 <span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>    .agg(cross_section(<span class="st">"Beta"</span>))</span>
 <span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>    .sort(<span class="st">"year"</span>)</span>
-<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>    .collect()</span>
-<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="cell" data-execution_count="4">
 <div id="tbl-bem2-annual" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="4">
@@ -795,7 +814,7 @@ Table&nbsp;2.1: Annual summary statistics for market beta (BEM Table 2.1)
 <section id="average-across-years" class="level3" data-number="2.1.2">
 <h3 data-number="2.1.2" class="anchored" data-anchor-id="average-across-years"><span class="header-section-number">2.1.2</span> Average Cross-Sectional Summary Statistics</h3>
 <p>To describe the typical cross-section, take the mean of each column in <a href="#tbl-bem2-annual" class="quarto-xref">Table&nbsp;<span>2.1</span></a>. For example, if <span class="math inline">\(n_t\)</span> stocks have valid betas in year <span class="math inline">\(t\)</span>, their mean is <span class="math inline">\(\bar{\beta}_t = \sum_{i=1}^{n_t}\widehat{\beta}_{i,t}/n_t\)</span>. The table reports <span class="math inline">\(T^{-1}\sum_{t=1}^{T}\bar{\beta}_t\)</span>. A pooled mean would instead give years with more observations more weight. The same two-step procedure applies to the median and other statistics.</p>
-<div id="d29a7a96" class="cell" data-execution_count="5">
+<div id="bfa89b6d" class="cell" data-execution_count="5">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>average_stats <span class="op">=</span> annual_stats.select(pl.exclude(<span class="st">"year"</span>).mean())</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="cell" data-execution_count="6">
@@ -864,21 +883,74 @@ Table&nbsp;2.2: Average cross-sectional summary statistics for market beta (BEM 
 </section>
 <section id="sec-summary-characteristics" class="level2" data-number="2.2">
 <h2 data-number="2.2" class="anchored" data-anchor-id="sec-summary-characteristics"><span class="header-section-number">2.2</span> Presentation and Interpretation</h2>
-<p><span id="summarize-several-characteristics"></span>We also summarize year-end market capitalization in millions of dollars, its natural logarithm (size), book-to-market, and the following calendar year’s excess return. <a href="size-replication.html" class="quarto-xref"><span>Chapter 9</span></a> exports December market capitalization and its log. <a href="value-replication.html" class="quarto-xref"><span>Chapter 10</span></a> exports the ratio of prior-year fiscal book equity to prior December market capitalization. We use its signed ratio, consistent with the negative observations in BEM Table 2.3.</p>
-<p>We compound available CRSP monthly stock returns within the holding year and subtract the compounded risk-free return. This construction uses CRSP’s reported monthly returns. BEM §1.1 does not spell out how its annual returns handle delistings. Formation years run through 2012, but the return series ends in 2012, so the last formation year contributes zero observations to the return count and no return moments.</p>
-<p>Apply the same summary to each variable separately. This keeps stocks with a beta but no book-to-market ratio in the beta row. The observation count reflects the available data for each variable.</p>
-<div id="001716ff" class="cell" data-execution_count="8">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>variables <span class="op">=</span> [<span class="st">"Beta"</span>, <span class="st">"MktCap"</span>, <span class="st">"Size"</span>, <span class="st">"BM"</span>, <span class="st">"excess"</span>]</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>all_stats <span class="op">=</span> (</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    annual_panel.unpivot(on<span class="op">=</span>variables, index<span class="op">=</span><span class="st">"year"</span>, variable_name<span class="op">=</span><span class="st">"Measure"</span>)</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    .group_by(<span class="st">"year"</span>, <span class="st">"Measure"</span>)</span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    .agg(cross_section(<span class="st">"value"</span>))</span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    .group_by(<span class="st">"Measure"</span>)</span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    .agg(pl.exclude(<span class="st">"year"</span>, <span class="st">"Measure"</span>).mean())</span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><span id="summarize-several-characteristics"></span>We also summarize year-end market capitalization in millions of dollars, its natural logarithm (size), book-to-market, and the following calendar year’s excess return. <code>build_annual_panel()</code> assembles these observations using <code>start_year</code> and <code>end_year</code>, which default to 1988 and 2012.</p>
+<p>The December beta observations already calculated for <a href="#tbl-bem2-annual" class="quarto-xref">Table&nbsp;<span>2.1</span></a> define the stock-years in the panel. The helper uses <code>permno</code> and formation year as the join keys. <code>build_sizes()</code> provides December market capitalization and its log, as described in <a href="size-replication.html" class="quarto-xref"><span>Chapter 9</span></a>. <code>build_book_to_market()</code> supplies the ratio of prior-year fiscal book equity to prior December market capitalization, as described in <a href="value-replication.html" class="quarto-xref"><span>Chapter 10</span></a>. We use its signed ratio, consistent with the negative observations in BEM Table 2.3.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>betas <span class="op">=</span> annual_betas.lazy().<span class="bu">filter</span>(pl.col(<span class="st">"year"</span>).is_between(start_year, end_year))</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>keys <span class="op">=</span> [<span class="st">"permno"</span>, <span class="st">"year"</span>]</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>sizes <span class="op">=</span> build_sizes()</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>capitalizations <span class="op">=</span> (</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    sizes.lazy()</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    .<span class="bu">filter</span>(pl.col(<span class="st">"month"</span>).dt.month() <span class="op">==</span> <span class="dv">12</span>)</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    .select(<span class="st">"permno"</span>, year<span class="op">=</span>pl.col(<span class="st">"month"</span>).dt.year(), MktCap<span class="op">=</span><span class="st">"cap"</span>, Size<span class="op">=</span><span class="st">"log_cap"</span>)</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    .<span class="bu">filter</span>(pl.col(<span class="st">"year"</span>).is_between(start_year, end_year))</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>book_to_market <span class="op">=</span> (</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    build_book_to_market(sizes).lazy()</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>    .<span class="bu">filter</span>(pl.col(<span class="st">"month"</span>).dt.month() <span class="op">==</span> <span class="dv">12</span>)</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>    .select(<span class="st">"permno"</span>, year<span class="op">=</span>pl.col(<span class="st">"month"</span>).dt.year(), BM<span class="op">=</span><span class="st">"bm_raw"</span>)</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>    .<span class="bu">filter</span>(pl.col(<span class="st">"year"</span>).is_between(start_year, end_year))</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>For each stock and holding year, the helper compounds the available monthly returns reported by CRSP. BEM §1.1 does not spell out how its annual returns handle delistings. The helper compounds the monthly risk-free returns separately, requiring 12 observations for the year.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>stock_returns <span class="op">=</span> (</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    load_parquet(<span class="st">"msf"</span>, <span class="st">"crsp"</span>)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    .<span class="bu">filter</span>(</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>        pl.col(<span class="st">"date"</span>).is_between(pl.date(start_year <span class="op">+</span> <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>), pl.date(end_year, <span class="dv">12</span>, <span class="dv">31</span>)),</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>        pl.col(<span class="st">"ret"</span>).is_finite(),</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    .with_columns(year<span class="op">=</span>pl.col(<span class="st">"date"</span>).dt.year())</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>    .group_by(keys)</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>    .agg(gross_stock<span class="op">=</span>(<span class="dv">1</span> <span class="op">+</span> pl.col(<span class="st">"ret"</span>)).product())</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>risk_free <span class="op">=</span> (</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>    load_parquet(<span class="st">"factors_monthly"</span>, <span class="st">"ff"</span>)</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>    .with_columns(year<span class="op">=</span>pl.col(<span class="st">"date"</span>).dt.year())</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>    .<span class="bu">filter</span>(pl.col(<span class="st">"year"</span>).is_between(start_year <span class="op">+</span> <span class="dv">1</span>, end_year))</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>    .group_by(<span class="st">"year"</span>)</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>    .agg(gross_rf<span class="op">=</span>(<span class="dv">1</span> <span class="op">+</span> pl.col(<span class="st">"rf"</span>)).product(), n<span class="op">=</span>pl.col(<span class="st">"rf"</span>).count())</span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>    .<span class="bu">filter</span>(pl.col(<span class="st">"n"</span>) <span class="op">==</span> <span class="dv">12</span>)</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Subtract the annual risk-free return from the stock return and express the difference in percentage points. Subtracting one from the holding year aligns the return with the characteristics measured the preceding December. For example, the return earned in 1989 is joined to the stock’s 1988 characteristics.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>next_year <span class="op">=</span> (</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    stock_returns.join(risk_free, on<span class="op">=</span><span class="st">"year"</span>, validate<span class="op">=</span><span class="st">"m:1"</span>)</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    .select(</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>        <span class="st">"permno"</span>,</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>        year<span class="op">=</span>pl.col(<span class="st">"year"</span>) <span class="op">-</span> <span class="dv">1</span>,</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>        excess<span class="op">=</span><span class="dv">100</span> <span class="op">*</span> (pl.col(<span class="st">"gross_stock"</span>) <span class="op">-</span> pl.col(<span class="st">"gross_rf"</span>)),</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The left joins keep each stock-year in the beta sample even when a characteristic or return is missing. <code>end_year</code> is both the last formation year and the last calendar year included in the return calculations. In the default sample, this leaves the 2012 formation rows with missing next-year returns. The final <code>.collect()</code> returns the assembled panel as a Polars <code>DataFrame</code>.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="cf">return</span> (</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    betas.join(capitalizations, on<span class="op">=</span>keys, how<span class="op">=</span><span class="st">"left"</span>, validate<span class="op">=</span><span class="st">"1:1"</span>)</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    .join(book_to_market, on<span class="op">=</span>keys, how<span class="op">=</span><span class="st">"left"</span>, validate<span class="op">=</span><span class="st">"1:1"</span>)</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    .join(next_year, on<span class="op">=</span>keys, how<span class="op">=</span><span class="st">"left"</span>, validate<span class="op">=</span><span class="st">"1:1"</span>)</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    .collect()</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="020ccd84" class="cell" data-execution_count="12">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>annual_panel <span class="op">=</span> build_annual_panel(annual_betas<span class="op">=</span>annual_beta)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div class="cell" data-execution_count="9">
-<div id="tbl-bem2-characteristics" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="9">
+<p>Apply the same summary to each variable separately. This keeps stocks with a beta but no book-to-market ratio in the beta row. The observation count reflects the available data for each variable.</p>
+<div id="9f7caaaf" class="cell" data-execution_count="13">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>variables <span class="op">=</span> [<span class="st">"Beta"</span>, <span class="st">"MktCap"</span>, <span class="st">"Size"</span>, <span class="st">"BM"</span>, <span class="st">"excess"</span>]</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>all_stats <span class="op">=</span> (</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    annual_panel.unpivot(on<span class="op">=</span>variables, index<span class="op">=</span><span class="st">"year"</span>, variable_name<span class="op">=</span><span class="st">"Measure"</span>)</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    .group_by(<span class="st">"year"</span>, <span class="st">"Measure"</span>)</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>    .agg(cross_section(<span class="st">"value"</span>))</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>    .group_by(<span class="st">"Measure"</span>)</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>    .agg(pl.exclude(<span class="st">"year"</span>, <span class="st">"Measure"</span>).mean())</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="cell" data-execution_count="14">
+<div id="tbl-bem2-characteristics" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="14">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bem2-characteristics-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table&nbsp;2.3: Average annual summary statistics for stock characteristics and next-year returns (BEM Table 2.3)
@@ -1010,6 +1082,11 @@ Table&nbsp;2.3: Average annual summary statistics for stock characteristics and 
 <h2 class="unnumbered anchored" data-anchor-id="references">References</h2>
 
 
+<div id="refs" class="references csl-bib-body hanging-indent" role="list" style="display: none">
+<div id="ref-bali2016" class="csl-entry" role="listitem">
+Bali, Turan G., Robert F. Engle, and Scott Murray. 2016. <em>Empirical Asset Pricing: The Cross Section of Stock Returns</em>. John Wiley &amp; Sons. <a href="https://www.wiley.com/en-us/empirical-asset-pricing-the-cross-section-of-stock-returns-p-9781118095041">https://www.wiley.com/en-us/empirical-asset-pricing-the-cross-section-of-stock-returns-p-9781118095041</a>.
+</div>
+</div>
 </section>
 
 </main> <!-- /main -->

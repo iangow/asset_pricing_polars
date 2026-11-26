@@ -58,7 +58,26 @@ div.sourceCode
 @media screen {
 pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
-</style>
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
 
 
 <script src="site_libs/quarto-nav/quarto-nav.js"></script>
@@ -262,6 +281,12 @@ window.Quarto = {
 </li>
       </ul>
   </li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./references.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">References</span></a>
+  </div>
+</li>
     </ul>
     </div>
 </nav>
@@ -317,7 +342,7 @@ window.Quarto = {
   white-space: nowrap;
 }
 </style>
-<p>We reconstruct Tables 8.1–8.6 of Bali, Engle, and Murray (2016), <a href="https://www.wiley.com/en-us/empirical-asset-pricing-the-cross-section-of-stock-returns-p-9781118095041"><em>Empirical Asset Pricing</em></a>. The sample consists of CRSP common stocks at the end of each month from June 1963 through November 2012. We use legacy CRSP daily and monthly stock returns and the corresponding Fama–French factors. See <a href="data.html#sec-data-vintages" class="quarto-xref"><span>Section 1.1.1</span></a> for the source vintages.</p>
+<p>We reconstruct Tables 8.1–8.6 of <span class="citation" data-cites="bali2016">Bali et al. (<a href="references.html#ref-bali2016" role="doc-biblioref">2016</a>)</span>. The sample consists of CRSP common stocks at the end of each month from June 1963 through November 2012. We use legacy CRSP daily and monthly stock returns and the corresponding Fama–French factors. See <a href="data.html#sec-data-vintages" class="quarto-xref"><span>Section 1.1.1</span></a> for the source vintages.</p>
 <section id="estimate-market-beta" class="level2" data-number="8.1">
 <h2 data-number="8.1" class="anchored" data-anchor-id="estimate-market-beta"><span class="header-section-number">8.1</span> Estimating Beta</h2>
 <p>The CAPM predicts that a stock’s expected excess return is its market beta times the market risk premium, <span class="math inline">\(\mathbb E[r_i]=\beta_i\mathbb E[MKT]\)</span>. To estimate beta, regress the stock’s historical excess return <span class="math inline">\(r_{i,s}=R_{i,s}-R_{f,s}\)</span> on the market excess return <span class="math inline">\(MKT_s\)</span>, with an intercept. For stock <span class="math inline">\(i\)</span> at the end of month <span class="math inline">\(t\)</span>,</p>
@@ -358,89 +383,114 @@ r_{i,s}=\alpha_i+\beta_i MKT_s+\varepsilon_{i,s},
 \widehat\beta^{D}_{i,t}=\sum_{k=-5}^{5}\widehat\gamma_k,
 \]</span></p>
 <p>where <span class="math inline">\(\widehat\rho_M\)</span> is the market return’s first-order autocorrelation over the estimation window. We shift the market series on the trading calendar before joining it to stock returns. A lag can precede the first stock-return date in the window. We omit response dates whose market lead falls after formation and apply the minimum to the remaining complete observations. This keeps all beta inputs observable at formation.</p>
-<div id="94dea22c" class="cell" data-execution_count="1">
+<div id="43ff19a8" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> polars <span class="im">as</span> pl</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> era_pl <span class="im">import</span> load_parquet</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>first <span class="op">=</span> pl.date(<span class="dv">1963</span>, <span class="dv">6</span>, <span class="dv">1</span>)</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>last <span class="op">=</span> pl.date(<span class="dv">2012</span>, <span class="dv">11</span>, <span class="dv">1</span>)</span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>last_estimate <span class="op">=</span> last.dt.offset_by(<span class="st">"1mo"</span>)</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>keys <span class="op">=</span> [<span class="st">"permno"</span>, <span class="st">"month"</span>]</span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>names <span class="op">=</span> load_parquet(<span class="st">"msenames"</span>, <span class="st">"crsp"</span>).<span class="bu">filter</span>(pl.col(<span class="st">"shrcd"</span>).is_in([<span class="dv">10</span>, <span class="dv">11</span>]))</span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>universe <span class="op">=</span> (</span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>    names</span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>    .<span class="bu">filter</span>(pl.col(<span class="st">"namedt"</span>) <span class="op">&lt;=</span> last_estimate.dt.month_end(), pl.col(<span class="st">"nameendt"</span>) <span class="op">&gt;=</span> first)</span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>    .with_columns(month<span class="op">=</span>pl.date_ranges(</span>
-<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>        pl.max_horizontal(pl.col(<span class="st">"namedt"</span>).dt.month_start(), first),</span>
-<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>        pl.min_horizontal(pl.col(<span class="st">"nameendt"</span>).dt.month_start(), last_estimate),</span>
-<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>        interval<span class="op">=</span><span class="st">"1mo"</span>,</span>
-<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>    ))</span>
-<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>    .explode(<span class="st">"month"</span>)</span>
-<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>    .<span class="bu">filter</span>(pl.col(<span class="st">"month"</span>).dt.month_end().is_between(<span class="st">"namedt"</span>, <span class="st">"nameendt"</span>))</span>
-<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>    .select(keys)</span>
-<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>    .unique()</span>
-<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>    .collect()</span>
-<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> eap_pl <span class="im">import</span> load_beta_universe, load_daily_beta_inputs</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>first <span class="op">=</span> pl.date(<span class="dv">1963</span>, <span class="dv">6</span>, <span class="dv">1</span>)</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>last <span class="op">=</span> pl.date(<span class="dv">2012</span>, <span class="dv">11</span>, <span class="dv">1</span>)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>last_estimate <span class="op">=</span> last.dt.offset_by(<span class="st">"1mo"</span>)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>keys <span class="op">=</span> [<span class="st">"permno"</span>, <span class="st">"month"</span>]</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>universe <span class="op">=</span> load_beta_universe(first, last_estimate).collect()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>names <span class="op">=</span> load_parquet(<span class="st">"msenames"</span>, <span class="st">"crsp"</span>).<span class="bu">filter</span>(pl.col(<span class="st">"shrcd"</span>).is_in([<span class="dv">10</span>, <span class="dv">11</span>]))</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="cf">return</span> (</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    names</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    .<span class="bu">filter</span>(pl.col(<span class="st">"namedt"</span>) <span class="op">&lt;=</span> last.dt.month_end(), pl.col(<span class="st">"nameendt"</span>) <span class="op">&gt;=</span> first)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    .with_columns(month<span class="op">=</span>pl.date_ranges(</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>        pl.max_horizontal(pl.col(<span class="st">"namedt"</span>).dt.month_start(), first),</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>        pl.min_horizontal(pl.col(<span class="st">"nameendt"</span>).dt.month_start(), last),</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>        interval<span class="op">=</span><span class="st">"1mo"</span>,</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    ))</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>    .explode(<span class="st">"month"</span>)</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>    .<span class="bu">filter</span>(pl.col(<span class="st">"month"</span>).dt.month_end().is_between(<span class="st">"namedt"</span>, <span class="st">"nameendt"</span>))</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>    .select(<span class="st">"permno"</span>, <span class="st">"month"</span>)</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>    .unique()</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>We screen for common shares at formation using historical share codes 10 and 11. A stock can contribute its earlier returns to the estimation window even if its historical share code changed. We use CRSP’s reported returns for estimation and apply the delisting convention in <a href="crsp-replication.html#sec-bem-returns" class="quarto-xref"><span>Section 7.2</span></a> to the next-month returns used to evaluate the beta estimates.</p>
-<div id="7eccf9fc" class="cell" data-execution_count="2">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>monthly_stock <span class="op">=</span> (</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    load_parquet(<span class="st">"msf"</span>, <span class="st">"crsp"</span>)</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    .<span class="bu">filter</span>(pl.col(<span class="st">"date"</span>).is_between(</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>        first.dt.offset_by(<span class="st">"-59mo"</span>), last_estimate.dt.month_end()</span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    ))</span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    .select(</span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>        <span class="st">"permno"</span>,</span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>        month<span class="op">=</span>pl.col(<span class="st">"date"</span>).dt.month_start(),</span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>        ret<span class="op">=</span>pl.col(<span class="st">"ret"</span>).cast(pl.Float64),</span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>        cap<span class="op">=</span>pl.when((pl.col(<span class="st">"altprc"</span>) <span class="op">!=</span> <span class="dv">0</span>) <span class="op">&amp;</span> (pl.col(<span class="st">"shrout"</span>) <span class="op">&gt;</span> <span class="dv">0</span>))</span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>        .then(pl.col(<span class="st">"altprc"</span>).<span class="bu">abs</span>() <span class="op">*</span> pl.col(<span class="st">"shrout"</span>)),</span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>monthly_market <span class="op">=</span> load_parquet(<span class="st">"factors_monthly"</span>, <span class="st">"ff"</span>).select(</span>
-<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>    pl.col(<span class="st">"date"</span>).dt.month_start().alias(<span class="st">"month"</span>), <span class="st">"mktrf"</span>, <span class="st">"rf"</span>,</span>
-<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>monthly_excess <span class="op">=</span> (</span>
-<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>    monthly_stock.join(monthly_market, on<span class="op">=</span><span class="st">"month"</span>, validate<span class="op">=</span><span class="st">"m:1"</span>)</span>
-<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>    .select(<span class="op">*</span>keys, <span class="st">"mktrf"</span>, retrf<span class="op">=</span>pl.col(<span class="st">"ret"</span>) <span class="op">-</span> pl.col(<span class="st">"rf"</span>))</span>
-<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>    .<span class="bu">filter</span>(pl.all_horizontal(pl.col(<span class="st">"retrf"</span>, <span class="st">"mktrf"</span>).is_finite()))</span>
-<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> beta_slope(stock, market):</span>
-<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> pl.cov(stock, market) <span class="op">/</span> pl.col(market).var()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="d6018765" class="cell" data-execution_count="4">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>monthly_stock <span class="op">=</span> (</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    load_parquet(<span class="st">"msf"</span>, <span class="st">"crsp"</span>)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    .<span class="bu">filter</span>(pl.col(<span class="st">"date"</span>).is_between(</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>        first.dt.offset_by(<span class="st">"-59mo"</span>), last_estimate.dt.month_end()</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    ))</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    .select(</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>        <span class="st">"permno"</span>,</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>        month<span class="op">=</span>pl.col(<span class="st">"date"</span>).dt.month_start(),</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>        ret<span class="op">=</span>pl.col(<span class="st">"ret"</span>).cast(pl.Float64),</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>        cap<span class="op">=</span>pl.when((pl.col(<span class="st">"altprc"</span>) <span class="op">!=</span> <span class="dv">0</span>) <span class="op">&amp;</span> (pl.col(<span class="st">"shrout"</span>) <span class="op">&gt;</span> <span class="dv">0</span>))</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>        .then(pl.col(<span class="st">"altprc"</span>).<span class="bu">abs</span>() <span class="op">*</span> pl.col(<span class="st">"shrout"</span>)),</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>monthly_market <span class="op">=</span> load_parquet(<span class="st">"factors_monthly"</span>, <span class="st">"ff"</span>).select(</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>    pl.col(<span class="st">"date"</span>).dt.month_start().alias(<span class="st">"month"</span>), <span class="st">"mktrf"</span>, <span class="st">"rf"</span>,</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>monthly_excess <span class="op">=</span> (</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>    monthly_stock.join(monthly_market, on<span class="op">=</span><span class="st">"month"</span>, validate<span class="op">=</span><span class="st">"m:1"</span>)</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>    .select(<span class="op">*</span>keys, <span class="st">"mktrf"</span>, retrf<span class="op">=</span>pl.col(<span class="st">"ret"</span>) <span class="op">-</span> pl.col(<span class="st">"rf"</span>))</span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>    .<span class="bu">filter</span>(pl.all_horizontal(pl.col(<span class="st">"retrf"</span>, <span class="st">"mktrf"</span>).is_finite()))</span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> beta_slope(stock, market):</span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> pl.cov(stock, market) <span class="op">/</span> pl.col(market).var()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>For monthly returns, we can apply the covariance-over-variance formula directly. We include the formation dates in the rolling index so a window is evaluated even if the current month’s return is missing. The window is open at its left endpoint and includes the formation month.</p>
-<div id="8ea3223c" class="cell" data-execution_count="3">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>monthly_windows <span class="op">=</span> {<span class="st">"1Y"</span>: (<span class="dv">12</span>, <span class="dv">10</span>), <span class="st">"2Y"</span>: (<span class="dv">24</span>, <span class="dv">20</span>), <span class="st">"3Y"</span>: (<span class="dv">36</span>, <span class="dv">24</span>), <span class="st">"5Y"</span>: (<span class="dv">60</span>, <span class="dv">24</span>)}</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>daily_windows <span class="op">=</span> {<span class="st">"1M"</span>: (<span class="dv">1</span>, <span class="dv">15</span>), <span class="st">"3M"</span>: (<span class="dv">3</span>, <span class="dv">50</span>), <span class="st">"6M"</span>: (<span class="dv">6</span>, <span class="dv">100</span>),</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"12M"</span>: (<span class="dv">12</span>, <span class="dv">200</span>), <span class="st">"24M"</span>: (<span class="dv">24</span>, <span class="dv">450</span>)}</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>monthly_returns <span class="op">=</span> (</span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    universe.lazy()</span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    .join(monthly_excess, on<span class="op">=</span>keys, how<span class="op">=</span><span class="st">"full"</span>, coalesce<span class="op">=</span><span class="va">True</span>, validate<span class="op">=</span><span class="st">"1:1"</span>)</span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    .sort(keys)</span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    .collect()</span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> monthly_beta(label, months, minimum):</span>
-<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> (</span>
-<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>        monthly_returns</span>
-<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>        .rolling(<span class="st">"month"</span>, period<span class="op">=</span><span class="ss">f"</span><span class="sc">{</span>months<span class="sc">}</span><span class="ss">mo"</span>, group_by<span class="op">=</span><span class="st">"permno"</span>)</span>
-<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>        .agg(</span>
-<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>            beta_slope(<span class="st">"retrf"</span>, <span class="st">"mktrf"</span>).alias(label),</span>
-<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>            pl.col(<span class="st">"retrf"</span>).count().alias(<span class="st">"n"</span>),</span>
-<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>        )</span>
-<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>        .select(</span>
-<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>            <span class="op">*</span>keys,</span>
-<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>            pl.when((pl.col(<span class="st">"n"</span>) <span class="op">&gt;=</span> minimum) <span class="op">&amp;</span> pl.col(label).is_finite())</span>
-<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>            .then(pl.col(label)),</span>
-<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>        )</span>
-<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>    )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="1b01255b" class="cell" data-execution_count="5">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>monthly_windows <span class="op">=</span> {<span class="st">"1Y"</span>: (<span class="dv">12</span>, <span class="dv">10</span>), <span class="st">"2Y"</span>: (<span class="dv">24</span>, <span class="dv">20</span>), <span class="st">"3Y"</span>: (<span class="dv">36</span>, <span class="dv">24</span>), <span class="st">"5Y"</span>: (<span class="dv">60</span>, <span class="dv">24</span>)}</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>daily_windows <span class="op">=</span> {<span class="st">"1M"</span>: (<span class="dv">1</span>, <span class="dv">15</span>), <span class="st">"3M"</span>: (<span class="dv">3</span>, <span class="dv">50</span>), <span class="st">"6M"</span>: (<span class="dv">6</span>, <span class="dv">100</span>),</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"12M"</span>: (<span class="dv">12</span>, <span class="dv">200</span>), <span class="st">"24M"</span>: (<span class="dv">24</span>, <span class="dv">450</span>)}</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>monthly_returns <span class="op">=</span> (</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    universe.lazy()</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    .join(monthly_excess, on<span class="op">=</span>keys, how<span class="op">=</span><span class="st">"full"</span>, coalesce<span class="op">=</span><span class="va">True</span>, validate<span class="op">=</span><span class="st">"1:1"</span>)</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    .sort(keys)</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    .collect()</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> monthly_beta(label, months, minimum):</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> (</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>        monthly_returns</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>        .rolling(<span class="st">"month"</span>, period<span class="op">=</span><span class="ss">f"</span><span class="sc">{</span>months<span class="sc">}</span><span class="ss">mo"</span>, group_by<span class="op">=</span><span class="st">"permno"</span>)</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>        .agg(</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>            beta_slope(<span class="st">"retrf"</span>, <span class="st">"mktrf"</span>).alias(label),</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>            pl.col(<span class="st">"retrf"</span>).count().alias(<span class="st">"n"</span>),</span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>        .select(</span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>            <span class="op">*</span>keys,</span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>            pl.when((pl.col(<span class="st">"n"</span>) <span class="op">&gt;=</span> minimum) <span class="op">&amp;</span> pl.col(label).is_finite())</span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>            .then(pl.col(label)),</span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>    )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>For daily returns, each trading day enters many windows. We sum the regression inputs once per stock and month, then roll those sums across months. For example, the slope uses <span class="math inline">\(\sum xy-(\sum x)(\sum y)/n\)</span> divided by <span class="math inline">\(\sum x^2-(\sum x)^2/n\)</span>. The adjusted regressions use the same idea with cross-products between market returns at different offsets.</p>
-<p>The tables in this chapter end with November 2012 formation, followed by December 2012 holding returns. We also estimate betas as of December 2012 for the last year of the annual summary in <a href="summary-statistics.html" class="quarto-xref"><span>Chapter 2</span></a>. The optional export saves all eleven estimates per stock-month to the local <code>DATA_DIR/eap/betas.parquet</code> file.</p>
+<div id="f0d43ae8" class="cell" data-execution_count="6">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>daily_factors, daily_excess <span class="op">=</span> load_daily_beta_inputs(</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    first.dt.offset_by(<span class="st">"-23mo"</span>), last_estimate.dt.month_end(),</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>offsets <span class="op">=</span> {k: <span class="ss">f"mkt_</span><span class="sc">{</span>k <span class="op">+</span> <span class="dv">5</span><span class="sc">}</span><span class="ss">"</span> <span class="cf">for</span> k <span class="kw">in</span> <span class="bu">range</span>(<span class="op">-</span><span class="dv">5</span>, <span class="dv">6</span>)}</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>daily_factors <span class="op">=</span> (</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    load_parquet(<span class="st">"factors_daily"</span>, <span class="st">"ff"</span>)</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    .select(<span class="st">"date"</span>, <span class="st">"mktrf"</span>, <span class="st">"rf"</span>)</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    .sort(<span class="st">"date"</span>)</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    .with_columns(pl.col(<span class="st">"mktrf"</span>).shift(<span class="op">-</span>k).alias(name) <span class="cf">for</span> k, name <span class="kw">in</span> offsets.items())</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    .with_columns(month<span class="op">=</span>pl.col(<span class="st">"date"</span>).dt.month_start())</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    .with_columns(days_left<span class="op">=</span>pl.<span class="bu">len</span>().over(<span class="st">"month"</span>) <span class="op">-</span> pl.col(<span class="st">"date"</span>).cum_count().over(<span class="st">"month"</span>))</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    .collect()</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>daily_excess <span class="op">=</span> (</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>    load_parquet(<span class="st">"dsf"</span>, <span class="st">"crsp"</span>)</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>    .<span class="bu">filter</span>(pl.col(<span class="st">"date"</span>).is_between(first, last))</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>    .select(<span class="st">"permno"</span>, <span class="st">"date"</span>, <span class="st">"ret"</span>)</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>    .join(daily_factors.lazy(), on<span class="op">=</span><span class="st">"date"</span>, validate<span class="op">=</span><span class="st">"m:1"</span>)</span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>    .with_columns(retrf<span class="op">=</span>pl.col(<span class="st">"ret"</span>) <span class="op">-</span> pl.col(<span class="st">"rf"</span>))</span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>    .<span class="bu">filter</span>(pl.all_horizontal(pl.col(<span class="st">"retrf"</span>, <span class="op">*</span>offsets.values()).is_finite()))</span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>    .select(<span class="st">"permno"</span>, <span class="st">"month"</span>, <span class="st">"retrf"</span>, <span class="st">"days_left"</span>, <span class="op">*</span>offsets.values())</span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The tables in this chapter end with November 2012 formation, followed by December 2012 holding returns. We also estimate betas as of December 2012. The export saves all eleven estimates per stock-month to <code>DATA_DIR/eap/betas.parquet</code>. Chapters <a href="size-replication.html" class="quarto-xref"><span>9</span></a> and <a href="value-replication.html" class="quarto-xref"><span>10</span></a> read its 12-month daily beta for their monthly analyses. The annual methods chapters estimate their December betas when needed.</p>
 <style>
 .cell-output-markdown:has(> table) {
   max-width: 100%;
@@ -454,27 +504,27 @@ r_{i,s}=\alpha_i+\beta_i MKT_s+\varepsilon_{i,s},
 <section id="compare-the-beta-estimates" class="level2" data-number="8.2">
 <h2 data-number="8.2" class="anchored" data-anchor-id="compare-the-beta-estimates"><span class="header-section-number">8.2</span> Summary Statistics</h2>
 <p><a href="#tbl-bem8-summary" class="quarto-xref">Table&nbsp;<span>8.1</span></a> averages monthly cross-sectional statistics. The count is the average number of stocks with an available estimate in a month. For example, the dispersion of the one-month daily beta reflects both differences in stocks’ exposures and estimation noise from short return histories. We use sample standard deviations, bias-adjusted skewness and excess kurtosis, and linearly interpolated quantiles.</p>
-<div id="c3c57b29" class="cell" data-execution_count="10">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>beta_long <span class="op">=</span> betas.unpivot(</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    on<span class="op">=</span>beta_labels, index<span class="op">=</span>keys, variable_name<span class="op">=</span><span class="st">"measure"</span>, value_name<span class="op">=</span><span class="st">"beta"</span>,</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>b <span class="op">=</span> pl.col(<span class="st">"beta"</span>)</span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>summary <span class="op">=</span> (</span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    beta_long.group_by(<span class="st">"measure"</span>, <span class="st">"month"</span>)</span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    .agg(</span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>        mean<span class="op">=</span>b.mean(), sd<span class="op">=</span>b.std(), skew<span class="op">=</span>b.skew(bias<span class="op">=</span><span class="va">False</span>),</span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>        kurt<span class="op">=</span>b.kurtosis(fisher<span class="op">=</span><span class="va">True</span>, bias<span class="op">=</span><span class="va">False</span>), <span class="bu">min</span><span class="op">=</span>b.<span class="bu">min</span>(),</span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>        p05<span class="op">=</span>b.quantile(<span class="fl">.05</span>, interpolation<span class="op">=</span><span class="st">"linear"</span>),</span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>        p25<span class="op">=</span>b.quantile(<span class="fl">.25</span>, interpolation<span class="op">=</span><span class="st">"linear"</span>), median<span class="op">=</span>b.median(),</span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>        p75<span class="op">=</span>b.quantile(<span class="fl">.75</span>, interpolation<span class="op">=</span><span class="st">"linear"</span>),</span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>        p95<span class="op">=</span>b.quantile(<span class="fl">.95</span>, interpolation<span class="op">=</span><span class="st">"linear"</span>), <span class="bu">max</span><span class="op">=</span>b.<span class="bu">max</span>(), n<span class="op">=</span>b.count(),</span>
-<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>    .group_by(<span class="st">"measure"</span>)</span>
-<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>    .agg(pl.exclude(<span class="st">"measure"</span>, <span class="st">"month"</span>).mean())</span>
-<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="ef8e132b" class="cell" data-execution_count="13">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>beta_long <span class="op">=</span> betas.unpivot(</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    on<span class="op">=</span>beta_labels, index<span class="op">=</span>keys, variable_name<span class="op">=</span><span class="st">"measure"</span>, value_name<span class="op">=</span><span class="st">"beta"</span>,</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>b <span class="op">=</span> pl.col(<span class="st">"beta"</span>)</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>summary <span class="op">=</span> (</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>    beta_long.group_by(<span class="st">"measure"</span>, <span class="st">"month"</span>)</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>    .agg(</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>        mean<span class="op">=</span>b.mean(), sd<span class="op">=</span>b.std(), skew<span class="op">=</span>b.skew(bias<span class="op">=</span><span class="va">False</span>),</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>        kurt<span class="op">=</span>b.kurtosis(fisher<span class="op">=</span><span class="va">True</span>, bias<span class="op">=</span><span class="va">False</span>), <span class="bu">min</span><span class="op">=</span>b.<span class="bu">min</span>(),</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>        p05<span class="op">=</span>b.quantile(<span class="fl">.05</span>, interpolation<span class="op">=</span><span class="st">"linear"</span>),</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>        p25<span class="op">=</span>b.quantile(<span class="fl">.25</span>, interpolation<span class="op">=</span><span class="st">"linear"</span>), median<span class="op">=</span>b.median(),</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>        p75<span class="op">=</span>b.quantile(<span class="fl">.75</span>, interpolation<span class="op">=</span><span class="st">"linear"</span>),</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>        p95<span class="op">=</span>b.quantile(<span class="fl">.95</span>, interpolation<span class="op">=</span><span class="st">"linear"</span>), <span class="bu">max</span><span class="op">=</span>b.<span class="bu">max</span>(), n<span class="op">=</span>b.count(),</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>    .group_by(<span class="st">"measure"</span>)</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>    .agg(pl.exclude(<span class="st">"measure"</span>, <span class="st">"month"</span>).mean())</span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div class="cell" data-execution_count="11">
-<div id="tbl-bem8-summary" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="11">
+<div class="cell" data-execution_count="14">
+<div id="tbl-bem8-summary" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="14">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bem8-summary-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table&nbsp;8.1: Cross-sectional summary statistics for market beta (BEM Table 8.1)
@@ -692,27 +742,27 @@ Table&nbsp;8.1: Cross-sectional summary statistics for market beta (BEM Table 8.
 <section id="correlations" class="level2" data-number="8.3">
 <h2 data-number="8.3" class="anchored" data-anchor-id="correlations"><span class="header-section-number">8.3</span> Correlations</h2>
 <p><a href="#tbl-bem8-correlations" class="quarto-xref">Table&nbsp;<span>8.2</span></a> reports the mean of the monthly correlations. For each pair, we use stocks for which both estimates are available. Winsorize each beta within month at the 0.5th and 99.5th percentiles for Pearson correlations below the diagonal. Use the original values for Spearman rank correlations above the diagonal.</p>
-<div id="2c10bb0a" class="cell" data-execution_count="12">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> _bem_monthly <span class="im">import</span> clip_tails</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>clipped <span class="op">=</span> betas.with_columns(clip_tails(pl.col(beta_labels)).over(<span class="st">"month"</span>))</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> mean_correlations(panel, method):</span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> (</span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>        panel.group_by(<span class="st">"month"</span>)</span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>        .agg(</span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>            pl.corr(a, b, method<span class="op">=</span>method).alias(<span class="ss">f"</span><span class="sc">{</span>a<span class="sc">}</span><span class="ss">:</span><span class="sc">{</span>b<span class="sc">}</span><span class="ss">"</span>)</span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>            <span class="cf">for</span> i, a <span class="kw">in</span> <span class="bu">enumerate</span>(beta_labels) <span class="cf">for</span> b <span class="kw">in</span> beta_labels[i <span class="op">+</span> <span class="dv">1</span>:]</span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>        )</span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>        .select(pl.exclude(<span class="st">"month"</span>).fill_nan(<span class="va">None</span>).mean())</span>
-<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>        .row(<span class="dv">0</span>, named<span class="op">=</span><span class="va">True</span>)</span>
-<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>pearson <span class="op">=</span> mean_correlations(clipped, <span class="st">"pearson"</span>)</span>
-<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>spearman <span class="op">=</span> mean_correlations(betas, <span class="st">"spearman"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="5f86e50f" class="cell" data-execution_count="15">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>clipped <span class="op">=</span> betas.with_columns(</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    pl.col(beta_labels).era.winsorize(prob<span class="op">=</span><span class="fl">0.005</span>, quantile_method<span class="op">=</span><span class="st">"linear"</span>).over(<span class="st">"month"</span>)</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> mean_correlations(panel, method):</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> (</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>        panel.group_by(<span class="st">"month"</span>)</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>        .agg(</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>            pl.corr(a, b, method<span class="op">=</span>method).alias(<span class="ss">f"</span><span class="sc">{</span>a<span class="sc">}</span><span class="ss">:</span><span class="sc">{</span>b<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>            <span class="cf">for</span> i, a <span class="kw">in</span> <span class="bu">enumerate</span>(beta_labels) <span class="cf">for</span> b <span class="kw">in</span> beta_labels[i <span class="op">+</span> <span class="dv">1</span>:]</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>        .select(pl.exclude(<span class="st">"month"</span>).fill_nan(<span class="va">None</span>).mean())</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>        .row(<span class="dv">0</span>, named<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>pearson <span class="op">=</span> mean_correlations(clipped, <span class="st">"pearson"</span>)</span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>spearman <span class="op">=</span> mean_correlations(betas, <span class="st">"spearman"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div class="cell" data-execution_count="13">
-<div id="tbl-bem8-correlations" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="13">
+<div class="cell" data-execution_count="16">
+<div id="tbl-bem8-correlations" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="16">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bem8-correlations-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table&nbsp;8.2: Monthly Pearson (below diagonal) and Spearman (above diagonal) correlations (BEM Table 8.2)
@@ -917,25 +967,25 @@ Table&nbsp;8.2: Monthly Pearson (below diagonal) and Spearman (above diagonal) c
 <section id="measure-persistence" class="level2" data-number="8.4">
 <h2 data-number="8.4" class="anchored" data-anchor-id="measure-persistence"><span class="header-section-number">8.4</span> Persistence</h2>
 <p><a href="#tbl-bem8-persistence" class="quarto-xref">Table&nbsp;<span>8.3</span></a> compares a stock’s winsorized beta with its beta exactly <span class="math inline">\(\tau\)</span> calendar months later. We calculate a Pearson correlation across stocks in each month and average over months. We leave cells blank when the stock-return windows overlap. This helps distinguish persistence from the effect of using some of the same returns twice.</p>
-<div id="0c8e614f" class="cell" data-execution_count="14">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> persistence(lag):</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    columns <span class="op">=</span> [b <span class="cf">for</span> b <span class="kw">in</span> beta_labels <span class="cf">if</span> window_months[b] <span class="op">&lt;=</span> lag]</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    current <span class="op">=</span> clipped.select(<span class="op">*</span>keys, <span class="op">*</span>columns)</span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    future <span class="op">=</span> current.with_columns(month<span class="op">=</span>pl.col(<span class="st">"month"</span>).dt.offset_by(<span class="ss">f"-</span><span class="sc">{</span>lag<span class="sc">}</span><span class="ss">mo"</span>))</span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> (</span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>        current.join(future, on<span class="op">=</span>keys, suffix<span class="op">=</span><span class="st">"_future"</span>, validate<span class="op">=</span><span class="st">"1:1"</span>)</span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>        .group_by(<span class="st">"month"</span>)</span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>        .agg(pl.corr(b, <span class="ss">f"</span><span class="sc">{</span>b<span class="sc">}</span><span class="ss">_future"</span>).alias(b) <span class="cf">for</span> b <span class="kw">in</span> columns)</span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>        .select(pl.lit(lag).alias(<span class="st">"Lag (months)"</span>), pl.col(columns).fill_nan(<span class="va">None</span>).mean())</span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>persistence_table <span class="op">=</span> pl.concat(</span>
-<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>    [persistence(lag) <span class="cf">for</span> lag <span class="kw">in</span> [<span class="dv">1</span>, <span class="dv">3</span>, <span class="dv">6</span>, <span class="dv">12</span>, <span class="dv">24</span>, <span class="dv">36</span>, <span class="dv">48</span>, <span class="dv">60</span>, <span class="dv">120</span>]],</span>
-<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>    how<span class="op">=</span><span class="st">"diagonal"</span>,</span>
-<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="47e778dd" class="cell" data-execution_count="17">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> persistence(lag):</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>    columns <span class="op">=</span> [b <span class="cf">for</span> b <span class="kw">in</span> beta_labels <span class="cf">if</span> window_months[b] <span class="op">&lt;=</span> lag]</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    current <span class="op">=</span> clipped.select(<span class="op">*</span>keys, <span class="op">*</span>columns)</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    future <span class="op">=</span> current.with_columns(month<span class="op">=</span>pl.col(<span class="st">"month"</span>).dt.offset_by(<span class="ss">f"-</span><span class="sc">{</span>lag<span class="sc">}</span><span class="ss">mo"</span>))</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> (</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>        current.join(future, on<span class="op">=</span>keys, suffix<span class="op">=</span><span class="st">"_future"</span>, validate<span class="op">=</span><span class="st">"1:1"</span>)</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>        .group_by(<span class="st">"month"</span>)</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>        .agg(pl.corr(b, <span class="ss">f"</span><span class="sc">{</span>b<span class="sc">}</span><span class="ss">_future"</span>).alias(b) <span class="cf">for</span> b <span class="kw">in</span> columns)</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>        .select(pl.lit(lag).alias(<span class="st">"Lag (months)"</span>), pl.col(columns).fill_nan(<span class="va">None</span>).mean())</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>persistence_table <span class="op">=</span> pl.concat(</span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>    [persistence(lag) <span class="cf">for</span> lag <span class="kw">in</span> [<span class="dv">1</span>, <span class="dv">3</span>, <span class="dv">6</span>, <span class="dv">12</span>, <span class="dv">24</span>, <span class="dv">36</span>, <span class="dv">48</span>, <span class="dv">60</span>, <span class="dv">120</span>]],</span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>    how<span class="op">=</span><span class="st">"diagonal"</span>,</span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div class="cell" data-execution_count="15">
-<div id="tbl-bem8-persistence" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="15">
+<div class="cell" data-execution_count="18">
+<div id="tbl-bem8-persistence" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="18">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bem8-persistence-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table&nbsp;8.3: Persistence of beta across nonoverlapping stock-return windows (BEM Table 8.3)
@@ -1114,62 +1164,62 @@ Table&nbsp;8.3: Persistence of beta across nonoverlapping stock-return windows (
 <section id="sort-stocks-into-beta-deciles" class="level3" data-number="8.5.1">
 <h3 data-number="8.5.1" class="anchored" data-anchor-id="sort-stocks-into-beta-deciles"><span class="header-section-number">8.5.1</span> Portfolio Analysis</h3>
 <p>We form deciles using all eligible stocks with an estimate of the given beta in month <span class="math inline">\(t\)</span>. A stock’s decile is one plus the number of breakpoints its beta exceeds. After forming the groups, we join the next month’s excess return. We keep a holding-period return even if a stock leaves the common-share universe during that month. The value weights use market capitalization measured at formation.</p>
-<div id="730ea796" class="cell" data-execution_count="17">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>deciles <span class="op">=</span> [<span class="bu">str</span>(i) <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">1</span>, <span class="dv">11</span>)]</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>decile <span class="op">=</span> <span class="dv">1</span> <span class="op">+</span> pl.sum_horizontal(</span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    (b <span class="op">&gt;</span> b.quantile(i <span class="op">/</span> <span class="dv">10</span>, interpolation<span class="op">=</span><span class="st">"linear"</span>)).cast(pl.UInt8)</span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">1</span>, <span class="dv">10</span>)</span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>members <span class="op">=</span> (</span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>    beta_long.lazy()</span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>    .<span class="bu">filter</span>(pl.col(<span class="st">"beta"</span>).is_not_null())</span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>    .with_columns(decile<span class="op">=</span>decile.over(<span class="st">"measure"</span>, <span class="st">"month"</span>).cast(pl.String))</span>
-<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>    .join(outcomes.lazy(), on<span class="op">=</span>keys, validate<span class="op">=</span><span class="st">"m:1"</span>)</span>
-<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Use the same stocks in the numerator and denominator of the weighted return.</span></span>
-<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>has_weight <span class="op">=</span> pl.all_horizontal(pl.col(<span class="st">"cap"</span>, <span class="st">"excess"</span>).is_finite())</span>
-<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>cap <span class="op">=</span> pl.col(<span class="st">"cap"</span>).<span class="bu">filter</span>(has_weight)</span>
-<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>r <span class="op">=</span> pl.col(<span class="st">"excess"</span>).<span class="bu">filter</span>(has_weight)</span>
-<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>portfolios <span class="op">=</span> (</span>
-<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>    members.group_by(<span class="st">"measure"</span>, <span class="st">"holding"</span>, <span class="st">"decile"</span>)</span>
-<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>    .agg(</span>
-<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>        beta<span class="op">=</span>pl.col(<span class="st">"beta"</span>).mean(),</span>
-<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>        equal<span class="op">=</span>pl.col(<span class="st">"excess"</span>).<span class="bu">filter</span>(pl.col(<span class="st">"excess"</span>).is_finite()).mean(),</span>
-<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>        value<span class="op">=</span>(cap <span class="op">*</span> r).<span class="bu">sum</span>() <span class="op">/</span> cap.<span class="bu">sum</span>(),</span>
-<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>        market<span class="op">=</span>pl.col(<span class="st">"market"</span>).drop_nulls().first(),</span>
-<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a>    .collect()</span>
-<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="618ce1b6" class="cell" data-execution_count="20">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>deciles <span class="op">=</span> [<span class="bu">str</span>(i) <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">1</span>, <span class="dv">11</span>)]</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>decile <span class="op">=</span> <span class="dv">1</span> <span class="op">+</span> pl.sum_horizontal(</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    (b <span class="op">&gt;</span> b.quantile(i <span class="op">/</span> <span class="dv">10</span>, interpolation<span class="op">=</span><span class="st">"linear"</span>)).cast(pl.UInt8)</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">1</span>, <span class="dv">10</span>)</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>members <span class="op">=</span> (</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>    beta_long.lazy()</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>    .<span class="bu">filter</span>(pl.col(<span class="st">"beta"</span>).is_not_null())</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>    .with_columns(decile<span class="op">=</span>decile.over(<span class="st">"measure"</span>, <span class="st">"month"</span>).cast(pl.String))</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>    .join(outcomes.lazy(), on<span class="op">=</span>keys, validate<span class="op">=</span><span class="st">"m:1"</span>)</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Use the same stocks in the numerator and denominator of the weighted return.</span></span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>has_weight <span class="op">=</span> pl.all_horizontal(pl.col(<span class="st">"cap"</span>, <span class="st">"excess"</span>).is_finite())</span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>cap <span class="op">=</span> pl.col(<span class="st">"cap"</span>).<span class="bu">filter</span>(has_weight)</span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>r <span class="op">=</span> pl.col(<span class="st">"excess"</span>).<span class="bu">filter</span>(has_weight)</span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>portfolios <span class="op">=</span> (</span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>    members.group_by(<span class="st">"measure"</span>, <span class="st">"holding"</span>, <span class="st">"decile"</span>)</span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>    .agg(</span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a>        beta<span class="op">=</span>pl.col(<span class="st">"beta"</span>).mean(),</span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>        equal<span class="op">=</span>pl.col(<span class="st">"excess"</span>).<span class="bu">filter</span>(pl.col(<span class="st">"excess"</span>).is_finite()).mean(),</span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a>        value<span class="op">=</span>(cap <span class="op">*</span> r).<span class="bu">sum</span>() <span class="op">/</span> cap.<span class="bu">sum</span>(),</span>
+<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a>        market<span class="op">=</span>pl.col(<span class="st">"market"</span>).drop_nulls().first(),</span>
+<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a>    .collect()</span>
+<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>We compute the high-minus-low return each month. Its CAPM alpha is the intercept when that return is regressed on the holding month’s market excess return. For each portfolio, we report returns and alphas in percent per month and use six Newey–West lags for their <span class="math inline">\(t\)</span>-statistics.</p>
-<div id="cf15e36b" class="cell" data-execution_count="18">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> statspai <span class="im">as</span> sp</span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>spread <span class="op">=</span> (</span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    portfolios.<span class="bu">filter</span>(pl.col(<span class="st">"decile"</span>).is_in([<span class="st">"1"</span>, <span class="st">"10"</span>]))</span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    .group_by(<span class="st">"measure"</span>, <span class="st">"holding"</span>)</span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>    .agg(</span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>        (pl.col(c).<span class="bu">filter</span>(pl.col(<span class="st">"decile"</span>) <span class="op">==</span> <span class="st">"10"</span>).first()</span>
-<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>         <span class="op">-</span> pl.col(c).<span class="bu">filter</span>(pl.col(<span class="st">"decile"</span>) <span class="op">==</span> <span class="st">"1"</span>).first()).alias(c)</span>
-<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> c <span class="kw">in</span> [<span class="st">"beta"</span>, <span class="st">"equal"</span>, <span class="st">"value"</span>]</span>
-<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>    .join(outcomes.select(<span class="st">"holding"</span>, <span class="st">"market"</span>).drop_nulls().unique(), on<span class="op">=</span><span class="st">"holding"</span>, validate<span class="op">=</span><span class="st">"m:1"</span>)</span>
-<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>    .with_columns(decile<span class="op">=</span>pl.lit(<span class="st">"10–1"</span>))</span>
-<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>    .select(portfolios.columns)</span>
-<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>portfolio_series <span class="op">=</span> pl.concat([portfolios, spread]).sort(<span class="st">"holding"</span>)</span>
-<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> portfolio_fit(series, outcome):</span>
-<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>    mean <span class="op">=</span> sp.regress(<span class="ss">f"</span><span class="sc">{</span>outcome<span class="sc">}</span><span class="ss"> ~ 1"</span>, data<span class="op">=</span>series, robust<span class="op">=</span><span class="st">"hac"</span>, hac_lags<span class="op">=</span><span class="dv">6</span>, hac_small<span class="op">=</span><span class="va">True</span>)</span>
-<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>    capm <span class="op">=</span> sp.regress(<span class="ss">f"</span><span class="sc">{</span>outcome<span class="sc">}</span><span class="ss"> ~ market"</span>, data<span class="op">=</span>series, robust<span class="op">=</span><span class="st">"hac"</span>, hac_lags<span class="op">=</span><span class="dv">6</span>, hac_small<span class="op">=</span><span class="va">True</span>)</span>
-<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> (</span>
-<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>        mean.params[<span class="st">"Intercept"</span>], mean.tvalues[<span class="st">"Intercept"</span>],</span>
-<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>        capm.params[<span class="st">"Intercept"</span>], capm.tvalues[<span class="st">"Intercept"</span>],</span>
-<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>    )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="7e23fe6e" class="cell" data-execution_count="21">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> statspai <span class="im">as</span> sp</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>spread <span class="op">=</span> (</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    portfolios.<span class="bu">filter</span>(pl.col(<span class="st">"decile"</span>).is_in([<span class="st">"1"</span>, <span class="st">"10"</span>]))</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>    .group_by(<span class="st">"measure"</span>, <span class="st">"holding"</span>)</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>    .agg(</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>        (pl.col(c).<span class="bu">filter</span>(pl.col(<span class="st">"decile"</span>) <span class="op">==</span> <span class="st">"10"</span>).first()</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>         <span class="op">-</span> pl.col(c).<span class="bu">filter</span>(pl.col(<span class="st">"decile"</span>) <span class="op">==</span> <span class="st">"1"</span>).first()).alias(c)</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> c <span class="kw">in</span> [<span class="st">"beta"</span>, <span class="st">"equal"</span>, <span class="st">"value"</span>]</span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>    .join(outcomes.select(<span class="st">"holding"</span>, <span class="st">"market"</span>).drop_nulls().unique(), on<span class="op">=</span><span class="st">"holding"</span>, validate<span class="op">=</span><span class="st">"m:1"</span>)</span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>    .with_columns(decile<span class="op">=</span>pl.lit(<span class="st">"10–1"</span>))</span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>    .select(portfolios.columns)</span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>portfolio_series <span class="op">=</span> pl.concat([portfolios, spread]).sort(<span class="st">"holding"</span>)</span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> portfolio_fit(series, outcome):</span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a>    mean <span class="op">=</span> sp.regress(<span class="ss">f"</span><span class="sc">{</span>outcome<span class="sc">}</span><span class="ss"> ~ 1"</span>, data<span class="op">=</span>series, robust<span class="op">=</span><span class="st">"hac"</span>, hac_lags<span class="op">=</span><span class="dv">6</span>, hac_small<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a>    capm <span class="op">=</span> sp.regress(<span class="ss">f"</span><span class="sc">{</span>outcome<span class="sc">}</span><span class="ss"> ~ market"</span>, data<span class="op">=</span>series, robust<span class="op">=</span><span class="st">"hac"</span>, hac_lags<span class="op">=</span><span class="dv">6</span>, hac_small<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> (</span>
+<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a>        mean.params[<span class="st">"Intercept"</span>], mean.tvalues[<span class="st">"Intercept"</span>],</span>
+<span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a>        capm.params[<span class="st">"Intercept"</span>], capm.tvalues[<span class="st">"Intercept"</span>],</span>
+<span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a>    )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div class="cell" data-execution_count="20">
-<div id="tbl-bem8-equal" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="20">
+<div class="cell" data-execution_count="23">
+<div id="tbl-bem8-equal" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="23">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bem8-equal-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table&nbsp;8.4: Equal-weighted returns to beta deciles (BEM Table 8.4)
@@ -1712,8 +1762,8 @@ Table&nbsp;8.4: Equal-weighted returns to beta deciles (BEM Table 8.4)
 </figure>
 </div>
 </div>
-<div class="cell" data-execution_count="21">
-<div id="tbl-bem8-value" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="21">
+<div class="cell" data-execution_count="24">
+<div id="tbl-bem8-value" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="24">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bem8-value-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table&nbsp;8.5: Value-weighted returns to beta deciles (BEM Table 8.5)
@@ -2100,22 +2150,22 @@ Table&nbsp;8.5: Value-weighted returns to beta deciles (BEM Table 8.5)
 r_{i,t+1}=a_{t+1}+b_{t+1}\widehat\beta_{i,t}+u_{i,t+1}.
 \]</span></p>
 <p>We use the same winsorization as for the Pearson correlations and apply six Newey–West lags to the monthly coefficient series. The CAPM predicts that the mean slope estimates the market risk premium and the mean intercept is zero.</p>
-<div id="f2e6bc24" class="cell" data-execution_count="22">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>fm_data <span class="op">=</span> (</span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>    clipped.unpivot(on<span class="op">=</span>beta_labels, index<span class="op">=</span>keys, variable_name<span class="op">=</span><span class="st">"measure"</span>, value_name<span class="op">=</span><span class="st">"beta"</span>)</span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    .join(outcomes.select(<span class="op">*</span>keys, <span class="st">"excess"</span>), on<span class="op">=</span>keys, validate<span class="op">=</span><span class="st">"m:1"</span>)</span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    .<span class="bu">filter</span>(pl.all_horizontal(pl.col(<span class="st">"beta"</span>, <span class="st">"excess"</span>).is_finite()))</span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>fm <span class="op">=</span> {</span>
-<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>    b: sp.fama_macbeth(</span>
-<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>        <span class="st">"excess ~ beta"</span>, data<span class="op">=</span>fm_data.<span class="bu">filter</span>(pl.col(<span class="st">"measure"</span>) <span class="op">==</span> b),</span>
-<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>        time<span class="op">=</span><span class="st">"month"</span>, lags<span class="op">=</span><span class="dv">6</span>,</span>
-<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> b <span class="kw">in</span> beta_labels</span>
-<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="78bfa822" class="cell" data-execution_count="25">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>fm_data <span class="op">=</span> (</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>    clipped.unpivot(on<span class="op">=</span>beta_labels, index<span class="op">=</span>keys, variable_name<span class="op">=</span><span class="st">"measure"</span>, value_name<span class="op">=</span><span class="st">"beta"</span>)</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>    .join(outcomes.select(<span class="op">*</span>keys, <span class="st">"excess"</span>), on<span class="op">=</span>keys, validate<span class="op">=</span><span class="st">"m:1"</span>)</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>    .<span class="bu">filter</span>(pl.all_horizontal(pl.col(<span class="st">"beta"</span>, <span class="st">"excess"</span>).is_finite()))</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>fm <span class="op">=</span> {</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>    b: sp.fama_macbeth(</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>        <span class="st">"excess ~ beta"</span>, data<span class="op">=</span>fm_data.<span class="bu">filter</span>(pl.col(<span class="st">"measure"</span>) <span class="op">==</span> b),</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>        time<span class="op">=</span><span class="st">"month"</span>, lags<span class="op">=</span><span class="dv">6</span>,</span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> b <span class="kw">in</span> beta_labels</span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div class="cell" data-execution_count="23">
-<div id="tbl-bem8-fm" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="23">
+<div class="cell" data-execution_count="26">
+<div id="tbl-bem8-fm" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="26">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bem8-fm-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table&nbsp;8.6: Fama–MacBeth regressions of next-month excess returns on beta (BEM Table 8.6)
@@ -2227,6 +2277,11 @@ Table&nbsp;8.6: Fama–MacBeth regressions of next-month excess returns on beta 
 <h2 class="unnumbered anchored" data-anchor-id="references">References</h2>
 
 
+<div id="refs" class="references csl-bib-body hanging-indent" role="list" style="display: none">
+<div id="ref-bali2016" class="csl-entry" role="listitem">
+Bali, Turan G., Robert F. Engle, and Scott Murray. 2016. <em>Empirical Asset Pricing: The Cross Section of Stock Returns</em>. John Wiley &amp; Sons. <a href="https://www.wiley.com/en-us/empirical-asset-pricing-the-cross-section-of-stock-returns-p-9781118095041">https://www.wiley.com/en-us/empirical-asset-pricing-the-cross-section-of-stock-returns-p-9781118095041</a>.
+</div>
+</div>
 </section>
 
 </main> <!-- /main -->

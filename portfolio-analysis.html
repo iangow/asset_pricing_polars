@@ -58,7 +58,26 @@ div.sourceCode
 @media screen {
 pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
-</style>
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
 
 
 <script src="site_libs/quarto-nav/quarto-nav.js"></script>
@@ -262,6 +281,12 @@ window.Quarto = {
 </li>
       </ul>
   </li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./references.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">References</span></a>
+  </div>
+</li>
     </ul>
     </div>
 </nav>
@@ -329,7 +354,7 @@ window.Quarto = {
 </header>
 
 
-<p>Bali, Engle, and Murray (2016), Chapter 5, use portfolio sorts to study how next year’s excess return varies with beta, market capitalization, and book-to-market. We form portfolios at each December year-end from 1988 to 2012 using the panel from <a href="summary-statistics.html" class="quarto-xref"><span>Chapter 2</span></a>. Holding returns run from 1989 to 2012.</p>
+<p>In Chapter 5, <span class="citation" data-cites="bali2016">Bali et al. (<a href="references.html#ref-bali2016" role="doc-biblioref">2016</a>)</span> use portfolio sorts to study how next year’s excess return varies with beta, market capitalization, and book-to-market. We form portfolios at each December year-end from 1988 to 2012 using the panel from <a href="summary-statistics.html" class="quarto-xref"><span>Chapter 2</span></a>. Holding returns run from 1989 to 2012.</p>
 <style>
 .cell-output-markdown:has(> table) {
   max-width: 100%;
@@ -339,17 +364,12 @@ window.Quarto = {
   white-space: nowrap;
 }
 </style>
-<div id="661401c2" class="cell" data-execution_count="2">
+<div id="e2fef19f" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> polars <span class="im">as</span> pl</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> era_pl <span class="im">import</span> load_parquet</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> eap_pl <span class="im">import</span> build_annual_panel</span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>annual_beta <span class="op">=</span> (</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    load_parquet(<span class="st">"betas"</span>, <span class="st">"eap"</span>)</span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    .with_columns(year<span class="op">=</span>pl.col(<span class="st">"month"</span>).dt.year())</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    .<span class="bu">filter</span>(pl.col(<span class="st">"month"</span>).dt.month() <span class="op">==</span> <span class="dv">12</span>, pl.col(<span class="st">"year"</span>).is_between(<span class="dv">1988</span>, <span class="dv">2012</span>))</span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    .select(<span class="st">"permno"</span>, <span class="st">"year"</span>, Beta<span class="op">=</span><span class="st">"12M"</span>)</span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>annual_panel <span class="op">=</span> build_annual_panel()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <section id="univariate-sorts" class="level2" data-number="5.1">
 <h2 data-number="5.1" class="anchored" data-anchor-id="univariate-sorts"><span class="header-section-number">5.1</span> Univariate Portfolio Analysis</h2>
@@ -360,7 +380,7 @@ window.Quarto = {
 B_{k,t}=\operatorname{Pctl}_{p_k}(\{X_t\}).
 \tag{5.1}\]</span></span></p>
 <p>The beta sort uses the 10th, 20th, 40th, 60th, 80th, and 90th percentiles. The first and last groups each hold about a tenth of the stocks, giving a closer look at both tails of the distribution. We use linear interpolation for the percentiles.</p>
-<div id="b907ff5b" class="cell" data-execution_count="5">
+<div id="ff48c281" class="cell" data-execution_count="4">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> breakpoints(stocks, variable, probabilities, by):</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> stocks.group_by(by).agg(</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>        pl.col(variable).quantile(p, interpolation<span class="op">=</span><span class="st">"linear"</span>).alias(<span class="ss">f"</span><span class="sc">{</span>p<span class="sc">:.0%}</span><span class="ss">"</span>)</span>
@@ -371,8 +391,8 @@ B_{k,t}=\operatorname{Pctl}_{p_k}(\{X_t\}).
 <span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>beta_stocks <span class="op">=</span> annual_panel.<span class="bu">filter</span>(pl.col(<span class="st">"Beta"</span>).is_finite())</span>
 <span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>beta_breaks <span class="op">=</span> breakpoints(beta_stocks, <span class="st">"Beta"</span>, seven_way, [<span class="st">"year"</span>])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div class="cell" data-execution_count="6">
-<div id="tbl-bem5-breakpoints" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="6">
+<div class="cell" data-execution_count="5">
+<div id="tbl-bem5-breakpoints" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="5">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bem5-breakpoints-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table&nbsp;5.1: Annual breakpoints for beta portfolios (BEM Table 5.1)
@@ -632,7 +652,7 @@ Table&nbsp;5.1: Annual breakpoints for beta portfolios (BEM Table 5.1)
 P_{k,t}=\{i:B_{k-1,t}\le X_{i,t}\le B_{k,t}\}.
 \tag{5.2}\]</span></span></p>
 <p>Both endpoints are included, as in BEM. A stock exactly on a breakpoint can enter both adjacent portfolios. The code joins each stock to its year’s breakpoint intervals, then keeps the intervals that contain its sort value.</p>
-<div id="1b008494" class="cell" data-execution_count="7">
+<div id="f97ba715" class="cell" data-execution_count="6">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> itertools <span class="im">import</span> pairwise</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> form_portfolios(stocks, variable, breaks, by, label):</span>
@@ -650,8 +670,8 @@ P_{k,t}=\{i:B_{k-1,t}\le X_{i,t}\le B_{k,t}\}.
 <span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>beta_members <span class="op">=</span> form_portfolios(beta_stocks, <span class="st">"Beta"</span>, beta_breaks, [<span class="st">"year"</span>], <span class="st">"portfolio"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div class="cell" data-execution_count="8">
-<div id="tbl-bem5-counts" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="8">
+<div class="cell" data-execution_count="7">
+<div id="tbl-bem5-counts" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="7">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bem5-counts-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table&nbsp;5.2: Annual stock counts for beta portfolios (BEM Table 5.2)
@@ -941,7 +961,7 @@ Y_{k,t}=\frac{\sum_{i\in P_{k,t}} W_{i,t}Y_{i,t}}
 <p><span id="eq-bem5-spread"><span class="math display">\[
 Y_{\mathrm{Diff},t}=Y_{n_P,t}-Y_{1,t}.
 \tag{5.4}\]</span></span></p>
-<div id="508fdf2d" class="cell" data-execution_count="9">
+<div id="20512878" class="cell" data-execution_count="8">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>portfolio_columns <span class="op">=</span> [<span class="bu">str</span>(group) <span class="cf">for</span> group <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">1</span>, <span class="dv">8</span>)]</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>univariate_columns <span class="op">=</span> [<span class="op">*</span>portfolio_columns, <span class="st">"7–1"</span>]</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>last_holding_year <span class="op">=</span> <span class="dv">2012</span></span>
@@ -965,8 +985,8 @@ Y_{\mathrm{Diff},t}=Y_{n_P,t}-Y_{1,t}.
 <span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>beta_ew <span class="op">=</span> univariate_series(beta_returns, <span class="st">"EW"</span>)</span>
 <span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>beta_vw <span class="op">=</span> univariate_series(beta_returns, <span class="st">"VW"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div class="cell" data-execution_count="10">
-<div id="tbl-bem5-equal" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="10">
+<div class="cell" data-execution_count="9">
+<div id="tbl-bem5-equal" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="9">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bem5-equal-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table&nbsp;5.3: Equal-weighted beta portfolio excess returns in percent (BEM Table 5.3)
@@ -1296,8 +1316,8 @@ Table&nbsp;5.3: Equal-weighted beta portfolio excess returns in percent (BEM Tab
 </figure>
 </div>
 </div>
-<div class="cell" data-execution_count="11">
-<div id="tbl-bem5-value" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="11">
+<div class="cell" data-execution_count="10">
+<div id="tbl-bem5-value" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="10">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bem5-value-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table&nbsp;5.4: Value-weighted beta portfolio excess returns in percent (BEM Table 5.4)
@@ -1639,11 +1659,11 @@ Table&nbsp;5.4: Value-weighted beta portfolio excess returns in percent (BEM Tab
 \bar{Y}_{\mathrm{Diff}}=\frac{1}{T}\sum_{t=1}^T Y_{\mathrm{Diff},t}.
 \tag{5.6}\]</span></span></p>
 <p>An intercept-only regression gives the same time-series mean. We use StatsPAI and six Newey–West lags for inference, as specified by BEM.</p>
-<div id="f9c8b330" class="cell" data-execution_count="12">
+<div id="882e4478" class="cell" data-execution_count="11">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>beta_means <span class="op">=</span> fit_portfolios(beta_ew, univariate_columns)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div class="cell" data-execution_count="13">
-<div id="tbl-bem5-inference" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="13">
+<div class="cell" data-execution_count="12">
+<div id="tbl-bem5-inference" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="12">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bem5-inference-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table&nbsp;5.5: Equal-weighted beta portfolio means and inference (BEM Table 5.5)
@@ -1734,8 +1754,8 @@ Table&nbsp;5.5: Equal-weighted beta portfolio means and inference (BEM Table 5.5
 </section>
 <section id="presenting-the-results" class="level3" data-number="5.1.6">
 <h3 data-number="5.1.6" class="anchored" data-anchor-id="presenting-the-results"><span class="header-section-number">5.1.6</span> Presenting the Results</h3>
-<div class="cell" data-execution_count="14">
-<div id="tbl-bem5-beta-summary" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="14">
+<div class="cell" data-execution_count="13">
+<div id="tbl-bem5-beta-summary" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="13">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bem5-beta-summary-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table&nbsp;5.6: Compact summary of beta portfolio excess returns (BEM Table 5.6)
@@ -1784,8 +1804,8 @@ Table&nbsp;5.6: Compact summary of beta portfolio excess returns (BEM Table 5.6)
 </div>
 </div>
 <p>We can use formation-year characteristics as outcomes as well. BEM reports the portfolio means and tests the spread. For market capitalization the units are millions of dollars.</p>
-<div class="cell" data-execution_count="15">
-<div id="tbl-bem5-characteristics" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="15">
+<div class="cell" data-execution_count="14">
+<div id="tbl-bem5-characteristics" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="14">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bem5-characteristics-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table&nbsp;5.7: Average characteristics of beta portfolios (BEM Table 5.7)
@@ -1865,7 +1885,7 @@ Table&nbsp;5.7: Average characteristics of beta portfolios (BEM Table 5.7)
 </div>
 <p><span id="sort-on-size-or-book-to-market"></span></p>
 <p>The same percentile cutoffs can be applied to other sort variables. Recompute the breakpoints with the available observations for each variable. Use the signed book-to-market ratio from <a href="summary-statistics.html#sec-summary-characteristics" class="quarto-xref"><span>Section 2.2</span></a>.</p>
-<div id="ecd4f1b8" class="cell" data-execution_count="16">
+<div id="460312bb" class="cell" data-execution_count="15">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> univariate_sort(variable):</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    stocks <span class="op">=</span> annual_panel.<span class="bu">filter</span>(pl.col(variable).is_finite())</span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    breaks <span class="op">=</span> breakpoints(stocks, variable, seven_way, [<span class="st">"year"</span>])</span>
@@ -1881,8 +1901,8 @@ Table&nbsp;5.7: Average characteristics of beta portfolios (BEM Table 5.7)
 <span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>    series <span class="op">=</span> univariate_series(returns, <span class="st">"excess"</span>)</span>
 <span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>    univariate_means[variable] <span class="op">=</span> fit_portfolios(series, univariate_columns)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div class="cell" data-execution_count="17">
-<div id="tbl-bem5-sorts" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="17">
+<div class="cell" data-execution_count="16">
+<div id="tbl-bem5-sorts" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="16">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bem5-sorts-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table&nbsp;5.8: Equal-weighted excess returns by sort variable (BEM Table 5.8)
@@ -1956,8 +1976,8 @@ Table&nbsp;5.8: Equal-weighted excess returns by sort variable (BEM Table 5.8)
 </div>
 </div>
 <p>The companion plot in <a href="#fig-bem5-univariate" class="quarto-xref">Figure&nbsp;<span>5.1</span></a> compares the return profiles. The size sort has its highest average return in the smallest-stock portfolio. Book-to-market has its highest return in the highest-ratio portfolio.</p>
-<div id="cell-fig-bem5-univariate" class="cell" data-execution_count="18">
-<div class="cell-output cell-output-display" data-execution_count="18">
+<div id="cell-fig-bem5-univariate" class="cell" data-execution_count="17">
+<div class="cell-output cell-output-display" data-execution_count="17">
 <div id="fig-bem5-univariate" class="quarto-float quarto-figure quarto-figure-center anchored" alt="Three lines show average excess returns across seven portfolios. The smallest-cap portfolio and the highest book-to-market portfolio have the largest returns in their respective sorts.">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-bem5-univariate-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
@@ -1988,8 +2008,8 @@ r_{p,t}=\alpha+\beta_{\mathrm{MKT}}\mathrm{MKT}_t+
 \beta_{\mathrm{MOM}}\mathrm{MOM}_t+\epsilon_t.
 \tag{5.9}\]</span></span></p>
 <p>The intercept is the portfolio’s alpha under the chosen model. For a zero-cost spread, the outcome is the difference between the two legs’ excess returns.</p>
-<div class="cell" data-execution_count="19">
-<div id="tbl-bem5-risk-adjusted" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="19">
+<div class="cell" data-execution_count="18">
+<div id="tbl-bem5-risk-adjusted" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="18">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bem5-risk-adjusted-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table&nbsp;5.9: Beta portfolio alphas and factor loadings (BEM Table 5.9)
@@ -2190,7 +2210,7 @@ B_{2k,t}=\operatorname{Pctl}_{p_{2k}}(\{X_{2t}\}).
 \tag{5.11}\]</span></span></p>
 <p>We use the 30th and 70th percentiles for beta and the 25th, 50th, and 75th percentiles for market capitalization.</p>
 <p>Use the same percentile and membership functions as in the univariate sort. The second set of breakpoints is grouped only by year here. The dependent sort uses the same pipeline with an additional grouping key for the first portfolio.</p>
-<div id="ede63974" class="cell" data-execution_count="20">
+<div id="1eb4cecd" class="cell" data-execution_count="19">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>control_ports <span class="op">=</span> [<span class="st">"1"</span>, <span class="st">"2"</span>, <span class="st">"3"</span>]</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> bivariate_sort(first, second, <span class="op">*</span>, dependent<span class="op">=</span><span class="va">False</span>):</span>
@@ -2206,8 +2226,8 @@ B_{2k,t}=\operatorname{Pctl}_{p_{2k}}(\{X_{2t}\}).
 <span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>independent, first_breaks, second_breaks <span class="op">=</span> bivariate_sort(<span class="st">"Beta"</span>, <span class="st">"MktCap"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div class="cell" data-execution_count="21">
-<div id="tbl-bem5-independent-breaks" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="21">
+<div class="cell" data-execution_count="20">
+<div id="tbl-bem5-independent-breaks" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="20">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bem5-independent-breaks-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table&nbsp;5.10: Annual breakpoints for the independent beta and market-cap sorts (BEM Table 5.10)
@@ -2444,7 +2464,7 @@ P_{j,k,t}=
 \{i:B_{2,k-1,t}\le X_{2i,t}\le B_{2k,t}\}.
 \tag{5.12}\]</span></span></p>
 <p>Pivot the portfolio cells so that the beta groups are columns and the market-cap groups are rows within each year.</p>
-<div id="ce4c8392" class="cell" data-execution_count="22">
+<div id="8819e79f" class="cell" data-execution_count="21">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> control_grid(cells, value):</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> (</span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>        cells.pivot(on<span class="op">=</span><span class="st">"control"</span>, index<span class="op">=</span>[<span class="st">"year"</span>, <span class="st">"target"</span>], values<span class="op">=</span>value)</span>
@@ -2452,8 +2472,8 @@ P_{j,k,t}=
 <span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>        .select(<span class="st">"year"</span>, <span class="st">"target"</span>, <span class="op">*</span>control_ports)</span>
 <span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>    )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div class="cell" data-execution_count="23">
-<div id="tbl-bem5-independent-counts" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="23">
+<div class="cell" data-execution_count="22">
+<div id="tbl-bem5-independent-counts" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="22">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bem5-independent-counts-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table&nbsp;5.11: Annual counts in the independent beta and market-cap portfolios (BEM Table 5.11)
@@ -3215,8 +3235,8 @@ Y_{\mathrm{Diff},\mathrm{Diff},t}
 &amp;=Y_{n_1,\mathrm{Diff},t}-Y_{1,\mathrm{Diff},t}.
 \end{aligned}
 \tag{5.19}\]</span></span></p>
-<div class="cell" data-execution_count="24">
-<div id="tbl-bem5-spread-diagram" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="24">
+<div class="cell" data-execution_count="23">
+<div id="tbl-bem5-spread-diagram" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="23">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bem5-spread-diagram-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table&nbsp;5.12: Constructing the difference in differences from the four corner portfolios (BEM Table 5.12)
@@ -3265,7 +3285,7 @@ Table&nbsp;5.12: Constructing the difference in differences from the four corner
 </div>
 </div>
 <p>Compute the spreads and averages within each holding year before fitting their time-series means or alphas. This preserves the covariance between the portfolio legs in the reported standard errors.</p>
-<div id="15622270" class="cell" data-execution_count="25">
+<div id="daf35884" class="cell" data-execution_count="24">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> bivariate_returns(members, <span class="op">*</span>, dependent<span class="op">=</span><span class="va">False</span>):</span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>    cells <span class="op">=</span> (</span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>        members.<span class="bu">filter</span>(pl.col(<span class="st">"year"</span>) <span class="op">&lt;</span> last_holding_year)</span>
@@ -3290,8 +3310,8 @@ Table&nbsp;5.12: Constructing the difference in differences from the four corner
 <span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>independent_returns <span class="op">=</span> bivariate_returns(independent)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div class="cell" data-execution_count="26">
-<div id="tbl-bem5-independent-returns" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="26">
+<div class="cell" data-execution_count="25">
+<div id="tbl-bem5-independent-returns" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="25">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bem5-independent-returns-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table&nbsp;5.13: Annual equal-weighted returns for the independent sorts (BEM Table 5.13)
@@ -4773,11 +4793,11 @@ Table&nbsp;5.13: Annual equal-weighted returns for the independent sorts (BEM Ta
 <section id="summarize-and-present-the-returns" class="level3" data-number="5.2.4">
 <h3 data-number="5.2.4" class="anchored" data-anchor-id="summarize-and-present-the-returns"><span class="header-section-number">5.2.4</span> Summarizing the Results</h3>
 <p>The full return grid reports both excess returns and four-factor alphas. The next tables show ways to focus on a specific spread or on the return profile after averaging across the control groups.</p>
-<div id="c840445a" class="cell" data-execution_count="27">
+<div id="5db53cca" class="cell" data-execution_count="26">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>independent_fits <span class="op">=</span> grid_fits(independent_returns)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div class="cell" data-execution_count="28">
-<div id="tbl-bem5-independent-summary" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="28">
+<div class="cell" data-execution_count="27">
+<div id="tbl-bem5-independent-summary" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="27">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bem5-independent-summary-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table&nbsp;5.14: Excess returns and four-factor alphas for the independent sorts (BEM Table 5.14)
@@ -4927,8 +4947,8 @@ Table&nbsp;5.14: Excess returns and four-factor alphas for the independent sorts
 </section>
 <section id="presenting-the-results-1" class="level3" data-number="5.2.6">
 <h3 data-number="5.2.6" class="anchored" data-anchor-id="presenting-the-results-1"><span class="header-section-number">5.2.6</span> Presenting the Results</h3>
-<div class="cell" data-execution_count="29">
-<div id="tbl-bem5-independent-alphas" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="29">
+<div class="cell" data-execution_count="28">
+<div id="tbl-bem5-independent-alphas" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="28">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bem5-independent-alphas-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table&nbsp;5.15: Compact four-factor alpha grid for the independent sorts (BEM Table 5.15)
@@ -5011,13 +5031,13 @@ Table&nbsp;5.15: Compact four-factor alpha grid for the independent sorts (BEM T
 </div>
 </div>
 <p>To check the size effect with a different control, group on book-to-market first and market capitalization second. Both sets of breakpoints still use the entire cross-section of eligible stocks.</p>
-<div id="24b43e24" class="cell" data-execution_count="30">
+<div id="60a7efb3" class="cell" data-execution_count="29">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>independent_bm_cap, _, _ <span class="op">=</span> bivariate_sort(<span class="st">"BM"</span>, <span class="st">"MktCap"</span>)</span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>bm_cap_fits <span class="op">=</span> grid_fits(bivariate_returns(independent_bm_cap))</span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>cap_controls <span class="op">=</span> {<span class="st">"Beta"</span>: independent_fits, <span class="st">"BM"</span>: bm_cap_fits}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div class="cell" data-execution_count="31">
-<div id="tbl-bem5-independent-size-spreads" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="31">
+<div class="cell" data-execution_count="30">
+<div id="tbl-bem5-independent-size-spreads" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="30">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bem5-independent-size-spreads-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table&nbsp;5.16: Independent-sort size spreads by control variable (BEM Table 5.16)
@@ -5089,8 +5109,8 @@ Table&nbsp;5.16: Independent-sort size spreads by control variable (BEM Table 5.
 </figure>
 </div>
 </div>
-<div class="cell" data-execution_count="32">
-<div id="tbl-bem5-independent-size-averages" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="32">
+<div class="cell" data-execution_count="31">
+<div id="tbl-bem5-independent-size-averages" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="31">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bem5-independent-size-averages-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table&nbsp;5.17: Independent-sort size portfolios averaged across control groups (BEM Table 5.17)
@@ -5163,13 +5183,13 @@ Table&nbsp;5.17: Independent-sort size portfolios averaged across control groups
 </div>
 </div>
 <p>We can also hold the control variable fixed and change the characteristic of interest. Here beta is the control in both sorts, and we compare the results for market capitalization and book-to-market.</p>
-<div id="e2f40e81" class="cell" data-execution_count="33">
+<div id="c7fb758a" class="cell" data-execution_count="32">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>independent_beta_bm, _, _ <span class="op">=</span> bivariate_sort(<span class="st">"Beta"</span>, <span class="st">"BM"</span>)</span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>beta_bm_fits <span class="op">=</span> grid_fits(bivariate_returns(independent_beta_bm))</span>
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>beta_controls <span class="op">=</span> {<span class="st">"MktCap"</span>: independent_fits, <span class="st">"BM"</span>: beta_bm_fits}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div class="cell" data-execution_count="34">
-<div id="tbl-bem5-independent-target-spreads" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="34">
+<div class="cell" data-execution_count="33">
+<div id="tbl-bem5-independent-target-spreads" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="33">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bem5-independent-target-spreads-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table&nbsp;5.18: Independent-sort size and book-to-market spreads by beta group (BEM Table 5.18)
@@ -5241,8 +5261,8 @@ Table&nbsp;5.18: Independent-sort size and book-to-market spreads by beta group 
 </figure>
 </div>
 </div>
-<div class="cell" data-execution_count="35">
-<div id="tbl-bem5-independent-target-averages" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="35">
+<div class="cell" data-execution_count="34">
+<div id="tbl-bem5-independent-target-averages" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="34">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bem5-independent-target-averages-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table&nbsp;5.19: Independent-sort size and book-to-market portfolios averaged across beta groups (BEM Table 5.19)
@@ -5324,11 +5344,11 @@ Table&nbsp;5.19: Independent-sort size and book-to-market portfolios averaged ac
 <p><span id="eq-bem5-conditional-breaks"><span class="math display">\[
 B_{2j,k,t}=\operatorname{Pctl}_{p_{2k}}(\{X_{2i,t}:i\in P^{(1)}_{j,t}\}).
 \tag{5.20}\]</span></span></p>
-<div id="e0f22fcb" class="cell" data-execution_count="36">
+<div id="d917ebb4" class="cell" data-execution_count="35">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>dependent, beta_cutoffs, conditional_cutoffs <span class="op">=</span> bivariate_sort(<span class="st">"Beta"</span>, <span class="st">"MktCap"</span>, dependent<span class="op">=</span><span class="va">True</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div class="cell" data-execution_count="37">
-<div id="tbl-bem5-dependent-breaks" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="37">
+<div class="cell" data-execution_count="36">
+<div id="tbl-bem5-dependent-breaks" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="36">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bem5-dependent-breaks-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table&nbsp;5.20: Annual market-cap breakpoints within each beta group (BEM Table 5.20)
@@ -6050,8 +6070,8 @@ P_{j,k,t}=
 \{i:B_{2j,k-1,t}\le X_{2i,t}\le B_{2j,k,t}\}.
 \tag{5.21}\]</span></span></p>
 <p>BEM’s printed equation (5.21) leaves the upper endpoint open. The discussion of Table 5.21 assigns a stock on a breakpoint to both adjacent portfolios, so we use inclusive endpoints here as well.</p>
-<div class="cell" data-execution_count="38">
-<div id="tbl-bem5-dependent-counts" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="38">
+<div class="cell" data-execution_count="37">
+<div id="tbl-bem5-dependent-counts" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="37">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bem5-dependent-counts-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table&nbsp;5.21: Annual counts in the dependent beta and market-cap portfolios (BEM Table 5.21)
@@ -6777,8 +6797,8 @@ Table&nbsp;5.21: Annual counts in the dependent beta and market-cap portfolios (
 </div>
 </div>
 <p>Conditional quartiles tend to distribute stocks evenly within each beta group. In the independent sort, the largest stocks are much more common in the high-beta group than in the low-beta group. <a href="#fig-bem5-counts" class="quarto-xref">Figure&nbsp;<span>5.2</span></a> compares average stock counts across the two sorts.</p>
-<div id="cell-fig-bem5-counts" class="cell" data-execution_count="39">
-<div class="cell-output cell-output-display" data-execution_count="39">
+<div id="cell-fig-bem5-counts" class="cell" data-execution_count="38">
+<div class="cell-output cell-output-display" data-execution_count="38">
 <div id="fig-bem5-counts" class="quarto-float quarto-figure quarto-figure-center anchored" alt="Heatmaps show uneven counts across cells under independent sorting and approximately equal counts down each beta-group column under dependent sorting.">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-bem5-counts-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
@@ -6795,11 +6815,11 @@ Figure&nbsp;5.2: Average annual stock counts by beta group and market-cap quarti
 <section id="returns-and-inference" class="level3" data-number="5.3.3">
 <h3 data-number="5.3.3" class="anchored" data-anchor-id="returns-and-inference"><span class="header-section-number">5.3.3</span> Average Portfolio Values</h3>
 <p>Calculate returns and high-minus-low spreads within each beta group, then average the three groups.</p>
-<div id="c4c2da59" class="cell" data-execution_count="40">
+<div id="c0d11512" class="cell" data-execution_count="39">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>dependent_returns <span class="op">=</span> bivariate_returns(dependent, dependent<span class="op">=</span><span class="va">True</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div class="cell" data-execution_count="41">
-<div id="tbl-bem5-dependent-returns" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="41">
+<div class="cell" data-execution_count="40">
+<div id="tbl-bem5-dependent-returns" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="40">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bem5-dependent-returns-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table&nbsp;5.22: Annual equal-weighted returns for the dependent sorts (BEM Table 5.22)
@@ -7918,11 +7938,11 @@ Table&nbsp;5.22: Annual equal-weighted returns for the dependent sorts (BEM Tabl
 </section>
 <section id="summarizing-the-results" class="level3" data-number="5.3.4">
 <h3 data-number="5.3.4" class="anchored" data-anchor-id="summarizing-the-results"><span class="header-section-number">5.3.4</span> Summarizing the Results</h3>
-<div id="2eaf07af" class="cell" data-execution_count="42">
+<div id="dd4c6a03" class="cell" data-execution_count="41">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>dependent_fits <span class="op">=</span> grid_fits(dependent_returns)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div class="cell" data-execution_count="43">
-<div id="tbl-bem5-dependent-summary" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="43">
+<div class="cell" data-execution_count="42">
+<div id="tbl-bem5-dependent-summary" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="42">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bem5-dependent-summary-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table&nbsp;5.23: Excess returns and four-factor alphas for the dependent sorts (BEM Table 5.23)
@@ -8043,8 +8063,8 @@ Table&nbsp;5.23: Excess returns and four-factor alphas for the dependent sorts (
 </section>
 <section id="presenting-the-results-2" class="level3" data-number="5.3.6">
 <h3 data-number="5.3.6" class="anchored" data-anchor-id="presenting-the-results-2"><span class="header-section-number">5.3.6</span> Presenting the Results</h3>
-<div class="cell" data-execution_count="44">
-<div id="tbl-bem5-dependent-compact" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="44">
+<div class="cell" data-execution_count="43">
+<div id="tbl-bem5-dependent-compact" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="43">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bem5-dependent-compact-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table&nbsp;5.24: Compact return grid and four-factor size spreads for the dependent sorts (BEM Table 5.24)
@@ -8119,7 +8139,7 @@ Table&nbsp;5.24: Compact return grid and four-factor size spreads for the depend
 </div>
 </div>
 <p>The same dependent sort can use book-to-market as the first variable or the second variable. The following tables keep the sort order explicit.</p>
-<div id="9b5a4e45" class="cell" data-execution_count="45">
+<div id="3ca2d367" class="cell" data-execution_count="44">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>dependent_bm_cap, _, _ <span class="op">=</span> bivariate_sort(<span class="st">"BM"</span>, <span class="st">"MktCap"</span>, dependent<span class="op">=</span><span class="va">True</span>)</span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>dependent_beta_bm, _, _ <span class="op">=</span> bivariate_sort(<span class="st">"Beta"</span>, <span class="st">"BM"</span>, dependent<span class="op">=</span><span class="va">True</span>)</span>
 <span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -8132,8 +8152,8 @@ Table&nbsp;5.24: Compact return grid and four-factor size spreads for the depend
 <span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>    <span class="st">"BM"</span>: grid_fits(bivariate_returns(dependent_beta_bm, dependent<span class="op">=</span><span class="va">True</span>)),</span>
 <span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div class="cell" data-execution_count="46">
-<div id="tbl-bem5-dependent-size-spreads" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="46">
+<div class="cell" data-execution_count="45">
+<div id="tbl-bem5-dependent-size-spreads" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="45">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bem5-dependent-size-spreads-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table&nbsp;5.25: Dependent-sort size spreads by control variable (BEM Table 5.25)
@@ -8205,8 +8225,8 @@ Table&nbsp;5.25: Dependent-sort size spreads by control variable (BEM Table 5.25
 </figure>
 </div>
 </div>
-<div class="cell" data-execution_count="47">
-<div id="tbl-bem5-dependent-size-averages" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="47">
+<div class="cell" data-execution_count="46">
+<div id="tbl-bem5-dependent-size-averages" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="46">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bem5-dependent-size-averages-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table&nbsp;5.26: Dependent-sort size portfolios averaged across control groups (BEM Table 5.26)
@@ -8278,8 +8298,8 @@ Table&nbsp;5.26: Dependent-sort size portfolios averaged across control groups (
 </figure>
 </div>
 </div>
-<div class="cell" data-execution_count="48">
-<div id="tbl-bem5-dependent-target-spreads" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="48">
+<div class="cell" data-execution_count="47">
+<div id="tbl-bem5-dependent-target-spreads" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="47">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bem5-dependent-target-spreads-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table&nbsp;5.27: Dependent-sort size and book-to-market spreads by beta group (BEM Table 5.27)
@@ -8351,8 +8371,8 @@ Table&nbsp;5.27: Dependent-sort size and book-to-market spreads by beta group (B
 </figure>
 </div>
 </div>
-<div class="cell" data-execution_count="49">
-<div id="tbl-bem5-dependent-target-averages" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="49">
+<div class="cell" data-execution_count="48">
+<div id="tbl-bem5-dependent-target-averages" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="48">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bem5-dependent-target-averages-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table&nbsp;5.28: Dependent-sort size and book-to-market portfolios averaged across beta groups (BEM Table 5.28)
@@ -8429,7 +8449,7 @@ Table&nbsp;5.28: Dependent-sort size and book-to-market portfolios averaged acro
 <section id="compare-the-two-sorts" class="level2" data-number="5.4">
 <h2 data-number="5.4" class="anchored" data-anchor-id="compare-the-two-sorts"><span class="header-section-number">5.4</span> Independent Versus Dependent Sort</h2>
 <p>Average market capitalization makes the difference between the two methods concrete. An independent sort applies the same market-cap cutoffs across beta groups. A dependent sort can classify a stock as large among low-beta stocks even if its capitalization would place it in a lower quartile among high-beta stocks.</p>
-<div id="738fe627" class="cell" data-execution_count="50">
+<div id="b31e97a0" class="cell" data-execution_count="49">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> average_capitalization(members):</span>
 <span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> (</span>
 <span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>        members.group_by(<span class="st">"year"</span>, <span class="st">"control"</span>, <span class="st">"target"</span>).agg(pl.col(<span class="st">"MktCap"</span>).mean())</span>
@@ -8441,8 +8461,8 @@ Table&nbsp;5.28: Dependent-sort size and book-to-market portfolios averaged acro
 <span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>independent_caps <span class="op">=</span> average_capitalization(independent)</span>
 <span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>dependent_caps <span class="op">=</span> average_capitalization(dependent)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div class="cell" data-execution_count="51">
-<div id="tbl-bem5-independent-capitalization" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="51">
+<div class="cell" data-execution_count="50">
+<div id="tbl-bem5-independent-capitalization" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="50">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bem5-independent-capitalization-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table&nbsp;5.29: Average market capitalization in the independent sorts, millions of dollars (BEM Table 5.29)
@@ -8490,8 +8510,8 @@ Table&nbsp;5.29: Average market capitalization in the independent sorts, million
 </figure>
 </div>
 </div>
-<div class="cell" data-execution_count="52">
-<div id="tbl-bem5-dependent-capitalization" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="52">
+<div class="cell" data-execution_count="51">
+<div id="tbl-bem5-dependent-capitalization" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="51">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bem5-dependent-capitalization-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table&nbsp;5.30: Average market capitalization in the dependent sorts, millions of dollars (BEM Table 5.30)
@@ -8540,8 +8560,8 @@ Table&nbsp;5.30: Average market capitalization in the dependent sorts, millions 
 </div>
 </div>
 <p><a href="#fig-bem5-capitalization" class="quarto-xref">Figure&nbsp;<span>5.3</span></a> plots the same means on a log scale.</p>
-<div id="cell-fig-bem5-capitalization" class="cell" data-execution_count="53">
-<div class="cell-output cell-output-display" data-execution_count="53">
+<div id="cell-fig-bem5-capitalization" class="cell" data-execution_count="52">
+<div class="cell-output cell-output-display" data-execution_count="52">
 <div id="fig-bem5-capitalization" class="quarto-float quarto-figure quarto-figure-center anchored" alt="Within market-cap quartiles, average market caps are similar across beta groups in the independent sort. The dependent sort shows much wider differences across beta groups.">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-bem5-capitalization-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
@@ -8568,6 +8588,11 @@ Figure&nbsp;5.3: Market-cap profiles in independent and dependent sorts
 <h2 class="unnumbered anchored" data-anchor-id="references">References</h2>
 
 
+<div id="refs" class="references csl-bib-body hanging-indent" role="list" style="display: none">
+<div id="ref-bali2016" class="csl-entry" role="listitem">
+Bali, Turan G., Robert F. Engle, and Scott Murray. 2016. <em>Empirical Asset Pricing: The Cross Section of Stock Returns</em>. John Wiley &amp; Sons. <a href="https://www.wiley.com/en-us/empirical-asset-pricing-the-cross-section-of-stock-returns-p-9781118095041">https://www.wiley.com/en-us/empirical-asset-pricing-the-cross-section-of-stock-returns-p-9781118095041</a>.
+</div>
+</div>
 </section>
 
 </main> <!-- /main -->
