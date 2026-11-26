@@ -4,22 +4,19 @@ jupyter: python3
 
 # The CRSP Sample and Market Factor {#sec-bem-crsp}
 
-This chapter reconstructs the figures and tables in Chapter 7 of
-Bali, Engle, and Murray (2016), *Empirical Asset Pricing*. We use a
-later snapshot of legacy CRSP (SIZ), the same data format used by the
-authors. See [Preliminaries](data.qmd#data-vintages) for source
-update dates. The comparisons below separate data and convention differences
-from the calculations themselves.
+This chapter reconstructs the figures and tables in Chapter 7 of Bali, Engle, and Murray (2016), *Empirical Asset Pricing*.
+We use a later snapshot of legacy CRSP (SIZ), the same data format used by the authors.
+See [Preliminaries](data.qmd#data-vintages) for source update dates.
+The comparisons below separate data and convention differences from the calculations themselves.
 
 ## The U.S. Stock Market
 
 ### The CRSP U.S.-Based Common Stock Sample {#build-the-monthly-common-stock-sample}
 
-At each calendar month-end, keep securities with a historical share
-code of 10 or 11. We do not restrict the exchange or require a price
-to count a stock. For market capitalization, use the absolute alternate
-price times shares outstanding. Dividing by 1,000 gives millions of dollars
-because CRSP reports shares in thousands.
+At each calendar month-end, keep securities with a historical share code of 10 or 11.
+We do not restrict the exchange or require a price to count a stock.
+For market capitalization, use the absolute alternate price times shares outstanding.
+Dividing by 1,000 gives millions of dollars because CRSP reports shares in thousands.
 
 ```{python}
 import polars as pl

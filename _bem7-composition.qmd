@@ -1,16 +1,14 @@
 ### Composition of the CRSP Sample {#sec-bem7-composition}
 
-Figures 7.1–7.4 of Bali, Engle, and Murray (2016) decompose the sample by
-exchange and industry from December 1925 to December 2012. Count every
-stock in the month-end universe, even if market capitalization is
-missing. For market value, sum only observed capitalization. Convert
-nominal millions to billions of December 2012 dollars using the ratio
-of December 2012 CPI to that month's CPI.
+Figures 7.1–7.4 of Bali, Engle, and Murray (2016) decompose the sample by exchange and industry from December 1925 to December 2012.
+Count every stock in the month-end universe, even if market capitalization is missing.
+For market value, sum only observed capitalization.
+Convert nominal millions to billions of December 2012 dollars using the ratio of December 2012 CPI to that month's CPI.
 
 #### Stock Exchange Composition of CRSP Sample {#exchanges .unnumbered .unlisted}
 
-The book groups exchange codes 1 and 31 as NYSE, 2 and 32 as AMEX, and
-3 and 33 as Nasdaq. All remaining codes go into *Other*.
+The book groups exchange codes 1 and 31 as NYSE, 2 and 32 as AMEX, and 3 and 33 as Nasdaq.
+All remaining codes go into *Other*.
 
 ```{python}
 from plotnine_polars import aes, guide_legend
@@ -99,18 +97,15 @@ plot_composition(by_exchange, "exchange", ["Total", *exchange_labels],
                  "value", "Market value ($ billions, December 2012)")
 ```
 
-AMEX enters the data in July 1962. Most Nasdaq coverage starts in December
-1972. The value series jumps much less than the count series at those dates:
-market coverage can change substantially without much change in market value.
-Keep that distinction in mind when comparing equal- and value-weighted results
-across time.
+AMEX enters the data in July 1962.
+Most Nasdaq coverage starts in December 1972.
+The value series jumps much less than the count series at those dates: market coverage can change substantially without much change in market value.
+Keep that distinction in mind when comparing equal- and value-weighted results across time.
 
-The following checkpoints compare the reconstructed exchange counts with
-the figures quoted in the book's text. The authors report a December 2012
-total of 3,675, but their four exchange counts add up to 3,677. Keep both
-benchmarks rather than forcing the component counts to match the printed
-total. The available legacy CRSP file is a later vintage; the count
-differences do not by themselves identify revisions or coding differences.
+The following checkpoints compare the reconstructed exchange counts with the figures quoted in the book's text.
+The authors report a December 2012 total of 3,675, but their four exchange counts add up to 3,677.
+Keep both benchmarks rather than forcing the component counts to match the printed total.
+The available legacy CRSP file is a later vintage; the count differences do not by themselves identify revisions or coding differences.
 
 ```{python}
 #| label: tbl-bem7-count-checkpoints
@@ -155,11 +150,9 @@ pl.DataFrame({
 })
 ```
 
-The local December 2012 universe has 3,742 common stocks. Of the 86 in
-the Other category, 85 have no usable capitalization in this vintage.
-That helps explain why a visible difference in counts need not produce
-a comparable difference in market value, but does not tell us why the
-book counted only two Other stocks.
+The local December 2012 universe has 3,742 common stocks.
+Of the 86 in the Other category, 85 have no usable capitalization in this vintage.
+That helps explain why a visible difference in counts need not produce a comparable difference in market value, but does not tell us why the book counted only two Other stocks.
 
 ```{python}
 #| label: tbl-bem7-value-checkpoints
@@ -183,17 +176,14 @@ reconstructed = (
 )
 ```
 
-The reconstructed market value is about $15.72 trillion in December
-2012, close to the book's $15.7 trillion despite the difference in
-stock counts.
+The reconstructed market value is about $15.72 trillion in December 2012, close to the book's $15.7 trillion despite the difference in stock counts.
 
 #### Industry Composition of CRSP Sample {#industries .unnumbered .unlisted}
 
-We use the security's current SIC code rather than a code carried back
-from a later date. [OSHA's SIC manual](https://www.osha.gov/data/sic-manual)
-describes the divisions. The table uses the intervals in BEM Table 7.1,
-with shortened labels. Keep zero and null codes separate from nonmissing
-codes that do not fall in a listed interval.
+We use the security's current SIC code rather than a code carried back from a later date.
+[OSHA's SIC manual](https://www.osha.gov/data/sic-manual) describes the divisions.
+The table uses the intervals in BEM Table 7.1, with shortened labels.
+Keep zero and null codes separate from nonmissing codes that do not fall in a listed interval.
 
 ```{python}
 #| label: tbl-bem7-sic

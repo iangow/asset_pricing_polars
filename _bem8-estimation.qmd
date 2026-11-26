@@ -25,11 +25,9 @@ universe = (
 )
 ```
 
-We screen for common shares at formation using historical share codes
-10 and 11. A stock can contribute its earlier returns to the estimation
-window even if its historical share code changed. We use CRSP's reported
-returns for estimation and apply the Chapter 7 delisting convention to
-the next-month returns used to evaluate the beta estimates.
+We screen for common shares at formation using historical share codes 10 and 11.
+A stock can contribute its earlier returns to the estimation window even if its historical share code changed.
+We use CRSP's reported returns for estimation and apply the Chapter 7 delisting convention to the next-month returns used to evaluate the beta estimates.
 
 ```{python}
 monthly_stock = (
@@ -58,9 +56,8 @@ def beta_slope(stock, market):
     return pl.cov(stock, market) / pl.col(market).var()
 ```
 
-For monthly returns, we can apply the covariance-over-variance formula
-directly. We include the formation dates in the rolling index so a
-window is evaluated even if the current month's return is missing.
+For monthly returns, we can apply the covariance-over-variance formula directly.
+We include the formation dates in the rolling index so a window is evaluated even if the current month's return is missing.
 The window is open at its left endpoint and includes the formation month.
 
 ```{python}
@@ -91,12 +88,10 @@ def monthly_beta(label, months, minimum):
     )
 ```
 
-For daily returns, each trading day enters many windows. We sum the
-regression inputs once per stock and month, then roll those sums across
-months. For example, the slope uses
-$\sum xy-(\sum x)(\sum y)/n$ divided by $\sum x^2-(\sum x)^2/n$.
-The adjusted regressions use the same idea with cross-products between
-market returns at different offsets.
+For daily returns, each trading day enters many windows.
+We sum the regression inputs once per stock and month, then roll those sums across months.
+For example, the slope uses $\sum xy-(\sum x)(\sum y)/n$ divided by $\sum x^2-(\sum x)^2/n$.
+The adjusted regressions use the same idea with cross-products between market returns at different offsets.
 
 ```{python}
 #| echo: false
@@ -254,11 +249,9 @@ window_months = {label: months for label, (months, _) in (daily_windows | monthl
 window_months.update(SW=12, D=12)
 ```
 
-The tables in this chapter end with November 2012 formation, followed by
-December 2012 holding returns. We also estimate betas as of December 2012
-so the [annual summary](summary-statistics.qmd) can use the same estimates
-for its last year. The optional export saves all eleven estimates per
-stock-month to the local `DATA_DIR/eap/betas.parquet` file.
+The tables in this chapter end with November 2012 formation, followed by December 2012 holding returns.
+We also estimate betas as of December 2012 so the [annual summary](summary-statistics.qmd) can use the same estimates for its last year.
+The optional export saves all eleven estimates per stock-month to the local `DATA_DIR/eap/betas.parquet` file.
 
 {{< include _write-eap.qmd >}}
 

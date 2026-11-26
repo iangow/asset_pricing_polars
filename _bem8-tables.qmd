@@ -10,12 +10,10 @@ assert all(betas.select(pl.col(beta_labels).is_finite().drop_nulls().all()).row(
 
 ## Summary Statistics {#compare-the-beta-estimates}
 
-@tbl-bem8-summary averages monthly cross-sectional statistics. The count
-is the average number of stocks with an available estimate in a month.
-For example, the dispersion of the one-month daily beta reflects both
-differences in stocks' exposures and estimation noise from short return
-histories. We use sample standard deviations, bias-adjusted skewness and
-excess kurtosis, and linearly interpolated quantiles.
+@tbl-bem8-summary averages monthly cross-sectional statistics.
+The count is the average number of stocks with an available estimate in a month.
+For example, the dispersion of the one-month daily beta reflects both differences in stocks' exposures and estimation noise from short return histories.
+We use sample standard deviations, bias-adjusted skewness and excess kurtosis, and linearly interpolated quantiles.
 
 ```{python}
 beta_long = betas.unpivot(
@@ -52,20 +50,17 @@ show_table(
 )
 ```
 
-The mean and standard deviation of the 12-month daily beta are 0.78
-and 0.61, as in BEM. The one-month daily estimate is available for
-4,759 stocks in the average month, compared with 4,742 in the book.
+The mean and standard deviation of the 12-month daily beta are 0.78 and 0.61, as in BEM.
+The one-month daily estimate is available for 4,759 stocks in the average month, compared with 4,742 in the book.
 Our Dimson estimate is available for 4,431 stocks, compared with 4,440.
-In our data the five-day lead cutoff reduces coverage by eight stocks
-per month relative to the 12-month daily beta.
+In our data the five-day lead cutoff reduces coverage by eight stocks per month relative to the 12-month daily beta.
 
 ## Correlations
 
 @tbl-bem8-correlations reports the mean of the monthly correlations.
 For each pair, we use stocks for which both estimates are available.
-Winsorize each beta within month at the 0.5th and 99.5th percentiles
-for Pearson correlations below the diagonal. Use the original values
-for Spearman rank correlations above the diagonal.
+Winsorize each beta within month at the 0.5th and 99.5th percentiles for Pearson correlations below the diagonal.
+Use the original values for Spearman rank correlations above the diagonal.
 
 ```{python}
 def winsorize_beta(column):
@@ -108,17 +103,15 @@ show_table(pl.DataFrame(correlations, schema=["Beta", *beta_labels], orient="row
 ```
 
 BEM describe Table 8.2 as monthly in §8.3 and annual in its caption.
-We use monthly cross-sections, consistent with the discussion and sample
-construction. Correlations between similar lookbacks can partly reflect
-the observations shared by the estimation windows.
+We use monthly cross-sections, consistent with the discussion and sample construction.
+Correlations between similar lookbacks can partly reflect the observations shared by the estimation windows.
 
 ## Persistence {#measure-persistence}
 
-@tbl-bem8-persistence compares a stock's winsorized beta with its beta
-exactly $\tau$ calendar months later. We calculate a Pearson correlation
-across stocks in each month and average over months. We leave cells
-blank when the stock-return windows overlap. This helps distinguish
-persistence from the effect of using some of the same returns twice.
+@tbl-bem8-persistence compares a stock's winsorized beta with its beta exactly $\tau$ calendar months later.
+We calculate a Pearson correlation across stocks in each month and average over months.
+We leave cells blank when the stock-return windows overlap.
+This helps distinguish persistence from the effect of using some of the same returns twice.
 
 ```{python}
 def persistence(lag):
@@ -148,21 +141,19 @@ show_table(persistence_table.select(
 ))
 ```
 
-The 12-month daily beta has a correlation of 0.63 with its value one
-year later, matching BEM. A year of monthly returns yields a correlation
-of 0.20. This difference suggests that, over the same one-year
-lookback, the daily estimate captures a more stable stock characteristic.
+The 12-month daily beta has a correlation of 0.63 with its value one year later, matching BEM.
+A year of monthly returns yields a correlation of 0.20.
+This difference suggests that, over the same one-year lookback, the daily estimate captures a more stable stock characteristic.
 
 ## Beta and Stock Returns
 
 ### Portfolio Analysis {#sort-stocks-into-beta-deciles}
 
-We form deciles using all eligible stocks with an estimate of the given
-beta in month $t$. A stock's decile is one plus the number of breakpoints
-its beta exceeds. After forming the groups, we join the next month's
-excess return. We keep a holding-period return even if a stock leaves
-the common-share universe during that month. The value weights use
-market capitalization measured at formation.
+We form deciles using all eligible stocks with an estimate of the given beta in month $t$.
+A stock's decile is one plus the number of breakpoints its beta exceeds.
+After forming the groups, we join the next month's excess return.
+We keep a holding-period return even if a stock leaves the common-share universe during that month.
+The value weights use market capitalization measured at formation.
 
 ```{python}
 #| echo: false
@@ -228,10 +219,9 @@ portfolios = (
 )
 ```
 
-We compute the high-minus-low return each month. Its CAPM alpha is the
-intercept when that return is regressed on the holding month's market
-excess return. For each portfolio, we report returns and alphas in
-percent per month and use six Newey–West lags for their $t$-statistics.
+We compute the high-minus-low return each month.
+Its CAPM alpha is the intercept when that return is regressed on the holding month's market excess return.
+For each portfolio, we report returns and alphas in percent per month and use six Newey–West lags for their $t$-statistics.
 
 ```{python}
 import statspai as sp
@@ -302,26 +292,20 @@ table_8_5 = portfolio_table("value", include_beta=False)
 show_table(table_8_5)
 ```
 
-Using 12-month daily betas, the high-minus-low excess return is
-$-0.55\%$ per month with equal weights (@tbl-bem8-equal) and $-0.05\%$
-with value weights (@tbl-bem8-value). BEM report $-0.53\%$ and $-0.05\%$,
-respectively. The direction of the equal-weighted spread runs against
-the CAPM prediction, and the spread is much smaller when large stocks
-receive more weight.
+Using 12-month daily betas, the high-minus-low excess return is $-0.55\%$ per month with equal weights (@tbl-bem8-equal) and $-0.05\%$ with value weights (@tbl-bem8-value).
+BEM report $-0.53\%$ and $-0.05\%$, respectively.
+The direction of the equal-weighted spread runs against the CAPM prediction, and the spread is much smaller when large stocks receive more weight.
 
 ### Fama–MacBeth Regression Analysis {#run-famamacbeth-regressions}
 
-For each measure of beta, we regress next month's excess return on beta
-in each monthly cross-section,
+For each measure of beta, we regress next month's excess return on beta in each monthly cross-section,
 
 $$
 r_{i,t+1}=a_{t+1}+b_{t+1}\widehat\beta_{i,t}+u_{i,t+1}.
 $$
 
-We use the same winsorization as for the Pearson correlations and apply
-six Newey–West lags to the monthly coefficient series. The CAPM predicts
-that the mean slope estimates the market risk premium and the mean
-intercept is zero.
+We use the same winsorization as for the Pearson correlations and apply six Newey–West lags to the monthly coefficient series.
+The CAPM predicts that the mean slope estimates the market risk premium and the mean intercept is zero.
 
 ```{python}
 fm_data = (
@@ -361,8 +345,6 @@ table_8_6 = pl.DataFrame({
 show_table(table_8_6)
 ```
 
-In @tbl-bem8-fm the 12-month daily slope is $-0.27$, compared with
-BEM's $-0.26$. An increase in beta of one is associated with about
-0.27 percentage points lower excess return per month. The mean intercept
-is 0.97% per month, and the slopes for the betas estimated from monthly
-returns are all close to zero.
+In @tbl-bem8-fm the 12-month daily slope is $-0.27$, compared with BEM's $-0.26$.
+An increase in beta of one is associated with about 0.27 percentage points lower excess return per month.
+The mean intercept is 0.97% per month, and the slopes for the betas estimated from monthly returns are all close to zero.

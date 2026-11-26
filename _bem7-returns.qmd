@@ -1,14 +1,11 @@
 ## Stock Returns and Excess Returns {#sec-bem-returns}
 
-Start with eligible common stocks at the end of month $t$ and look up the
-return for the same security in month $t+1$. Do not require it to remain in the
-common-stock universe in the holding month: that would screen out delistings.
+Start with eligible common stocks at the end of month $t$ and look up the return for the same security in month $t+1$.
+Do not require it to remain in the common-stock universe in the holding month: that would screen out delistings.
 
-Chapter 7 uses the legacy CRSP delisting return in place of the regular monthly
-return if the stock delists. If no delisting return is recorded, it imputes a
-loss of 30% for the codes listed below and a loss of 100% for other delistings.
-This is the book's convention for legacy data, not a reason to adjust the
-reported returns from CRSP CIZ a second time.
+Chapter 7 uses the legacy CRSP delisting return in place of the regular monthly return if the stock delists.
+If no delisting return is recorded, it imputes a loss of 30% for the codes listed below and a loss of 100% for other delistings.
+This is the book's convention for legacy data, not a reason to adjust the reported returns from CRSP CIZ a second time.
 
 ```{python}
 first_return = pl.date(1926, 7, 1)
@@ -51,12 +48,10 @@ return_panel = (
 )
 ```
 
-The Fama–French risk-free return applies to the holding month, not the
-formation month. We first calculate the statistics across stocks for each
-return month, then average those monthly statistics. In particular, the means
-give each month equal weight, irrespective of the number of stocks in that
-month. We use sample standard deviations, bias-adjusted skewness and
-excess kurtosis, and linearly interpolated quantiles.
+The Fama–French risk-free return applies to the holding month, not the formation month.
+We first calculate the statistics across stocks for each return month, then average those monthly statistics.
+In particular, the means give each month equal weight, irrespective of the number of stocks in that month.
+We use sample standard deviations, bias-adjusted skewness and excess kurtosis, and linearly interpolated quantiles.
 
 ```{python}
 def summarize_returns(start):
@@ -125,15 +120,11 @@ with pl.Config(tbl_rows=12):
     display(display_returns(table_7_3))
 ```
 
-On the local vintage, average adjusted excess returns are 0.96% and 0.74%
-per month for the two samples, versus 0.96% and 0.75% in the book. We get
-about 3,111 and 4,780 valid adjusted returns per month, versus 3,112 and
-4,782. The upper tail is less close: the average monthly maximum adjusted
-excess return is 191.10% and 273.12%, against 208.10% and 302.74% in the
-book. The unadjusted maxima round to 186.78% and 266.66%, against 186.80%
-and 266.66% in the book. That points toward a difference in the delisting
-observations rather than a general shift in ordinary returns, but we cannot
-identify those observations without the original data and code.
+On the local vintage, average adjusted excess returns are 0.96% and 0.74% per month for the two samples, versus 0.96% and 0.75% in the book.
+We get about 3,111 and 4,780 valid adjusted returns per month, versus 3,112 and 4,782.
+The upper tail is less close: the average monthly maximum adjusted excess return is 191.10% and 273.12%, against 208.10% and 302.74% in the book.
+The unadjusted maxima round to 186.78% and 266.66%, against 186.80% and 266.66% in the book.
+That points toward a difference in the delisting observations rather than a general shift in ordinary returns, but we cannot identify those observations without the original data and code.
 
 ```{python}
 #| include: false

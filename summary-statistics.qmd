@@ -18,26 +18,22 @@ jupyter: python3
 
 {{< include _show-table.qmd >}}
 
-Bali, Engle, and Murray (2016), Chapter 2, summarize the distribution of
-stock characteristics within each year, then average those statistics
-across years. This gives each year's cross-section equal weight.
+Bali, Engle, and Murray (2016), Chapter 2, summarize the distribution of stock characteristics within each year, then average those statistics across years.
+This gives each year's cross-section equal weight.
 
 ## Implementation
 
 ### Periodic Cross-Sectional Summary Statistics {#annual-cross-sections}
 
-The sample covers U.S. common stocks at each December 31 from 1988
-through 2012. We take the December value of the 12-month daily beta
-from the [market beta chapter](beta-replication.qmd#sec-bem-beta).
-It uses all available daily excess returns in the calendar year and
-requires at least 200 matched observations.
+The sample covers U.S. common stocks at each December 31 from 1988 through 2012.
+We take the December value of the 12-month daily beta from the [market beta chapter](beta-replication.qmd#sec-bem-beta).
+It uses all available daily excess returns in the calendar year and requires at least 200 matched observations.
 
 {{< include _bem-annual-betas.qmd >}}
 
 For each year, compute the statistics across the stocks with a beta.
-We use the sample standard deviation, bias-adjusted skewness and excess
-kurtosis, and linearly interpolated percentiles. The count is the number
-of available values in that cross-section.
+We use the sample standard deviation, bias-adjusted skewness and excess kurtosis, and linearly interpolated percentiles.
+The count is the number of available values in that cross-section.
 
 ```{python}
 def cross_section(variable):
@@ -75,9 +71,8 @@ show_table(annual_stats.rename({"year": "Year"}))
 
 ### Average Cross-Sectional Summary Statistics {#average-across-years}
 
-To describe the typical cross-section, take the mean of each column in
-@tbl-bem2-annual. For example, if $n_t$ stocks have valid betas in year
-$t$, their mean is $\bar{\beta}_t = \sum_{i=1}^{n_t}\widehat{\beta}_{i,t}/n_t$.
+To describe the typical cross-section, take the mean of each column in @tbl-bem2-annual.
+For example, if $n_t$ stocks have valid betas in year $t$, their mean is $\bar{\beta}_t = \sum_{i=1}^{n_t}\widehat{\beta}_{i,t}/n_t$.
 The table reports $T^{-1}\sum_{t=1}^{T}\bar{\beta}_t$.
 A pooled mean would instead give years with more observations more weight.
 The same two-step procedure applies to the median and other statistics.
@@ -94,34 +89,28 @@ average_stats = annual_stats.select(pl.exclude("year").mean())
 show_table(average_stats.with_columns(pl.col("n").round().cast(pl.Int64)))
 ```
 
-In this build the average annual mean beta is 0.75 and the average annual
-median is 0.71, both matching BEM at the reported precision. The average
-cross-section has 5,195 estimates, compared with 5,198 in the book.
-The annual table also shows that mean beta increased from 0.46 in 1988
-to 1.04 in 2012. The time-series average hides that change.
+In this build the average annual mean beta is 0.75 and the average annual median is 0.71, both matching BEM at the reported precision.
+The average cross-section has 5,195 estimates, compared with 5,198 in the book.
+The annual table also shows that mean beta increased from 0.46 in 1988 to 1.04 in 2012.
+The time-series average hides that change.
 
 ## Presentation and Interpretation {#summarize-several-characteristics}
 
-We also summarize year-end market capitalization in millions of dollars,
-its natural logarithm (size), book-to-market, and the following calendar
-year's excess return. The [size chapter](size-replication.qmd) exports December market
-capitalization and its log. The [value chapter](value-replication.qmd)
-exports the ratio of prior-year fiscal book equity to prior December
-market capitalization. We use its signed ratio, consistent with the
-negative observations in BEM Table 2.3.
+We also summarize year-end market capitalization in millions of dollars, its natural logarithm (size), book-to-market, and the following calendar year's excess return.
+The [size chapter](size-replication.qmd) exports December market capitalization and its log.
+The [value chapter](value-replication.qmd) exports the ratio of prior-year fiscal book equity to prior December market capitalization.
+We use its signed ratio, consistent with the negative observations in BEM Table 2.3.
 
-We compound available CRSP monthly stock returns within the holding year
-and subtract the compounded risk-free return. This construction uses
-CRSP's reported monthly returns. BEM §1.1 does not spell out how its annual
-returns handle delistings. Formation years run through 2012, but the
-return series ends in 2012, so the last formation year contributes
-zero observations to the return count and no return moments.
+We compound available CRSP monthly stock returns within the holding year and subtract the compounded risk-free return.
+This construction uses CRSP's reported monthly returns.
+BEM §1.1 does not spell out how its annual returns handle delistings.
+Formation years run through 2012, but the return series ends in 2012, so the last formation year contributes zero observations to the return count and no return moments.
 
 {{< include _bem2-characteristics.qmd >}}
 
-Apply the same summary to each variable separately. This keeps stocks
-with a beta but no book-to-market ratio in the beta row. The observation
-count reflects the available data for each variable.
+Apply the same summary to each variable separately.
+This keeps stocks with a beta but no book-to-market ratio in the beta row.
+The observation count reflects the available data for each variable.
 
 ```{python}
 variables = ["Beta", "MktCap", "Size", "BM", "excess"]
@@ -149,13 +138,12 @@ table_2_3 = (
 show_table(table_2_3)
 ```
 
-Market capitalization has a long right tail. In @tbl-bem2-characteristics,
-the mean is about $2 billion while the median is about $188 million.
-Taking logs reduces skewness. Average next-year excess returns are
-12.40% per year, matching BEM, with a much smaller median of about 0.90%.
-Book-to-market averages 0.74 across 4,336 stocks per year, versus 0.71
-across 4,273 in BEM. The average yearly maximum excess return is
-1,918% here and 1,841% in the book.
+Market capitalization has a long right tail.
+In @tbl-bem2-characteristics, the mean is about $2 billion while the median is about $188 million.
+Taking logs reduces skewness.
+Average next-year excess returns are 12.40% per year, matching BEM, with a much smaller median of about 0.90%.
+Book-to-market averages 0.74 across 4,336 stocks per year, versus 0.71 across 4,273 in BEM.
+The average yearly maximum excess return is 1,918% here and 1,841% in the book.
 
 ```{python}
 #| include: false

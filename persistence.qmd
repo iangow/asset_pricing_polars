@@ -4,11 +4,8 @@ jupyter: python3
 
 # Persistence Analysis {#sec-bem-persistence}
 
-Bali, Engle, and Murray (2016), Chapter 4, measure persistence by
-correlating a stock characteristic with its own future value across
-stocks. We use the December 1988–2012 panel from
-[Chapter 2](summary-statistics.qmd), including its signed book-to-market
-ratio (BM).
+Bali, Engle, and Murray (2016), Chapter 4, measure persistence by correlating a stock characteristic with its own future value across stocks.
+We use the December 1988–2012 panel from [Chapter 2](summary-statistics.qmd), including its signed book-to-market ratio (BM).
 
 {{< include _show-table.qmd >}}
 {{< include _bem-annual-betas.qmd >}}
@@ -18,12 +15,10 @@ ratio (BM).
 
 ### Periodic Cross-Sectional Persistence {#annual-cross-sectional-persistence}
 
-For a lag of $\tau$ years, match stocks by `permno` in years $t$ and
-$t+\tau$. For each characteristic $X$, keep the set $\mathcal S_{t,\tau}$
-of stocks with finite values of $X$ in both years. Within this matched
-sample, winsorize each year's values separately at the 0.5th and 99.5th
-percentiles. Using the winsorized values and their cross-sectional means,
-the Pearson correlation is
+For a lag of $\tau$ years, match stocks by `permno` in years $t$ and $t+\tau$.
+For each characteristic $X$, keep the set $\mathcal S_{t,\tau}$ of stocks with finite values of $X$ in both years.
+Within this matched sample, winsorize each year's values separately at the 0.5th and 99.5th percentiles.
+Using the winsorized values and their cross-sectional means, the Pearson correlation is
 
 $$
 \rho_{t,t+\tau}(X)=
@@ -33,9 +28,8 @@ $$
                    \sqrt{\sum_{i\in\mathcal S_{t,\tau}}(X_{i,t+\tau}-\bar X_{t+\tau})^2}}.
 $$ {#eq-bem4-periodic}
 
-Shift the future year's join key back by the lag so that each stock's
-observation in $t+\tau$ joins its observation in $t$. Use the same
-winsorized Pearson correlation as in [Chapter 3](correlation.qmd).
+Shift the future year's join key back by the lag so that each stock's observation in $t+\tau$ joins its observation in $t$.
+Use the same winsorized Pearson correlation as in [Chapter 3](correlation.qmd).
 
 ```{python}
 from _bem_monthly import winsorized_corr
@@ -72,11 +66,10 @@ beta_by_year = (
 show_table(beta_by_year)
 ```
 
-The lags are in years. The blank cells in @tbl-bem4-annual require a
-comparison year beyond 2012. Of the 110 estimates, 107 agree with BEM
-to two decimal places and three differ by 0.01. The companion plot in
-@fig-bem4-annual shows how much beta persistence varies across formation
-years, even at the same lag.
+The lags are in years.
+The blank cells in @tbl-bem4-annual require a comparison year beyond 2012.
+Of the 110 estimates, 107 agree with BEM to two decimal places and three differ by 0.01.
+The companion plot in @fig-bem4-annual shows how much beta persistence varies across formation years, even at the same lag.
 
 ```{python}
 #| label: fig-bem4-annual
@@ -102,17 +95,15 @@ from plotnine_polars import aes
 
 ### Average Cross-Sectional Persistence {#average-across-years}
 
-Give each formation year equal weight. With $N$ years indexed from 1
-through $N$, the average persistence at lag $\tau$ is
+Give each formation year equal weight.
+With $N$ years indexed from 1 through $N$, the average persistence at lag $\tau$ is
 
 $$
 \rho_\tau(X)=\frac{1}{N-\tau}\sum_{t=1}^{N-\tau}\rho_{t,t+\tau}(X).
 $$ {#eq-bem4-average}
 
-Here $N=25$, so the one-year estimate averages 24 correlations and
-the five-year estimate averages 20. @tbl-bem4-beta reports the averages
-for beta and @tbl-bem4-characteristics puts all three characteristics
-side by side.
+Here $N=25$, so the one-year estimate averages 24 correlations and the five-year estimate averages 20.
+@tbl-bem4-beta reports the averages for beta and @tbl-bem4-characteristics puts all three characteristics side by side.
 
 ```{python}
 average = annual.group_by("Lag").agg(pl.col(measures).mean()).sort("Lag")
@@ -130,13 +121,10 @@ show_table(pl.DataFrame({
 
 ## Interpreting Persistence {#interpret-persistence}
 
-Low beta persistence can reflect changing market exposures, noisy
-estimates, or both. Overlapping estimation windows can raise the
-correlation because the two estimates use some of the same returns.
-Here the December 12-month betas use daily returns from separate
-calendar years. The set of stocks with valid measurements at both
-dates can also change with the lag, so differences across lags reflect
-both the time between measurements and the stocks observed at both dates.
+Low beta persistence can reflect changing market exposures, noisy estimates, or both.
+Overlapping estimation windows can raise the correlation because the two estimates use some of the same returns.
+Here the December 12-month betas use daily returns from separate calendar years.
+The set of stocks with valid measurements at both dates can also change with the lag, so differences across lags reflect both the time between measurements and the stocks observed at both dates.
 
 ## Presenting Persistence
 
@@ -149,12 +137,12 @@ show_table(average.rename({"Lag": "Lag (years)"}))
 ```
 
 @fig-bem4-averages plots the averages from @tbl-bem4-characteristics.
-Size is the most persistent characteristic at every lag. Its average
-correlation falls from 0.96 at one year to 0.88 at five years. At five
-years, beta and BM are at 0.42 and 0.47. The size averages agree with
-BEM at the reported precision. Beta's three-year average is 0.49 here
-and 0.48 in BEM, and the other beta averages agree. BM correlations are
-0.02 to 0.05 higher in this replication across the five lags.
+Size is the most persistent characteristic at every lag.
+Its average correlation falls from 0.96 at one year to 0.88 at five years.
+At five years, beta and BM are at 0.42 and 0.47.
+The size averages agree with BEM at the reported precision.
+Beta's three-year average is 0.49 here and 0.48 in BEM, and the other beta averages agree.
+BM correlations are 0.02 to 0.05 higher in this replication across the five lags.
 
 ```{python}
 #| label: fig-bem4-averages

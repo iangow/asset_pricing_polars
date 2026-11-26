@@ -4,18 +4,16 @@ jupyter: python3
 
 # The Value Premium {#sec-value-replication}
 
-We follow Chapter 10 of Bali, Engle, and Murray (2016), *Empirical Asset
-Pricing*. Book-to-market compares an accounting measure of equity with
-what investors pay for the shares. We ask how this ratio varies across
-stocks and whether it predicts the following month's excess return.
+We follow Chapter 10 of Bali, Engle, and Murray (2016), *Empirical Asset Pricing*.
+Book-to-market compares an accounting measure of equity with what investors pay for the shares.
+We ask how this ratio varies across stocks and whether it predicts the following month's excess return.
 
 ## Calculating Book-to-Market Ratio {#calculate-book-to-market}
 
-Book equity in millions is stockholders' equity plus deferred taxes and
-the investment tax credit, less preferred stock. We use preferred stock
-redemption value, liquidation value, or par value, in that order. BEM
-require stockholders' equity and deferred taxes. They use zero for a
-missing tax credit or when all three preferred stock fields are missing.
+Book equity in millions is stockholders' equity plus deferred taxes and the investment tax credit, less preferred stock.
+We use preferred stock redemption value, liquidation value, or par value, in that order.
+BEM require stockholders' equity and deferred taxes.
+They use zero for a missing tax credit or when all three preferred stock fields are missing.
 We take the last fiscal year-end within the calendar year.
 
 ```{python}
@@ -46,17 +44,15 @@ funda = (
 )
 ```
 
-Use CRSP–Compustat links valid on the fiscal year-end. When a direct
-link is unavailable, try an unambiguous historical CUSIP match. We use
-the legacy monthly names file for this fallback.
+Use CRSP–Compustat links valid on the fiscal year-end.
+When a direct link is unavailable, try an unambiguous historical CUSIP match.
+We use the legacy monthly names file for this fallback.
 
 {{< include _bem10-links.qmd >}}
 
-Divide book equity by the nominal December capitalization for the same
-calendar year, from the [size chapter](size-replication.qmd). Make that
-ratio available at the end of the following June and carry it through the
-next May. This gives a December fiscal year-end at least six months before
-the ratio enters a portfolio sort.
+Divide book equity by the nominal December capitalization for the same calendar year, from the [size chapter](size-replication.qmd).
+Make that ratio available at the end of the following June and carry it through the next May.
+This gives a December fiscal year-end at least six months before the ratio enters a portfolio sort.
 
 ```{python}
 all_sizes = load_parquet("sizes", "eap")
@@ -86,8 +82,7 @@ book_to_market = (
 ```
 
 For this chapter, use positive book equity so the logarithm is defined.
-The optional `eap.book_to_market` export keeps the signed ratio as well
-for the [annual summaries](summary-statistics.qmd).
+The optional `eap.book_to_market` export keeps the signed ratio as well for the [annual summaries](summary-statistics.qmd).
 
 {{< include _write-eap.qmd >}}
 
@@ -106,9 +101,8 @@ sizes = all_sizes.filter(
 ## Summary Statistics
 
 The numerator and denominator come from the same annual vintage.
-For the dollar amounts in the table, express both in December 2012
-dollars using the CPI for the observation month. The common
-deflator leaves the book-to-market ratio unchanged.
+For the dollar amounts in the table, express both in December 2012 dollars using the CPI for the observation month.
+The common deflator leaves the book-to-market ratio unchanged.
 
 {{< include _show-table.qmd >}}
 
@@ -141,18 +135,15 @@ show_table(mean_cross_sections(value_panel, {
 }))
 ```
 
-Availability depends on finding both a fiscal book value and a prior
-December capitalization. We find an average of 3,413 stocks per
-month, against 3,409 in BEM. The mean and median BM round to 0.94
-and 0.72 in both samples.
+Availability depends on finding both a fiscal book value and a prior December capitalization.
+We find an average of 3,413 stocks per month, against 3,409 in BEM.
+The mean and median BM round to 0.94 and 0.72 in both samples.
 
 ## Correlations {#correlation-and-persistence}
 
-The Pearson correlations use 0.5% winsorization at both ends of each
-pair's monthly sample. The Spearman correlations use the original ranks.
-Since the logarithm preserves order for positive ratios, BM and ln BM
-have a Spearman correlation of one and the same rank correlation with
-each other variable.
+The Pearson correlations use 0.5% winsorization at both ends of each pair's monthly sample.
+The Spearman correlations use the original ranks.
+Since the logarithm preserves order for positive ratios, BM and ln BM have a Spearman correlation of one and the same rank correlation with each other variable.
 
 ```{python}
 from _bem_monthly import correlation_matrix, period_correlations, persistence
@@ -170,10 +161,9 @@ show_table(correlation_matrix(corr.row(0, named=True), measures))
 
 ## Persistence
 
-Book-to-market updates once a year, so we start the persistence analysis
-at a lag of twelve months. Shorter lags would often compare the same
-book-to-market observation with itself. As in the annual persistence
-analysis, winsorize each side after matching the sample by date and stock.
+Book-to-market updates once a year, so we start the persistence analysis at a lag of twelve months.
+Shorter lags would often compare the same book-to-market observation with itself.
+As in the annual persistence analysis, winsorize each side after matching the sample by date and stock.
 
 ```{python}
 #| label: tbl-bem10-persistence
@@ -186,13 +176,11 @@ show_table(persistence(value_panel, {"bm": "BM", "log_bm": "ln BM"}, [12, 24, 36
 
 ### Univariate Portfolio Analysis
 
-Form ten portfolios at the end of each month using the book-to-market
-ratio. Compare breakpoints from all eligible stocks with breakpoints
-from NYSE stocks. Holding returns use the next month's CRSP returns
-and the delisting adjustment in [Chapter 7](crsp-replication.qmd).
+Form ten portfolios at the end of each month using the book-to-market ratio.
+Compare breakpoints from all eligible stocks with breakpoints from NYSE stocks.
+Holding returns use the next month's CRSP returns and the delisting adjustment in [Chapter 7](crsp-replication.qmd).
 Value weights use current market capitalization at formation.
-Returns and CAPM alphas are percentages per month, and $t$-statistics
-use six Newey–West lags.
+Returns and CAPM alphas are percentages per month, and $t$-statistics use six Newey–West lags.
 
 ```{python}
 from _bem_monthly import bivariate_months, bivariate_panel, fama_macbeth_table, univariate_panel
@@ -216,16 +204,13 @@ show_table(pl.concat([
 ]).select("Breakpoints", pl.exclude("Breakpoints")))
 ```
 
-The equal-weighted high-minus-low spread with all-stock breakpoints is
-1.33% per month, compared with 1.34% in BEM. With value weighting, the
-spread is 0.57% per month in this build.
+The equal-weighted high-minus-low spread with all-stock breakpoints is 1.33% per month, compared with 1.34% in BEM.
+With value weighting, the spread is 0.57% per month in this build.
 
 ### Bivariate Portfolio Analysis {#control-for-beta-or-size}
 
-Sort first on a control variable, then on book-to-market within each
-control quintile. This asks whether the return difference between
-high and low book-to-market stocks persists among stocks of similar
-beta or size.
+Sort first on a control variable, then on book-to-market within each control quintile.
+This asks whether the return difference between high and low book-to-market stocks persists among stocks of similar beta or size.
 
 ```{python}
 #| label: tbl-bem10-dependent
@@ -252,10 +237,9 @@ show_table(pl.concat(differences + average_portfolios).select(
 ))
 ```
 
-With independent sorts, the book-to-market cutoffs are the same in
-each control quintile. Each portfolio is the intersection of the two
-quintile assignments. An average portfolio equally weights the five
-constituent portfolio returns each month.
+With independent sorts, the book-to-market cutoffs are the same in each control quintile.
+Each portfolio is the intersection of the two quintile assignments.
+An average portfolio equally weights the five constituent portfolio returns each month.
 
 ```{python}
 def value_quintiles(control):
@@ -283,9 +267,8 @@ show_table(value_quintiles("cap"))
 
 ### Fama–MacBeth Regression Analysis {#famamacbeth-regressions}
 
-Compare the slopes on raw and logged book-to-market with and without
-beta and log size. The explanatory variables are winsorized within
-month at the 0.5th and 99.5th percentiles.
+Compare the slopes on raw and logged book-to-market with and without beta and log size.
+The explanatory variables are winsorized within month at the 0.5th and 99.5th percentiles.
 
 ```{python}
 #| label: tbl-bem10-fm
@@ -302,11 +285,9 @@ show_table(fama_macbeth_table(panel, specifications, measures))
 
 ## The Value Factor
 
-HML averages the high-book-to-market portfolios across the two size
-groups and subtracts the average of their low-book-to-market counterparts.
-Using small and big stocks on both sides reduces the weight of the size
-effect in the comparison. We use the published monthly Fama–French HML
-series from July 1926 through December 2012.
+HML averages the high-book-to-market portfolios across the two size groups and subtracts the average of their low-book-to-market counterparts.
+Using small and big stocks on both sides reduces the weight of the size effect in the comparison.
+We use the published monthly Fama–French HML series from July 1926 through December 2012.
 
 ```{python}
 #| label: fig-bem10-hml
@@ -317,9 +298,8 @@ from _bem_monthly import plot_factor
 plot_factor("hml")
 ```
 
-In the Fama–French three-factor model, the intercept measures the
-portfolio's return after accounting for exposures to market, size, and
-value factors. For excess portfolio return $r_{p,t}$, the regression is
+In the Fama–French three-factor model, the intercept measures the portfolio's return after accounting for exposures to market, size, and value factors.
+For excess portfolio return $r_{p,t}$, the regression is
 
 $$
 r_{p,t}=\alpha_p+\beta_{p,M}MKT_t+\beta_{p,S}SMB_t+\beta_{p,H}HML_t+\varepsilon_{p,t}.

@@ -16,20 +16,16 @@ jupyter: python3
 </style>
 ```
 
-We reconstruct Tables 8.1–8.6 of Bali, Engle, and Murray (2016),
-[*Empirical Asset Pricing*](https://www.wiley.com/en-us/empirical-asset-pricing-the-cross-section-of-stock-returns-p-9781118095041).
-The sample consists of CRSP common stocks at the end of each month from
-June 1963 through November 2012. We use legacy CRSP daily and monthly
-stock returns and the corresponding Fama–French factors.
+We reconstruct Tables 8.1–8.6 of Bali, Engle, and Murray (2016), [*Empirical Asset Pricing*](https://www.wiley.com/en-us/empirical-asset-pricing-the-cross-section-of-stock-returns-p-9781118095041).
+The sample consists of CRSP common stocks at the end of each month from June 1963 through November 2012.
+We use legacy CRSP daily and monthly stock returns and the corresponding Fama–French factors.
 See [Preliminaries](data.qmd#data-vintages) for the source vintages.
 
 ## Estimating Beta {#estimate-market-beta}
 
-The CAPM predicts that a stock's expected excess return is its market beta
-times the market risk premium, $\mathbb E[r_i]=\beta_i\mathbb E[MKT]$.
-To estimate beta, regress the stock's
-historical excess return $r_{i,s}=R_{i,s}-R_{f,s}$ on the market excess
-return $MKT_s$, with an intercept. For stock $i$ at the end of month $t$,
+The CAPM predicts that a stock's expected excess return is its market beta times the market risk premium, $\mathbb E[r_i]=\beta_i\mathbb E[MKT]$.
+To estimate beta, regress the stock's historical excess return $r_{i,s}=R_{i,s}-R_{f,s}$ on the market excess return $MKT_s$, with an intercept.
+For stock $i$ at the end of month $t$,
 
 $$
 r_{i,s}=\alpha_i+\beta_i MKT_s+\varepsilon_{i,s},
@@ -39,22 +35,20 @@ r_{i,s}=\alpha_i+\beta_i MKT_s+\varepsilon_{i,s},
 {\operatorname{Var}_{s\in W_t}(MKT_s)},
 $$
 
-where $W_t$ is the estimation window ending in month $t$. Both moments use
-the same dates with valid stock and market returns. BEM use the following
-windows and minimum observation counts (§8.1).
+where $W_t$ is the estimation window ending in month $t$.
+Both moments use the same dates with valid stock and market returns.
+BEM use the following windows and minimum observation counts (§8.1).
 
 | Return frequency | Window | Minimum observations |
 |:--|:--|:--|
 | Daily | 1, 3, 6, 12, or 24 months | 15, 50, 100, 200, or 450 |
 | Monthly | 1, 2, 3, or 5 years | 10, 20, 24, or 24 |
 
-Suppose a stock trades infrequently. Its return may reflect news that
-first moved the market on a different trading day. BEM consider two
-adjustments that use a year of daily returns and a 200-observation minimum.
-Scholes–Williams uses three separate slopes $b_{-1}$, $b_0$, and $b_{+1}$
-from regressing $r_{i,s}$ on $MKT_{s+k}$ one at a time.
-Dimson uses the slopes $\gamma_k$ from one regression with all eleven
-market returns from $s-5$ through $s+5$ as predictors.
+Suppose a stock trades infrequently.
+Its return may reflect news that first moved the market on a different trading day.
+BEM consider two adjustments that use a year of daily returns and a 200-observation minimum.
+Scholes–Williams uses three separate slopes $b_{-1}$, $b_0$, and $b_{+1}$ from regressing $r_{i,s}$ on $MKT_{s+k}$ one at a time.
+Dimson uses the slopes $\gamma_k$ from one regression with all eleven market returns from $s-5$ through $s+5$ as predictors.
 
 $$
 \widehat\beta^{SW}_{i,t}
@@ -63,12 +57,11 @@ $$
 \widehat\beta^{D}_{i,t}=\sum_{k=-5}^{5}\widehat\gamma_k,
 $$
 
-where $\widehat\rho_M$ is the market return's first-order autocorrelation
-over the estimation window. We shift the market series on the trading
-calendar before joining it to stock returns. A lag can precede the first
-stock-return date in the window. We omit response dates whose market lead
-falls after formation and apply the minimum to the remaining complete
-observations. This keeps all beta inputs observable at formation.
+where $\widehat\rho_M$ is the market return's first-order autocorrelation over the estimation window.
+We shift the market series on the trading calendar before joining it to stock returns.
+A lag can precede the first stock-return date in the window.
+We omit response dates whose market lead falls after formation and apply the minimum to the remaining complete observations.
+This keeps all beta inputs observable at formation.
 
 {{< include _bem8-estimation.qmd >}}
 

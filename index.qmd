@@ -1,10 +1,8 @@
 # Preface {#about .unnumbered}
 
-A worked book in Python Polars following Bali, Engle, and Murray's
-*Empirical Asset Pricing: The Cross Section of Stock Returns*. The
-methods chapters use their 1988–2012 annual teaching sample. The
-empirical chapters reconstruct the CRSP sample, estimate market beta,
-and examine the size effect and value premium using legacy CRSP.
+A worked book in Python Polars following Bali, Engle, and Murray's *Empirical Asset Pricing: The Cross Section of Stock Returns*.
+The methods chapters use their 1988–2012 annual teaching sample.
+The empirical chapters reconstruct the CRSP sample, estimate market beta, and examine the size effect and value premium using legacy CRSP.
 Render with your own copies of the WRDS data.
 
 See [Preliminaries](data.qmd) for the inputs and the [WRDS table list](data.qmd#data-vintages) for their source update dates.

@@ -4,11 +4,9 @@ jupyter: python3
 
 # Fama and Macbeth Regression Analysis {#sec-bem-annual-fm}
 
-This chapter uses BEM's annual methodology sample to illustrate the
-two steps of a Fama–MacBeth regression. The first step fits a
-cross-sectional regression in each formation year. The second averages
-the coefficients across years and estimates their standard errors from
-the time series of annual coefficients.
+This chapter uses BEM's annual methodology sample to illustrate the two steps of a Fama–MacBeth regression.
+The first step fits a cross-sectional regression in each formation year.
+The second averages the coefficients across years and estimates their standard errors from the time series of annual coefficients.
 
 {{< include _show-table.qmd >}}
 {{< include _bem-annual-betas.qmd >}}
@@ -18,11 +16,10 @@ the time series of annual coefficients.
 
 ### Periodic Cross-Sectional Regressions
 
-Compare three univariate regressions with a regression that includes
-beta, size, and book-to-market together. The outcome is the next year's
-excess return in percent. Following BEM, winsorize the regressors at
-0.5% in each year's regression sample. Use six Newey–West lags when
-estimating standard errors for the averages.
+Compare three univariate regressions with a regression that includes beta, size, and book-to-market together.
+The outcome is the next year's excess return in percent.
+Following BEM, winsorize the regressors at 0.5% in each year's regression sample.
+Use six Newey–West lags when estimating standard errors for the averages.
 
 ```{python}
 import statspai as sp
