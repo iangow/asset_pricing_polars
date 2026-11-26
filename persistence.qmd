@@ -74,7 +74,6 @@ show_table(beta_by_year)
 
 The lags are in years.
 The blank cells in @tbl-bem4-annual require a comparison year beyond 2012.
-Of the 110 estimates, 107 agree with BEM to two decimal places and three differ by 0.01.
 The companion plot in @fig-bem4-annual shows how much beta persistence varies across formation years, even at the same lag.
 
 ```{python}
@@ -145,10 +144,9 @@ show_table(average.rename({"Lag": "Lag (years)"}))
 @fig-bem4-averages plots the averages from @tbl-bem4-characteristics.
 Size is the most persistent characteristic at every lag.
 Its average correlation falls from 0.96 at one year to 0.88 at five years.
-At five years, beta and BM are at 0.42 and 0.47.
-The size averages agree with BEM at the reported precision.
-Beta's three-year average is 0.49 here and 0.48 in BEM, and the other beta averages agree.
-BM correlations are 0.02 to 0.05 higher in this replication across the five lags.
+At five years, beta and book-to-market are at 0.42 and 0.47.[^bm-persistence]
+
+[^bm-persistence]: The book-to-market correlations are 0.02 to 0.05 higher across the five lags than in BEM Table 4.3. At five years the correlation is 0.47 here and 0.43 in BEM.
 
 ```{python}
 #| label: fig-bem4-averages

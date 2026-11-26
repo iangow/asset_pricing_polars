@@ -94,9 +94,6 @@ from eap_pl import mean_cross_sections
 show_table(mean_cross_sections(panel, signals))
 ```
 
-Mom has an average monthly cross-sectional mean of 14.12% and standard deviation of 58.40%, both matching BEM to two decimals.
-The average monthly count is 4,424 stocks versus 4,426 in BEM.
-
 ## Correlations
 
 Calculate cross-sectional correlations in each formation month and average them over time.
@@ -127,7 +124,6 @@ show_table(pl.DataFrame([
 ]))
 ```
 
-The monthly calculation reproduces all entries in BEM Table 11.2 at the printed precision.
 Mom is more strongly correlated with size than with beta or book-to-market.
 
 ## Momentum and Stock Returns
@@ -230,7 +226,6 @@ show_table(pl.DataFrame(decile_rows))
 ```
 
 The Mom winner-minus-loser spread averages 1.94% per month with value weights and 1.14% with equal weights.
-BEM report 1.95% and 1.08%, respectively.
 
 ### Returns at Longer Horizons
 
@@ -463,7 +458,6 @@ specifications = [
 show_table(fama_macbeth_table(panel, specifications, terms, digits=3))
 ```
 
-The Mom coefficient rounds to 0.007 in the univariate regression and in the regression with all three controls, matching BEM in both specifications.
 In the full specification, a 100-percentage-point difference in Mom corresponds to about 0.70 percentage points in next month's fitted excess return.
 
 ## The Momentum Factor
@@ -506,8 +500,7 @@ assert momentum_factor.select(pl.col("mom").is_finite().all()).item()
 plot_cumulative_returns(momentum_factor, y_label="Cumulative MOM return")
 ```
 
-The compounded series ends at about 30,312%, compared with 31,207% in BEM.
-Both series show a sharp drawdown in 2009.
+The compounded series shows a sharp drawdown in 2009.
 
 ## The Fama–French–Carhart Four-Factor Model
 

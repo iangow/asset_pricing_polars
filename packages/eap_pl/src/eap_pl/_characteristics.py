@@ -81,8 +81,7 @@ def build_sizes(cpi_path: str | Path = "data/cpi-aucns.csv") -> pl.DataFrame:
         )
         .drop("cpi")
         .with_columns(
-            pl.col(var).log().alias(f"log_{var}")
-            for var in ["cap", "cap_real", "cap_june", "cap_june_real"]
+            pl.col("cap", "cap_real", "cap_june", "cap_june_real").log().name.prefix("log_")
         )
         .collect()
     )

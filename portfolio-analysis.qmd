@@ -309,8 +309,7 @@ show_table(pl.DataFrame(rows))
 
 ### Interpreting the Results
 
-The univariate beta and market-cap spreads in @tbl-bem5-sorts are −6.03 and −20.92 percentage points per year, compared with −6.04 and −20.89 in BEM.
-The book-to-market spread is 16.26 here and 17.59 in BEM.
+In @tbl-bem5-sorts, the high-minus-low spread is negative for beta and market capitalization and positive for book-to-market.
 
 ### Presenting the Results
 
@@ -610,10 +609,10 @@ def bivariate_returns(members, *, dependent=False):
         .group_by("year", "control", "target").agg(pl.col("excess").mean())
     )
     grid = control_grid(cells, "excess")
+    control_returns = pl.col(control_ports)
     spread = grid.group_by("year").agg(
-        (pl.col(c).filter(pl.col("target") == 4).first()
-         - pl.col(c).filter(pl.col("target") == 1).first()).alias(c)
-        for c in control_ports
+        control_returns.filter(pl.col("target") == 4).first()
+        - control_returns.filter(pl.col("target") == 1).first()
     ).with_columns(target=pl.lit(5))
 
     rows = [grid, spread.select(grid.columns)]
@@ -917,6 +916,10 @@ show_average_portfolios(dependent_cap_controls, "Control")
 show_spreads(dependent_beta_controls, "Sort variable")
 ```
 
+In @tbl-bem5-dependent-target-spreads, the four-factor alpha of the book-to-market spread is smaller in the highest-beta group than in the lowest-beta group.[^dependent-bm-alpha]
+
+[^dependent-bm-alpha]: The difference is statistically significant here ($t=-3.55$). BEM Table 5.27 reports $t=-1.46$ for the same comparison.
+
 ```{python}
 #| label: tbl-bem5-dependent-target-averages
 #| tbl-cap: Dependent-sort size and book-to-market portfolios averaged across beta groups (BEM Table 5.28)
@@ -993,14 +996,5 @@ capitalization = pl.concat(
 
 A third sort variable can be added by forming another unconditional group or by calculating its breakpoints within the existing intersected groups.
 With three variables the number of portfolios grows quickly, so check the stock counts before interpreting portfolio spreads.
-
-## Summary {#compare-with-bem}
-
-The book-to-market spreads after averaging across the beta groups are close to BEM's.
-The independent sort gives 10.90 versus 10.84, and the dependent sort gives 10.47 versus 10.48.
-
-Some differences in inference are larger.
-Applying the same six-lag StatsPAI regression to BEM's printed high-beta return series gives a t-statistic of 2.92, versus 3.43 in BEM.
-For the dependent book-to-market sort in @tbl-bem5-dependent-target-spreads, the four-factor difference in differences is −5.42 ($t=-3.55$) here and −5.00 ($t=-1.46$) in BEM.
 
 ## References {.unnumbered}

@@ -237,8 +237,7 @@ def fama_macbeth_table(panel, specifications, labels, *, digits=2):
             average adjusted R², and mean monthly sample size by model.
     """
     clipped = panel.with_columns(
-        pl.col(term).era.winsorize(prob=0.005, quantile_method="linear").over("month").alias(term)
-        for term in labels
+        pl.col(list(labels)).era.winsorize(prob=0.005, quantile_method="linear").over("month")
     )
     result = {"Term": [*labels.values(), "Intercept", "Adjusted R²", "n"]}
     for i, terms in enumerate(specifications, 1):

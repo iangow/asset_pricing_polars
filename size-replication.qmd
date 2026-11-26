@@ -119,8 +119,7 @@ stats = mean_cross_sections(sizes, {
 show_table(stats)
 ```
 
-The published nominal market capitalization has a monthly mean of $1,101 million and an average monthly median of $107 million.
-The much larger mean reflects the concentration of market capitalization in a few stocks.
+The average monthly mean market capitalization is much larger than the average monthly median, reflecting the concentration of market capitalization in a few stocks.
 
 ```{python}
 #| label: fig-bem9-concentration
@@ -237,8 +236,7 @@ show_table(size_deciles(nyse=True))
 show_table(size_deciles(nyse=False))
 ```
 
-With NYSE breakpoints, the equal-weighted large-minus-small spread for monthly size is −0.49% per month, as in BEM.
-Using all-stock breakpoints increases its magnitude to −1.54%, compared with −1.59% in the book.
+The equal-weighted large-minus-small spread for monthly size is −0.49% per month with NYSE breakpoints and −1.54% with all-stock breakpoints.
 The difference comes primarily from the smallest decile.
 
 ### Bivariate Portfolio Analysis {#sort-on-beta-and-size}

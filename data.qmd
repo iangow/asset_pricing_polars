@@ -151,8 +151,7 @@ Size is highly persistent in our replications.
 Across specifications, the pooled lag-one correlations between residuals for the same stock range from about $-0.05$ to $-0.01$.
 
 For every slope in the monthly replications, the ordinary and six-lag tests agree at the 5% level.
-In the annual example, the ordinary Fama–MacBeth $t$-statistic calculated from the 24 size slopes in BEM Table 6.1, Panel D, is about $-1.82$.
-For the same specification, BEM report a six-lag adjusted $t$-statistic of $-4.37$ in Table 6.2, which crosses the 5% significance threshold.
+@sec-annual-fm-inference shows how the adjustment changes inference on size in the annual example.
 
 For more on Newey–West, Fama–MacBeth, and clustering, see Section 5.6 of *Empirical Research in Accounting* in the [StatsPAI edition](https://iangow.github.io/era_statpai/stat-inf.html#sec-dependence) or the [Polars edition](https://iangow.github.io/era_pl_book/stat-inf.html#sec-dependence).
 

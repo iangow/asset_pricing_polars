@@ -93,10 +93,6 @@ show_table(pl.DataFrame([
 ]))
 ```
 
-The average monthly mean and standard deviation are 1.21% and 15.49%, matching BEM to two decimals.
-The average monthly count is 4,748 here and 4,750 in BEM.
-All eight correlations match at the printed precision.
-
 ## Reversal and Stock Returns
 
 ### Univariate Portfolio Analysis
@@ -202,8 +198,7 @@ for weight in weights:
 ```
 
 The winner-minus-loser spread is −2.68% per month with equal weights and −0.60% with value weights.
-BEM report −2.69% and −0.60%, respectively.
-The value-weighted spread has a four-factor alpha of −0.78%, compared with −0.76% in BEM.
+The value-weighted spread has a four-factor alpha of −0.78% per month.
 
 ### Sorting on Earlier Returns
 
@@ -233,8 +228,6 @@ for weight in weights:
 ```
 
 The equal-weighted spread is close to zero when we sort on month $t-1$ and is positive at every earlier lag in the table.
-Some estimates differ at individual lags.
-For example, at $t-2$ the equal-weighted spread is 0.69% per month here and 0.62% in BEM.
 
 ### Controlling for Size, Beta, Book-to-Market, and Momentum
 
@@ -393,7 +386,7 @@ specifications = [["rev"], *[["rev", term] for term in controls], list(terms)]
 show_table(fama_macbeth_table(panel, specifications, terms, digits=3))
 ```
 
-The reversal slope is −0.048 without controls and −0.062 with all four controls, compared with −0.048 and −0.063 in BEM.
+The reversal slope is −0.048 without controls and −0.062 with all four controls.
 
 ```{python}
 #| label: tbl-bem12-lagged-fama-macbeth
@@ -413,7 +406,7 @@ specifications = [[*lag_terms, term] for term in controls] + [list(terms)]
 show_table(fama_macbeth_table(panel, specifications, terms, digits=3))
 ```
 
-In the joint regression with all twelve returns and no other controls, the return from exactly one year before the outcome month has a coefficient of 0.019, matching BEM.
+In the joint regression with all twelve returns and no other controls, the return from exactly one year before the outcome month has a coefficient of 0.019.
 With all controls included, the coefficients on months $t-2$ through $t-11$ are statistically indistinguishable from zero at the 5% level, and the coefficients on Rev and $R_{t-1}$ remain negative.
 
 ## The Short-Term Reversal Factor
@@ -463,7 +456,6 @@ plot_cumulative_returns(reversal_factor, y_label="Cumulative STR return")
 ```
 
 The archived series compounds to 121,099% and reaches a cumulative log return of 710.00%.
-BEM report 121,104% and 710%, respectively.
 
 To estimate the four-factor alpha, use January 1927 through December 2012 because the momentum factor starts in January 1927.
 The regression outcome is in percentage points per month.
@@ -477,4 +469,4 @@ str_sample = (
 str_fit = hac("str_pct ~ mkt + smb + hml + mom_factor", str_sample)
 ```
 
-The four-factor alpha is `{python} f'{str_fit.params["Intercept"]:.2f}'`% per month ($t$ = `{python} f'{str_fit.tvalues["Intercept"]:.2f}'`), compared with 0.77% ($t$ = 6.37) in BEM.
+The four-factor alpha is `{python} f'{str_fit.params["Intercept"]:.2f}'`% per month ($t$ = `{python} f'{str_fit.tvalues["Intercept"]:.2f}'`).

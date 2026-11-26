@@ -36,8 +36,7 @@ for terms in specifications:
     sample = (
         annual_panel.select("year", "excess", *terms).drop_nulls()
         .with_columns(
-            pl.col(x).era.winsorize(prob=0.005, quantile_method="linear").over("year").alias(x)
-            for x in terms
+            pl.col(terms).era.winsorize(prob=0.005, quantile_method="linear").over("year")
         )
     )
     fits.append(sp.fama_macbeth("excess ~ " + " + ".join(terms),
@@ -76,7 +75,21 @@ rows = [
 show_table(pl.DataFrame(rows, schema=["Model", "Term", "Average", "SE", "t", "p"], orient="row"))
 ```
 
-## Interpreting FM Regressions
+## Interpreting FM Regressions {#sec-annual-fm-inference}
+
+The ordinary Fama–MacBeth standard error is the standard deviation of the annual slopes divided by the square root of the number of years.
+For the size slope in the regression with all three characteristics, compare the ordinary $t$-statistic with the six-lag Newey–West $t$-statistic.
+
+```{python}
+size_slopes = periodic[-1]["Size"]
+ordinary_se = size_slopes.std() / len(size_slopes)**0.5
+pl.DataFrame({
+    "Standard error": ["Ordinary", "Newey–West (six lags)"],
+    "t": [size_slopes.mean() / ordinary_se, fits[-1].tvalues["Size"]],
+}).with_columns(pl.col("t").round(2))
+```
+
+The six-lag adjustment changes the significance decision at the 5% level in this example.
 
 ## Presenting FM Regressions
 

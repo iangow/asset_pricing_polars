@@ -94,8 +94,6 @@ average_stats = annual_stats.select(pl.exclude("year").mean())
 show_table(average_stats.with_columns(pl.col("n").round().cast(pl.Int64)))
 ```
 
-In this build the average annual mean beta is 0.75 and the average annual median is 0.71, both matching BEM at the reported precision.
-The average cross-section has 5,195 estimates, compared with 5,198 in the book.
 The annual table also shows that mean beta increased from 0.46 in 1988 to 1.04 in 2012.
 The time-series average hides that change.
 
@@ -190,9 +188,7 @@ show_table(table_2_3)
 Market capitalization has a long right tail.
 In @tbl-bem2-characteristics, the mean is about $2 billion while the median is about $188 million.
 Taking logs reduces skewness.
-Average next-year excess returns are 12.40% per year, matching BEM, with a much smaller median of about 0.90%.
-Book-to-market averages 0.74 across 4,336 stocks per year, versus 0.71 across 4,273 in BEM.
-The average yearly maximum excess return is 1,918% here and 1,841% in the book.
+The annual mean excess return averages 12.40%, and the annual median averages about 0.90%.
 
 ```{python}
 #| include: false

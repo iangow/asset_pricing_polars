@@ -147,8 +147,6 @@ Its average of −0.04 in @tbl-bem3-average conceals that change.
 
 @tbl-bem3-matrix puts the same averages in a compact matrix.
 Read Pearson correlations below the diagonal and Spearman correlations above it.
-The Pearson correlation between size and BM is −0.22 here and −0.23 in BEM.
-The other average correlations agree at the reported precision.
 
 ```{python}
 #| label: tbl-bem3-matrix

@@ -7,7 +7,6 @@ jupyter: python3
 This chapter reconstructs the figures and tables in Chapter 7 of @bali2016.
 We use a later snapshot of legacy CRSP (SIZ), the same data format used by the authors.
 See @sec-data-vintages for source update dates.
-The comparisons below separate data and convention differences from the calculations themselves.
 
 ## The U.S. Stock Market
 
@@ -176,81 +175,9 @@ Most Nasdaq coverage starts in December 1972.
 The value series jumps much less than the count series at those dates: market coverage can change substantially without much change in market value.
 Keep that distinction in mind when comparing equal- and value-weighted results across time.
 
-The following checkpoints compare the reconstructed exchange counts with the figures quoted in the book's text.
-The authors report a December 2012 total of 3,675, but their four exchange counts add up to 3,677.
-Keep both benchmarks rather than forcing the component counts to match the printed total.
-The available legacy CRSP file is a later vintage; the count differences do not by themselves identify revisions or coding differences.
+The December 2012 stock count includes 86 stocks in the Other category, of which 85 have no usable capitalization.[^other-exchanges]
 
-```{python}
-#| label: tbl-bem7-count-checkpoints
-#| tbl-cap: "Exchange-count checkpoints reported by BEM and reconstructed from the available CRSP vintage."
-
-benchmarks = pl.DataFrame({
-    "checkpoint": ["1925-12", "1962-06", "1962-07", "1972-11",
-                   "1972-12", "1997-11", "2012-12"],
-    "printed_total": [499, 1130, 1963, 2666, 5534, 7544, 3675],
-    "printed_nyse": [499, 1121, 1125, 1378, 1386, 1862, 1319],
-    "printed_amex": [0, 0, 834, 1133, 1135, 572, 226],
-    "printed_nasdaq": [0, 0, 0, 102, 2896, 5029, 2130],
-    "printed_other": [0, 9, 4, 53, 117, 81, 2],
-})
-actual_counts = (
-    by_exchange
-    .with_columns(checkpoint=pl.col("month").dt.strftime("%Y-%m"))
-    .pivot(on="exchange", index="checkpoint", values="stocks")
-)
-count_checkpoints = (
-    benchmarks
-    .join(actual_counts, on="checkpoint", validate="1:1")
-    .with_columns(total_difference=pl.col("Total") - pl.col("printed_total"))
-)
-
-count_checkpoints.select(
-    "checkpoint", "printed_total", reconstructed_total="Total",
-    difference="total_difference",
-)
-```
-
-```{python}
-#| label: tbl-bem7-exchange-end
-#| tbl-cap: "Exchange counts at the end of 2012."
-
-last_counts = count_checkpoints.filter(pl.col("checkpoint") == "2012-12")
-labels = ["NYSE", "AMEX", "Nasdaq", "Other", "Total"]
-pl.DataFrame({
-    "exchange": labels,
-    "printed": [last_counts[f"printed_{label.lower()}"].item() for label in labels],
-    "reconstructed": [last_counts[label].item() for label in labels],
-})
-```
-
-The local December 2012 universe has 3,742 common stocks.
-Of the 86 in the Other category, 85 have no usable capitalization in this vintage.
-That helps explain why a visible difference in counts need not produce a comparable difference in market value, but does not tell us why the book counted only two Other stocks.
-
-```{python}
-#| label: tbl-bem7-value-checkpoints
-#| tbl-cap: "Market-value checkpoints in billions of December 2012 dollars; the book values are approximate."
-
-value_benchmarks = pl.DataFrame({
-    "checkpoint": ["1925-12", "1972-12", "2000-03", "2012-12"],
-    "printed_billions": [341, 5300, 22500, 15700],
-})
-reconstructed = (
-    total
-    .select(checkpoint=pl.col("month").dt.strftime("%Y-%m"),
-            reconstructed_billions=pl.col("value").round(1))
-)
-(
-    value_benchmarks
-    .join(reconstructed, on="checkpoint", validate="1:1")
-    .with_columns(difference_billions=(
-        pl.col("reconstructed_billions") - pl.col("printed_billions")
-    ).round(1))
-)
-```
-
-The reconstructed market value is about $15.72 trillion in December 2012, close to the book's $15.7 trillion despite the difference in stock counts.
+[^other-exchanges]: BEM §7.1.2 reports two stocks in the Other category at the end of 2012. The cause of the difference is unclear.
 
 #### Industry Composition of CRSP Sample {#industries .unnumbered .unlisted}
 
@@ -429,11 +356,9 @@ with pl.Config(tbl_rows=12):
     display(display_returns(table_7_3))
 ```
 
-On the local vintage, average adjusted excess returns are 0.96% and 0.74% per month for the two samples, versus 0.96% and 0.75% in the book.
-We get about 3,111 and 4,780 valid adjusted returns per month, versus 3,112 and 4,782.
-The upper tail is less close: the average monthly maximum adjusted excess return is 191.10% and 273.12%, against 208.10% and 302.74% in the book.
-The unadjusted maxima round to 186.78% and 266.66%, against 186.80% and 266.66% in the book.
-That points toward a difference in the delisting observations rather than a general shift in ordinary returns, but we cannot identify those observations without the original data and code.
+The delisting adjustment raises the average monthly maximum excess return in both samples.[^adjusted-maxima]
+
+[^adjusted-maxima]: The adjusted maxima average 191.10% and 273.12% here, compared with 208.10% and 302.74% in BEM Tables 7.2 and 7.3. The unadjusted maxima are within 0.02 percentage points of BEM in both samples, suggesting the difference is concentrated in the delisting observations.
 
 ```{python}
 #| include: false
@@ -477,28 +402,27 @@ market = (
 )
 ```
 
-On this vintage of the data, MKT and VWRETD have a monthly excess-return correlation of 0.9995, the same to four decimal places as reported by BEM.
-The table puts the means and standard deviations (in percent per month) next to the book's reported numbers.
+The monthly correlation between MKT and the CRSP value-weighted excess return is 0.9995 in this data vintage.
+Following @bali2016 [sec. 7.3], we summarize the monthly returns from July 1926 through December 2012.
 The annualized Sharpe ratio uses $\sqrt{12}$ times the ratio of the monthly mean to the monthly standard deviation, as in the book.
 
 ```{python}
-market_summary = pl.DataFrame(
-    {
-        "Series": ["MKT", "VWRETD less RF", "Log MKT"],
-        "BEM mean (%)": [0.627, 0.624, 0.478],
-        "BEM SD (%)": [5.43, 5.44, 5.44],
-    }
-).with_columns(
-    pl.Series("Local mean (%)", [
-        100 * market[c].mean() for c in ["mktrf", "vw_excess", "log_excess"]
-    ]).round(3),
-    pl.Series("Local SD (%)", [
-        100 * market[c].std() for c in ["mktrf", "vw_excess", "log_excess"]
-    ]).round(3),
-    pl.Series("Local annualized Sharpe", [
-        12**0.5 * market[c].mean() / market[c].std()
-        for c in ["mktrf", "vw_excess", "log_excess"]
-    ]).round(3),
+series_labels = {
+    "mktrf": "MKT",
+    "vw_excess": "VWRETD less RF",
+    "log_excess": "Log MKT",
+}
+returns = pl.col(*series_labels)
+market_summary = (
+    market.select(
+        pl.lit(list(series_labels.values())).alias("Series"),
+        pl.concat_list(returns.mean() * 100).alias("Monthly mean (%)"),
+        pl.concat_list(returns.std() * 100).alias("Monthly SD (%)"),
+        pl.concat_list(returns.mean() * 12**0.5 / returns.std())
+        .alias("Annualized Sharpe"),
+    )
+    .explode(pl.all())
+    .with_columns(pl.col(pl.Float64).round(3))
 )
 market_summary
 ```
@@ -531,9 +455,6 @@ from eap_pl import plot_cumulative_returns
 plot_cumulative_returns(market_path, y_label="Cumulative market excess return")
 ```
 
-The reconstructed series ends at about 14,411% compounded and 498% on the cumulative log scale, versus 14,209% and 496% in BEM.
-The monthly means and major drawdowns are close, but small differences in monthly inputs compound over 1,038 observations.
-These figures use the local factor vintage, not necessarily the one available to the authors.
 
 **[Drawdowns]{#drawdowns}**
 
@@ -571,10 +492,9 @@ def measure_drawdown(episode, peak, trough):
 pl.DataFrame([measure_drawdown(*episode) for episode in episodes])
 ```
 
-The monthly dates and the size of the four episodes are close to the book's account.
-The daily Fama–French file also lets us check the specific crash days.
-It puts the compounded October 28–29, 1929 loss at 21.5%, versus more than 23% reported by BEM; the 1987 Black Monday loss is 17.4%, close to their 17.5%.
-These daily checks are sensitive to the choice of series, vintage, and aggregation.
+The daily Fama–French file shows the individual crash-day returns in October 1929 and October 1987.[^crash-1929]
+
+[^crash-1929]: Compounding the October 28 and 29, 1929 returns gives a loss of 21.5%. BEM §7.3 reports a loss of more than 23% for those two days.
 
 ```{python}
 daily_market = load_parquet("factors_daily", "ff")

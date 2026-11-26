@@ -377,9 +377,6 @@ show_table(
 )
 ```
 
-The mean and standard deviation of the 12-month daily beta are 0.78 and 0.61, as in BEM.
-The one-month daily estimate is available for 4,759 stocks in the average month, compared with 4,742 in the book.
-Our Dimson estimate is available for 4,431 stocks, compared with 4,440.
 In our data the five-day lead cutoff reduces coverage by eight stocks per month relative to the 12-month daily beta.
 
 ## Correlations
@@ -463,7 +460,7 @@ show_table(persistence_table.select(
 ))
 ```
 
-The 12-month daily beta has a correlation of 0.63 with its value one year later, matching BEM.
+The 12-month daily beta has a correlation of 0.63 with its value one year later.
 A year of monthly returns yields a correlation of 0.20.
 This difference suggests that, over the same one-year lookback, the daily estimate captures a more stable stock characteristic.
 
@@ -548,13 +545,13 @@ For each portfolio, we report returns and alphas in percent per month and use si
 ```{python}
 import statspai as sp
 
+decile_values = pl.col("beta", "equal", "value")
 spread = (
     portfolios.filter(pl.col("decile").is_in(["1", "10"]))
     .group_by("measure", "holding")
     .agg(
-        (pl.col(c).filter(pl.col("decile") == "10").first()
-         - pl.col(c).filter(pl.col("decile") == "1").first()).alias(c)
-        for c in ["beta", "equal", "value"]
+        decile_values.filter(pl.col("decile") == "10").first()
+        - decile_values.filter(pl.col("decile") == "1").first()
     )
     .join(outcomes.select("holding", "market").drop_nulls().unique(), on="holding", validate="m:1")
     .with_columns(decile=pl.lit("10–1"))
@@ -615,7 +612,6 @@ show_table(table_8_5)
 ```
 
 Using 12-month daily betas, the high-minus-low excess return is $-0.55\%$ per month with equal weights (@tbl-bem8-equal) and $-0.05\%$ with value weights (@tbl-bem8-value).
-BEM report $-0.53\%$ and $-0.05\%$, respectively.
 The direction of the equal-weighted spread runs against the CAPM prediction, and the spread is much smaller when large stocks receive more weight.
 
 ### Fama–MacBeth Regression Analysis {#run-famamacbeth-regressions}
@@ -667,8 +663,7 @@ table_8_6 = pl.DataFrame({
 show_table(table_8_6)
 ```
 
-In @tbl-bem8-fm the 12-month daily slope is $-0.27$, compared with BEM's $-0.26$.
-An increase in beta of one is associated with about 0.27 percentage points lower excess return per month.
+In @tbl-bem8-fm an increase of one in 12-month daily beta is associated with about 0.27 percentage points lower excess return per month.
 The mean intercept is 0.97% per month, and the slopes for the betas estimated from monthly returns are all close to zero.
 
 ## Summary

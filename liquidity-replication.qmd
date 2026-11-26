@@ -99,7 +99,7 @@ for k, minimum in minimum_days.items():
                 .then(pl.col("total") / pl.col("days")).alias(f"illiq{k}"))
     )
     panel = panel.join(window, on=keys, how="left", validate="1:1")
-panel = panel.with_columns(pl.col(term).log1p().alias(f"log_{term}") for term in raw)
+panel = panel.with_columns(pl.col(*raw).log1p().name.prefix("log_"))
 ```
 
 ## Summary Statistics, Correlations, and Persistence
@@ -117,8 +117,6 @@ from eap_pl import mean_cross_sections
 summary = mean_cross_sections(panel, measures)
 show_table(summary)
 ```
-
-The average monthly mean and median of one-month illiquidity are 3.79 and 0.26, matching BEM to two decimal places. The average monthly count is 3,603 here and 3,604 in BEM.
 
 For Pearson correlations we winsorize each variable at the 0.5th and 99.5th percentiles of the paired monthly sample. Spearman correlations use the original ranks.
 
@@ -262,7 +260,8 @@ show_table(pl.DataFrame([
 ```
 
 
-At the displayed precision, the twelve-month illiquidity spread matches BEM at 0.77% per month with equal weights and 0.27% with value weights. Using the unadjusted stock returns raises the equal-weighted spread to 1.01%, also matching BEM.
+The twelve-month illiquidity spread is 0.77% per month with equal weights and 0.27% with value weights.
+Using the unadjusted stock returns raises the equal-weighted spread to 1.01%.
 
 ### Bivariate Portfolio Analysis
 
@@ -431,8 +430,6 @@ for terms in (raw, logged):
     show_table(illiquidity_regressions(specifications, terms | controls))
 ```
 
-With all controls, the coefficient on log twelve-month illiquidity is 0.341, compared with 0.342 in BEM.
-
 ## Liquidity Factors
 
 The stock-level liquidity measure of @pastorStambaugh2003 captures the following day's reversal after trading pressure. For each stock and month they estimate
@@ -539,7 +536,7 @@ assert traded.select((pl.col("psl").is_finite() & (pl.col("psl") > -1)).fill_nul
 plot_cumulative_returns(traded, y_label="Cumulative PSL return")
 ```
 
-The series ends December 2012 at `{python} f'{traded["compounded"][-1]:.2%}'` compounded and `{python} f'{traded["cumulative_log"][-1]:.2%}'` in cumulative log returns, matching the 701% and 208% reported by BEM to the nearest percentage point.
+The series ends December 2012 at `{python} f'{traded["compounded"][-1]:.2%}'` compounded and `{python} f'{traded["cumulative_log"][-1]:.2%}'` in cumulative log returns.
 
 ```{python}
 psl_sample = (
