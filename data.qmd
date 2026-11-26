@@ -127,6 +127,29 @@ For examples using `.era.winsorize()` and `.era.truncate()` and a comparison wit
 
 ## Newey and West (1987) Adjustment
 
+In Section 1.3, @bali2016 explain why inference on a time-series mean can be sensitive to changing variance and correlation across periods.
+Regressing a series on a constant gives its sample mean as the intercept.
+The adjustment of @neweywest1987 estimates the standard error using covariances across periods, with less weight on more distant lags.
+Depending on the pattern of autocorrelation, the adjustment can increase or decrease the standard error.
+In @sec-bem-portfolio-analysis, BEM use the adjustment for average portfolio returns and spreads, and in time-series factor regressions for portfolio alphas.
+
+For Fama–MacBeth regressions, BEM apply the adjustment to the sequence of estimated coefficients, with one estimate per cross-section.
+BEM motivate six lags with a rule of thumb for a series of about 600 monthly observations and also use six lags in their annual example, which has only 24 coefficient estimates.
+@gow2010 call this procedure FM-NW and find that its standard errors can remain too small when the underlying panel has both cross-sectional and time-series dependence.
+A short coefficient series provides limited information about persistence in the underlying data [@gow2010, p. 488].
+
+The annual, beta, size, and book-to-market regressions replicated here use realized excess returns over nonoverlapping holding periods.
+This resembles the return-based application in @gow2010 [sec. V], where shared shocks across stocks are the main concern.
+For slope inference, the relevant serial dependence involves the joint behavior of regressors and residuals.
+Size is highly persistent in our replications.
+Across specifications, the pooled lag-one correlations between residuals for the same stock range from about $-0.05$ to $-0.01$.
+
+For every slope in the monthly replications, the ordinary and six-lag tests agree at the 5% level.
+In the annual example, the ordinary Fama–MacBeth $t$-statistic calculated from the 24 size slopes in BEM Table 6.1, Panel D, is about $-1.82$.
+For the same specification, BEM report a six-lag adjusted $t$-statistic of $-4.37$ in Table 6.2, which crosses the 5% significance threshold.
+
+For more on Newey–West, Fama–MacBeth, and clustering, see Section 5.6 of *Empirical Research in Accounting* in the [StatsPAI edition](https://iangow.github.io/era_statpai/stat-inf.html#sec-dependence) or the [Polars edition](https://iangow.github.io/era_pl_book/stat-inf.html#sec-dependence).
+
 ## Summary
 
 ## References {.unnumbered}
