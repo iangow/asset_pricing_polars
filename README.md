@@ -40,7 +40,7 @@ curl -fLsS 'https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/ftp_202412/F
 
 Render the full book and open `_book/index.html`. The annual methods chapters
 build their inputs on demand. Set `EAP_WRITE_BETAS=1` so the Beta chapter
-writes `DATA_DIR/eap/betas.parquet` for the monthly analyses in Size, Value, Momentum, and Short-Term Reversal.
+writes `DATA_DIR/eap/betas.parquet` for the monthly analyses in Size, Value, Momentum, Short-Term Reversal, and Liquidity.
 
 ```sh
 EAP_WRITE_BETAS=1 QUARTO_PYTHON="$PWD/.venv/bin/python" \

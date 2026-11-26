@@ -2,7 +2,12 @@
 
 from ._beta import load_annual_betas, load_beta_universe, load_daily_beta_inputs
 from ._characteristics import build_book_to_market, build_sizes
-from ._data import build_annual_panel, monthly_panel, write_eap_table
+from ._data import (
+    build_annual_panel,
+    load_pastor_stambaugh_2013,
+    monthly_panel,
+    write_eap_table,
+)
 from ._momentum import build_momentum
 from ._plots import plot_cumulative_returns, plot_factor
 from ._portfolios import (
@@ -35,6 +40,7 @@ __all__ = [
     "load_annual_betas",
     "load_beta_universe",
     "load_daily_beta_inputs",
+    "load_pastor_stambaugh_2013",
     "mean_cross_sections",
     "monthly_panel",
     "period_correlations",

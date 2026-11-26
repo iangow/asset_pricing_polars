@@ -52,6 +52,7 @@ quartodoc:
         - build_book_to_market
         - build_momentum
         - load_beta_universe
+        - load_pastor_stambaugh_2013
         - load_daily_beta_inputs
         - monthly_panel
         - write_eap_table

@@ -1,6 +1,7 @@
-"""Local Parquet tables and the legacy CRSP annual and monthly panels."""
+"""Packaged data, local Parquet tables, and legacy CRSP panels."""
 
 import os
+from importlib.resources import files
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 
@@ -12,6 +13,29 @@ from ._beta import load_annual_betas
 from ._characteristics import build_book_to_market, build_sizes
 
 KEYS = ["permno", "month"]
+
+
+def load_pastor_stambaugh_2013() -> pl.DataFrame:
+    """Load the December 2013 Pástor–Stambaugh liquidity data.
+
+    Returns:
+        (polars.DataFrame): Monthly observations from August 1962 through
+            December 2013 with a month-start date, aggregate liquidity
+            level, liquidity innovation, and traded factor return in
+            decimal units. The traded factor is missing before January 1968.
+    """
+    data_file = files("eap_pl").joinpath("data", "liq_data_1962_2013.txt")
+    with data_file.open("rb") as stream:
+        data = pl.read_csv(
+            stream,
+            separator="\t",
+            has_header=False,
+            comment_prefix="%",
+            new_columns=["date", "level", "innovation", "psl"],
+            schema_overrides=[pl.String, pl.Float64, pl.Float64, pl.Float64],
+            null_values="-99",
+        ).drop_nulls("date")
+    return data.with_columns(date=(pl.col("date") + "01").str.to_date("%Y%m%d"))
 
 
 def build_annual_panel(

@@ -23,6 +23,7 @@ book:
         - value-replication.qmd
         - momentum-replication.qmd
         - reversal-replication.qmd
+        - liquidity-replication.qmd
     - references.qmd
 
 bibliography: book.bib

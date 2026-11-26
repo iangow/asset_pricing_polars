@@ -6,4 +6,6 @@ It supports descriptive statistics, portfolio sorts, inference, and plots for th
 From the book checkout, run `uv sync` to install the package into the book environment.
 To install the package into another environment, run `python -m pip install ./packages/eap_pl` from the checkout with that environment's Python.
 
+The package includes the December 2013 Pástor–Stambaugh liquidity series used in BEM Chapter 13. Load it with `eap_pl.load_pastor_stambaugh_2013()`. [Archived Chicago Booth file](https://web.archive.org/web/20141121162425id_/http://faculty.chicagobooth.edu:80/lubos.pastor/research/liq_data_1962_2013.txt).
+
 The [function reference](https://iangow.github.io/asset_pricing_polars/eap_pl/reference/) describes each function's inputs and outputs.

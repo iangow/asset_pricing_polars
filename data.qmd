@@ -35,7 +35,7 @@ tables = [
     ("crsp", "msf", "CRSP legacy (SIZ)",
      "Legacy prices, shares outstanding, and monthly returns."),
     ("crsp", "dsf", "CRSP legacy (SIZ)",
-     "Daily stock returns for beta estimation in @sec-bem-beta."),
+     "Daily returns for beta estimation in @sec-bem-beta and daily prices, returns, and volume for @sec-liquidity-replication."),
     ("crsp", "msenames", "CRSP legacy (SIZ)",
      "Historical share codes, exchanges, and industries."),
     ("comp", "funda", "Compustat",
@@ -105,6 +105,8 @@ See the [render instructions](https://github.com/iangow/asset_pricing_polars#ren
 
 The size builder and the CRSP and Value chapters use the [BLS all-items CPI for urban consumers, not seasonally adjusted](https://fred.stlouisfed.org/series/CPIAUCNS), from FRED, to express market capitalizations in December 2012 dollars.
 This file does not come from WRDS.
+
+@sec-liquidity-replication uses the December 2013 Pástor–Stambaugh liquidity release bundled with `eap_pl`.
 
 ## Winsorization and Truncation
 
