@@ -2,102 +2,106 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://iangow.github.io/asset_pricing_polars/eap_pl/reference/write_eap_table.html</loc>
-    <lastmod>2026-11-26T19:29:55.052Z</lastmod>
+    <lastmod>2026-11-26T20:35:45.926Z</lastmod>
   </url>
   <url>
     <loc>https://iangow.github.io/asset_pricing_polars/eap_pl/reference/univariate_panel.html</loc>
-    <lastmod>2026-11-26T19:29:55.057Z</lastmod>
+    <lastmod>2026-11-26T20:35:45.930Z</lastmod>
   </url>
   <url>
     <loc>https://iangow.github.io/asset_pricing_polars/eap_pl/reference/plot_cumulative_returns.html</loc>
-    <lastmod>2026-11-26T19:29:55.062Z</lastmod>
+    <lastmod>2026-11-26T20:35:45.934Z</lastmod>
   </url>
   <url>
     <loc>https://iangow.github.io/asset_pricing_polars/eap_pl/reference/period_correlations.html</loc>
-    <lastmod>2026-11-26T19:29:55.054Z</lastmod>
+    <lastmod>2026-11-26T20:35:45.927Z</lastmod>
   </url>
   <url>
     <loc>https://iangow.github.io/asset_pricing_polars/eap_pl/reference/mean_cross_sections.html</loc>
-    <lastmod>2026-11-26T19:29:55.053Z</lastmod>
+    <lastmod>2026-11-26T20:35:45.926Z</lastmod>
   </url>
   <url>
     <loc>https://iangow.github.io/asset_pricing_polars/eap_pl/reference/load_daily_beta_inputs.html</loc>
-    <lastmod>2026-11-26T19:29:55.051Z</lastmod>
+    <lastmod>2026-11-26T20:35:45.924Z</lastmod>
   </url>
   <url>
     <loc>https://iangow.github.io/asset_pricing_polars/eap_pl/reference/load_annual_betas.html</loc>
-    <lastmod>2026-11-26T19:29:55.046Z</lastmod>
+    <lastmod>2026-11-26T20:35:45.919Z</lastmod>
   </url>
   <url>
     <loc>https://iangow.github.io/asset_pricing_polars/eap_pl/reference/hac.html</loc>
-    <lastmod>2026-11-26T19:29:55.060Z</lastmod>
-  </url>
-  <url>
-    <loc>https://iangow.github.io/asset_pricing_polars/eap_pl/reference/fama_macbeth_table.html</loc>
-    <lastmod>2026-11-26T19:29:55.060Z</lastmod>
-  </url>
-  <url>
-    <loc>https://iangow.github.io/asset_pricing_polars/eap_pl/reference/build_sizes.html</loc>
-    <lastmod>2026-11-26T19:29:55.048Z</lastmod>
-  </url>
-  <url>
-    <loc>https://iangow.github.io/asset_pricing_polars/eap_pl/reference/build_book_to_market.html</loc>
-    <lastmod>2026-11-26T19:29:55.048Z</lastmod>
-  </url>
-  <url>
-    <loc>https://iangow.github.io/asset_pricing_polars/eap_pl/reference/bivariate_panel.html</loc>
-    <lastmod>2026-11-26T19:29:55.059Z</lastmod>
-  </url>
-  <url>
-    <loc>https://iangow.github.io/asset_pricing_polars/eap_pl/index.html</loc>
-    <lastmod>2026-11-26T19:24:10.121Z</lastmod>
-  </url>
-  <url>
-    <loc>https://iangow.github.io/asset_pricing_polars/eap_pl/reference/bivariate_months.html</loc>
-    <lastmod>2026-11-26T19:29:55.058Z</lastmod>
-  </url>
-  <url>
-    <loc>https://iangow.github.io/asset_pricing_polars/eap_pl/reference/build_annual_panel.html</loc>
-    <lastmod>2026-11-26T19:29:55.047Z</lastmod>
-  </url>
-  <url>
-    <loc>https://iangow.github.io/asset_pricing_polars/eap_pl/reference/build_momentum.html</loc>
-    <lastmod>2026-11-26T19:29:55.049Z</lastmod>
-  </url>
-  <url>
-    <loc>https://iangow.github.io/asset_pricing_polars/eap_pl/reference/correlation_matrix.html</loc>
-    <lastmod>2026-11-26T19:29:55.055Z</lastmod>
+    <lastmod>2026-11-26T20:35:45.933Z</lastmod>
   </url>
   <url>
     <loc>https://iangow.github.io/asset_pricing_polars/eap_pl/reference/format_fit.html</loc>
-    <lastmod>2026-11-26T19:29:55.061Z</lastmod>
+    <lastmod>2026-11-26T20:35:45.933Z</lastmod>
+  </url>
+  <url>
+    <loc>https://iangow.github.io/asset_pricing_polars/eap_pl/reference/correlation_matrix.html</loc>
+    <lastmod>2026-11-26T20:35:45.928Z</lastmod>
+  </url>
+  <url>
+    <loc>https://iangow.github.io/asset_pricing_polars/eap_pl/reference/build_momentum.html</loc>
+    <lastmod>2026-11-26T20:35:45.922Z</lastmod>
+  </url>
+  <url>
+    <loc>https://iangow.github.io/asset_pricing_polars/eap_pl/reference/build_annual_panel.html</loc>
+    <lastmod>2026-11-26T20:35:45.920Z</lastmod>
+  </url>
+  <url>
+    <loc>https://iangow.github.io/asset_pricing_polars/eap_pl/reference/bivariate_months.html</loc>
+    <lastmod>2026-11-26T20:35:45.931Z</lastmod>
+  </url>
+  <url>
+    <loc>https://iangow.github.io/asset_pricing_polars/eap_pl/index.html</loc>
+    <lastmod>2026-11-26T20:35:29.465Z</lastmod>
+  </url>
+  <url>
+    <loc>https://iangow.github.io/asset_pricing_polars/eap_pl/reference/bivariate_panel.html</loc>
+    <lastmod>2026-11-26T20:35:45.931Z</lastmod>
+  </url>
+  <url>
+    <loc>https://iangow.github.io/asset_pricing_polars/eap_pl/reference/build_book_to_market.html</loc>
+    <lastmod>2026-11-26T20:35:45.921Z</lastmod>
+  </url>
+  <url>
+    <loc>https://iangow.github.io/asset_pricing_polars/eap_pl/reference/build_sizes.html</loc>
+    <lastmod>2026-11-26T20:35:45.921Z</lastmod>
+  </url>
+  <url>
+    <loc>https://iangow.github.io/asset_pricing_polars/eap_pl/reference/fama_macbeth_table.html</loc>
+    <lastmod>2026-11-26T20:35:45.932Z</lastmod>
+  </url>
+  <url>
+    <loc>https://iangow.github.io/asset_pricing_polars/eap_pl/reference/get_ff_factors.html</loc>
+    <lastmod>2026-11-26T20:35:45.923Z</lastmod>
   </url>
   <url>
     <loc>https://iangow.github.io/asset_pricing_polars/eap_pl/reference/index.html</loc>
-    <lastmod>2026-11-26T19:29:55.040Z</lastmod>
+    <lastmod>2026-11-26T20:35:45.913Z</lastmod>
   </url>
   <url>
     <loc>https://iangow.github.io/asset_pricing_polars/eap_pl/reference/load_beta_universe.html</loc>
-    <lastmod>2026-11-26T19:29:55.050Z</lastmod>
+    <lastmod>2026-11-26T20:35:45.922Z</lastmod>
   </url>
   <url>
     <loc>https://iangow.github.io/asset_pricing_polars/eap_pl/reference/load_pastor_stambaugh_2013.html</loc>
-    <lastmod>2026-11-26T19:29:55.050Z</lastmod>
+    <lastmod>2026-11-26T20:35:45.924Z</lastmod>
   </url>
   <url>
     <loc>https://iangow.github.io/asset_pricing_polars/eap_pl/reference/monthly_panel.html</loc>
-    <lastmod>2026-11-26T19:29:55.052Z</lastmod>
+    <lastmod>2026-11-26T20:35:45.925Z</lastmod>
   </url>
   <url>
     <loc>https://iangow.github.io/asset_pricing_polars/eap_pl/reference/persistence.html</loc>
-    <lastmod>2026-11-26T19:29:55.056Z</lastmod>
+    <lastmod>2026-11-26T20:35:45.929Z</lastmod>
   </url>
   <url>
     <loc>https://iangow.github.io/asset_pricing_polars/eap_pl/reference/plot_factor.html</loc>
-    <lastmod>2026-11-26T19:29:55.062Z</lastmod>
+    <lastmod>2026-11-26T20:35:45.935Z</lastmod>
   </url>
   <url>
     <loc>https://iangow.github.io/asset_pricing_polars/eap_pl/reference/winsorized_corr.html</loc>
-    <lastmod>2026-11-26T19:29:55.055Z</lastmod>
+    <lastmod>2026-11-26T20:35:45.928Z</lastmod>
   </url>
 </urlset>

@@ -357,7 +357,7 @@ window.Quarto = {
 <section id="sec-data-vintages" class="level3" data-number="1.1.1">
 <h3 data-number="1.1.1" class="anchored" data-anchor-id="sec-data-vintages"><span class="header-section-number">1.1.1</span> WRDS tables</h3>
 <p><span id="data-vintages"></span>The table lists the inputs used in this build. The source update date comes from the metadata embedded in each Parquet file, read with <a href="https://iangow.github.io/db2pq/">db2pq</a>. It is not the sample end date or the date the file was downloaded.</p>
-<div id="0eef4709" class="cell" data-execution_count="1">
+<div id="a9bb8615" class="cell" data-execution_count="1">
 <div class="cell-output cell-output-display cell-output-markdown">
 <table class="caption-top table table-sm table-striped small">
 <colgroup>
@@ -460,6 +460,7 @@ window.Quarto = {
 <p>The annual methods chapters construct December betas, size, and book-to-market from the local source data when needed. See Chapters <a href="beta-replication.html" class="quarto-xref"><span>8</span></a>, <a href="size-replication.html" class="quarto-xref"><span>9</span></a>, and <a href="value-replication.html" class="quarto-xref"><span>10</span></a> for how each measure is constructed. The monthly Size and Value analyses read the 12-month daily beta from <code>eap.betas</code>, which the Beta chapter can export during the full render. See the <a href="https://github.com/iangow/asset_pricing_polars#render">render instructions</a>.</p>
 <p>The size builder and the CRSP and Value chapters use the <a href="https://fred.stlouisfed.org/series/CPIAUCNS">BLS all-items CPI for urban consumers, not seasonally adjusted</a>, from FRED, to express market capitalizations in December 2012 dollars. This file does not come from WRDS.</p>
 <p><a href="liquidity-replication.html" class="quarto-xref"><span>Chapter 13</span></a> uses the December 2013 Pástor–Stambaugh liquidity release bundled with <code>eap_pl</code>.</p>
+<p>For comparisons across Fama–French vintages, see <a href="eap_pl/reference/get_ff_factors.html">eap_pl.get_ff_factors()</a>. The loader checks the archive’s checksum and keeps a local copy for later renders.</p>
 </section>
 </section>
 <section id="winsorization-and-truncation" class="level2" data-number="1.2">
