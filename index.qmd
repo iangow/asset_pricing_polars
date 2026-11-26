@@ -5,6 +5,6 @@ The methods chapters use their 1988–2012 annual teaching sample.
 The empirical chapters reconstruct the CRSP sample, estimate market beta, and examine the size effect and value premium using legacy CRSP.
 Render with your own copies of the WRDS data.
 
-See [Preliminaries](data.qmd) for the inputs and the [WRDS table list](data.qmd#data-vintages) for their source update dates.
+See @sec-data for the inputs and @sec-data-vintages for their source update dates.
 
 []{#data-vintages}

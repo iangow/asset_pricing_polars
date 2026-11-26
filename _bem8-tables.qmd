@@ -63,14 +63,9 @@ Winsorize each beta within month at the 0.5th and 99.5th percentiles for Pearson
 Use the original values for Spearman rank correlations above the diagonal.
 
 ```{python}
-def winsorize_beta(column):
-    x = pl.col(column)
-    return x.clip(
-        x.quantile(.005, interpolation="linear").over("month"),
-        x.quantile(.995, interpolation="linear").over("month"),
-    )
+from _bem_monthly import clip_tails
 
-clipped = betas.with_columns(winsorize_beta(column) for column in beta_labels)
+clipped = betas.with_columns(clip_tails(pl.col(beta_labels)).over("month"))
 
 def mean_correlations(panel, method):
     return (

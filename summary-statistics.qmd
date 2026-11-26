@@ -26,7 +26,7 @@ This gives each year's cross-section equal weight.
 ### Periodic Cross-Sectional Summary Statistics {#annual-cross-sections}
 
 The sample covers U.S. common stocks at each December 31 from 1988 through 2012.
-We take the December value of the 12-month daily beta from the [market beta chapter](beta-replication.qmd#sec-bem-beta).
+We take the December value of the 12-month daily beta from @sec-bem-beta.
 It uses all available daily excess returns in the calendar year and requires at least 200 matched observations.
 
 {{< include _bem-annual-betas.qmd >}}
@@ -94,11 +94,11 @@ The average cross-section has 5,195 estimates, compared with 5,198 in the book.
 The annual table also shows that mean beta increased from 0.46 in 1988 to 1.04 in 2012.
 The time-series average hides that change.
 
-## Presentation and Interpretation {#summarize-several-characteristics}
+## Presentation and Interpretation {#sec-summary-characteristics}
 
-We also summarize year-end market capitalization in millions of dollars, its natural logarithm (size), book-to-market, and the following calendar year's excess return.
-The [size chapter](size-replication.qmd) exports December market capitalization and its log.
-The [value chapter](value-replication.qmd) exports the ratio of prior-year fiscal book equity to prior December market capitalization.
+[]{#summarize-several-characteristics}We also summarize year-end market capitalization in millions of dollars, its natural logarithm (size), book-to-market, and the following calendar year's excess return.
+@sec-size-replication exports December market capitalization and its log.
+@sec-value-replication exports the ratio of prior-year fiscal book equity to prior December market capitalization.
 We use its signed ratio, consistent with the negative observations in BEM Table 2.3.
 
 We compound available CRSP monthly stock returns within the holding year and subtract the compounded risk-free return.

@@ -5,7 +5,7 @@ jupyter: python3
 # Persistence Analysis {#sec-bem-persistence}
 
 Bali, Engle, and Murray (2016), Chapter 4, measure persistence by correlating a stock characteristic with its own future value across stocks.
-We use the December 1988–2012 panel from [Chapter 2](summary-statistics.qmd), including its signed book-to-market ratio (BM).
+We use the December 1988–2012 panel from @sec-summary-statistics, including its signed book-to-market ratio (BM).
 
 {{< include _show-table.qmd >}}
 {{< include _bem-annual-betas.qmd >}}
@@ -29,7 +29,7 @@ $$
 $$ {#eq-bem4-periodic}
 
 Shift the future year's join key back by the lag so that each stock's observation in $t+\tau$ joins its observation in $t$.
-Use the same winsorized Pearson correlation as in [Chapter 3](correlation.qmd).
+Use the same winsorized Pearson correlation as in @sec-bem-correlation.
 
 ```{python}
 from _bem_monthly import winsorized_corr

@@ -76,10 +76,7 @@ def mean_cross_sections(panel, variables):
 
 
 def clip_tails(x):
-    return x.clip(
-        x.quantile(.005, interpolation="linear"),
-        x.quantile(.995, interpolation="linear"),
-    )
+    return x.era.winsorize(prob=0.005, quantile_method="linear")
 
 
 def winsorized_corr(a, b):

@@ -5,7 +5,7 @@ jupyter: python3
 # Correlation {#sec-bem-correlation}
 
 Bali, Engle, and Murray (2016), Chapter 3, compare the cross-sectional associations among beta, size, book-to-market (BM), and next-year excess return.
-We use the 1988–2012 annual panel from [Chapter 2](summary-statistics.qmd).
+We use the 1988–2012 annual panel from @sec-summary-statistics.
 
 {{< include _show-table.qmd >}}
 {{< include _bem-annual-betas.qmd >}}

@@ -5,7 +5,7 @@ jupyter: python3
 # Portfolio Analysis {#sec-bem-portfolio-analysis}
 
 Bali, Engle, and Murray (2016), Chapter 5, use portfolio sorts to study how next year's excess return varies with beta, market capitalization, and book-to-market.
-We form portfolios at each December year-end from 1988 to 2012 using the [Chapter 2 panel](summary-statistics.qmd).
+We form portfolios at each December year-end from 1988 to 2012 using the panel from @sec-summary-statistics.
 Holding returns run from 1989 to 2012.
 
 {{< include _show-table.qmd >}}
@@ -227,7 +227,7 @@ show_table(pl.DataFrame(rows, schema=["Outcome", *univariate_columns, "7–1 t-s
 
 The same percentile cutoffs can be applied to other sort variables.
 Recompute the breakpoints with the available observations for each variable.
-Use the signed book-to-market ratio from Chapter 2.
+Use the signed book-to-market ratio from @sec-summary-characteristics.
 
 ```{python}
 def univariate_sort(variable):

@@ -140,4 +140,4 @@ $$
 
 The intercept $\alpha_p$ is the average monthly abnormal return under this model; $\beta_p$ is the sensitivity to the market.
 A portfolio long one group and short another is already a difference in returns, so subtracting the risk-free rate from both legs cancels out.
-The size portfolio chapter applies this logic and also considers the Fama–French three-factor model.
+@sec-size-replication applies this logic and also considers the Fama–French three-factor model.

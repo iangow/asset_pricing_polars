@@ -50,7 +50,7 @@ We use the legacy monthly names file for this fallback.
 
 {{< include _bem10-links.qmd >}}
 
-Divide book equity by the nominal December capitalization for the same calendar year, from the [size chapter](size-replication.qmd).
+Divide book equity by the nominal December capitalization for the same calendar year, from @sec-size-replication.
 Make that ratio available at the end of the following June and carry it through the next May.
 This gives a December fiscal year-end at least six months before the ratio enters a portfolio sort.
 
@@ -82,7 +82,7 @@ book_to_market = (
 ```
 
 For this chapter, use positive book equity so the logarithm is defined.
-The optional `eap.book_to_market` export keeps the signed ratio as well for the [annual summaries](summary-statistics.qmd).
+The optional `eap.book_to_market` export keeps the signed ratio as well for the annual summaries in @sec-summary-characteristics.
 
 {{< include _write-eap.qmd >}}
 
@@ -178,7 +178,7 @@ show_table(persistence(value_panel, {"bm": "BM", "log_bm": "ln BM"}, [12, 24, 36
 
 Form ten portfolios at the end of each month using the book-to-market ratio.
 Compare breakpoints from all eligible stocks with breakpoints from NYSE stocks.
-Holding returns use the next month's CRSP returns and the delisting adjustment in [Chapter 7](crsp-replication.qmd).
+Holding returns use the next month's CRSP returns and the delisting adjustment in @sec-bem-returns.
 Value weights use current market capitalization at formation.
 Returns and CAPM alphas are percentages per month, and $t$-statistics use six Newey–West lags.
 

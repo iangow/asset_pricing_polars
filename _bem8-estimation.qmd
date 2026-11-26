@@ -27,7 +27,7 @@ universe = (
 
 We screen for common shares at formation using historical share codes 10 and 11.
 A stock can contribute its earlier returns to the estimation window even if its historical share code changed.
-We use CRSP's reported returns for estimation and apply the Chapter 7 delisting convention to the next-month returns used to evaluate the beta estimates.
+We use CRSP's reported returns for estimation and apply the delisting convention in @sec-bem-returns to the next-month returns used to evaluate the beta estimates.
 
 ```{python}
 monthly_stock = (
@@ -250,7 +250,7 @@ window_months.update(SW=12, D=12)
 ```
 
 The tables in this chapter end with November 2012 formation, followed by December 2012 holding returns.
-We also estimate betas as of December 2012 so the [annual summary](summary-statistics.qmd) can use the same estimates for its last year.
+We also estimate betas as of December 2012 for the last year of the annual summary in @sec-summary-statistics.
 The optional export saves all eleven estimates per stock-month to the local `DATA_DIR/eap/betas.parquet` file.
 
 {{< include _write-eap.qmd >}}

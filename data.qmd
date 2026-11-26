@@ -6,16 +6,16 @@ jupyter: python3
 
 ## Sample
 
-The [summary statistics chapter](summary-statistics.qmd) uses BEM's annual teaching sample of U.S. common stocks at each year-end from 1988 through 2012.
+@sec-summary-statistics uses BEM's annual teaching sample of U.S. common stocks at each year-end from 1988 through 2012.
 The empirical replications use longer monthly samples.
 
 The examples read local Parquet files through `era_pl.load_parquet()`.
 The `DATA_DIR` setting points to the data root, and each table lives at `DATA_DIR/schema/table.parquet`.
-You can create these files from WRDS with the [setup script](#create-data-repository).
+You can create these files from WRDS with the setup script in @sec-create-data-repository.
 
-**[WRDS tables]{#data-vintages}**
+### WRDS tables {#sec-data-vintages}
 
-The table lists the inputs used in this build.
+[]{#data-vintages}The table lists the inputs used in this build.
 The source update date comes from the metadata embedded in each Parquet file, read with [db2pq](https://iangow.github.io/db2pq/).
 It is not the sample end date or the date the file was downloaded.
 
@@ -31,11 +31,11 @@ tables = [
     ("ff", "factors_monthly", "Fama–French",
      "Monthly factors and the risk-free rate for betas, alphas, and market checks."),
     ("ff", "factors_daily", "Fama–French",
-     "Daily market excess returns for Chapter 7 crash checks and daily betas."),
+     "Daily market excess returns for the crash checks in @sec-bem7-market and for estimating daily betas."),
     ("crsp", "msf", "CRSP legacy (SIZ)",
      "Legacy prices, shares outstanding, and monthly returns."),
     ("crsp", "dsf", "CRSP legacy (SIZ)",
-     "Daily stock returns for Chapter 8 beta estimation."),
+     "Daily stock returns for beta estimation in @sec-bem-beta."),
     ("crsp", "msenames", "CRSP legacy (SIZ)",
      "Historical share codes, exchanges, and industries."),
     ("comp", "funda", "Compustat",
@@ -66,9 +66,9 @@ The local legacy exports are newer than their original snapshot.
 The newer CIZ files use different return conventions, including the timing of dividend reinvestment.
 See [CRSP's comparison of the formats](https://www.crsp.org/crsp_pdf/crsp-us-stock-indexes-databases-siz-to-ciz-executive-summary/).
 
-**[Create the Parquet repository]{#create-data-repository}**
+### Create the Parquet repository {#sec-create-data-repository}
 
-Copy `.env.example` to `.env` in the book checkout and set `DATA_DIR` to your Parquet root and `WRDS_ID` to your WRDS username.
+[]{#create-data-repository}Copy `.env.example` to `.env` in the book checkout and set `DATA_DIR` to your Parquet root and `WRDS_ID` to your WRDS username.
 After `uv sync`, run the setup script from that checkout.
 If you already have the source files there, you can skip this step.
 If your WRDS account lacks access to the legacy CRSP tables, use licensed SIZ extracts at the corresponding paths.
@@ -96,16 +96,35 @@ for schema, names in tables.items():
         wrds_update_pq(name, schema)
 ```
 
-**[Other inputs]{#other-inputs}**
+### Other inputs {#other-inputs}
 
-The [beta](beta-replication.qmd), [size](size-replication.qmd), and [value](value-replication.qmd) chapters can export the local Parquet tables `eap.betas`, `eap.sizes`, and `eap.book_to_market`.
+Chapters [-@sec-bem-beta], [-@sec-size-replication], and [-@sec-value-replication] can export the local Parquet tables `eap.betas`, `eap.sizes`, and `eap.book_to_market`.
 The annual methods chapters use the December observations from those tables.
 The [render instructions](https://github.com/iangow/asset_pricing_polars#render) show how to build them.
 
-The CRSP, size, and value chapters use the [BLS all-items CPI for urban consumers, not seasonally adjusted](https://fred.stlouisfed.org/series/CPIAUCNS), from FRED, to express market capitalizations in December 2012 dollars.
+Chapters [-@sec-bem-crsp], [-@sec-size-replication], and [-@sec-value-replication] use the [BLS all-items CPI for urban consumers, not seasonally adjusted](https://fred.stlouisfed.org/series/CPIAUCNS), from FRED, to express market capitalizations in December 2012 dollars.
 This file does not come from WRDS.
 
 ## Winsorization and Truncation
+
+**Winsorization** caps values outside chosen percentile cutoffs at the corresponding cutoff.
+**Truncation** sets those values to missing, so analyses that require the variable exclude those observations.
+BEM describe both methods as ways to limit the influence of extreme values.
+They suggest capping observations that still convey information about genuinely high or low values, and consider truncation when the extremes appear to come from a different process.
+They urge caution when the conclusions depend on which treatment is used. [Bali, Engle, and Murray (2016, §1.2)](https://catalogimages.wiley.com/images/db/pdf/9781118095041.excerpt.pdf)
+
+BEM compute the cutoffs separately for each year or month because they analyze each period's cross-section before summarizing the results over time.
+Their 0.5% rule uses the 0.5th and 99.5th percentiles.
+In @sec-bem-correlation, both variables are winsorized for Pearson correlations, and Spearman correlations use ranks of the original values.
+In @sec-bem-annual-fm, the regressors are winsorized and the excess-return outcome is used as observed.
+
+The replications here use winsorization to handle extreme values.
+The `clip_tails()` helper in `_bem_monthly.py` calls `.era.winsorize(prob=0.005, quantile_method="linear")` to compute the cutoffs by linear interpolation.
+The `winsorized_corr()` helper applies this rule to each variable after keeping pairs with two finite values.
+In @sec-bem-beta, `.over("month")` applies the helper separately to each month's beta estimates.
+We then fit the Fama–MacBeth regressions with `statspai.fama_macbeth()`.
+
+For examples using `.era.winsorize()` and `.era.truncate()` and a comparison with robust regression, see [Chapter 24 of *Empirical Research in Accounting*](https://iangow.github.io/era_pl_book/extreme-vals.html#sec-leone).
 
 ## Newey and West (1987) Adjustment
 

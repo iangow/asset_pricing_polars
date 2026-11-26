@@ -17,7 +17,7 @@ Formation months run from June 1963 through November 2012.
 The book was published in 2016, well before CRSP's CIZ format.
 This replication uses the legacy (SIZ) monthly stock and names files, not the CIZ files used in the earlier chapters.
 Our legacy snapshot is newer than the authors' original data, even though we use the same sample dates.
-See the [WRDS table list](data.qmd#data-vintages) for the embedded update dates.
+See @sec-data-vintages for the embedded update dates.
 
 Use the share code in force at the end of each month.
 Keep share codes 10 and 11, without adding an exchange screen.
@@ -194,7 +194,7 @@ shares = (
 
 ## Correlations {#correlation-and-persistence}
 
-Join the size measures to the twelve-month daily beta from [Chapter 8](beta-replication.qmd).
+Join the size measures to the twelve-month daily beta from @sec-bem-beta.
 We take the mean of the monthly cross-sectional correlations.
 Below the diagonal are Pearson correlations on winsorized observations, and above it are Spearman correlations on the original ranks.
 
@@ -230,7 +230,7 @@ show_table(persistence(panel, size_measures, [1, 3, 6, 12, 24, 36, 48, 60, 120])
 
 ### Univariate Portfolio Analysis
 
-Sort stocks at the end of month $t$ and measure their excess returns in $t+1$, using the [Chapter 7](crsp-replication.qmd) delisting rules.
+Sort stocks at the end of month $t$ and measure their excess returns in $t+1$, using the delisting rules in @sec-bem-returns.
 First use NYSE stocks to calculate the breakpoints, then use all eligible stocks.
 In both cases, assign stocks from the full eligible sample.
 For the June-based sort, the value weights use June capitalization, as in BEM.
