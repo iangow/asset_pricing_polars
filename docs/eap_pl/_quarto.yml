@@ -50,6 +50,7 @@ quartodoc:
         - build_annual_panel
         - build_sizes
         - build_book_to_market
+        - build_momentum
         - load_beta_universe
         - load_daily_beta_inputs
         - monthly_panel

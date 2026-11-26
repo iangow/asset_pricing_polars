@@ -92,6 +92,31 @@ def build_annual_panel(
     )
 
 
+def monthly_stock_returns(first, last):
+    stocks = (
+        load_parquet("msf", "crsp")
+        .select("permno", month=pl.col("date").dt.month_start(), ret="ret")
+        .filter(pl.col("month").is_between(first, last))
+    )
+    delists = (
+        load_parquet("msedelist", "crsp")
+        .select("permno", "dlret", "dlstcd", month=pl.col("dlstdt").dt.month_start())
+        .filter(pl.col("month").is_between(first, last))
+    )
+    poor_performance = (
+        pl.col("dlstcd").is_in([500, 520, 580, 584]) | pl.col("dlstcd").is_between(551, 574)
+    )
+    return (
+        stocks.join(delists, on=KEYS, how="full", coalesce=True, validate="1:1")
+        .select(
+            *KEYS,
+            ret=pl.when(pl.col("dlstcd").is_not_null())
+            .then(pl.coalesce("dlret", pl.when(poor_performance).then(-0.30).otherwise(-1.00)))
+            .otherwise(pl.col("ret")),
+        )
+    )
+
+
 def monthly_panel(sizes, first, last):
     """Join formation-month characteristics to next-month excess returns.
 
@@ -112,27 +137,8 @@ def monthly_panel(sizes, first, last):
             next-month `excess` and `market` in percentage points.
     """
     betas = load_parquet("betas", "eap").select(*KEYS, beta="12M")
-    stocks = (
-        load_parquet("msf", "crsp")
-        .select("permno", month=pl.col("date").dt.month_start(), ret="ret")
-        .filter(pl.col("month").is_between(first.dt.offset_by("1mo"), last.dt.offset_by("1mo")))
-    )
-    delists = (
-        load_parquet("msedelist", "crsp")
-        .select("permno", "dlret", "dlstcd", month=pl.col("dlstdt").dt.month_start())
-        .filter(pl.col("month").is_between(first.dt.offset_by("1mo"), last.dt.offset_by("1mo")))
-    )
-    poor_performance = (
-        pl.col("dlstcd").is_in([500, 520, 580, 584]) | pl.col("dlstcd").is_between(551, 574)
-    )
-    returns = (
-        stocks.join(delists, on=KEYS, how="full", coalesce=True, validate="1:1")
-        .select(
-            "permno", holding="month",
-            ret=pl.when(pl.col("dlstcd").is_not_null())
-            .then(pl.coalesce("dlret", pl.when(poor_performance).then(-0.30).otherwise(-1.00)))
-            .otherwise(pl.col("ret")),
-        )
+    returns = monthly_stock_returns(first.dt.offset_by("1mo"), last.dt.offset_by("1mo")).rename(
+        {"month": "holding"},
     )
     market = (
         load_parquet("factors_monthly", "ff")

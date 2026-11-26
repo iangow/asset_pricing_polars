@@ -38,14 +38,14 @@ curl -fLsS 'https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/ftp_202412/F
 
 Render the full book and open `_book/index.html`. The annual methods chapters
 build their inputs on demand. Set `EAP_WRITE_BETAS=1` so the Beta chapter
-writes `DATA_DIR/eap/betas.parquet` for the monthly analyses in Size and Value.
+writes `DATA_DIR/eap/betas.parquet` for the monthly analyses in Size, Value, and Momentum.
 
 ```sh
 EAP_WRITE_BETAS=1 QUARTO_PYTHON="$PWD/.venv/bin/python" \
   quarto render --to html
 ```
 
-For a standalone Size or Value render, use an existing `eap/betas.parquet`
+For a standalone Size, Value, or Momentum render, use an existing `eap/betas.parquet`
 or render `beta-replication.qmd` with `EAP_WRITE_BETAS=1` first.
 Set `EAP_WRITE_SIZES=1` or `EAP_WRITE_BOOK_TO_MARKET=1` to save those tables
 for use outside the book.

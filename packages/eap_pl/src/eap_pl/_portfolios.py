@@ -44,19 +44,20 @@ def hac(formula, data):
     return sp.regress(formula, data=data, robust="hac", hac_lags=6, hac_small=True)
 
 
-def format_fit(fit, term):
+def format_fit(fit, term, *, digits=2):
     """Format a coefficient and its t statistic for a book table.
 
     Args:
         fit (statspai.EconometricResults): Fit exposing `params` and `tvalues`
             by term.
         term (str): Coefficient name in the fit.
+        digits (int): Decimal places for the coefficient.
 
     Returns:
-        (str): Coefficient and parenthesized t statistic rounded to two decimal
-            places, separated by an HTML line break.
+        (str): Coefficient and parenthesized t statistic separated by an HTML
+            line break. The t statistic uses two decimal places.
     """
-    return f"{fit.params[term]:.2f}<br>({fit.tvalues[term]:.2f})"
+    return f"{fit.params[term]:.{digits}f}<br>({fit.tvalues[term]:.2f})"
 
 
 def portfolio_inference(series, outcome, *, alpha=False):
@@ -215,7 +216,7 @@ def bivariate_panel(monthly, value, *, independent, spread_only=False):
     return pl.DataFrame(rows, schema=schema, orient="row")
 
 
-def fama_macbeth_table(panel, specifications, labels):
+def fama_macbeth_table(panel, specifications, labels, *, digits=2):
     """Build a table of monthly Fama–MacBeth regressions.
 
     Winsorizes the regressors within formation months at the 0.5th and
@@ -229,6 +230,7 @@ def fama_macbeth_table(panel, specifications, labels):
             model.
         labels (dict[str, str]): Regressor columns mapped to display labels
             in table order.
+        digits (int): Decimal places for coefficients and intercepts.
 
     Returns:
         (polars.DataFrame): Formatted coefficients and t statistics,
@@ -246,6 +248,6 @@ def fama_macbeth_table(panel, specifications, labels):
         periods = fit.model_info["period_coefs"]
         adjust = 1 - (1 - periods["r2"]) * (periods["nobs"] - 1) / (periods["nobs"] - len(terms) - 1)
         result[f"({i})"] = [
-            format_fit(fit, term) if term in terms else "" for term in labels
-        ] + [format_fit(fit, "Intercept"), f"{adjust.mean():.2f}", f"{periods['nobs'].mean():.0f}"]
+            format_fit(fit, term, digits=digits) if term in terms else "" for term in labels
+        ] + [format_fit(fit, "Intercept", digits=digits), f"{adjust.mean():.2f}", f"{periods['nobs'].mean():.0f}"]
     return pl.DataFrame(result)

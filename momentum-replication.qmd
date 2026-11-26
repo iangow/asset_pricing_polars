@@ -1,0 +1,523 @@
+---
+jupyter: python3
+---
+
+# The Momentum Effect {#sec-momentum-replication}
+
+Do stocks that recently outperformed continue to outperform?
+Following Chapter 11 of @bali2016, we compare seven measures of prior returns and examine how their predictive power changes with the return horizon.
+@jegadeeshTitman1993 document that portfolios buying recent winners and selling recent losers earn positive returns over several months.
+
+## Measuring Momentum
+
+At the end of month $t$, the main measure compounds returns from $t-11$ through $t-1$.
+Skipping month $t$ separates the signal from the most recent return, which is used to measure short-term reversal.
+
+$$
+\operatorname{Mom}_{i,t}
+=100\left[\prod_{m=t-11}^{t-1}(1+R_{i,m})-1\right].
+$$ {#eq-bem11-momentum}
+
+In BEM's Equation (11.1), $R_{i,m}$ is the stock's monthly return in decimal form and $\operatorname{Mom}_{i,t}$ is measured in percentage points.
+We compound the available returns and require at least nine observations.
+For the lagged 12- and six-month alternatives, the minimum counts are ten and five.
+For the 12-, nine-, six-, and three-month windows that include month $t$, the minimum counts are ten, seven, five, and three, respectively.
+
+{{< include _show-code.qmd >}}
+
+```{python}
+#| include: false
+
+from eap_pl import build_momentum
+from eap_pl._momentum import _compound_trailing_return
+```
+
+A calendar window counts months even when the CRSP file has a gap.
+The offset determines whether the window ends in month $t$ or in month $t-1$.
+
+```{python}
+#| echo: false
+#| output: asis
+
+show_code(build_momentum, "windows", "returns")
+```
+
+Count the nonmissing gross returns before taking their product.
+
+```{python}
+#| echo: false
+#| output: asis
+
+show_code(_compound_trailing_return)
+```
+
+```{python}
+import polars as pl
+
+from eap_pl import build_book_to_market, build_momentum, build_sizes, monthly_panel
+
+first = pl.date(1963, 6, 1)
+last = pl.date(2012, 11, 1)
+keys = ["permno", "month"]
+signals = {
+    "mom": "Mom", "lag12": "Rₜ₋₁₂:ₜ₋₁", "lag6": "Rₜ₋₆:ₜ₋₁",
+    "r12m": "R12M", "r9m": "R9M", "r6m": "R6M", "r3m": "R3M",
+}
+
+sizes = build_sizes()
+book_to_market = build_book_to_market(sizes).select(*keys, "bm")
+panel = (
+    monthly_panel(sizes, first, last)
+    .join(build_momentum(first, last), on=keys, how="left", validate="1:1")
+    .join(book_to_market, on=keys, how="left", validate="1:1")
+)
+```
+
+The formation sample runs from June 1963 through November 2012.
+The panel uses the beta, size, and positive book-to-market measures from @sec-bem-beta, @sec-size-replication, and @sec-value-replication.
+Holding-month excess returns use the delisting treatment in @sec-bem-returns.
+
+## Summary Statistics
+
+Compute the statistics separately each month and then average them across months.
+The final column gives the average number of available observations for the signal.
+
+{{< include _show-table.qmd >}}
+
+```{python}
+#| label: tbl-bem11-summary
+#| tbl-cap: Monthly summary statistics for momentum measures (BEM Table 11.1)
+#| echo: false
+
+from eap_pl import mean_cross_sections
+
+show_table(mean_cross_sections(panel, signals))
+```
+
+Mom has an average monthly cross-sectional mean of 14.12% and standard deviation of 58.40%, both matching BEM to two decimals.
+The average monthly count is 4,424 stocks versus 4,426 in BEM.
+
+## Correlations
+
+Calculate cross-sectional correlations in each formation month and average them over time.
+The Pearson correlations use 0.5% winsorization in each tail of the paired observations.
+The Spearman correlations use the original ranks.
+
+```{python}
+#| label: tbl-bem11-correlations
+#| tbl-cap: Correlations of momentum with beta, size, and book-to-market (BEM Table 11.2)
+
+from eap_pl import period_correlations
+
+controls = {"beta": "Beta", "log_cap": "Size", "bm": "BM"}
+correlations = (
+    period_correlations(panel, [*controls, *signals], "month")
+    .select(pl.exclude("month").mean())
+    .row(0, named=True)
+)
+
+show_table(pl.DataFrame([
+    {
+        "Method": method, "Characteristic": label,
+        **{name: correlations[f"{method} {control}–{signal}"]
+           for signal, name in signals.items()},
+    }
+    for method in ("Pearson", "Spearman")
+    for control, label in controls.items()
+]))
+```
+
+The monthly calculation reproduces all entries in BEM Table 11.2 at the printed precision.
+Mom is more strongly correlated with size than with beta or book-to-market.
+
+## Momentum and Stock Returns
+
+### Univariate Portfolio Analysis
+
+Each month, sort the stocks with a valid signal into ten portfolios using breakpoints from all stocks with that signal.
+Value weights use market capitalization at formation.
+Returns and alphas are in percentage points per month.
+For each winner-minus-loser spread, regress the monthly return series on an intercept, on the market factor, or on the three Fama–French factors to estimate its mean, CAPM alpha, or FF alpha.
+Parentheses report six-lag Newey–West $t$-statistics [@neweywest1987].
+
+```{python}
+from era_pl import load_parquet
+from eap_pl import format_fit, hac
+from eap_pl._portfolios import assign_portfolio, portfolio_months, spread
+
+factors = (
+    load_parquet("factors_monthly", "ff")
+    .select(
+        month=pl.col("date").dt.month_start(),
+        market=100 * pl.col("mktrf"),
+        smb=100 * pl.col("smb"),
+        hml=100 * pl.col("hml"),
+        rf=100 * pl.col("rf"),
+    )
+    .collect()
+)
+ff3 = ["market", "smb", "hml"]
+weights = {"VW": "Value weighted", "EW": "Equal weighted"}
+
+
+def spread_statistics(series, weight, *, ff_factors=ff3, capm=True):
+    sample = (series.select("month", weight)
+              .join(factors, on="month", validate="m:1").sort("month"))
+    models = {"Return": "1"}
+    if capm:
+        models["CAPM α"] = "market"
+    models["FF α"] = " + ".join(ff_factors)
+    return {
+        name: format_fit(hac(f"{weight} ~ {rhs}", sample), "Intercept")
+        for name, rhs in models.items()
+    }
+```
+
+```{python}
+deciles = {str(i): i for i in range(1, 11)}
+formation = panel.select(*keys, "cap", *signals)
+members = {
+    signal: assign_portfolio(
+        formation.select(*keys, "cap", signal).filter(pl.col(signal).is_finite()),
+        signal, 10, "month",
+    ).drop(signal)
+    for signal in signals
+}
+
+one_month = panel.select(*keys, "market", "excess")
+decile_returns = {
+    signal: portfolio_months(
+        stocks.join(one_month, on=keys, validate="1:1")
+        .with_columns(pl.col("month").dt.offset_by("1mo")),
+        ["portfolio"],
+    )
+    for signal, stocks in members.items()
+}
+```
+
+```{python}
+#| label: tbl-bem11-deciles
+#| tbl-cap: Momentum-sorted decile portfolios (BEM Table 11.3)
+#| tbl-subcap:
+#|   - Mom-sorted portfolio characteristics
+#|   - Portfolio returns and winner-minus-loser spreads
+#| echo: false
+
+characteristics = {"mom": "Mom", "beta": "Beta", "cap": "MktCap (millions)", "bm": "BM"}
+mom_groups = (
+    members["mom"].drop("cap")
+    .join(panel.select(*keys, *characteristics), on=keys, validate="1:1")
+    .group_by("month", "portfolio").agg(pl.col(*characteristics).mean())
+    .group_by("portfolio").agg(pl.col(*characteristics).mean())
+    .sort("portfolio")
+)
+show_table(pl.DataFrame([
+    {"Characteristic": label, **dict(zip(deciles, mom_groups[column]))}
+    for column, label in characteristics.items()
+]))
+
+decile_rows = []
+for weight, label in weights.items():
+    for signal, name in signals.items():
+        monthly = decile_returns[signal]
+        means = monthly.group_by("portfolio").agg(pl.col(weight).mean()).sort("portfolio")
+        stats = spread_statistics(spread(monthly, 10, 1, "portfolio", weight), weight)
+        decile_rows.append({
+            "Weights": label, "Signal": name, **dict(zip(deciles, means[weight])),
+            "10–1": stats["Return"], "CAPM α": stats["CAPM α"], "FF α": stats["FF α"],
+        })
+show_table(pl.DataFrame(decile_rows))
+```
+
+The Mom winner-minus-loser spread averages 1.94% per month with value weights and 1.14% with equal weights.
+BEM report 1.95% and 1.08%, respectively.
+
+### Returns at Longer Horizons
+
+Keep the formation-month decile assignments and capitalization weights.
+For each $k$, attach the return in month $t+k$ and compute the spread across stocks with a return in that month.
+A delisting contributes its adjusted return in the month it occurs.
+We use realized returns through December 2012 and match the factors to the month in which each return is realized.
+
+```{python}
+from eap_pl._data import monthly_stock_returns
+
+holding_returns = (
+    monthly_stock_returns(first.dt.offset_by("1mo"), last.dt.offset_by("1mo"))
+    .collect()
+    .join(factors.select("month", "rf", "market"), on="month", validate="m:1")
+    .select("permno", "market", holding="month", excess=100 * pl.col("ret") - pl.col("rf"))
+)
+
+
+def returns_at_horizon(stocks, k):
+    realized = (
+        stocks.with_columns(holding=pl.col("month").dt.offset_by(f"{k}mo"))
+        .drop("month")
+        .join(holding_returns, on=["permno", "holding"], validate="1:1")
+        .rename({"holding": "month"})
+    )
+    return portfolio_months(realized, ["portfolio"])
+```
+
+```{python}
+#| label: tbl-bem11-horizons
+#| tbl-cap: Winner-minus-loser returns and FF alphas by horizon (BEM Table 11.4)
+#| echo: false
+
+horizon_results = {}
+for signal, stocks in members.items():
+    extremes = stocks.filter(pl.col("portfolio").is_in([1, 10]))
+    for k in range(1, 13):
+        monthly = decile_returns[signal] if k == 1 else returns_at_horizon(extremes, k)
+        for weight in weights:
+            high_minus_low = spread(monthly, 10, 1, "portfolio", weight)
+            horizon_results[signal, weight, k] = spread_statistics(
+                high_minus_low, weight, capm=False,
+            )
+
+show_table(pl.DataFrame([
+    {
+        "Weights": label, "Signal": name, "Statistic": metric,
+        **{f"t+{k}": horizon_results[signal, weight, k][metric] for k in range(1, 13)},
+    }
+    for weight, label in weights.items()
+    for signal, name in signals.items()
+    for metric in ("Return", "FF α")
+]))
+```
+
+The value-weighted Mom spread turns negative at the longer horizons, reaching −0.63% in month $t+12$.
+Its FF alpha in that month is close to zero.
+
+### Controlling for Market Capitalization
+
+First divide stocks into five capitalization groups.
+Then compute Mom quintile breakpoints separately within each capitalization group.
+The last column averages the control portfolios each month before calculating the mean return or estimating an alpha.
+
+```{python}
+from eap_pl import bivariate_months
+
+sort_panel = panel.select(*keys, "mom", "beta", "cap", "bm", "excess", "market")
+
+
+def two_way_results(
+    monthly, weight, control_labels, *, ff_factors=ff3, show_cells=False, show_average=True,
+):
+    groups = monthly.partition_by("control", as_dict=True)
+    series = {label: groups[i,] for i, label in enumerate(control_labels, 1)}
+    if show_average:
+        series["Average"] = monthly.group_by("month", "target").agg(
+            pl.col(weight).mean(), pl.col("market").first(),
+        )
+
+    rows = []
+    if show_cells:
+        for target in range(1, 6):
+            rows.append({
+                "Statistic": f"Mom {target}",
+                **{label: f'{cell.filter(pl.col("target") == target)[weight].mean():.2f}'
+                   for label, cell in series.items()},
+            })
+
+    stats = {
+        label: spread_statistics(
+            spread(cell, 5, 1, "target", weight).with_columns(
+                pl.col("month").dt.offset_by("1mo")
+            ),
+            weight, ff_factors=ff_factors,
+        )
+        for label, cell in series.items()
+    }
+    rows.extend({
+        "Statistic": f"5–1 {metric}",
+        **{label: value[metric] for label, value in stats.items()},
+    } for metric in ("Return", "CAPM α", "FF α"))
+    return [{"Weights": weights[weight], **row} for row in rows]
+
+
+quintiles = [str(i) for i in range(1, 6)]
+size_momentum = bivariate_months(sort_panel, "cap", "mom", nyse=False, dependent=True)
+```
+
+```{python}
+#| label: tbl-bem11-size
+#| tbl-cap: Dependent sorts on capitalization and momentum (BEM Table 11.5)
+#| echo: false
+
+show_table(pl.DataFrame([
+    row for weight in weights
+    for row in two_way_results(size_momentum, weight, quintiles, show_cells=True)
+]))
+```
+
+### Momentum Among Small Stocks
+
+Restrict the first sort to the bottom fifth of the capitalization distribution.
+Split that group into four portfolios and sort each portfolio into Mom quintiles.
+
+```{python}
+#| label: tbl-bem11-small
+#| tbl-cap: Dependent momentum sorts within the smallest capitalization quintile (BEM Table 11.6)
+
+small = sort_panel.filter(pl.col("cap") <= pl.col("cap").quantile(0.20).over("month"))
+small = assign_portfolio(small, "cap", 4, "month", label="control")
+small = assign_portfolio(small, "mom", 5, ["month", "control"], label="target")
+small_momentum = portfolio_months(small.drop_nulls("target"), ["control", "target"])
+
+show_table(pl.DataFrame([
+    row for weight in weights
+    for row in two_way_results(
+        small_momentum, weight, ["0–5%", "5–10%", "10–15%", "15–20%"],
+        show_cells=True, show_average=False,
+    )
+]))
+```
+
+### Controlling for Beta and Book-to-Market
+
+The dependent sorts calculate Mom breakpoints within each beta or BM quintile.
+The independent sorts use the intersection of two sets of breakpoints computed separately across stocks for each variable.
+The tables show the high-minus-low Mom spread within each control quintile and its average across the control quintiles.
+
+```{python}
+sort_variables = {"beta": "Beta", "cap": "MktCap", "bm": "BM"}
+
+
+def two_way_spreads(pairs, *, dependent, momentum_first=False):
+    rows = []
+    for control, target in pairs:
+        monthly = bivariate_months(sort_panel, control, target, nyse=False, dependent=dependent)
+        omit = {"cap": "smb", "bm": "hml"}.get(target)
+        ff_factors = [factor for factor in ff3 if factor != omit]
+        characteristic = target if momentum_first else control
+        for weight in weights:
+            rows.extend(
+                {"Characteristic": sort_variables[characteristic], **row}
+                for row in two_way_results(monthly, weight, quintiles, ff_factors=ff_factors)
+            )
+    return pl.DataFrame(rows)
+```
+
+```{python}
+#| label: tbl-bem11-dependent
+#| tbl-cap: Momentum spreads from dependent sorts controlling for beta or book-to-market (BEM Table 11.7)
+#| echo: false
+
+show_table(two_way_spreads([("beta", "mom"), ("bm", "mom")], dependent=True))
+```
+
+```{python}
+#| label: tbl-bem11-independent
+#| tbl-cap: Momentum spreads from independent sorts controlling for beta, capitalization, or book-to-market (BEM Table 11.8)
+#| echo: false
+
+show_table(two_way_spreads([(control, "mom") for control in sort_variables], dependent=False))
+```
+
+### Controlling for Momentum
+
+Reverse the sort order to ask whether differences associated with beta, capitalization, or BM remain within Mom quintiles.
+For Table 11.9, we follow BEM's discussion and calculate the second set of breakpoints within each Mom quintile.
+For capitalization spreads, omit SMB from the FF regression.
+For BM spreads, omit HML.
+
+```{python}
+#| label: tbl-bem11-reverse-dependent
+#| tbl-cap: Characteristic spreads from dependent sorts controlling for momentum (BEM Table 11.9)
+#| echo: false
+
+reverse_pairs = [("mom", target) for target in sort_variables]
+show_table(two_way_spreads(reverse_pairs, dependent=True, momentum_first=True))
+```
+
+```{python}
+#| label: tbl-bem11-reverse-independent
+#| tbl-cap: Characteristic spreads from independent sorts controlling for momentum (BEM Table 11.10)
+#| echo: false
+
+show_table(two_way_spreads(reverse_pairs, dependent=False, momentum_first=True))
+```
+
+### Fama–MacBeth Regressions
+
+Regress next month's excess return on Mom and combinations of beta, log capitalization, and BM.
+Winsorize the regressors at 0.5% in each tail within each month.
+Report the average monthly coefficients and estimate their standard errors using six Newey–West lags.
+
+```{python}
+#| label: tbl-bem11-fama-macbeth
+#| tbl-cap: Monthly Fama–MacBeth regressions of next-month excess returns (BEM Table 11.11)
+
+from itertools import combinations
+
+from eap_pl import fama_macbeth_table
+
+terms = {"mom": "Mom", **controls}
+specifications = [
+    ["mom", *subset]
+    for n in range(len(controls) + 1)
+    for subset in combinations(controls, n)
+]
+show_table(fama_macbeth_table(panel, specifications, terms, digits=3))
+```
+
+The Mom coefficient rounds to 0.007 in the univariate regression and in the regression with all three controls, matching BEM in both specifications.
+In the full specification, a 100-percentage-point difference in Mom corresponds to about 0.70 percentage points in next month's fitted excess return.
+
+## The Momentum Factor
+
+The [Kenneth French Data Library](https://mba.tuck.dartmouth.edu/pages/faculty/Ken.French/Data_Library/det_mom_factor.html) constructs MOM using six value-weighted portfolios formed on size and prior return.
+The sorts use an NYSE median for size and NYSE 30th and 70th percentiles for prior return.
+The factor averages the returns of the small- and large-stock winner portfolios and subtracts the average return of the corresponding loser portfolios.
+We use the December 2024 release listed in the book's setup instructions and plot January 1927 through December 2012, the period in BEM.
+
+```{python}
+#| label: fig-bem11-mom
+#| fig-cap: Compounded and cumulative log returns of the MOM factor, January 1927–December 2012 (BEM Figure 11.1)
+
+from io import StringIO
+from pathlib import Path
+import re
+
+from eap_pl import plot_cumulative_returns
+
+archive = Path("data/momentum-202412.csv").read_text()
+monthly_rows = re.findall(r"(?m)^\s*(\d{6},[^\r\n]+)", archive)
+momentum_factor = (
+    pl.read_csv(
+        StringIO("\n".join(monthly_rows)), has_header=False, new_columns=["ym", "mom"],
+        schema_overrides={"mom": pl.String},
+    )
+    .filter(pl.col("ym").is_between(192701, 201212))
+    .select(
+        date=(pl.col("ym").cast(pl.String) + "01").str.to_date("%Y%m%d"),
+        mom=pl.col("mom").str.strip_chars().cast(pl.Float64) / 100,
+    )
+    .sort("date")
+    .with_columns(
+        compounded=(1 + pl.col("mom")).cum_prod() - 1,
+        cumulative_log=pl.col("mom").log1p().cum_sum(),
+    )
+)
+assert momentum_factor.height == 1032
+assert momentum_factor.select(pl.col("mom").is_finite().all()).item()
+plot_cumulative_returns(momentum_factor, y_label="Cumulative MOM return")
+```
+
+The compounded series ends at about 30,312%, compared with 31,207% in BEM.
+Both series show a sharp drawdown in 2009.
+
+## The Fama–French–Carhart Four-Factor Model
+
+@carhart1997 adds a momentum factor to the three stock-market factors of @famaFrench1993.
+The four-factor model is BEM's Equation (11.2).
+
+$$
+r_{p,t}=\alpha_p+\beta_{\mathrm{MKT},p}\mathrm{MKT}_t
++\beta_{\mathrm{SMB},p}\mathrm{SMB}_t+\beta_{\mathrm{HML},p}\mathrm{HML}_t
++\beta_{\mathrm{MOM},p}\mathrm{MOM}_t+\varepsilon_{p,t}.
+$$ {#eq-bem11-ffc}
+
+Here $r_{p,t}$ is the excess return of portfolio $p$, and $\alpha_p$ is the intercept after accounting for its exposures to the market, size, value, and momentum factors.
