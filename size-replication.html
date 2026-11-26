@@ -314,9 +314,9 @@ window.Quarto = {
 <p>We follow Chapter 9 of Bali, Engle, and Murray (2016), <em>Empirical Asset Pricing</em>. We compare monthly and June-based size, then examine how each relates to subsequent stock returns. Formation months run from June 1963 through November 2012.</p>
 <section id="reconstruct-the-published-sample" class="level2" data-number="9.1">
 <h2 data-number="9.1" class="anchored" data-anchor-id="reconstruct-the-published-sample"><span class="header-section-number">9.1</span> Calculating Market Capitalization</h2>
-<p>The book was published in 2016, well before CRSP’s CIZ format. This replication uses the legacy (SIZ) monthly stock and names files, not the CIZ files used in the earlier chapters. Our legacy snapshot is newer than the authors’ original data, even though we use the same sample dates. See the <a href="./data.html#data-vintages">WRDS table list</a> for the embedded update dates.</p>
+<p>The book was published in 2016, well before CRSP’s CIZ format. This replication uses the legacy (SIZ) monthly stock and names files, not the CIZ files used in the earlier chapters. Our legacy snapshot is newer than the authors’ original data, even though we use the same sample dates. See <a href="data.html#sec-data-vintages" class="quarto-xref"><span>Section 1.1.1</span></a> for the embedded update dates.</p>
 <p>Use the share code in force at the end of each month. Keep share codes 10 and 11, without adding an exchange screen. The book’s measure uses the absolute alternate price and shares outstanding. CRSP records shares in thousands; dividing their product by 1,000 gives market capitalization in millions of dollars. Treat zeros as missing.</p>
-<div id="ac114a48" class="cell" data-execution_count="1">
+<div id="8d4013f7" class="cell" data-execution_count="1">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> polars <span class="im">as</span> pl</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> era_pl <span class="im">import</span> load_parquet</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -356,7 +356,7 @@ window.Quarto = {
 <span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>For the annual measure, join each stock to its capitalization at the most recent June. A stock without a record for that particular June has no annual value. We do not carry forward an older June observation.</p>
-<div id="08e12af0" class="cell" data-execution_count="2">
+<div id="96fcf1d7" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>june_caps <span class="op">=</span> (</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    prices</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    .<span class="bu">filter</span>(pl.col(<span class="st">"month"</span>).dt.month() <span class="op">==</span> <span class="dv">6</span>)</span>
@@ -372,7 +372,7 @@ window.Quarto = {
 </div>
 <p><span id="compare-four-measures-of-size-and-their-logs"></span></p>
 <p>Convert nominal market capitalization to December 2012 dollars using the <a href="https://fred.stlouisfed.org/series/CPIAUCNS">BLS CPI-U, not seasonally adjusted</a>. Use the CPI for the current observation month for both the monthly and the June-based measures, as in the book.</p>
-<div id="b92192af" class="cell" data-execution_count="3">
+<div id="2e5d8f00" class="cell" data-execution_count="3">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>cpi <span class="op">=</span> pl.read_csv(<span class="st">"data/cpi-aucns.csv"</span>, try_parse_dates<span class="op">=</span><span class="va">True</span>).rename(</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    {<span class="st">"observation_date"</span>: <span class="st">"month"</span>, <span class="st">"CPIAUCNS"</span>: <span class="st">"cpi"</span>}</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>)</span>
@@ -401,7 +401,7 @@ window.Quarto = {
 <section id="summary-statistics" class="level2" data-number="9.2">
 <h2 data-number="9.2" class="anchored" data-anchor-id="summary-statistics"><span class="header-section-number">9.2</span> Summary Statistics</h2>
 <p>The mean of the monthly medians describes the middle stock in a typical month. It is not a median calculated once on the pooled stock-month data.</p>
-<div id="67a8b7f6" class="cell" data-execution_count="6">
+<div id="25b1eb4a" class="cell" data-execution_count="6">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> _bem_monthly <span class="im">import</span> mean_cross_sections</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>stats <span class="op">=</span> mean_cross_sections(sizes, {</span>
@@ -591,11 +591,11 @@ Table&nbsp;9.1: Monthly summary statistics for size (BEM Table 9.1)
 </div>
 <p>The published nominal market capitalization has a monthly mean of $1,101 million and an average monthly median of $107 million. The much larger mean reflects the concentration of market capitalization in a few stocks.</p>
 <div id="cell-fig-bem9-concentration" class="cell" data-execution_count="9">
-<div class="cell-output cell-output-display">
+<div class="cell-output cell-output-display" data-execution_count="9">
 <div id="fig-bem9-concentration" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-bem9-concentration-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="size-replication_files/figure-html/fig-bem9-concentration-output-1.png" width="760" height="374" class="figure-img">
+<img src="size-replication_files/figure-html/fig-bem9-concentration-output-1.png" width="768" height="384" class="figure-img">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-bem9-concentration-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;9.1: Share of market capitalization held by the largest stocks (BEM Figure 9.1)
@@ -607,8 +607,8 @@ Figure&nbsp;9.1: Share of market capitalization held by the largest stocks (BEM 
 </section>
 <section id="correlation-and-persistence" class="level2" data-number="9.3">
 <h2 data-number="9.3" class="anchored" data-anchor-id="correlation-and-persistence"><span class="header-section-number">9.3</span> Correlations</h2>
-<p>Join the size measures to the twelve-month daily beta from <a href="./beta-replication.html">Chapter 8</a>. We take the mean of the monthly cross-sectional correlations. Below the diagonal are Pearson correlations on winsorized observations, and above it are Spearman correlations on the original ranks.</p>
-<div id="1900e4cc" class="cell" data-execution_count="10">
+<p>Join the size measures to the twelve-month daily beta from <a href="beta-replication.html" class="quarto-xref"><span>Chapter 8</span></a>. We take the mean of the monthly cross-sectional correlations. Below the diagonal are Pearson correlations on winsorized observations, and above it are Spearman correlations on the original ranks.</p>
+<div id="024b1dc2" class="cell" data-execution_count="10">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> _bem_monthly <span class="im">import</span> correlation_matrix, monthly_panel, period_correlations, persistence</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>panel <span class="op">=</span> monthly_panel(sizes, first, last)</span>
@@ -781,8 +781,8 @@ Table&nbsp;9.3: Persistence of nominal size measures (BEM Table 9.3)
 <h2 data-number="9.5" class="anchored" data-anchor-id="size-and-future-returns"><span class="header-section-number">9.5</span> Size and Stock Returns</h2>
 <section id="univariate-portfolio-analysis" class="level3" data-number="9.5.1">
 <h3 data-number="9.5.1" class="anchored" data-anchor-id="univariate-portfolio-analysis"><span class="header-section-number">9.5.1</span> Univariate Portfolio Analysis</h3>
-<p>Sort stocks at the end of month <span class="math inline">\(t\)</span> and measure their excess returns in <span class="math inline">\(t+1\)</span>, using the <a href="./crsp-replication.html">Chapter 7</a> delisting rules. First use NYSE stocks to calculate the breakpoints, then use all eligible stocks. In both cases, assign stocks from the full eligible sample. For the June-based sort, the value weights use June capitalization, as in BEM. Returns and CAPM alphas are in percent per month. The <span class="math inline">\(t\)</span>-statistics use six Newey–West lags.</p>
-<div id="4170918b" class="cell" data-execution_count="13">
+<p>Sort stocks at the end of month <span class="math inline">\(t\)</span> and measure their excess returns in <span class="math inline">\(t+1\)</span>, using the delisting rules in <a href="crsp-replication.html#sec-bem-returns" class="quarto-xref"><span>Section 7.2</span></a>. First use NYSE stocks to calculate the breakpoints, then use all eligible stocks. In both cases, assign stocks from the full eligible sample. For the June-based sort, the value weights use June capitalization, as in BEM. Returns and CAPM alphas are in percent per month. The <span class="math inline">\(t\)</span>-statistics use six Newey–West lags.</p>
+<div id="ab960a91" class="cell" data-execution_count="13">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> _bem_monthly <span class="im">import</span> bivariate_months, bivariate_panel, fama_macbeth_table, univariate_panel</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> size_deciles(nyse):</span>
@@ -1506,7 +1506,7 @@ Table&nbsp;9.5: Size deciles using all-stock breakpoints (BEM Table 9.5)
 <section id="sort-on-beta-and-size" class="level3" data-number="9.5.2">
 <h3 data-number="9.5.2" class="anchored" data-anchor-id="sort-on-beta-and-size"><span class="header-section-number">9.5.2</span> Bivariate Portfolio Analysis</h3>
 <p>For a dependent sort, form beta quintiles first and compute size breakpoints within each beta quintile. For an independent sort, compute beta and size breakpoints separately across the reference universe. The rows are size quintiles and the columns are beta quintiles. Average portfolios give each constituent portfolio equal weight each month.</p>
-<div id="39d75471" class="cell" data-execution_count="16">
+<div id="b3a34246" class="cell" data-execution_count="16">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> size_quintiles(nyse, dependent):</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    monthly <span class="op">=</span> bivariate_months(panel, <span class="st">"beta"</span>, <span class="st">"cap"</span>, nyse<span class="op">=</span>nyse, dependent<span class="op">=</span>dependent)</span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> pl.concat([</span>
@@ -2429,11 +2429,11 @@ Table&nbsp;9.10: Fama–MacBeth regressions of returns on size (BEM Table 9.10)
 <p>SMB is the average of three small-stock portfolios less the average of three big-stock portfolios. The three portfolios in each size group cover low, middle, and high book-to-market. Using the same book-to-market groups on both sides reduces the factor’s exposure to the value spread.</p>
 <p>For the historical factor series we use the monthly Fama–French SMB from July 1926 through December 2012.</p>
 <div id="cell-fig-bem9-smb" class="cell" data-execution_count="22">
-<div class="cell-output cell-output-display">
+<div class="cell-output cell-output-display" data-execution_count="22">
 <div id="fig-bem9-smb" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-bem9-smb-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="size-replication_files/figure-html/fig-bem9-smb-output-1.png" width="762" height="374" class="figure-img">
+<img src="size-replication_files/figure-html/fig-bem9-smb-output-1.png" width="787" height="480" class="figure-img">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-bem9-smb-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;9.2: Cumulative returns on the Fama–French SMB factor (BEM Figure 9.2)

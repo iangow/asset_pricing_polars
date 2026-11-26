@@ -329,7 +329,7 @@ window.Quarto = {
 </header>
 
 
-<p>Bali, Engle, and Murray (2016), Chapter 5, use portfolio sorts to study how next year’s excess return varies with beta, market capitalization, and book-to-market. We form portfolios at each December year-end from 1988 to 2012 using the <a href="./summary-statistics.html">Chapter 2 panel</a>. Holding returns run from 1989 to 2012.</p>
+<p>Bali, Engle, and Murray (2016), Chapter 5, use portfolio sorts to study how next year’s excess return varies with beta, market capitalization, and book-to-market. We form portfolios at each December year-end from 1988 to 2012 using the panel from <a href="summary-statistics.html" class="quarto-xref"><span>Chapter 2</span></a>. Holding returns run from 1989 to 2012.</p>
 <style>
 .cell-output-markdown:has(> table) {
   max-width: 100%;
@@ -339,7 +339,7 @@ window.Quarto = {
   white-space: nowrap;
 }
 </style>
-<div id="d83681a8" class="cell" data-execution_count="2">
+<div id="661401c2" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> polars <span class="im">as</span> pl</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> era_pl <span class="im">import</span> load_parquet</span>
@@ -360,7 +360,7 @@ window.Quarto = {
 B_{k,t}=\operatorname{Pctl}_{p_k}(\{X_t\}).
 \tag{5.1}\]</span></span></p>
 <p>The beta sort uses the 10th, 20th, 40th, 60th, 80th, and 90th percentiles. The first and last groups each hold about a tenth of the stocks, giving a closer look at both tails of the distribution. We use linear interpolation for the percentiles.</p>
-<div id="ebdba6a6" class="cell" data-execution_count="5">
+<div id="b907ff5b" class="cell" data-execution_count="5">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> breakpoints(stocks, variable, probabilities, by):</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> stocks.group_by(by).agg(</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>        pl.col(variable).quantile(p, interpolation<span class="op">=</span><span class="st">"linear"</span>).alias(<span class="ss">f"</span><span class="sc">{</span>p<span class="sc">:.0%}</span><span class="ss">"</span>)</span>
@@ -632,7 +632,7 @@ Table&nbsp;5.1: Annual breakpoints for beta portfolios (BEM Table 5.1)
 P_{k,t}=\{i:B_{k-1,t}\le X_{i,t}\le B_{k,t}\}.
 \tag{5.2}\]</span></span></p>
 <p>Both endpoints are included, as in BEM. A stock exactly on a breakpoint can enter both adjacent portfolios. The code joins each stock to its year’s breakpoint intervals, then keeps the intervals that contain its sort value.</p>
-<div id="30cda260" class="cell" data-execution_count="7">
+<div id="1b008494" class="cell" data-execution_count="7">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> itertools <span class="im">import</span> pairwise</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> form_portfolios(stocks, variable, breaks, by, label):</span>
@@ -941,7 +941,7 @@ Y_{k,t}=\frac{\sum_{i\in P_{k,t}} W_{i,t}Y_{i,t}}
 <p><span id="eq-bem5-spread"><span class="math display">\[
 Y_{\mathrm{Diff},t}=Y_{n_P,t}-Y_{1,t}.
 \tag{5.4}\]</span></span></p>
-<div id="1597b903" class="cell" data-execution_count="9">
+<div id="508fdf2d" class="cell" data-execution_count="9">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>portfolio_columns <span class="op">=</span> [<span class="bu">str</span>(group) <span class="cf">for</span> group <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">1</span>, <span class="dv">8</span>)]</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>univariate_columns <span class="op">=</span> [<span class="op">*</span>portfolio_columns, <span class="st">"7–1"</span>]</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>last_holding_year <span class="op">=</span> <span class="dv">2012</span></span>
@@ -1639,7 +1639,7 @@ Table&nbsp;5.4: Value-weighted beta portfolio excess returns in percent (BEM Tab
 \bar{Y}_{\mathrm{Diff}}=\frac{1}{T}\sum_{t=1}^T Y_{\mathrm{Diff},t}.
 \tag{5.6}\]</span></span></p>
 <p>An intercept-only regression gives the same time-series mean. We use StatsPAI and six Newey–West lags for inference, as specified by BEM.</p>
-<div id="3543dc6e" class="cell" data-execution_count="12">
+<div id="f9c8b330" class="cell" data-execution_count="12">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>beta_means <span class="op">=</span> fit_portfolios(beta_ew, univariate_columns)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="cell" data-execution_count="13">
@@ -1864,8 +1864,8 @@ Table&nbsp;5.7: Average characteristics of beta portfolios (BEM Table 5.7)
 </div>
 </div>
 <p><span id="sort-on-size-or-book-to-market"></span></p>
-<p>The same percentile cutoffs can be applied to other sort variables. Recompute the breakpoints with the available observations for each variable. Use the signed book-to-market ratio from Chapter 2.</p>
-<div id="30e489fc" class="cell" data-execution_count="16">
+<p>The same percentile cutoffs can be applied to other sort variables. Recompute the breakpoints with the available observations for each variable. Use the signed book-to-market ratio from <a href="summary-statistics.html#sec-summary-characteristics" class="quarto-xref"><span>Section 2.2</span></a>.</p>
+<div id="ecd4f1b8" class="cell" data-execution_count="16">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> univariate_sort(variable):</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    stocks <span class="op">=</span> annual_panel.<span class="bu">filter</span>(pl.col(variable).is_finite())</span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    breaks <span class="op">=</span> breakpoints(stocks, variable, seven_way, [<span class="st">"year"</span>])</span>
@@ -1957,11 +1957,11 @@ Table&nbsp;5.8: Equal-weighted excess returns by sort variable (BEM Table 5.8)
 </div>
 <p>The companion plot in <a href="#fig-bem5-univariate" class="quarto-xref">Figure&nbsp;<span>5.1</span></a> compares the return profiles. The size sort has its highest average return in the smallest-stock portfolio. Book-to-market has its highest return in the highest-ratio portfolio.</p>
 <div id="cell-fig-bem5-univariate" class="cell" data-execution_count="18">
-<div class="cell-output cell-output-display">
+<div class="cell-output cell-output-display" data-execution_count="18">
 <div id="fig-bem5-univariate" class="quarto-float quarto-figure quarto-figure-center anchored" alt="Three lines show average excess returns across seven portfolios. The smallest-cap portfolio and the highest book-to-market portfolio have the largest returns in their respective sorts.">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-bem5-univariate-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="portfolio-analysis_files/figure-html/fig-bem5-univariate-output-1.png" alt="Three lines show average excess returns across seven portfolios. The smallest-cap portfolio and the highest book-to-market portfolio have the largest returns in their respective sorts." width="779" height="376" class="figure-img">
+<img src="portfolio-analysis_files/figure-html/fig-bem5-univariate-output-1.png" alt="Three lines show average excess returns across seven portfolios. The smallest-cap portfolio and the highest book-to-market portfolio have the largest returns in their respective sorts." width="768" height="365" class="figure-img">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-bem5-univariate-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;5.1: Average next-year excess returns by univariate portfolio
@@ -2190,7 +2190,7 @@ B_{2k,t}=\operatorname{Pctl}_{p_{2k}}(\{X_{2t}\}).
 \tag{5.11}\]</span></span></p>
 <p>We use the 30th and 70th percentiles for beta and the 25th, 50th, and 75th percentiles for market capitalization.</p>
 <p>Use the same percentile and membership functions as in the univariate sort. The second set of breakpoints is grouped only by year here. The dependent sort uses the same pipeline with an additional grouping key for the first portfolio.</p>
-<div id="76711ca3" class="cell" data-execution_count="20">
+<div id="ede63974" class="cell" data-execution_count="20">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>control_ports <span class="op">=</span> [<span class="st">"1"</span>, <span class="st">"2"</span>, <span class="st">"3"</span>]</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> bivariate_sort(first, second, <span class="op">*</span>, dependent<span class="op">=</span><span class="va">False</span>):</span>
@@ -2444,7 +2444,7 @@ P_{j,k,t}=
 \{i:B_{2,k-1,t}\le X_{2i,t}\le B_{2k,t}\}.
 \tag{5.12}\]</span></span></p>
 <p>Pivot the portfolio cells so that the beta groups are columns and the market-cap groups are rows within each year.</p>
-<div id="7922fcb1" class="cell" data-execution_count="22">
+<div id="ce4c8392" class="cell" data-execution_count="22">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> control_grid(cells, value):</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> (</span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>        cells.pivot(on<span class="op">=</span><span class="st">"control"</span>, index<span class="op">=</span>[<span class="st">"year"</span>, <span class="st">"target"</span>], values<span class="op">=</span>value)</span>
@@ -3265,7 +3265,7 @@ Table&nbsp;5.12: Constructing the difference in differences from the four corner
 </div>
 </div>
 <p>Compute the spreads and averages within each holding year before fitting their time-series means or alphas. This preserves the covariance between the portfolio legs in the reported standard errors.</p>
-<div id="bfaf0135" class="cell" data-execution_count="25">
+<div id="15622270" class="cell" data-execution_count="25">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> bivariate_returns(members, <span class="op">*</span>, dependent<span class="op">=</span><span class="va">False</span>):</span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>    cells <span class="op">=</span> (</span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>        members.<span class="bu">filter</span>(pl.col(<span class="st">"year"</span>) <span class="op">&lt;</span> last_holding_year)</span>
@@ -4773,7 +4773,7 @@ Table&nbsp;5.13: Annual equal-weighted returns for the independent sorts (BEM Ta
 <section id="summarize-and-present-the-returns" class="level3" data-number="5.2.4">
 <h3 data-number="5.2.4" class="anchored" data-anchor-id="summarize-and-present-the-returns"><span class="header-section-number">5.2.4</span> Summarizing the Results</h3>
 <p>The full return grid reports both excess returns and four-factor alphas. The next tables show ways to focus on a specific spread or on the return profile after averaging across the control groups.</p>
-<div id="d6bc3fa3" class="cell" data-execution_count="27">
+<div id="c840445a" class="cell" data-execution_count="27">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>independent_fits <span class="op">=</span> grid_fits(independent_returns)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="cell" data-execution_count="28">
@@ -5011,7 +5011,7 @@ Table&nbsp;5.15: Compact four-factor alpha grid for the independent sorts (BEM T
 </div>
 </div>
 <p>To check the size effect with a different control, group on book-to-market first and market capitalization second. Both sets of breakpoints still use the entire cross-section of eligible stocks.</p>
-<div id="8f864b2a" class="cell" data-execution_count="30">
+<div id="24b43e24" class="cell" data-execution_count="30">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>independent_bm_cap, _, _ <span class="op">=</span> bivariate_sort(<span class="st">"BM"</span>, <span class="st">"MktCap"</span>)</span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>bm_cap_fits <span class="op">=</span> grid_fits(bivariate_returns(independent_bm_cap))</span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>cap_controls <span class="op">=</span> {<span class="st">"Beta"</span>: independent_fits, <span class="st">"BM"</span>: bm_cap_fits}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -5163,7 +5163,7 @@ Table&nbsp;5.17: Independent-sort size portfolios averaged across control groups
 </div>
 </div>
 <p>We can also hold the control variable fixed and change the characteristic of interest. Here beta is the control in both sorts, and we compare the results for market capitalization and book-to-market.</p>
-<div id="20805772" class="cell" data-execution_count="33">
+<div id="e2f40e81" class="cell" data-execution_count="33">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>independent_beta_bm, _, _ <span class="op">=</span> bivariate_sort(<span class="st">"Beta"</span>, <span class="st">"BM"</span>)</span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>beta_bm_fits <span class="op">=</span> grid_fits(bivariate_returns(independent_beta_bm))</span>
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>beta_controls <span class="op">=</span> {<span class="st">"MktCap"</span>: independent_fits, <span class="st">"BM"</span>: beta_bm_fits}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -5324,7 +5324,7 @@ Table&nbsp;5.19: Independent-sort size and book-to-market portfolios averaged ac
 <p><span id="eq-bem5-conditional-breaks"><span class="math display">\[
 B_{2j,k,t}=\operatorname{Pctl}_{p_{2k}}(\{X_{2i,t}:i\in P^{(1)}_{j,t}\}).
 \tag{5.20}\]</span></span></p>
-<div id="8f85c737" class="cell" data-execution_count="36">
+<div id="e0f22fcb" class="cell" data-execution_count="36">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>dependent, beta_cutoffs, conditional_cutoffs <span class="op">=</span> bivariate_sort(<span class="st">"Beta"</span>, <span class="st">"MktCap"</span>, dependent<span class="op">=</span><span class="va">True</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="cell" data-execution_count="37">
@@ -6778,11 +6778,11 @@ Table&nbsp;5.21: Annual counts in the dependent beta and market-cap portfolios (
 </div>
 <p>Conditional quartiles tend to distribute stocks evenly within each beta group. In the independent sort, the largest stocks are much more common in the high-beta group than in the low-beta group. <a href="#fig-bem5-counts" class="quarto-xref">Figure&nbsp;<span>5.2</span></a> compares average stock counts across the two sorts.</p>
 <div id="cell-fig-bem5-counts" class="cell" data-execution_count="39">
-<div class="cell-output cell-output-display">
+<div class="cell-output cell-output-display" data-execution_count="39">
 <div id="fig-bem5-counts" class="quarto-float quarto-figure quarto-figure-center anchored" alt="Heatmaps show uneven counts across cells under independent sorting and approximately equal counts down each beta-group column under dependent sorting.">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-bem5-counts-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="portfolio-analysis_files/figure-html/fig-bem5-counts-output-1.png" alt="Heatmaps show uneven counts across cells under independent sorting and approximately equal counts down each beta-group column under dependent sorting." width="779" height="395" class="figure-img">
+<img src="portfolio-analysis_files/figure-html/fig-bem5-counts-output-1.png" alt="Heatmaps show uneven counts across cells under independent sorting and approximately equal counts down each beta-group column under dependent sorting." width="768" height="384" class="figure-img">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-bem5-counts-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;5.2: Average annual stock counts by beta group and market-cap quartile
@@ -6795,7 +6795,7 @@ Figure&nbsp;5.2: Average annual stock counts by beta group and market-cap quarti
 <section id="returns-and-inference" class="level3" data-number="5.3.3">
 <h3 data-number="5.3.3" class="anchored" data-anchor-id="returns-and-inference"><span class="header-section-number">5.3.3</span> Average Portfolio Values</h3>
 <p>Calculate returns and high-minus-low spreads within each beta group, then average the three groups.</p>
-<div id="c7079a3f" class="cell" data-execution_count="40">
+<div id="c4c2da59" class="cell" data-execution_count="40">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>dependent_returns <span class="op">=</span> bivariate_returns(dependent, dependent<span class="op">=</span><span class="va">True</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="cell" data-execution_count="41">
@@ -7918,7 +7918,7 @@ Table&nbsp;5.22: Annual equal-weighted returns for the dependent sorts (BEM Tabl
 </section>
 <section id="summarizing-the-results" class="level3" data-number="5.3.4">
 <h3 data-number="5.3.4" class="anchored" data-anchor-id="summarizing-the-results"><span class="header-section-number">5.3.4</span> Summarizing the Results</h3>
-<div id="dba22ef6" class="cell" data-execution_count="42">
+<div id="2eaf07af" class="cell" data-execution_count="42">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>dependent_fits <span class="op">=</span> grid_fits(dependent_returns)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="cell" data-execution_count="43">
@@ -8119,7 +8119,7 @@ Table&nbsp;5.24: Compact return grid and four-factor size spreads for the depend
 </div>
 </div>
 <p>The same dependent sort can use book-to-market as the first variable or the second variable. The following tables keep the sort order explicit.</p>
-<div id="df6fa853" class="cell" data-execution_count="45">
+<div id="9b5a4e45" class="cell" data-execution_count="45">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>dependent_bm_cap, _, _ <span class="op">=</span> bivariate_sort(<span class="st">"BM"</span>, <span class="st">"MktCap"</span>, dependent<span class="op">=</span><span class="va">True</span>)</span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>dependent_beta_bm, _, _ <span class="op">=</span> bivariate_sort(<span class="st">"Beta"</span>, <span class="st">"BM"</span>, dependent<span class="op">=</span><span class="va">True</span>)</span>
 <span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -8429,7 +8429,7 @@ Table&nbsp;5.28: Dependent-sort size and book-to-market portfolios averaged acro
 <section id="compare-the-two-sorts" class="level2" data-number="5.4">
 <h2 data-number="5.4" class="anchored" data-anchor-id="compare-the-two-sorts"><span class="header-section-number">5.4</span> Independent Versus Dependent Sort</h2>
 <p>Average market capitalization makes the difference between the two methods concrete. An independent sort applies the same market-cap cutoffs across beta groups. A dependent sort can classify a stock as large among low-beta stocks even if its capitalization would place it in a lower quartile among high-beta stocks.</p>
-<div id="b6548c9e" class="cell" data-execution_count="50">
+<div id="738fe627" class="cell" data-execution_count="50">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> average_capitalization(members):</span>
 <span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> (</span>
 <span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>        members.group_by(<span class="st">"year"</span>, <span class="st">"control"</span>, <span class="st">"target"</span>).agg(pl.col(<span class="st">"MktCap"</span>).mean())</span>
@@ -8541,11 +8541,11 @@ Table&nbsp;5.30: Average market capitalization in the dependent sorts, millions 
 </div>
 <p><a href="#fig-bem5-capitalization" class="quarto-xref">Figure&nbsp;<span>5.3</span></a> plots the same means on a log scale.</p>
 <div id="cell-fig-bem5-capitalization" class="cell" data-execution_count="53">
-<div class="cell-output cell-output-display">
+<div class="cell-output cell-output-display" data-execution_count="53">
 <div id="fig-bem5-capitalization" class="quarto-float quarto-figure quarto-figure-center anchored" alt="Within market-cap quartiles, average market caps are similar across beta groups in the independent sort. The dependent sort shows much wider differences across beta groups.">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-bem5-capitalization-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="portfolio-analysis_files/figure-html/fig-bem5-capitalization-output-1.png" alt="Within market-cap quartiles, average market caps are similar across beta groups in the independent sort. The dependent sort shows much wider differences across beta groups." width="779" height="366" class="figure-img">
+<img src="portfolio-analysis_files/figure-html/fig-bem5-capitalization-output-1.png" alt="Within market-cap quartiles, average market caps are similar across beta groups in the independent sort. The dependent sort shows much wider differences across beta groups." width="768" height="355" class="figure-img">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-bem5-capitalization-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;5.3: Market-cap profiles in independent and dependent sorts

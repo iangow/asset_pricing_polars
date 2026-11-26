@@ -306,7 +306,7 @@ window.Quarto = {
 </header>
 
 
-<p>Bali, Engle, and Murray (2016), Chapter 3, compare the cross-sectional associations among beta, size, book-to-market (BM), and next-year excess return. We use the 1988–2012 annual panel from <a href="./summary-statistics.html">Chapter 2</a>.</p>
+<p>Bali, Engle, and Murray (2016), Chapter 3, compare the cross-sectional associations among beta, size, book-to-market (BM), and next-year excess return. We use the 1988–2012 annual panel from <a href="summary-statistics.html" class="quarto-xref"><span>Chapter 2</span></a>.</p>
 <style>
 .cell-output-markdown:has(> table) {
   max-width: 100%;
@@ -316,7 +316,7 @@ window.Quarto = {
   white-space: nowrap;
 }
 </style>
-<div id="5979eb51" class="cell" data-execution_count="2">
+<div id="7bed47e2" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> polars <span class="im">as</span> pl</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> era_pl <span class="im">import</span> load_parquet</span>
@@ -345,7 +345,7 @@ window.Quarto = {
 \rho_t^S(X,Y)=1-\frac{6\sum_{i=1}^{n_t}d_{i,t}^2}{n_t(n_t^2-1)}.
 \tag{3.2}\]</span></span></p>
 <p>With ties, give equal values their average rank and compute the Pearson correlation of the two rank vectors. This is the calculation used by <code>pl.corr(method="spearman")</code>, including when <a href="#eq-bem3-spearman" class="quarto-xref">Equation&nbsp;<span>3.2</span></a> applies.</p>
-<div id="1260c0cb" class="cell" data-execution_count="4">
+<div id="eec13601" class="cell" data-execution_count="4">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> _bem_monthly <span class="im">import</span> correlation_matrix, period_correlations</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>variables <span class="op">=</span> {<span class="st">"Beta"</span>: <span class="st">"Beta"</span>, <span class="st">"Size"</span>: <span class="st">"Size"</span>, <span class="st">"BM"</span>: <span class="st">"BM"</span>, <span class="st">"excess"</span>: <span class="st">"Next-year return"</span>}</span>
@@ -787,7 +787,7 @@ Table&nbsp;3.1: Annual Pearson and Spearman correlations (BEM Table 3.1)
 \bar\rho^S(X,Y)=\frac{1}{N_{XY}}\sum_{t\in\mathcal T_{XY}}\rho_t^S(X,Y).
 \tag{3.4}\]</span></span></p>
 <p>Each available year has the same weight. The next-year return is unavailable for the 2012 formation cohort, so return correlations are averaged over 24 years. The other pairs use all 25 years.</p>
-<div id="48fb7b73" class="cell" data-execution_count="6">
+<div id="1d16c850" class="cell" data-execution_count="6">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>average <span class="op">=</span> annual.select(pl.exclude(<span class="st">"year"</span>).mean())</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="cell" data-execution_count="7">
@@ -857,30 +857,36 @@ Table&nbsp;3.2: Average annual correlations by pair (BEM Table 3.2)
 <h2 data-number="3.2" class="anchored" data-anchor-id="interpret-the-correlations"><span class="header-section-number">3.2</span> Interpreting Correlations</h2>
 <p>The two companion figures plot the annual coefficients in <a href="#tbl-bem3-annual" class="quarto-xref">Table&nbsp;<span>3.1</span></a>. Each panel uses formation years on the horizontal axis. In the second figure, the return paired with year <span class="math inline">\(t\)</span> comes from year <span class="math inline">\(t+1\)</span>.</p>
 <div id="cell-fig-bem3-characteristics" class="cell" data-execution_count="8">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> plotnine_polars <span class="im">import</span> aes</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> plot_correlations(pairs):</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">with</span> plt.rc_context({<span class="st">"font.family"</span>: <span class="st">"DejaVu Sans"</span>}):</span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>        fig, axes <span class="op">=</span> plt.subplots(<span class="dv">3</span>, <span class="dv">1</span>, figsize<span class="op">=</span>(<span class="dv">8</span>, <span class="dv">6</span>), sharex<span class="op">=</span><span class="va">True</span>, sharey<span class="op">=</span><span class="va">True</span>,</span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>                                 layout<span class="op">=</span><span class="st">"constrained"</span>)</span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> ax, (a, b) <span class="kw">in</span> <span class="bu">zip</span>(axes, pairs, strict<span class="op">=</span><span class="va">True</span>):</span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>            ax.axhline(<span class="dv">0</span>, color<span class="op">=</span><span class="st">"0.7"</span>, linewidth<span class="op">=</span><span class="fl">0.8</span>)</span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>            ax.plot(annual[<span class="st">"year"</span>], annual[<span class="ss">f"Pearson </span><span class="sc">{</span>a<span class="sc">}</span><span class="ss">–</span><span class="sc">{</span>b<span class="sc">}</span><span class="ss">"</span>], color<span class="op">=</span><span class="st">"#24639a"</span>,</span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>                    label<span class="op">=</span><span class="st">"Pearson"</span>)</span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>            ax.plot(annual[<span class="st">"year"</span>], annual[<span class="ss">f"Spearman </span><span class="sc">{</span>a<span class="sc">}</span><span class="ss">–</span><span class="sc">{</span>b<span class="sc">}</span><span class="ss">"</span>], color<span class="op">=</span><span class="st">"#ac4c27"</span>,</span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>                    linestyle<span class="op">=</span><span class="st">"--"</span>, label<span class="op">=</span><span class="st">"Spearman"</span>)</span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>            ax.set_title(<span class="ss">f"</span><span class="sc">{</span>variables[a]<span class="sc">}</span><span class="ss"> and </span><span class="sc">{</span>variables[b]<span class="sc">}</span><span class="ss">"</span>, loc<span class="op">=</span><span class="st">"left"</span>)</span>
-<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>        axes[<span class="op">-</span><span class="dv">1</span>].<span class="bu">set</span>(xlabel<span class="op">=</span><span class="st">"Formation year"</span>, xticks<span class="op">=</span><span class="bu">range</span>(<span class="dv">1988</span>, <span class="dv">2013</span>, <span class="dv">4</span>))</span>
-<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>        fig.supylabel(<span class="st">"Correlation"</span>)</span>
-<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>        fig.legend(<span class="op">*</span>axes[<span class="dv">0</span>].get_legend_handles_labels(), loc<span class="op">=</span><span class="st">"outside upper center"</span>, ncols<span class="op">=</span><span class="dv">2</span>)</span>
-<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>        plt.show()</span>
-<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>plot_correlations([(<span class="st">"Beta"</span>, <span class="st">"Size"</span>), (<span class="st">"Beta"</span>, <span class="st">"BM"</span>), (<span class="st">"Size"</span>, <span class="st">"BM"</span>)])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-display">
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    labels <span class="op">=</span> [<span class="ss">f"</span><span class="sc">{</span>variables[a]<span class="sc">}</span><span class="ss"> and </span><span class="sc">{</span>variables[b]<span class="sc">}</span><span class="ss">"</span> <span class="cf">for</span> a, b <span class="kw">in</span> pairs]</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    correlations <span class="op">=</span> pl.concat(</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>        annual.select(<span class="st">"year"</span>, Pearson<span class="op">=</span><span class="ss">f"Pearson </span><span class="sc">{</span>a<span class="sc">}</span><span class="ss">–</span><span class="sc">{</span>b<span class="sc">}</span><span class="ss">"</span>, Spearman<span class="op">=</span><span class="ss">f"Spearman </span><span class="sc">{</span>a<span class="sc">}</span><span class="ss">–</span><span class="sc">{</span>b<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>        .unpivot(index<span class="op">=</span><span class="st">"year"</span>, variable_name<span class="op">=</span><span class="st">"method"</span>, value_name<span class="op">=</span><span class="st">"correlation"</span>)</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>        .with_columns(pair<span class="op">=</span>pl.lit(label))</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> (a, b), label <span class="kw">in</span> <span class="bu">zip</span>(pairs, labels, strict<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>    ).with_columns(pl.col(<span class="st">"pair"</span>).cast(pl.Enum(labels)))</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> (</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>        correlations</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>        .ggplot(aes(x<span class="op">=</span><span class="st">"year"</span>, y<span class="op">=</span><span class="st">"correlation"</span>, color<span class="op">=</span><span class="st">"method"</span>, linetype<span class="op">=</span><span class="st">"method"</span>))</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>        .geom_hline(yintercept<span class="op">=</span><span class="dv">0</span>, color<span class="op">=</span><span class="st">"#b3b3b3"</span>, size<span class="op">=</span><span class="fl">0.4</span>)</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>        .geom_line(na_rm<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>        .facet_wrap(<span class="st">"pair"</span>, ncol<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>        .scale_x_continuous(breaks<span class="op">=</span><span class="bu">range</span>(<span class="dv">1988</span>, <span class="dv">2013</span>, <span class="dv">4</span>))</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>        .scale_color_manual(values<span class="op">=</span>{<span class="st">"Pearson"</span>: <span class="st">"#24639a"</span>, <span class="st">"Spearman"</span>: <span class="st">"#ac4c27"</span>})</span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>        .scale_linetype_manual(values<span class="op">=</span>{<span class="st">"Pearson"</span>: <span class="st">"solid"</span>, <span class="st">"Spearman"</span>: <span class="st">"dashed"</span>})</span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>        .labs(x<span class="op">=</span><span class="st">"Formation year"</span>, y<span class="op">=</span><span class="st">"Correlation"</span>, color<span class="op">=</span><span class="st">""</span>, linetype<span class="op">=</span><span class="st">""</span>)</span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>        .theme_minimal()</span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>        .add_theme(figure_size<span class="op">=</span>(<span class="dv">8</span>, <span class="dv">6</span>), legend_position<span class="op">=</span><span class="st">"top"</span>)</span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>plot_correlations([(<span class="st">"Beta"</span>, <span class="st">"Size"</span>), (<span class="st">"Beta"</span>, <span class="st">"BM"</span>), (<span class="st">"Size"</span>, <span class="st">"BM"</span>)])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="8">
 <div id="fig-bem3-characteristics" class="quarto-float quarto-figure quarto-figure-center anchored" alt="Three line plots compare Pearson and Spearman correlations by formation year. Beta and size move together, while their correlations with book-to-market are usually negative.">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-bem3-characteristics-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="correlation_files/figure-html/fig-bem3-characteristics-output-1.png" alt="Three line plots compare Pearson and Spearman correlations by formation year. Beta and size move together, while their correlations with book-to-market are usually negative." width="779" height="585" class="figure-img">
+<img src="correlation_files/figure-html/fig-bem3-characteristics-output-1.png" alt="Three line plots compare Pearson and Spearman correlations by formation year. Beta and size move together, while their correlations with book-to-market are usually negative." width="768" height="576" class="figure-img">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-bem3-characteristics-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;3.1: Annual correlations among beta, size, and book-to-market
@@ -892,11 +898,11 @@ Figure&nbsp;3.1: Annual correlations among beta, size, and book-to-market
 <p>Larger stocks tend to have higher betas. Both measures of correlation also show that larger stocks tend to have lower book-to-market ratios. Market capitalization enters the denominator of BM, which helps explain part of the association.</p>
 <div id="cell-fig-bem3-returns" class="cell" data-execution_count="9">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>plot_correlations([(<span class="st">"Beta"</span>, <span class="st">"excess"</span>), (<span class="st">"Size"</span>, <span class="st">"excess"</span>), (<span class="st">"BM"</span>, <span class="st">"excess"</span>)])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-display">
+<div class="cell-output cell-output-display" data-execution_count="9">
 <div id="fig-bem3-returns" class="quarto-float quarto-figure quarto-figure-center anchored" alt="Three line plots show Pearson and Spearman return correlations varying over formation years. The beta and return correlations turn sharply negative in 2001. The series end in 2011.">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-bem3-returns-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="correlation_files/figure-html/fig-bem3-returns-output-1.png" alt="Three line plots show Pearson and Spearman return correlations varying over formation years. The beta and return correlations turn sharply negative in 2001. The series end in 2011." width="779" height="585" class="figure-img">
+<img src="correlation_files/figure-html/fig-bem3-returns-output-1.png" alt="Three line plots show Pearson and Spearman return correlations varying over formation years. The beta and return correlations turn sharply negative in 2001. The series end in 2011." width="768" height="576" class="figure-img">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-bem3-returns-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;3.2: Annual correlations of stock characteristics with next-year excess returns

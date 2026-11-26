@@ -306,7 +306,7 @@ window.Quarto = {
 </header>
 
 
-<p>Bali, Engle, and Murray (2016), Chapter 4, measure persistence by correlating a stock characteristic with its own future value across stocks. We use the December 1988–2012 panel from <a href="./summary-statistics.html">Chapter 2</a>, including its signed book-to-market ratio (BM).</p>
+<p>Bali, Engle, and Murray (2016), Chapter 4, measure persistence by correlating a stock characteristic with its own future value across stocks. We use the December 1988–2012 panel from <a href="summary-statistics.html" class="quarto-xref"><span>Chapter 2</span></a>, including its signed book-to-market ratio (BM).</p>
 <style>
 .cell-output-markdown:has(> table) {
   max-width: 100%;
@@ -316,7 +316,7 @@ window.Quarto = {
   white-space: nowrap;
 }
 </style>
-<div id="0db6c638" class="cell" data-execution_count="2">
+<div id="1d10658b" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> polars <span class="im">as</span> pl</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> era_pl <span class="im">import</span> load_parquet</span>
@@ -340,8 +340,8 @@ window.Quarto = {
      {\displaystyle\sqrt{\sum_{i\in\mathcal S_{t,\tau}}(X_{i,t}-\bar X_t)^2}
                    \sqrt{\sum_{i\in\mathcal S_{t,\tau}}(X_{i,t+\tau}-\bar X_{t+\tau})^2}}.
 \tag{4.1}\]</span></span></p>
-<p>Shift the future year’s join key back by the lag so that each stock’s observation in <span class="math inline">\(t+\tau\)</span> joins its observation in <span class="math inline">\(t\)</span>. Use the same winsorized Pearson correlation as in <a href="./correlation.html">Chapter 3</a>.</p>
-<div id="80ba076a" class="cell" data-execution_count="4">
+<p>Shift the future year’s join key back by the lag so that each stock’s observation in <span class="math inline">\(t+\tau\)</span> joins its observation in <span class="math inline">\(t\)</span>. Use the same winsorized Pearson correlation as in <a href="correlation.html" class="quarto-xref"><span>Chapter 3</span></a>.</p>
+<div id="695d89ba" class="cell" data-execution_count="4">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> _bem_monthly <span class="im">import</span> winsorized_corr</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>measures <span class="op">=</span> [<span class="st">"Beta"</span>, <span class="st">"Size"</span>, <span class="st">"BM"</span>]</span>
@@ -583,24 +583,26 @@ Table&nbsp;4.1: Annual cross-sectional persistence of beta (BEM Table 4.1)
 </div>
 <p>The lags are in years. The blank cells in <a href="#tbl-bem4-annual" class="quarto-xref">Table&nbsp;<span>4.1</span></a> require a comparison year beyond 2012. Of the 110 estimates, 107 agree with BEM to two decimal places and three differ by 0.01. The companion plot in <a href="#fig-bem4-annual" class="quarto-xref">Figure&nbsp;<span>4.1</span></a> shows how much beta persistence varies across formation years, even at the same lag.</p>
 <div id="cell-fig-bem4-annual" class="cell" data-execution_count="6">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> plotnine_polars <span class="im">import</span> aes</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> plt.rc_context({<span class="st">"font.family"</span>: <span class="st">"DejaVu Sans"</span>}):</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">8</span>, <span class="dv">4</span>), layout<span class="op">=</span><span class="st">"constrained"</span>)</span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    styles <span class="op">=</span> [<span class="st">"-"</span>, <span class="st">"--"</span>, <span class="st">"-."</span>, <span class="st">":"</span>, (<span class="dv">0</span>, (<span class="dv">5</span>, <span class="dv">2</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">1</span>, <span class="dv">2</span>))]</span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> lag, style <span class="kw">in</span> <span class="bu">zip</span>(lags, styles, strict<span class="op">=</span><span class="va">True</span>):</span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>        series <span class="op">=</span> annual.<span class="bu">filter</span>(pl.col(<span class="st">"Lag"</span>) <span class="op">==</span> lag)</span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>        ax.plot(series[<span class="st">"year"</span>], series[<span class="st">"Beta"</span>], linestyle<span class="op">=</span>style, label<span class="op">=</span><span class="ss">f"</span><span class="sc">{</span>lag<span class="sc">}</span><span class="ss">"</span>)</span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    ax.<span class="bu">set</span>(xlabel<span class="op">=</span><span class="st">"Formation year"</span>, ylabel<span class="op">=</span><span class="st">"Pearson correlation"</span>, ylim<span class="op">=</span>(<span class="dv">0</span>, <span class="dv">1</span>),</span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>           xticks<span class="op">=</span><span class="bu">range</span>(<span class="dv">1988</span>, <span class="dv">2013</span>, <span class="dv">4</span>))</span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    ax.grid(axis<span class="op">=</span><span class="st">"y"</span>, alpha<span class="op">=</span><span class="fl">0.25</span>)</span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>    ax.legend(title<span class="op">=</span><span class="st">"Lag (years)"</span>, loc<span class="op">=</span><span class="st">"upper center"</span>, ncols<span class="op">=</span><span class="dv">5</span>)</span>
-<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-display">
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>(</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    annual.with_columns(lag<span class="op">=</span>pl.col(<span class="st">"Lag"</span>).cast(pl.String))</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    .ggplot(aes(x<span class="op">=</span><span class="st">"year"</span>, y<span class="op">=</span><span class="st">"Beta"</span>, color<span class="op">=</span><span class="st">"lag"</span>, linetype<span class="op">=</span><span class="st">"lag"</span>))</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    .geom_line()</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    .scale_x_continuous(breaks<span class="op">=</span><span class="bu">range</span>(<span class="dv">1988</span>, <span class="dv">2013</span>, <span class="dv">4</span>))</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    .scale_y_continuous(expand<span class="op">=</span>(<span class="dv">0</span>, <span class="dv">0</span>))</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    .coord_cartesian(ylim<span class="op">=</span>(<span class="dv">0</span>, <span class="dv">1</span>))</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    .scale_color_brewer(<span class="bu">type</span><span class="op">=</span><span class="st">"qual"</span>, palette<span class="op">=</span><span class="st">"Dark2"</span>)</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    .scale_linetype_manual(values<span class="op">=</span>[<span class="st">"solid"</span>, <span class="st">"dashed"</span>, <span class="st">"dashdot"</span>, <span class="st">"dotted"</span>, (<span class="dv">0</span>, (<span class="dv">5</span>, <span class="dv">2</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">1</span>, <span class="dv">2</span>))])</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>    .labs(x<span class="op">=</span><span class="st">"Formation year"</span>, y<span class="op">=</span><span class="st">"Pearson correlation"</span>, color<span class="op">=</span><span class="st">"Lag (years)"</span>, linetype<span class="op">=</span><span class="st">"Lag (years)"</span>)</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    .theme_minimal()</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>    .add_theme(figure_size<span class="op">=</span>(<span class="dv">8</span>, <span class="dv">4</span>), legend_position<span class="op">=</span><span class="st">"top"</span>)</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="6">
 <div id="fig-bem4-annual" class="quarto-float quarto-figure quarto-figure-center anchored" alt="Five lines show beta correlations by formation year. One-year correlations generally exceed the longer-lag correlations and are higher in the 2000s than in the early 1990s. Lines for longer lags end earlier.">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-bem4-annual-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="persistence_files/figure-html/fig-bem4-annual-output-1.png" alt="Five lines show beta correlations by formation year. One-year correlations generally exceed the longer-lag correlations and are higher in the 2000s than in the early 1990s. Lines for longer lags end earlier." width="779" height="395" class="figure-img">
+<img src="persistence_files/figure-html/fig-bem4-annual-output-1.png" alt="Five lines show beta correlations by formation year. One-year correlations generally exceed the longer-lag correlations and are higher in the 2000s than in the early 1990s. Lines for longer lags end earlier." width="768" height="384" class="figure-img">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-bem4-annual-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;4.1: Annual persistence of beta by lag
@@ -617,7 +619,7 @@ Figure&nbsp;4.1: Annual persistence of beta by lag
 \rho_\tau(X)=\frac{1}{N-\tau}\sum_{t=1}^{N-\tau}\rho_{t,t+\tau}(X).
 \tag{4.2}\]</span></span></p>
 <p>Here <span class="math inline">\(N=25\)</span>, so the one-year estimate averages 24 correlations and the five-year estimate averages 20. <a href="#tbl-bem4-beta" class="quarto-xref">Table&nbsp;<span>4.2</span></a> reports the averages for beta and <a href="#tbl-bem4-characteristics" class="quarto-xref">Table&nbsp;<span>4.3</span></a> puts all three characteristics side by side.</p>
-<div id="e1cb0d77" class="cell" data-execution_count="7">
+<div id="61e76c25" class="cell" data-execution_count="7">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>average <span class="op">=</span> annual.group_by(<span class="st">"Lag"</span>).agg(pl.col(measures).mean()).sort(<span class="st">"Lag"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="cell" data-execution_count="8">
@@ -718,20 +720,27 @@ Table&nbsp;4.3: Average persistence of beta, size, and book-to-market (BEM Table
 </div>
 <p><a href="#fig-bem4-averages" class="quarto-xref">Figure&nbsp;<span>4.2</span></a> plots the averages from <a href="#tbl-bem4-characteristics" class="quarto-xref">Table&nbsp;<span>4.3</span></a>. Size is the most persistent characteristic at every lag. Its average correlation falls from 0.96 at one year to 0.88 at five years. At five years, beta and BM are at 0.42 and 0.47. The size averages agree with BEM at the reported precision. Beta’s three-year average is 0.49 here and 0.48 in BEM, and the other beta averages agree. BM correlations are 0.02 to 0.05 higher in this replication across the five lags.</p>
 <div id="cell-fig-bem4-averages" class="cell" data-execution_count="10">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> plt.rc_context({<span class="st">"font.family"</span>: <span class="st">"DejaVu Sans"</span>}):</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">8</span>, <span class="dv">4</span>), layout<span class="op">=</span><span class="st">"constrained"</span>)</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> measure, label, marker <span class="kw">in</span> [(<span class="st">"Beta"</span>, <span class="st">"Beta"</span>, <span class="st">"o"</span>), (<span class="st">"Size"</span>, <span class="st">"Size"</span>, <span class="st">"s"</span>),</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>                                   (<span class="st">"BM"</span>, <span class="st">"Book-to-market"</span>, <span class="st">"^"</span>)]:</span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>        ax.plot(average[<span class="st">"Lag"</span>], average[measure], marker<span class="op">=</span>marker, label<span class="op">=</span>label)</span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    ax.<span class="bu">set</span>(xlabel<span class="op">=</span><span class="st">"Lag (years)"</span>, ylabel<span class="op">=</span><span class="st">"Average Pearson correlation"</span>, ylim<span class="op">=</span>(<span class="dv">0</span>, <span class="dv">1</span>), xticks<span class="op">=</span>lags)</span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    ax.grid(axis<span class="op">=</span><span class="st">"y"</span>, alpha<span class="op">=</span><span class="fl">0.25</span>)</span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>    ax.legend(loc<span class="op">=</span><span class="st">"lower left"</span>)</span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>    plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-display">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>(</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    average.rename({<span class="st">"BM"</span>: <span class="st">"Book-to-market"</span>})</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    .unpivot(index<span class="op">=</span><span class="st">"Lag"</span>, variable_name<span class="op">=</span><span class="st">"characteristic"</span>, value_name<span class="op">=</span><span class="st">"correlation"</span>)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    .with_columns(pl.col(<span class="st">"characteristic"</span>).cast(pl.Enum([<span class="st">"Beta"</span>, <span class="st">"Size"</span>, <span class="st">"Book-to-market"</span>])))</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    .ggplot(aes(x<span class="op">=</span><span class="st">"Lag"</span>, y<span class="op">=</span><span class="st">"correlation"</span>, color<span class="op">=</span><span class="st">"characteristic"</span>))</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    .geom_line()</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    .geom_point(aes(shape<span class="op">=</span><span class="st">"characteristic"</span>))</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>    .scale_x_continuous(breaks<span class="op">=</span>lags)</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>    .scale_y_continuous(expand<span class="op">=</span>(<span class="dv">0</span>, <span class="dv">0</span>))</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>    .coord_cartesian(ylim<span class="op">=</span>(<span class="dv">0</span>, <span class="dv">1</span>))</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>    .scale_color_brewer(<span class="bu">type</span><span class="op">=</span><span class="st">"qual"</span>, palette<span class="op">=</span><span class="st">"Dark2"</span>)</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>    .scale_shape_manual(values<span class="op">=</span>[<span class="st">"o"</span>, <span class="st">"s"</span>, <span class="st">"^"</span>])</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>    .labs(x<span class="op">=</span><span class="st">"Lag (years)"</span>, y<span class="op">=</span><span class="st">"Average Pearson correlation"</span>, color<span class="op">=</span><span class="st">""</span>, shape<span class="op">=</span><span class="st">""</span>)</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>    .theme_minimal()</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>    .add_theme(figure_size<span class="op">=</span>(<span class="dv">8</span>, <span class="dv">4</span>), legend_position<span class="op">=</span><span class="st">"top"</span>)</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="10">
 <div id="fig-bem4-averages" class="quarto-float quarto-figure quarto-figure-center anchored" alt="Average size persistence stays near 0.9. Book-to-market falls from 0.76 to 0.47 and beta from 0.61 to 0.42 between the one- and five-year lags.">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-bem4-averages-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="persistence_files/figure-html/fig-bem4-averages-output-1.png" alt="Average size persistence stays near 0.9. Book-to-market falls from 0.76 to 0.47 and beta from 0.61 to 0.42 between the one- and five-year lags." width="779" height="395" class="figure-img">
+<img src="persistence_files/figure-html/fig-bem4-averages-output-1.png" alt="Average size persistence stays near 0.9. Book-to-market falls from 0.76 to 0.47 and beta from 0.61 to 0.42 between the one- and five-year lags." width="768" height="384" class="figure-img">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-bem4-averages-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;4.2: Average persistence of beta, size, and book-to-market by lag

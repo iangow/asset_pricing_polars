@@ -317,7 +317,7 @@ window.Quarto = {
   white-space: nowrap;
 }
 </style>
-<p>We reconstruct Tables 8.1–8.6 of Bali, Engle, and Murray (2016), <a href="https://www.wiley.com/en-us/empirical-asset-pricing-the-cross-section-of-stock-returns-p-9781118095041"><em>Empirical Asset Pricing</em></a>. The sample consists of CRSP common stocks at the end of each month from June 1963 through November 2012. We use legacy CRSP daily and monthly stock returns and the corresponding Fama–French factors. See <a href="./data.html#data-vintages">Preliminaries</a> for the source vintages.</p>
+<p>We reconstruct Tables 8.1–8.6 of Bali, Engle, and Murray (2016), <a href="https://www.wiley.com/en-us/empirical-asset-pricing-the-cross-section-of-stock-returns-p-9781118095041"><em>Empirical Asset Pricing</em></a>. The sample consists of CRSP common stocks at the end of each month from June 1963 through November 2012. We use legacy CRSP daily and monthly stock returns and the corresponding Fama–French factors. See <a href="data.html#sec-data-vintages" class="quarto-xref"><span>Section 1.1.1</span></a> for the source vintages.</p>
 <section id="estimate-market-beta" class="level2" data-number="8.1">
 <h2 data-number="8.1" class="anchored" data-anchor-id="estimate-market-beta"><span class="header-section-number">8.1</span> Estimating Beta</h2>
 <p>The CAPM predicts that a stock’s expected excess return is its market beta times the market risk premium, <span class="math inline">\(\mathbb E[r_i]=\beta_i\mathbb E[MKT]\)</span>. To estimate beta, regress the stock’s historical excess return <span class="math inline">\(r_{i,s}=R_{i,s}-R_{f,s}\)</span> on the market excess return <span class="math inline">\(MKT_s\)</span>, with an intercept. For stock <span class="math inline">\(i\)</span> at the end of month <span class="math inline">\(t\)</span>,</p>
@@ -358,7 +358,7 @@ r_{i,s}=\alpha_i+\beta_i MKT_s+\varepsilon_{i,s},
 \widehat\beta^{D}_{i,t}=\sum_{k=-5}^{5}\widehat\gamma_k,
 \]</span></p>
 <p>where <span class="math inline">\(\widehat\rho_M\)</span> is the market return’s first-order autocorrelation over the estimation window. We shift the market series on the trading calendar before joining it to stock returns. A lag can precede the first stock-return date in the window. We omit response dates whose market lead falls after formation and apply the minimum to the remaining complete observations. This keeps all beta inputs observable at formation.</p>
-<div id="52fb9b6e" class="cell" data-execution_count="1">
+<div id="94dea22c" class="cell" data-execution_count="1">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> polars <span class="im">as</span> pl</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> era_pl <span class="im">import</span> load_parquet</span>
@@ -384,8 +384,8 @@ r_{i,s}=\alpha_i+\beta_i MKT_s+\varepsilon_{i,s},
 <span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>    .collect()</span>
 <span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<p>We screen for common shares at formation using historical share codes 10 and 11. A stock can contribute its earlier returns to the estimation window even if its historical share code changed. We use CRSP’s reported returns for estimation and apply the Chapter 7 delisting convention to the next-month returns used to evaluate the beta estimates.</p>
-<div id="b15a4f34" class="cell" data-execution_count="2">
+<p>We screen for common shares at formation using historical share codes 10 and 11. A stock can contribute its earlier returns to the estimation window even if its historical share code changed. We use CRSP’s reported returns for estimation and apply the delisting convention in <a href="crsp-replication.html#sec-bem-returns" class="quarto-xref"><span>Section 7.2</span></a> to the next-month returns used to evaluate the beta estimates.</p>
+<div id="7eccf9fc" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>monthly_stock <span class="op">=</span> (</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    load_parquet(<span class="st">"msf"</span>, <span class="st">"crsp"</span>)</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    .<span class="bu">filter</span>(pl.col(<span class="st">"date"</span>).is_between(</span>
@@ -412,7 +412,7 @@ r_{i,s}=\alpha_i+\beta_i MKT_s+\varepsilon_{i,s},
 <span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> pl.cov(stock, market) <span class="op">/</span> pl.col(market).var()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>For monthly returns, we can apply the covariance-over-variance formula directly. We include the formation dates in the rolling index so a window is evaluated even if the current month’s return is missing. The window is open at its left endpoint and includes the formation month.</p>
-<div id="8e7ab289" class="cell" data-execution_count="3">
+<div id="8ea3223c" class="cell" data-execution_count="3">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>monthly_windows <span class="op">=</span> {<span class="st">"1Y"</span>: (<span class="dv">12</span>, <span class="dv">10</span>), <span class="st">"2Y"</span>: (<span class="dv">24</span>, <span class="dv">20</span>), <span class="st">"3Y"</span>: (<span class="dv">36</span>, <span class="dv">24</span>), <span class="st">"5Y"</span>: (<span class="dv">60</span>, <span class="dv">24</span>)}</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>daily_windows <span class="op">=</span> {<span class="st">"1M"</span>: (<span class="dv">1</span>, <span class="dv">15</span>), <span class="st">"3M"</span>: (<span class="dv">3</span>, <span class="dv">50</span>), <span class="st">"6M"</span>: (<span class="dv">6</span>, <span class="dv">100</span>),</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"12M"</span>: (<span class="dv">12</span>, <span class="dv">200</span>), <span class="st">"24M"</span>: (<span class="dv">24</span>, <span class="dv">450</span>)}</span>
@@ -440,7 +440,7 @@ r_{i,s}=\alpha_i+\beta_i MKT_s+\varepsilon_{i,s},
 <span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>    )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>For daily returns, each trading day enters many windows. We sum the regression inputs once per stock and month, then roll those sums across months. For example, the slope uses <span class="math inline">\(\sum xy-(\sum x)(\sum y)/n\)</span> divided by <span class="math inline">\(\sum x^2-(\sum x)^2/n\)</span>. The adjusted regressions use the same idea with cross-products between market returns at different offsets.</p>
-<p>The tables in this chapter end with November 2012 formation, followed by December 2012 holding returns. We also estimate betas as of December 2012 so the <a href="./summary-statistics.html">annual summary</a> can use the same estimates for its last year. The optional export saves all eleven estimates per stock-month to the local <code>DATA_DIR/eap/betas.parquet</code> file.</p>
+<p>The tables in this chapter end with November 2012 formation, followed by December 2012 holding returns. We also estimate betas as of December 2012 for the last year of the annual summary in <a href="summary-statistics.html" class="quarto-xref"><span>Chapter 2</span></a>. The optional export saves all eleven estimates per stock-month to the local <code>DATA_DIR/eap/betas.parquet</code> file.</p>
 <style>
 .cell-output-markdown:has(> table) {
   max-width: 100%;
@@ -454,7 +454,7 @@ r_{i,s}=\alpha_i+\beta_i MKT_s+\varepsilon_{i,s},
 <section id="compare-the-beta-estimates" class="level2" data-number="8.2">
 <h2 data-number="8.2" class="anchored" data-anchor-id="compare-the-beta-estimates"><span class="header-section-number">8.2</span> Summary Statistics</h2>
 <p><a href="#tbl-bem8-summary" class="quarto-xref">Table&nbsp;<span>8.1</span></a> averages monthly cross-sectional statistics. The count is the average number of stocks with an available estimate in a month. For example, the dispersion of the one-month daily beta reflects both differences in stocks’ exposures and estimation noise from short return histories. We use sample standard deviations, bias-adjusted skewness and excess kurtosis, and linearly interpolated quantiles.</p>
-<div id="e94f49c6" class="cell" data-execution_count="10">
+<div id="c3c57b29" class="cell" data-execution_count="10">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>beta_long <span class="op">=</span> betas.unpivot(</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    on<span class="op">=</span>beta_labels, index<span class="op">=</span>keys, variable_name<span class="op">=</span><span class="st">"measure"</span>, value_name<span class="op">=</span><span class="st">"beta"</span>,</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>)</span>
@@ -692,29 +692,24 @@ Table&nbsp;8.1: Cross-sectional summary statistics for market beta (BEM Table 8.
 <section id="correlations" class="level2" data-number="8.3">
 <h2 data-number="8.3" class="anchored" data-anchor-id="correlations"><span class="header-section-number">8.3</span> Correlations</h2>
 <p><a href="#tbl-bem8-correlations" class="quarto-xref">Table&nbsp;<span>8.2</span></a> reports the mean of the monthly correlations. For each pair, we use stocks for which both estimates are available. Winsorize each beta within month at the 0.5th and 99.5th percentiles for Pearson correlations below the diagonal. Use the original values for Spearman rank correlations above the diagonal.</p>
-<div id="caaa0624" class="cell" data-execution_count="12">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> winsorize_beta(column):</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> pl.col(column)</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> x.clip(</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>        x.quantile(<span class="fl">.005</span>, interpolation<span class="op">=</span><span class="st">"linear"</span>).over(<span class="st">"month"</span>),</span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>        x.quantile(<span class="fl">.995</span>, interpolation<span class="op">=</span><span class="st">"linear"</span>).over(<span class="st">"month"</span>),</span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>clipped <span class="op">=</span> betas.with_columns(winsorize_beta(column) <span class="cf">for</span> column <span class="kw">in</span> beta_labels)</span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> mean_correlations(panel, method):</span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> (</span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>        panel.group_by(<span class="st">"month"</span>)</span>
-<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>        .agg(</span>
-<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>            pl.corr(a, b, method<span class="op">=</span>method).alias(<span class="ss">f"</span><span class="sc">{</span>a<span class="sc">}</span><span class="ss">:</span><span class="sc">{</span>b<span class="sc">}</span><span class="ss">"</span>)</span>
-<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>            <span class="cf">for</span> i, a <span class="kw">in</span> <span class="bu">enumerate</span>(beta_labels) <span class="cf">for</span> b <span class="kw">in</span> beta_labels[i <span class="op">+</span> <span class="dv">1</span>:]</span>
-<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>        )</span>
-<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>        .select(pl.exclude(<span class="st">"month"</span>).fill_nan(<span class="va">None</span>).mean())</span>
-<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>        .row(<span class="dv">0</span>, named<span class="op">=</span><span class="va">True</span>)</span>
-<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>pearson <span class="op">=</span> mean_correlations(clipped, <span class="st">"pearson"</span>)</span>
-<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>spearman <span class="op">=</span> mean_correlations(betas, <span class="st">"spearman"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="2c10bb0a" class="cell" data-execution_count="12">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> _bem_monthly <span class="im">import</span> clip_tails</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>clipped <span class="op">=</span> betas.with_columns(clip_tails(pl.col(beta_labels)).over(<span class="st">"month"</span>))</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> mean_correlations(panel, method):</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> (</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>        panel.group_by(<span class="st">"month"</span>)</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>        .agg(</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>            pl.corr(a, b, method<span class="op">=</span>method).alias(<span class="ss">f"</span><span class="sc">{</span>a<span class="sc">}</span><span class="ss">:</span><span class="sc">{</span>b<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>            <span class="cf">for</span> i, a <span class="kw">in</span> <span class="bu">enumerate</span>(beta_labels) <span class="cf">for</span> b <span class="kw">in</span> beta_labels[i <span class="op">+</span> <span class="dv">1</span>:]</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>        .select(pl.exclude(<span class="st">"month"</span>).fill_nan(<span class="va">None</span>).mean())</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>        .row(<span class="dv">0</span>, named<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>pearson <span class="op">=</span> mean_correlations(clipped, <span class="st">"pearson"</span>)</span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>spearman <span class="op">=</span> mean_correlations(betas, <span class="st">"spearman"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="cell" data-execution_count="13">
 <div id="tbl-bem8-correlations" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="13">
@@ -922,7 +917,7 @@ Table&nbsp;8.2: Monthly Pearson (below diagonal) and Spearman (above diagonal) c
 <section id="measure-persistence" class="level2" data-number="8.4">
 <h2 data-number="8.4" class="anchored" data-anchor-id="measure-persistence"><span class="header-section-number">8.4</span> Persistence</h2>
 <p><a href="#tbl-bem8-persistence" class="quarto-xref">Table&nbsp;<span>8.3</span></a> compares a stock’s winsorized beta with its beta exactly <span class="math inline">\(\tau\)</span> calendar months later. We calculate a Pearson correlation across stocks in each month and average over months. We leave cells blank when the stock-return windows overlap. This helps distinguish persistence from the effect of using some of the same returns twice.</p>
-<div id="5d4096cc" class="cell" data-execution_count="14">
+<div id="0c8e614f" class="cell" data-execution_count="14">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> persistence(lag):</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    columns <span class="op">=</span> [b <span class="cf">for</span> b <span class="kw">in</span> beta_labels <span class="cf">if</span> window_months[b] <span class="op">&lt;=</span> lag]</span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    current <span class="op">=</span> clipped.select(<span class="op">*</span>keys, <span class="op">*</span>columns)</span>
@@ -1119,7 +1114,7 @@ Table&nbsp;8.3: Persistence of beta across nonoverlapping stock-return windows (
 <section id="sort-stocks-into-beta-deciles" class="level3" data-number="8.5.1">
 <h3 data-number="8.5.1" class="anchored" data-anchor-id="sort-stocks-into-beta-deciles"><span class="header-section-number">8.5.1</span> Portfolio Analysis</h3>
 <p>We form deciles using all eligible stocks with an estimate of the given beta in month <span class="math inline">\(t\)</span>. A stock’s decile is one plus the number of breakpoints its beta exceeds. After forming the groups, we join the next month’s excess return. We keep a holding-period return even if a stock leaves the common-share universe during that month. The value weights use market capitalization measured at formation.</p>
-<div id="5a5a8183" class="cell" data-execution_count="17">
+<div id="730ea796" class="cell" data-execution_count="17">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>deciles <span class="op">=</span> [<span class="bu">str</span>(i) <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">1</span>, <span class="dv">11</span>)]</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>decile <span class="op">=</span> <span class="dv">1</span> <span class="op">+</span> pl.sum_horizontal(</span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    (b <span class="op">&gt;</span> b.quantile(i <span class="op">/</span> <span class="dv">10</span>, interpolation<span class="op">=</span><span class="st">"linear"</span>)).cast(pl.UInt8)</span>
@@ -1148,7 +1143,7 @@ Table&nbsp;8.3: Persistence of beta across nonoverlapping stock-return windows (
 <span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>We compute the high-minus-low return each month. Its CAPM alpha is the intercept when that return is regressed on the holding month’s market excess return. For each portfolio, we report returns and alphas in percent per month and use six Newey–West lags for their <span class="math inline">\(t\)</span>-statistics.</p>
-<div id="3729efd5" class="cell" data-execution_count="18">
+<div id="cf15e36b" class="cell" data-execution_count="18">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> statspai <span class="im">as</span> sp</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>spread <span class="op">=</span> (</span>
@@ -2105,7 +2100,7 @@ Table&nbsp;8.5: Value-weighted returns to beta deciles (BEM Table 8.5)
 r_{i,t+1}=a_{t+1}+b_{t+1}\widehat\beta_{i,t}+u_{i,t+1}.
 \]</span></p>
 <p>We use the same winsorization as for the Pearson correlations and apply six Newey–West lags to the monthly coefficient series. The CAPM predicts that the mean slope estimates the market risk premium and the mean intercept is zero.</p>
-<div id="32bf0ee6" class="cell" data-execution_count="22">
+<div id="f2e6bc24" class="cell" data-execution_count="22">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>fm_data <span class="op">=</span> (</span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>    clipped.unpivot(on<span class="op">=</span>beta_labels, index<span class="op">=</span>keys, variable_name<span class="op">=</span><span class="st">"measure"</span>, value_name<span class="op">=</span><span class="st">"beta"</span>)</span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    .join(outcomes.select(<span class="op">*</span>keys, <span class="st">"excess"</span>), on<span class="op">=</span>keys, validate<span class="op">=</span><span class="st">"m:1"</span>)</span>
