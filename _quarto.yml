@@ -22,6 +22,7 @@ book:
         - size-replication.qmd
         - value-replication.qmd
         - momentum-replication.qmd
+        - reversal-replication.qmd
     - references.qmd
 
 bibliography: book.bib

@@ -34,18 +34,20 @@ curl -fLsS 'https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/Data_Library
   | funzip > data/ff3-201607.csv
 curl -fLsS 'https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/ftp_202412/F-F_Momentum_Factor_CSV.zip' \
   | funzip > data/momentum-202412.csv
+curl -fLsS 'https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/ftp_202412/F-F_ST_Reversal_Factor_CSV.zip' \
+  | funzip > data/st-reversal-202412.csv
 ```
 
 Render the full book and open `_book/index.html`. The annual methods chapters
 build their inputs on demand. Set `EAP_WRITE_BETAS=1` so the Beta chapter
-writes `DATA_DIR/eap/betas.parquet` for the monthly analyses in Size, Value, and Momentum.
+writes `DATA_DIR/eap/betas.parquet` for the monthly analyses in Size, Value, Momentum, and Short-Term Reversal.
 
 ```sh
 EAP_WRITE_BETAS=1 QUARTO_PYTHON="$PWD/.venv/bin/python" \
   quarto render --to html
 ```
 
-For a standalone Size, Value, or Momentum render, use an existing `eap/betas.parquet`
+For a standalone render of one of these chapters, use an existing `eap/betas.parquet`
 or render `beta-replication.qmd` with `EAP_WRITE_BETAS=1` first.
 Set `EAP_WRITE_SIZES=1` or `EAP_WRITE_BOOK_TO_MARKET=1` to save those tables
 for use outside the book.
