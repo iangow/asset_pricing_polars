@@ -38,6 +38,20 @@ curl -fLsS 'https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/ftp_202412/F
   | funzip > data/st-reversal-202412.csv
 ```
 
+For a historical comparison, use `eap_pl.get_ff_factors()` with an explicit vintage.
+The first call downloads the archive, and later calls reuse the checksum-verified file in `data/french-factors/`.
+
+```python
+from eap_pl import get_ff_factors
+
+daily = get_ff_factors("daily", vintage="201406")
+monthly = get_ff_factors("monthly", vintage="201406")
+momentum = get_ff_factors("momentum", vintage="201406")
+```
+
+June 2014, September 2015, and December 2024 cover all three datasets.
+July 2016 covers the monthly three-factor data.
+
 Render the full book and open `_book/index.html`. The annual methods chapters
 build their inputs on demand. Set `EAP_WRITE_BETAS=1` so the Beta chapter
 writes `DATA_DIR/eap/betas.parquet` for the monthly analyses in Size, Value, Momentum, Short-Term Reversal, and Liquidity.

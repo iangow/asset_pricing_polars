@@ -108,6 +108,9 @@ This file does not come from WRDS.
 
 @sec-liquidity-replication uses the December 2013 Pástor–Stambaugh liquidity release bundled with `eap_pl`.
 
+For comparisons across Fama–French vintages, see [eap_pl.get_ff_factors()](eap_pl/reference/get_ff_factors.html).
+The loader checks the archive's checksum and keeps a local copy for later renders.
+
 ## Winsorization and Truncation
 
 **Winsorization** caps values outside chosen percentile cutoffs at the corresponding cutoff.

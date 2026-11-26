@@ -8,6 +8,7 @@ from ._data import (
     monthly_panel,
     write_eap_table,
 )
+from ._french import get_ff_factors
 from ._momentum import build_momentum
 from ._plots import plot_cumulative_returns, plot_factor
 from ._portfolios import (
@@ -36,6 +37,7 @@ __all__ = [
     "correlation_matrix",
     "fama_macbeth_table",
     "format_fit",
+    "get_ff_factors",
     "hac",
     "load_annual_betas",
     "load_beta_universe",
