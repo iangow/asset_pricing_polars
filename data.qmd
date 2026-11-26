@@ -69,8 +69,7 @@ See [CRSP's comparison of the formats](https://www.crsp.org/crsp_pdf/crsp-us-sto
 **[Create the Parquet repository]{#create-data-repository}**
 
 Copy `.env.example` to `.env` in the book checkout and set `DATA_DIR` to your Parquet root and `WRDS_ID` to your WRDS username.
-After `uv sync`, run the script below from that checkout.
-The script uses `db2pq.wrds_update_pq()` to export the WRDS tables to `DATA_DIR`.
+After `uv sync`, run the setup script from that checkout.
 If you already have the source files there, you can skip this step.
 If your WRDS account lacks access to the legacy CRSP tables, use licensed SIZ extracts at the corresponding paths.
 
@@ -78,8 +77,23 @@ If your WRDS account lacks access to the legacy CRSP tables, use licensed SIZ ex
 uv run scripts/download_wrds_tables.py
 ```
 
+The following Python example shows how the script uses `db2pq.wrds_update_pq()` to export the WRDS tables to `DATA_DIR`.
+
 ```python
-{{< include scripts/download_wrds_tables.py >}}
+from db2pq import wrds_update_pq
+from dotenv import load_dotenv
+
+load_dotenv()
+
+tables = {
+    "crsp": ["msf", "dsf", "msenames", "msedelist", "msi", "ccmxpf_lnkused"],
+    "comp": ["funda"],
+    "ff": ["factors_monthly", "factors_daily"],
+}
+
+for schema, names in tables.items():
+    for name in names:
+        wrds_update_pq(name, schema)
 ```
 
 **[Other inputs]{#other-inputs}**
