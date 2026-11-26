@@ -291,6 +291,12 @@ window.Quarto = {
  <span class="menu-text"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Short-Term Reversal</span></span></a>
   </div>
 </li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./liquidity-replication.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">Liquidity</span></span></a>
+  </div>
+</li>
       </ul>
   </li>
         <li class="sidebar-item">
@@ -417,7 +423,7 @@ window.Quarto = {
 <span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>    )</span>
 <span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>    .collect()</span>
 <span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div id="11e85b20" class="cell" data-execution_count="6">
+<div id="bef32f3b" class="cell" data-execution_count="6">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> polars <span class="im">as</span> pl</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> eap_pl <span class="im">import</span> build_sizes</span>
@@ -434,7 +440,7 @@ window.Quarto = {
 <section id="summary-statistics" class="level2" data-number="9.2">
 <h2 data-number="9.2" class="anchored" data-anchor-id="summary-statistics"><span class="header-section-number">9.2</span> Summary Statistics</h2>
 <p>The mean of the monthly medians describes the middle stock in a typical month. It is not a median calculated once on the pooled stock-month data.</p>
-<div id="93a63e67" class="cell" data-execution_count="8">
+<div id="2aaf8f54" class="cell" data-execution_count="8">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> eap_pl <span class="im">import</span> mean_cross_sections</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>stats <span class="op">=</span> mean_cross_sections(sizes, {</span>
@@ -641,7 +647,7 @@ Figure&nbsp;9.1: Share of market capitalization held by the largest stocks (BEM 
 <section id="correlation-and-persistence" class="level2" data-number="9.3">
 <h2 data-number="9.3" class="anchored" data-anchor-id="correlation-and-persistence"><span class="header-section-number">9.3</span> Correlations</h2>
 <p>Join the size measures to the twelve-month daily beta from <a href="beta-replication.html" class="quarto-xref"><span>Chapter 8</span></a>. We take the mean of the monthly cross-sectional correlations. Below the diagonal are Pearson correlations on winsorized observations, and above it are Spearman correlations on the original ranks.</p>
-<div id="cceebcfd" class="cell" data-execution_count="12">
+<div id="2a64e5c7" class="cell" data-execution_count="12">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> eap_pl <span class="im">import</span> correlation_matrix, monthly_panel, period_correlations, persistence</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>panel <span class="op">=</span> monthly_panel(sizes, first, last)</span>
@@ -815,7 +821,7 @@ Table&nbsp;9.3: Persistence of nominal size measures (BEM Table 9.3)
 <section id="univariate-portfolio-analysis" class="level3" data-number="9.5.1">
 <h3 data-number="9.5.1" class="anchored" data-anchor-id="univariate-portfolio-analysis"><span class="header-section-number">9.5.1</span> Univariate Portfolio Analysis</h3>
 <p>Sort stocks at the end of month <span class="math inline">\(t\)</span> and measure their excess returns in <span class="math inline">\(t+1\)</span>, using the delisting rules in <a href="crsp-replication.html#sec-bem-returns" class="quarto-xref"><span>Section 7.2</span></a>. First use NYSE stocks to calculate the breakpoints, then use all eligible stocks. In both cases, assign stocks from the full eligible sample. For the June-based sort, the value weights use June capitalization, as in BEM. Returns and CAPM alphas are in percent per month. The <span class="math inline">\(t\)</span>-statistics use six Newey–West lags.</p>
-<div id="9d839994" class="cell" data-execution_count="15">
+<div id="986ddaab" class="cell" data-execution_count="15">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> eap_pl <span class="im">import</span> bivariate_months, bivariate_panel, fama_macbeth_table, univariate_panel</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> size_deciles(nyse):</span>
@@ -1539,7 +1545,7 @@ Table&nbsp;9.5: Size deciles using all-stock breakpoints (BEM Table 9.5)
 <section id="sort-on-beta-and-size" class="level3" data-number="9.5.2">
 <h3 data-number="9.5.2" class="anchored" data-anchor-id="sort-on-beta-and-size"><span class="header-section-number">9.5.2</span> Bivariate Portfolio Analysis</h3>
 <p>For a dependent sort, form beta quintiles first and compute size breakpoints within each beta quintile. For an independent sort, compute beta and size breakpoints separately across the reference universe. The rows are size quintiles and the columns are beta quintiles. Average portfolios give each constituent portfolio equal weight each month.</p>
-<div id="34df4e52" class="cell" data-execution_count="18">
+<div id="e3a4ae7a" class="cell" data-execution_count="18">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> size_quintiles(nyse, dependent):</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    monthly <span class="op">=</span> bivariate_months(panel, <span class="st">"beta"</span>, <span class="st">"cap"</span>, nyse<span class="op">=</span>nyse, dependent<span class="op">=</span>dependent)</span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> pl.concat([</span>

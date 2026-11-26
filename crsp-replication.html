@@ -294,6 +294,12 @@ window.Quarto = {
  <span class="menu-text"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Short-Term Reversal</span></span></a>
   </div>
 </li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./liquidity-replication.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">Liquidity</span></span></a>
+  </div>
+</li>
       </ul>
   </li>
         <li class="sidebar-item">
@@ -356,7 +362,7 @@ window.Quarto = {
 <section id="build-the-monthly-common-stock-sample" class="level3" data-number="7.1.1">
 <h3 data-number="7.1.1" class="anchored" data-anchor-id="build-the-monthly-common-stock-sample"><span class="header-section-number">7.1.1</span> The CRSP U.S.-Based Common Stock Sample</h3>
 <p>At each calendar month-end, keep securities with a historical share code of 10 or 11. We do not restrict the exchange or require a price to count a stock. For market capitalization, use the absolute alternate price times shares outstanding. Dividing by 1,000 gives millions of dollars because CRSP reports shares in thousands.</p>
-<div id="1c415a97" class="cell" data-execution_count="1">
+<div id="3d9581ac" class="cell" data-execution_count="1">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> polars <span class="im">as</span> pl</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> era_pl <span class="im">import</span> load_parquet</span>
@@ -416,7 +422,7 @@ window.Quarto = {
 <section id="exchanges" class="level4 unnumbered unlisted">
 <h4 class="unnumbered unlisted anchored" data-anchor-id="exchanges">Stock Exchange Composition of CRSP Sample</h4>
 <p>The book groups exchange codes 1 and 31 as NYSE, 2 and 32 as AMEX, and 3 and 33 as Nasdaq. All remaining codes go into <em>Other</em>.</p>
-<div id="e05e66aa" class="cell" data-execution_count="2">
+<div id="72200b55" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> plotnine_polars <span class="im">import</span> aes, guide_legend</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>exchange <span class="op">=</span> (</span>
@@ -877,7 +883,7 @@ Table&nbsp;7.4: SIC code ranges used in the industry breakdown (BEM Table 7.1).
 </figure>
 </div>
 </div>
-<div id="e176f5bf" class="cell" data-execution_count="9">
+<div id="8c7229dd" class="cell" data-execution_count="9">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>industry <span class="op">=</span> pl.coalesce([</span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>    pl.when(pl.col(<span class="st">"siccd"</span>).is_between(lo, hi)).then(pl.lit(name))</span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> lo, hi, name <span class="kw">in</span> sic_divisions.iter_rows()</span>
@@ -930,7 +936,7 @@ Figure&nbsp;7.4: Market value by SIC division, recreating the series in BEM Figu
 <h2 data-number="7.2" class="anchored" data-anchor-id="sec-bem-returns"><span class="header-section-number">7.2</span> Stock Returns and Excess Returns</h2>
 <p>Start with eligible common stocks at the end of month <span class="math inline">\(t\)</span> and look up the return for the same security in month <span class="math inline">\(t+1\)</span>. Do not require it to remain in the common-stock universe in the holding month: that would screen out delistings.</p>
 <p>Chapter 7 uses the legacy CRSP delisting return in place of the regular monthly return if the stock delists. If no delisting return is recorded, it imputes a loss of 30% for the codes listed below and a loss of 100% for other delistings. This is the book’s convention for legacy data, not a reason to adjust the reported returns from CRSP CIZ a second time.</p>
-<div id="db0e10fc" class="cell" data-execution_count="12">
+<div id="7a8f3457" class="cell" data-execution_count="12">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>first_return <span class="op">=</span> pl.date(<span class="dv">1926</span>, <span class="dv">7</span>, <span class="dv">1</span>)</span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>first_return_late <span class="op">=</span> pl.date(<span class="dv">1963</span>, <span class="dv">7</span>, <span class="dv">1</span>)</span>
 <span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>hold_month <span class="op">=</span> pl.col(<span class="st">"month"</span>).dt.offset_by(<span class="st">"1mo"</span>)</span>
@@ -971,7 +977,7 @@ Figure&nbsp;7.4: Market value by SIC division, recreating the series in BEM Figu
 <span id="cb12-38"><a href="#cb12-38" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>The Fama–French risk-free return applies to the holding month, not the formation month. We first calculate the statistics across stocks for each return month, then average those monthly statistics. In particular, the means give each month equal weight, irrespective of the number of stocks in that month. We use sample standard deviations, bias-adjusted skewness and excess kurtosis, and linearly interpolated quantiles.</p>
-<div id="c4fd21c5" class="cell" data-execution_count="13">
+<div id="7cd98166" class="cell" data-execution_count="13">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> summarize_returns(start):</span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> pl.col(<span class="st">"return_pct"</span>)</span>
 <span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> (</span>
@@ -1020,7 +1026,7 @@ Figure&nbsp;7.4: Market value by SIC division, recreating the series in BEM Figu
 <span id="cb13-46"><a href="#cb13-46" aria-hidden="true" tabindex="-1"></a>table_7_3 <span class="op">=</span> summarize_returns(first_return_late)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p><strong><span id="july-1926december-2012-table-7.2">July 1926–December 2012 (Table 7.2)</span></strong></p>
-<div id="4241dcac" class="cell" data-execution_count="14">
+<div id="42b64329" class="cell" data-execution_count="14">
 <div class="cell-output cell-output-display">
 <div><style>
 .dataframe > thead > tr,
@@ -1139,7 +1145,7 @@ Figure&nbsp;7.4: Market value by SIC division, recreating the series in BEM Figu
 </div>
 <section id="july-1963december-2012-table-7.3" class="level3" data-number="7.2.1">
 <h3 data-number="7.2.1" class="anchored" data-anchor-id="july-1963december-2012-table-7.3"><span class="header-section-number">7.2.1</span> CRSP Sample (1963–2012)</h3>
-<div id="0ee7f60a" class="cell" data-execution_count="15">
+<div id="65b1f483" class="cell" data-execution_count="15">
 <div class="cell-output cell-output-display">
 <div><style>
 .dataframe > thead > tr,
@@ -1262,7 +1268,7 @@ Figure&nbsp;7.4: Market value by SIC division, recreating the series in BEM Figu
 <section id="sec-bem7-market" class="level2" data-number="7.3">
 <h2 data-number="7.3" class="anchored" data-anchor-id="sec-bem7-market"><span class="header-section-number">7.3</span> The Market Factor</h2>
 <p>The Fama–French market factor (MKT) is the excess return on a broad value-weighted portfolio of U.S. common stocks. CRSP’s value-weighted market index (VWRETD) has a broader set of eligible securities. We put both measures on an excess-return basis by subtracting the risk-free rate from VWRETD. MKT already has the risk-free rate subtracted.</p>
-<div id="c31022d3" class="cell" data-execution_count="17">
+<div id="a671d10f" class="cell" data-execution_count="17">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>market <span class="op">=</span> (</span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>    factors</span>
 <span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>    .<span class="bu">filter</span>(pl.col(<span class="st">"month"</span>).is_between(pl.date(<span class="dv">1926</span>, <span class="dv">7</span>, <span class="dv">1</span>), pl.date(<span class="dv">2012</span>, <span class="dv">12</span>, <span class="dv">1</span>)))</span>
@@ -1280,7 +1286,7 @@ Figure&nbsp;7.4: Market value by SIC division, recreating the series in BEM Figu
 <span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>On this vintage of the data, MKT and VWRETD have a monthly excess-return correlation of 0.9995, the same to four decimal places as reported by BEM. The table puts the means and standard deviations (in percent per month) next to the book’s reported numbers. The annualized Sharpe ratio uses <span class="math inline">\(\sqrt{12}\)</span> times the ratio of the monthly mean to the monthly standard deviation, as in the book.</p>
-<div id="a02c4f33" class="cell" data-execution_count="18">
+<div id="c40c328a" class="cell" data-execution_count="18">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>market_summary <span class="op">=</span> pl.DataFrame(</span>
 <span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>    {</span>
 <span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>        <span class="st">"Series"</span>: [<span class="st">"MKT"</span>, <span class="st">"VWRETD less RF"</span>, <span class="st">"Log MKT"</span>],</span>
@@ -1361,7 +1367,7 @@ Figure&nbsp;7.4: Market value by SIC division, recreating the series in BEM Figu
 <p><strong><span id="cumulative-market-excess-returns">Cumulative market excess returns</span></strong></p>
 <p>For comparison with BEM Figure 7.5, we compound the monthly market factor, <span class="math inline">\(\prod_{s\leq t}(1+\mathrm{MKT}_s)-1\)</span>, and sum its log transformation, <span class="math inline">\(\sum_{s\leq t}\log(1+\mathrm{MKT}_s)\)</span>. Both are transformations of the same underlying series. The panels share a month-end date axis and use separate percentage scales.</p>
 <p>Compounding the market factor is <strong>not</strong> the same as subtracting the compounded risk-free return from the compounded market return. Here we follow the book’s definition.</p>
-<div id="43238166" class="cell" data-execution_count="19">
+<div id="ad87acec" class="cell" data-execution_count="19">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>market_path <span class="op">=</span> market.with_columns(</span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>    date<span class="op">=</span>pl.col(<span class="st">"month"</span>).dt.month_end(),</span>
 <span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>    compounded<span class="op">=</span>(<span class="dv">1</span> <span class="op">+</span> pl.col(<span class="st">"mktrf"</span>)).cum_prod() <span class="op">-</span> <span class="dv">1</span>,</span>
@@ -1385,7 +1391,7 @@ Figure&nbsp;7.5: Cumulative market excess returns, July 1926–December 2012 (co
 <p>The reconstructed series ends at about 14,411% compounded and 498% on the cumulative log scale, versus 14,209% and 496% in BEM. The monthly means and major drawdowns are close, but small differences in monthly inputs compound over 1,038 observations. These figures use the local factor vintage, not necessarily the one available to the authors.</p>
 <p><strong><span id="drawdowns">Drawdowns</span></strong></p>
 <p>The compounded line makes early losses look small compared with later ones. To measure a drawdown, divide the value at the trough by the value at the preceding peak, then subtract one. Use the peak and trough months described in BEM; the recovery month is the first later month back at or above the old peak. Month names here refer to end-of-month values, so an episode that begins in September uses the August close as its reference.</p>
-<div id="ecca5454" class="cell" data-execution_count="21">
+<div id="e1c4e9e1" class="cell" data-execution_count="21">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> datetime <span class="im">import</span> date</span>
 <span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>episodes <span class="op">=</span> [</span>
@@ -1473,7 +1479,7 @@ Figure&nbsp;7.5: Cumulative market excess returns, July 1926–December 2012 (co
 </div>
 </div>
 <p>The monthly dates and the size of the four episodes are close to the book’s account. The daily Fama–French file also lets us check the specific crash days. It puts the compounded October 28–29, 1929 loss at 21.5%, versus more than 23% reported by BEM; the 1987 Black Monday loss is 17.4%, close to their 17.5%. These daily checks are sensitive to the choice of series, vintage, and aggregation.</p>
-<div id="ed5085a5" class="cell" data-execution_count="22">
+<div id="787aec0b" class="cell" data-execution_count="22">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>daily_market <span class="op">=</span> load_parquet(<span class="st">"factors_daily"</span>, <span class="st">"ff"</span>)</span>
 <span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>daily_market.<span class="bu">filter</span>(</span>
 <span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>    pl.col(<span class="st">"date"</span>).is_in([date(<span class="dv">1929</span>, <span class="dv">10</span>, <span class="dv">28</span>), date(<span class="dv">1929</span>, <span class="dv">10</span>, <span class="dv">29</span>), date(<span class="dv">1987</span>, <span class="dv">10</span>, <span class="dv">19</span>)])</span>

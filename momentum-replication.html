@@ -291,6 +291,12 @@ window.Quarto = {
  <span class="menu-text"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Short-Term Reversal</span></span></a>
   </div>
 </li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./liquidity-replication.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">Liquidity</span></span></a>
+  </div>
+</li>
       </ul>
   </li>
         <li class="sidebar-item">
@@ -387,7 +393,7 @@ window.Quarto = {
 <span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    ).agg(</span>
 <span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>        pl.when(gross.count() <span class="op">&gt;=</span> minimum).then(<span class="dv">100</span> <span class="op">*</span> (gross.product() <span class="op">-</span> <span class="dv">1</span>)).alias(name)</span>
 <span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div id="aa6c51fd" class="cell" data-execution_count="5">
+<div id="53908745" class="cell" data-execution_count="5">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> polars <span class="im">as</span> pl</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> eap_pl <span class="im">import</span> build_book_to_market, build_momentum, build_sizes, monthly_panel</span>
@@ -713,7 +719,7 @@ Table&nbsp;11.2: Correlations of momentum with beta, size, and book-to-market (B
 <section id="univariate-portfolio-analysis" class="level3" data-number="11.4.1">
 <h3 data-number="11.4.1" class="anchored" data-anchor-id="univariate-portfolio-analysis"><span class="header-section-number">11.4.1</span> Univariate Portfolio Analysis</h3>
 <p>Each month, sort the stocks with a valid signal into ten portfolios using breakpoints from all stocks with that signal. Value weights use market capitalization at formation. Returns and alphas are in percentage points per month. For each winner-minus-loser spread, regress the monthly return series on an intercept, on the market factor, or on the three Fama–French factors to estimate its mean, CAPM alpha, or FF alpha. Parentheses report six-lag Newey–West <span class="math inline">\(t\)</span>-statistics <span class="citation" data-cites="neweywest1987">(<a href="references.html#ref-neweywest1987" role="doc-biblioref">Newey and West 1987</a>)</span>.</p>
-<div id="532e6d4f" class="cell" data-execution_count="9">
+<div id="7c90e255" class="cell" data-execution_count="9">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> era_pl <span class="im">import</span> load_parquet</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> eap_pl <span class="im">import</span> format_fit, hac</span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> eap_pl._portfolios <span class="im">import</span> assign_portfolio, portfolio_months, spread</span>
@@ -745,7 +751,7 @@ Table&nbsp;11.2: Correlations of momentum with beta, size, and book-to-market (B
 <span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> name, rhs <span class="kw">in</span> models.items()</span>
 <span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a>    }</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div id="867a2cdd" class="cell" data-execution_count="10">
+<div id="790a92af" class="cell" data-execution_count="10">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>deciles <span class="op">=</span> {<span class="bu">str</span>(i): i <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">1</span>, <span class="dv">11</span>)}</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>formation <span class="op">=</span> panel.select(<span class="op">*</span>keys, <span class="st">"cap"</span>, <span class="op">*</span>signals)</span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>members <span class="op">=</span> {</span>
@@ -1166,7 +1172,7 @@ Table&nbsp;11.3: Momentum-sorted decile portfolios (BEM Table 11.3)
 <section id="returns-at-longer-horizons" class="level3" data-number="11.4.2">
 <h3 data-number="11.4.2" class="anchored" data-anchor-id="returns-at-longer-horizons"><span class="header-section-number">11.4.2</span> Returns at Longer Horizons</h3>
 <p>Keep the formation-month decile assignments and capitalization weights. For each <span class="math inline">\(k\)</span>, attach the return in month <span class="math inline">\(t+k\)</span> and compute the spread across stocks with a return in that month. A delisting contributes its adjusted return in the month it occurs. We use realized returns through December 2012 and match the factors to the month in which each return is realized.</p>
-<div id="74e87f18" class="cell" data-execution_count="12">
+<div id="abd5411e" class="cell" data-execution_count="12">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> eap_pl._data <span class="im">import</span> monthly_stock_returns</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>holding_returns <span class="op">=</span> (</span>
@@ -1720,7 +1726,7 @@ Table&nbsp;11.4: Winner-minus-loser returns and FF alphas by horizon (BEM Table 
 <section id="controlling-for-market-capitalization" class="level3" data-number="11.4.3">
 <h3 data-number="11.4.3" class="anchored" data-anchor-id="controlling-for-market-capitalization"><span class="header-section-number">11.4.3</span> Controlling for Market Capitalization</h3>
 <p>First divide stocks into five capitalization groups. Then compute Mom quintile breakpoints separately within each capitalization group. The last column averages the control portfolios each month before calculating the mean return or estimating an alpha.</p>
-<div id="a40763d0" class="cell" data-execution_count="14">
+<div id="6651c85a" class="cell" data-execution_count="14">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> eap_pl <span class="im">import</span> bivariate_months</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>sort_panel <span class="op">=</span> panel.select(<span class="op">*</span>keys, <span class="st">"mom"</span>, <span class="st">"beta"</span>, <span class="st">"cap"</span>, <span class="st">"bm"</span>, <span class="st">"excess"</span>, <span class="st">"market"</span>)</span>
@@ -2146,7 +2152,7 @@ Table&nbsp;11.6: Dependent momentum sorts within the smallest capitalization qui
 <section id="controlling-for-beta-and-book-to-market" class="level3" data-number="11.4.5">
 <h3 data-number="11.4.5" class="anchored" data-anchor-id="controlling-for-beta-and-book-to-market"><span class="header-section-number">11.4.5</span> Controlling for Beta and Book-to-Market</h3>
 <p>The dependent sorts calculate Mom breakpoints within each beta or BM quintile. The independent sorts use the intersection of two sets of breakpoints computed separately across stocks for each variable. The tables show the high-minus-low Mom spread within each control quintile and its average across the control quintiles.</p>
-<div id="a168c3a4" class="cell" data-execution_count="17">
+<div id="867ff2ab" class="cell" data-execution_count="17">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>sort_variables <span class="op">=</span> {<span class="st">"beta"</span>: <span class="st">"Beta"</span>, <span class="st">"cap"</span>: <span class="st">"MktCap"</span>, <span class="st">"bm"</span>: <span class="st">"BM"</span>}</span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>

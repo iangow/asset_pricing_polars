@@ -291,6 +291,12 @@ window.Quarto = {
  <span class="menu-text"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Short-Term Reversal</span></span></a>
   </div>
 </li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./liquidity-replication.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">Liquidity</span></span></a>
+  </div>
+</li>
       </ul>
   </li>
         <li class="sidebar-item">
@@ -421,7 +427,7 @@ window.Quarto = {
 <span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>            bm<span class="op">=</span><span class="st">"bm"</span>, log_bm<span class="op">=</span>pl.col(<span class="st">"bm"</span>).log())</span>
 <span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>    .collect()</span>
 <span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div id="9d5ffe32" class="cell" data-execution_count="6">
+<div id="3e13b0ae" class="cell" data-execution_count="6">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> polars <span class="im">as</span> pl</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> eap_pl <span class="im">import</span> build_book_to_market, build_sizes</span>
@@ -447,7 +453,7 @@ window.Quarto = {
   white-space: nowrap;
 }
 </style>
-<div id="baee80ed" class="cell" data-execution_count="9">
+<div id="e2ebbca4" class="cell" data-execution_count="9">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> eap_pl <span class="im">import</span> mean_cross_sections, monthly_panel</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>panel <span class="op">=</span> monthly_panel(sizes, first, last).join(book_to_market, on<span class="op">=</span>keys, how<span class="op">=</span><span class="st">"left"</span>, validate<span class="op">=</span><span class="st">"1:1"</span>)</span>
@@ -593,7 +599,7 @@ Table&nbsp;10.1: Monthly summary statistics for book-to-market (BEM Table 10.1)
 <section id="correlation-and-persistence" class="level2" data-number="10.3">
 <h2 data-number="10.3" class="anchored" data-anchor-id="correlation-and-persistence"><span class="header-section-number">10.3</span> Correlations</h2>
 <p>The Pearson correlations use 0.5% winsorization at both ends of each pair’s monthly sample. The Spearman correlations use the original ranks. Since the logarithm preserves order for positive ratios, BM and ln BM have a Spearman correlation of one and the same rank correlation with each other variable.</p>
-<div id="d21208d3" class="cell" data-execution_count="11">
+<div id="13c3f0af" class="cell" data-execution_count="11">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> eap_pl <span class="im">import</span> correlation_matrix, period_correlations, persistence</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>measures <span class="op">=</span> {<span class="st">"bm"</span>: <span class="st">"BM"</span>, <span class="st">"log_bm"</span>: <span class="st">"ln BM"</span>, <span class="st">"beta"</span>: <span class="st">"Beta"</span>, <span class="st">"log_cap"</span>: <span class="st">"Size"</span>}</span>
@@ -717,7 +723,7 @@ Table&nbsp;10.3: Persistence of book-to-market (BEM Table 10.3)
 <section id="univariate-portfolio-analysis" class="level3" data-number="10.5.1">
 <h3 data-number="10.5.1" class="anchored" data-anchor-id="univariate-portfolio-analysis"><span class="header-section-number">10.5.1</span> Univariate Portfolio Analysis</h3>
 <p>Form ten portfolios at the end of each month using the book-to-market ratio. Compare breakpoints from all eligible stocks with breakpoints from NYSE stocks. Holding returns use the next month’s CRSP returns and the delisting adjustment in <a href="crsp-replication.html#sec-bem-returns" class="quarto-xref"><span>Section 7.2</span></a>. Value weights use current market capitalization at formation. Returns and CAPM alphas are percentages per month, and <span class="math inline">\(t\)</span>-statistics use six Newey–West lags.</p>
-<div id="da52c92b" class="cell" data-execution_count="14">
+<div id="9d9e34f8" class="cell" data-execution_count="14">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> eap_pl <span class="im">import</span> bivariate_months, bivariate_panel, fama_macbeth_table, univariate_panel</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>characteristics <span class="op">=</span> [</span>
@@ -1501,7 +1507,7 @@ Table&nbsp;10.5: Dependent book-to-market sorts controlling for beta or size (BE
 </div>
 </div>
 <p>With independent sorts, the book-to-market cutoffs are the same in each control quintile. Each portfolio is the intersection of the two quintile assignments. An average portfolio equally weights the five constituent portfolio returns each month.</p>
-<div id="dc1effdb" class="cell" data-execution_count="17">
+<div id="4c6bcb32" class="cell" data-execution_count="17">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> value_quintiles(control):</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    portfolios <span class="op">=</span> bivariate_months(panel, control, <span class="st">"bm"</span>, nyse<span class="op">=</span><span class="va">False</span>, dependent<span class="op">=</span><span class="va">False</span>)</span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> pl.concat([</span>

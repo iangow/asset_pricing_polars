@@ -291,6 +291,12 @@ window.Quarto = {
  <span class="menu-text"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Short-Term Reversal</span></span></a>
   </div>
 </li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./liquidity-replication.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">Liquidity</span></span></a>
+  </div>
+</li>
       </ul>
   </li>
         <li class="sidebar-item">
@@ -353,7 +359,7 @@ window.Quarto = {
   white-space: nowrap;
 }
 </style>
-<div id="48a52410" class="cell" data-execution_count="2">
+<div id="d3153be9" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> polars <span class="im">as</span> pl</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> eap_pl <span class="im">import</span> build_annual_panel</span>
@@ -377,7 +383,7 @@ window.Quarto = {
 \rho_t^S(X,Y)=1-\frac{6\sum_{i=1}^{n_t}d_{i,t}^2}{n_t(n_t^2-1)}.
 \tag{3.2}\]</span></span></p>
 <p>With ties, give equal values their average rank and compute the Pearson correlation of the two rank vectors. This is the calculation used by <code>pl.corr(method="spearman")</code>, including when <a href="#eq-bem3-spearman" class="quarto-xref">Equation&nbsp;<span>3.2</span></a> applies.</p>
-<div id="16d2a5f4" class="cell" data-execution_count="3">
+<div id="0b785570" class="cell" data-execution_count="3">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> eap_pl <span class="im">import</span> correlation_matrix, period_correlations</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>variables <span class="op">=</span> {<span class="st">"Beta"</span>: <span class="st">"Beta"</span>, <span class="st">"Size"</span>: <span class="st">"Size"</span>, <span class="st">"BM"</span>: <span class="st">"BM"</span>, <span class="st">"excess"</span>: <span class="st">"Next-year return"</span>}</span>
@@ -819,7 +825,7 @@ Table&nbsp;3.1: Annual Pearson and Spearman correlations (BEM Table 3.1)
 \bar\rho^S(X,Y)=\frac{1}{N_{XY}}\sum_{t\in\mathcal T_{XY}}\rho_t^S(X,Y).
 \tag{3.4}\]</span></span></p>
 <p>Each available year has the same weight. The next-year return is unavailable for the 2012 formation cohort, so return correlations are averaged over 24 years. The other pairs use all 25 years.</p>
-<div id="5f0e6c93" class="cell" data-execution_count="5">
+<div id="13261a33" class="cell" data-execution_count="5">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>average <span class="op">=</span> annual.select(pl.exclude(<span class="st">"year"</span>).mean())</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="cell" data-execution_count="6">
