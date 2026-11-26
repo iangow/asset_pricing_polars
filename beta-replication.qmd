@@ -63,31 +63,27 @@ A lag can precede the first stock-return date in the window.
 We omit response dates whose market lead falls after formation and apply the minimum to the remaining complete observations.
 This keeps all beta inputs observable at formation.
 
+{{< include _show-code.qmd >}}
+
 ```{python}
 import polars as pl
 
 from era_pl import load_parquet
+from eap_pl import load_beta_universe, load_daily_beta_inputs
 
 first = pl.date(1963, 6, 1)
 last = pl.date(2012, 11, 1)
 last_estimate = last.dt.offset_by("1mo")
 keys = ["permno", "month"]
 
-names = load_parquet("msenames", "crsp").filter(pl.col("shrcd").is_in([10, 11]))
-universe = (
-    names
-    .filter(pl.col("namedt") <= last_estimate.dt.month_end(), pl.col("nameendt") >= first)
-    .with_columns(month=pl.date_ranges(
-        pl.max_horizontal(pl.col("namedt").dt.month_start(), first),
-        pl.min_horizontal(pl.col("nameendt").dt.month_start(), last_estimate),
-        interval="1mo",
-    ))
-    .explode("month")
-    .filter(pl.col("month").dt.month_end().is_between("namedt", "nameendt"))
-    .select(keys)
-    .unique()
-    .collect()
-)
+universe = load_beta_universe(first, last_estimate).collect()
+```
+
+```{python}
+#| echo: false
+#| output: asis
+
+show_code(load_beta_universe, "names", "return")
 ```
 
 We screen for common shares at formation using historical share codes 10 and 11.
@@ -159,6 +155,19 @@ For example, the slope uses $\sum xy-(\sum x)(\sum y)/n$ divided by $\sum x^2-(\
 The adjusted regressions use the same idea with cross-products between market returns at different offsets.
 
 ```{python}
+daily_factors, daily_excess = load_daily_beta_inputs(
+    first.dt.offset_by("-23mo"), last_estimate.dt.month_end(),
+)
+```
+
+```{python}
+#| echo: false
+#| output: asis
+
+show_code(load_daily_beta_inputs, "offsets", "daily_factors", "daily_excess")
+```
+
+```{python}
 #| echo: false
 
 from itertools import combinations_with_replacement
@@ -168,24 +177,6 @@ import numpy as np
 market_offsets = {k: f"mkt_{k + 5}" for k in range(-5, 6)}
 dimson_predictors = list(market_offsets.values())
 sw_predictors = [market_offsets[k] for k in [-1, 0, 1]]
-daily_factors = (
-    load_parquet("factors_daily", "ff")
-    .select("date", "mktrf", "rf")
-    .sort("date")
-    .with_columns(pl.col("mktrf").shift(-k).alias(name) for k, name in market_offsets.items())
-    .with_columns(month=pl.col("date").dt.month_start())
-    .with_columns(days_left=pl.len().over("month") - pl.col("date").cum_count().over("month"))
-    .collect()
-)
-daily_excess = (
-    load_parquet("dsf", "crsp")
-    .filter(pl.col("date").is_between(first.dt.offset_by("-23mo"), last_estimate.dt.month_end()))
-    .select("permno", "date", "ret")
-    .join(daily_factors.lazy(), on="date", validate="m:1")
-    .with_columns(retrf=pl.col("ret") - pl.col("rf"))
-    .filter(pl.all_horizontal(pl.col("retrf", *dimson_predictors).is_finite()))
-    .select(*keys, "retrf", "days_left", *dimson_predictors)
-)
 
 def product_name(left, right):
     return f"{left}_x_{right}"
@@ -315,8 +306,10 @@ window_months.update(SW=12, D=12)
 ```
 
 The tables in this chapter end with November 2012 formation, followed by December 2012 holding returns.
-We also estimate betas as of December 2012 for the last year of the annual summary in @sec-summary-statistics.
-The optional export saves all eleven estimates per stock-month to the local `DATA_DIR/eap/betas.parquet` file.
+We also estimate betas as of December 2012.
+The export saves all eleven estimates per stock-month to `DATA_DIR/eap/betas.parquet`.
+Chapters [-@sec-size-replication] and [-@sec-value-replication] read its 12-month daily beta for their monthly analyses.
+The annual methods chapters estimate their December betas when needed.
 
 ```{python}
 #| include: false

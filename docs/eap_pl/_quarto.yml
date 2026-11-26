@@ -48,6 +48,10 @@ quartodoc:
       contents:
         - load_annual_betas
         - build_annual_panel
+        - build_sizes
+        - build_book_to_market
+        - load_beta_universe
+        - load_daily_beta_inputs
         - monthly_panel
         - write_eap_table
     - title: Cross-sectional statistics

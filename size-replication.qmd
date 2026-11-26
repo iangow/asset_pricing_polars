@@ -25,44 +25,19 @@ The book's measure uses the absolute alternate price and shares outstanding.
 CRSP records shares in thousands; dividing their product by 1,000 gives market capitalization in millions of dollars.
 Treat zeros as missing.
 
+{{< include _show-code.qmd >}}
+
 ```{python}
-import polars as pl
-from era_pl import load_parquet
+#| include: false
 
-first = pl.date(1963, 6, 1)
-last = pl.date(2012, 11, 1)
+from eap_pl import build_sizes
+```
 
-prices = (
-    load_parquet("msf", "crsp")
-    .filter(pl.col("date").is_between(pl.date(1962, 12, 1), pl.date(2012, 12, 31)))
-    .with_columns(
-        month=pl.col("date").dt.month_start(),
-        cap=pl.when((pl.col("altprc") != 0) & (pl.col("shrout") > 0))
-        .then((pl.col("altprc") * pl.col("shrout")).abs() / 1000),
-    )
-    .select("permno", "month", "cap")
-)
-names = (
-    load_parquet("msenames", "crsp")
-    .select("permno", "namedt", "nameendt", "shrcd", "exchcd")
-    .sort("namedt")
-)
-stock_months = (
-    prices
-    .with_columns(month_end=pl.col("month").dt.month_end())
-    .sort("month_end")
-    .join_asof(
-        names, left_on="month_end", right_on="namedt",
-        by="permno", check_sortedness=False,
-    )
-    .with_columns(
-        common=(pl.col("month_end").is_between("namedt", "nameendt")
-                & pl.col("shrcd").is_in([10, 11])).fill_null(False),
-        exchcd=pl.when(pl.col("month_end").is_between("namedt", "nameendt"))
-        .then(pl.col("exchcd")),
-    )
-    .select("permno", "month", "common", "exchcd", "cap")
-)
+```{python}
+#| echo: false
+#| output: asis
+
+show_code(build_sizes, "prices", "names", "classified_months")
 ```
 
 For the annual measure, join each stock to its capitalization at the most recent June.
@@ -70,18 +45,10 @@ A stock without a record for that particular June has no annual value.
 We do not carry forward an older June observation.
 
 ```{python}
-june_caps = (
-    prices
-    .filter(pl.col("month").dt.month() == 6)
-    .select("permno", june="month", cap_june="cap")
-)
-june_year = pl.col("month").dt.year() - (pl.col("month").dt.month() < 6)
-stock_months = (
-    stock_months
-    .with_columns(june=pl.date(june_year, 6, 1))
-    .join(june_caps, on=["permno", "june"], how="left", validate="m:1")
-    .drop("june")
-)
+#| echo: false
+#| output: asis
+
+show_code(build_sizes, "june_caps", "june_year", "stock_months")
 ```
 
 []{#compare-four-measures-of-size-and-their-logs}
@@ -90,31 +57,26 @@ Convert nominal market capitalization to December 2012 dollars using the [BLS CP
 Use the CPI for the current observation month for both the monthly and the June-based measures, as in the book.
 
 ```{python}
-cpi = pl.read_csv("data/cpi-aucns.csv", try_parse_dates=True).rename(
-    {"observation_date": "month", "CPIAUCNS": "cpi"}
-)
-cpi_2012 = cpi.filter(pl.col("month") == pl.date(2012, 12, 1))["cpi"].item()
+#| echo: false
+#| output: asis
 
-all_sizes = (
-    stock_months
-    .join(cpi.lazy(), on="month", how="left", validate="m:1")
-    .with_columns(
-        cap_real=pl.col("cap") * cpi_2012 / pl.col("cpi"),
-        cap_june_real=pl.col("cap_june") * cpi_2012 / pl.col("cpi"),
-    )
-    .drop("cpi")
-    .with_columns(
-        pl.col(var).log().alias(f"log_{var}")
-        for var in ["cap", "cap_real", "cap_june", "cap_june_real"]
-    )
-    .collect()
-)
+show_code(build_sizes, "cpi", "cpi_2012", "all_sizes")
+```
+
+```{python}
+import polars as pl
+
+from eap_pl import build_sizes
+
+first = pl.date(1963, 6, 1)
+last = pl.date(2012, 11, 1)
+all_sizes = build_sizes()
 sizes = all_sizes.filter(
-    pl.col("common"), pl.col("month").is_between(first, last)
+    pl.col("common"), pl.col("month").is_between(first, last),
 )
 ```
 
-The optional export, `eap.sizes`, includes the earlier December market equity needed for book-to-market and December 2012 for the annual teaching sample.
+The table includes the earlier December market equity needed for book-to-market and December 2012 for the annual teaching sample.
 It records common-stock eligibility separately so the prior December price remains available when a stock's share code changes.
 
 ```{python}

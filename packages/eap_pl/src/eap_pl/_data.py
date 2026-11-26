@@ -8,33 +8,18 @@ import polars as pl
 
 from era_pl import load_parquet
 
+from ._beta import load_annual_betas
+from ._characteristics import build_book_to_market, build_sizes
 
 KEYS = ["permno", "month"]
 
 
-def load_annual_betas(start_year: int = 1988, end_year: int = 2012) -> pl.LazyFrame:
-    """Load the December values of the 12-month daily beta.
-
-    The returned query reads `DATA_DIR/eap/betas.parquet` when collected.
-
-    Args:
-        start_year: First formation year, inclusive.
-        end_year: Last formation year, inclusive.
-
-    Returns:
-        (polars.LazyFrame): December observations with `permno`, `year`, and `Beta`.
-    """
-    if start_year > end_year:
-        raise ValueError("start_year must be less than or equal to end_year")
-    return (
-        load_parquet("betas", "eap")
-        .with_columns(year=pl.col("month").dt.year())
-        .filter(pl.col("month").dt.month() == 12, pl.col("year").is_between(start_year, end_year))
-        .select("permno", "year", Beta="12M")
-    )
-
-
-def build_annual_panel(start_year: int = 1988, end_year: int = 2012) -> pl.DataFrame:
+def build_annual_panel(
+    start_year: int = 1988,
+    end_year: int = 2012,
+    *,
+    annual_betas: pl.DataFrame | pl.LazyFrame | None = None,
+) -> pl.DataFrame:
     """Join December stock characteristics to next-year excess returns.
 
     The beta sample defines the stock-year rows. Compounds available monthly
@@ -45,6 +30,8 @@ def build_annual_panel(start_year: int = 1988, end_year: int = 2012) -> pl.DataF
     Args:
         start_year: First formation year, inclusive.
         end_year: Last formation year and last calendar year of returns, inclusive.
+        annual_betas: Optional December estimates to reuse from
+            `load_annual_betas()`. Supply every stock-year needed for the panel.
 
     Returns:
         (polars.DataFrame): Stock-year observations with `permno`, `year`,
@@ -52,16 +39,21 @@ def build_annual_panel(start_year: int = 1988, end_year: int = 2012) -> pl.DataF
             (`Size`), signed book-to-market (`BM`), and next-year excess
             return in percentage points (`excess`).
     """
-    betas = load_annual_betas(start_year, end_year)
+    if start_year > end_year:
+        raise ValueError("start_year must be less than or equal to end_year")
+    if annual_betas is None:
+        annual_betas = load_annual_betas(start_year, end_year)
+    betas = annual_betas.lazy().filter(pl.col("year").is_between(start_year, end_year))
     keys = ["permno", "year"]
+    sizes = build_sizes()
     capitalizations = (
-        load_parquet("sizes", "eap")
+        sizes.lazy()
         .filter(pl.col("month").dt.month() == 12)
         .select("permno", year=pl.col("month").dt.year(), MktCap="cap", Size="log_cap")
         .filter(pl.col("year").is_between(start_year, end_year))
     )
     book_to_market = (
-        load_parquet("book_to_market", "eap")
+        build_book_to_market(sizes).lazy()
         .filter(pl.col("month").dt.month() == 12)
         .select("permno", year=pl.col("month").dt.year(), BM="bm_raw")
         .filter(pl.col("year").is_between(start_year, end_year))

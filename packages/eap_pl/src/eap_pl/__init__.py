@@ -1,6 +1,8 @@
 """Polars helpers for Empirical Asset Pricing with Polars."""
 
-from ._data import build_annual_panel, load_annual_betas, monthly_panel, write_eap_table
+from ._beta import load_annual_betas, load_beta_universe, load_daily_beta_inputs
+from ._characteristics import build_book_to_market, build_sizes
+from ._data import build_annual_panel, monthly_panel, write_eap_table
 from ._plots import plot_cumulative_returns, plot_factor
 from ._portfolios import (
     bivariate_months,
@@ -22,11 +24,15 @@ __all__ = [
     "bivariate_months",
     "bivariate_panel",
     "build_annual_panel",
+    "build_book_to_market",
+    "build_sizes",
     "correlation_matrix",
     "fama_macbeth_table",
     "format_fit",
     "hac",
     "load_annual_betas",
+    "load_beta_universe",
+    "load_daily_beta_inputs",
     "mean_cross_sections",
     "monthly_panel",
     "period_correlations",

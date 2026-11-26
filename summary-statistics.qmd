@@ -32,18 +32,9 @@ It uses all available daily excess returns in the calendar year and requires at 
 ```{python}
 import polars as pl
 
-from eap_pl import load_annual_betas
+from eap_pl import build_annual_panel, load_annual_betas
 
-annual_beta = load_annual_betas()
-```
-
-```{python}
-#| echo: false
-#| output: asis
-
-from inspect import getsource
-
-print(f"```python\n{getsource(load_annual_betas)}```")
+annual_beta = load_annual_betas().collect()
 ```
 
 For each year, compute the statistics across the stocks with a beta.
@@ -72,7 +63,6 @@ annual_stats = (
     annual_beta.group_by("year")
     .agg(cross_section("Beta"))
     .sort("year")
-    .collect()
 )
 ```
 
@@ -114,39 +104,19 @@ The time-series average hides that change.
 []{#summarize-several-characteristics}We also summarize year-end market capitalization in millions of dollars, its natural logarithm (size), book-to-market, and the following calendar year's excess return.
 `build_annual_panel()` assembles these observations using `start_year` and `end_year`, which default to 1988 and 2012.
 
-```{python}
-#| include: false
+{{< include _show-code.qmd >}}
 
-import ast
-from textwrap import dedent
-
-from eap_pl import build_annual_panel
-
-panel_source = getsource(build_annual_panel)
-panel_body = ast.parse(panel_source).body[0].body
-panel_steps = {
-    statement.targets[0].id: dedent(ast.get_source_segment(panel_source, statement, padded=True))
-    for statement in panel_body
-    if isinstance(statement, ast.Assign) and isinstance(statement.targets[0], ast.Name)
-}
-panel_steps["return"] = dedent(ast.get_source_segment(panel_source, panel_body[-1], padded=True))
-
-def show_panel_code(*steps):
-    code = "\n".join(panel_steps[step] for step in steps)
-    print(f"```python\n{code}\n```")
-```
-
-The December beta observations define the stock-years in the panel.
+The December beta observations already calculated for @tbl-bem2-annual define the stock-years in the panel.
 The helper uses `permno` and formation year as the join keys.
-@sec-size-replication exports December market capitalization and its log.
-@sec-value-replication exports the ratio of prior-year fiscal book equity to prior December market capitalization.
+`build_sizes()` provides December market capitalization and its log, as described in @sec-size-replication.
+`build_book_to_market()` supplies the ratio of prior-year fiscal book equity to prior December market capitalization, as described in @sec-value-replication.
 We use its signed ratio, consistent with the negative observations in BEM Table 2.3.
 
 ```{python}
 #| echo: false
 #| output: asis
 
-show_panel_code("betas", "keys", "capitalizations", "book_to_market")
+show_code(build_annual_panel, "betas", "keys", "sizes", "capitalizations", "book_to_market")
 ```
 
 For each stock and holding year, the helper compounds the available monthly returns reported by CRSP.
@@ -157,7 +127,7 @@ The helper compounds the monthly risk-free returns separately, requiring 12 obse
 #| echo: false
 #| output: asis
 
-show_panel_code("stock_returns", "risk_free")
+show_code(build_annual_panel, "stock_returns", "risk_free")
 ```
 
 Subtract the annual risk-free return from the stock return and express the difference in percentage points.
@@ -168,7 +138,7 @@ For example, the return earned in 1989 is joined to the stock's 1988 characteris
 #| echo: false
 #| output: asis
 
-show_panel_code("next_year")
+show_code(build_annual_panel, "next_year")
 ```
 
 The left joins keep each stock-year in the beta sample even when a characteristic or return is missing.
@@ -180,13 +150,11 @@ The final `.collect()` returns the assembled panel as a Polars `DataFrame`.
 #| echo: false
 #| output: asis
 
-show_panel_code("return")
+show_code(build_annual_panel, "return")
 ```
 
 ```{python}
-from eap_pl import build_annual_panel
-
-annual_panel = build_annual_panel()
+annual_panel = build_annual_panel(annual_betas=annual_beta)
 ```
 
 Apply the same summary to each variable separately.

@@ -16,32 +16,19 @@ BEM require stockholders' equity and deferred taxes.
 They use zero for a missing tax credit or when all three preferred stock fields are missing.
 We take the last fiscal year-end within the calendar year.
 
+{{< include _show-code.qmd >}}
+
 ```{python}
-import polars as pl
+#| include: false
 
-from era_pl import load_parquet
+from eap_pl import build_book_to_market
+```
 
-first = pl.date(1963, 6, 1)
-last = pl.date(2012, 11, 1)
-keys = ["permno", "month"]
+```{python}
+#| echo: false
+#| output: asis
 
-funda = (
-    load_parquet("funda", "comp")
-    .filter(
-        pl.col("indfmt") == "INDL", pl.col("datafmt") == "STD",
-        pl.col("consol") == "C", pl.col("popsrc") == "D",
-        pl.col("datadate").dt.year().is_between(1962, 2011),
-    )
-    .select(
-        "gvkey", "datadate", year=pl.col("datadate").dt.year(),
-        cusip=pl.col("cusip").str.slice(0, 8),
-        be=pl.col("seq") + pl.col("txdb") + pl.col("itcb").fill_null(0)
-        - pl.coalesce("pstkrv", "pstkl", "pstk", pl.lit(0)),
-    )
-    .filter(pl.col("datadate") == pl.col("datadate").max().over("gvkey", "year"))
-    .unique()
-    .filter(pl.len().over("gvkey", "year") == 1)
-)
+show_code(build_book_to_market, "funda")
 ```
 
 Use CRSP–Compustat links valid on the fiscal year-end.
@@ -50,34 +37,9 @@ We use the legacy monthly names file for this fallback.
 
 ```{python}
 #| echo: false
+#| output: asis
 
-annual_keys = ["permno", "year"]
-links = (
-    load_parquet("ccmxpf_lnkused", "crsp")
-    .filter(pl.col("usedflag") == 1, pl.col("ulinktype").is_in(["LU", "LC"]), pl.col("upermno") > 0)
-    .select(gvkey="ugvkey", permno=pl.col("upermno").cast(pl.Int32),
-            start="ulinkdt", end="ulinkenddt")
-)
-linked_book = (
-    funda.join(links, on="gvkey")
-    .filter(pl.col("datadate") >= pl.col("start"),
-            (pl.col("datadate") <= pl.col("end")) | pl.col("end").is_null())
-    .select("gvkey", *annual_keys, "be").unique()
-)
-cusips = load_parquet("msenames", "crsp").select("permno", "namedt", "nameendt", cusip="ncusip")
-cusip_book = (
-    funda.join(linked_book.select("gvkey", "year"), on=["gvkey", "year"], how="anti")
-    .filter(pl.col("cusip").str.len_chars() == 8)
-    .join(cusips, on="cusip")
-    .filter(pl.col("datadate").is_between("namedt", "nameendt"))
-    .select("gvkey", *annual_keys, "be").unique()
-    .filter(pl.len().over("gvkey", "year") == 1)
-)
-book = (
-    pl.concat([linked_book, cusip_book])
-    .filter(pl.len().over(*annual_keys) == 1, pl.col("be").is_finite())
-    .select(*annual_keys, "be")
-)
+show_code(build_book_to_market, "annual_keys", "links", "linked_book", "cusips", "cusip_book", "book")
 ```
 
 Divide book equity by the nominal December capitalization for the same calendar year, from @sec-size-replication.
@@ -85,34 +47,27 @@ Make that ratio available at the end of the following June and carry it through 
 This gives a December fiscal year-end at least six months before the ratio enters a portfolio sort.
 
 ```{python}
-all_sizes = load_parquet("sizes", "eap")
-december_cap = (
-    all_sizes.filter(pl.col("month").dt.month() == 12)
-    .select("permno", year=pl.col("month").dt.year(), me="cap")
-)
-book_to_market = (
-    book.join(december_cap, on=["permno", "year"], validate="1:1")
-    .with_columns(
-        available=pl.date(pl.col("year") + 1, 6, 1),
-        bm_raw=pl.col("be") / pl.col("me"),
-    )
-    .with_columns(
-        month=pl.date_ranges(
-            pl.col("available"), pl.col("available").dt.offset_by("11mo"),
-            interval="1mo",
-        ),
-        bm=pl.when(pl.col("bm_raw") > 0).then(pl.col("bm_raw")),
-    )
-    .explode("month")
-    .filter(pl.col("month") <= last.dt.offset_by("1mo"))
-    .select(*keys, book_year="year", be="be", me="me", bm_raw="bm_raw",
-            bm="bm", log_bm=pl.col("bm").log())
-    .collect()
-)
+#| echo: false
+#| output: asis
+
+show_code(build_book_to_market, "december_cap", "book_to_market")
+```
+
+```{python}
+import polars as pl
+
+from eap_pl import build_book_to_market, build_sizes
+
+first = pl.date(1963, 6, 1)
+last = pl.date(2012, 11, 1)
+keys = ["permno", "month"]
+
+all_sizes = build_sizes()
+book_to_market = build_book_to_market(all_sizes)
 ```
 
 For this chapter, use positive book equity so the logarithm is defined.
-The optional `eap.book_to_market` export keeps the signed ratio as well for the annual summaries in @sec-summary-characteristics.
+The table also keeps the signed ratio for the annual summaries in @sec-summary-characteristics.
 
 ```{python}
 #| include: false
@@ -127,7 +82,7 @@ if os.environ.get("EAP_WRITE_BOOK_TO_MARKET") == "1":
 
 sizes = all_sizes.filter(
     pl.col("common"), pl.col("month").is_between(first, last)
-).collect()
+)
 ```
 
 ## Summary Statistics

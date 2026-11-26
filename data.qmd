@@ -98,11 +98,12 @@ for schema, names in tables.items():
 
 ### Other inputs {#other-inputs}
 
-Chapters [-@sec-bem-beta], [-@sec-size-replication], and [-@sec-value-replication] can export the local Parquet tables `eap.betas`, `eap.sizes`, and `eap.book_to_market`.
-The annual methods chapters use the December observations from those tables.
-The [render instructions](https://github.com/iangow/asset_pricing_polars#render) show how to build them.
+The annual methods chapters construct December betas, size, and book-to-market from the local source data when needed.
+See Chapters [-@sec-bem-beta], [-@sec-size-replication], and [-@sec-value-replication] for how each measure is constructed.
+The monthly Size and Value analyses read the 12-month daily beta from `eap.betas`, which the Beta chapter can export during the full render.
+See the [render instructions](https://github.com/iangow/asset_pricing_polars#render).
 
-Chapters [-@sec-bem-crsp], [-@sec-size-replication], and [-@sec-value-replication] use the [BLS all-items CPI for urban consumers, not seasonally adjusted](https://fred.stlouisfed.org/series/CPIAUCNS), from FRED, to express market capitalizations in December 2012 dollars.
+The size builder and the CRSP and Value chapters use the [BLS all-items CPI for urban consumers, not seasonally adjusted](https://fred.stlouisfed.org/series/CPIAUCNS), from FRED, to express market capitalizations in December 2012 dollars.
 This file does not come from WRDS.
 
 ## Winsorization and Truncation

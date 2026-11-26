@@ -1,0 +1,22 @@
+```{python}
+#| include: false
+
+import ast
+from inspect import getsource
+from textwrap import dedent
+
+def show_code(function, *steps):
+    source = getsource(function)
+    if steps:
+        statements = {}
+        for statement in ast.parse(source).body[0].body:
+            if isinstance(statement, ast.Assign) and isinstance(statement.targets[0], ast.Name):
+                statements[statement.targets[0].id] = statement
+            elif isinstance(statement, ast.Return):
+                statements["return"] = statement
+        source = "\n".join(
+            dedent(ast.get_source_segment(source, statements[step], padded=True))
+            for step in steps
+        )
+    print(f"```python\n{source.rstrip()}\n```")
+```
