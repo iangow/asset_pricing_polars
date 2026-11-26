@@ -21,6 +21,10 @@ book:
         - beta-replication.qmd
         - size-replication.qmd
         - value-replication.qmd
+    - references.qmd
+
+bibliography: book.bib
+link-citations: true
 
 format:
   html:

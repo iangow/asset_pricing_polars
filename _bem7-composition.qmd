@@ -1,6 +1,6 @@
 ### Composition of the CRSP Sample {#sec-bem7-composition}
 
-Figures 7.1–7.4 of Bali, Engle, and Murray (2016) decompose the sample by exchange and industry from December 1925 to December 2012.
+Figures 7.1–7.4 of @bali2016 decompose the sample by exchange and industry from December 1925 to December 2012.
 Count every stock in the month-end universe, even if market capitalization is missing.
 For market value, sum only observed capitalization.
 Convert nominal millions to billions of December 2012 dollars using the ratio of December 2012 CPI to that month's CPI.

@@ -8,7 +8,7 @@ aliases:
 
 []{#sec-size}
 
-We follow Chapter 9 of Bali, Engle, and Murray (2016), *Empirical Asset Pricing*.
+We follow Chapter 9 of @bali2016.
 We compare monthly and June-based size, then examine how each relates to subsequent stock returns.
 Formation months run from June 1963 through November 2012.
 

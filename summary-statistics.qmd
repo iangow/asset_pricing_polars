@@ -18,7 +18,7 @@ jupyter: python3
 
 {{< include _show-table.qmd >}}
 
-Bali, Engle, and Murray (2016), Chapter 2, summarize the distribution of stock characteristics within each year, then average those statistics across years.
+In Chapter 2, @bali2016 summarize the distribution of stock characteristics within each year, then average those statistics across years.
 This gives each year's cross-section equal weight.
 
 ## Implementation

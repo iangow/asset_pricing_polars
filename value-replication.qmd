@@ -4,7 +4,7 @@ jupyter: python3
 
 # The Value Premium {#sec-value-replication}
 
-We follow Chapter 10 of Bali, Engle, and Murray (2016), *Empirical Asset Pricing*.
+We follow Chapter 10 of @bali2016.
 Book-to-market compares an accounting measure of equity with what investors pay for the shares.
 We ask how this ratio varies across stocks and whether it predicts the following month's excess return.
 

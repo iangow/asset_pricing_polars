@@ -6,7 +6,7 @@ jupyter: python3
 
 ## Sample
 
-@sec-summary-statistics uses BEM's annual teaching sample of U.S. common stocks at each year-end from 1988 through 2012.
+@sec-summary-statistics uses the annual teaching sample of @bali2016, covering U.S. common stocks at each year-end from 1988 through 2012.
 The empirical replications use longer monthly samples.
 
 The examples read local Parquet files through `era_pl.load_parquet()`.
@@ -61,7 +61,7 @@ for schema, name, dataset, purpose in tables:
 display(Markdown("\n".join(rows)))
 ```
 
-The replications use legacy CRSP (SIZ), the format available when Bali, Engle, and Murray wrote the book.
+The replications use legacy CRSP (SIZ), the format available when BEM wrote the book.
 The local legacy exports are newer than their original snapshot.
 The newer CIZ files use different return conventions, including the timing of dividend reinvestment.
 See [CRSP's comparison of the formats](https://www.crsp.org/crsp_pdf/crsp-us-stock-indexes-databases-siz-to-ciz-executive-summary/).
@@ -109,9 +109,9 @@ This file does not come from WRDS.
 
 **Winsorization** caps values outside chosen percentile cutoffs at the corresponding cutoff.
 **Truncation** sets those values to missing, so analyses that require the variable exclude those observations.
-BEM describe both methods as ways to limit the influence of extreme values.
+In [Section 1.2](https://catalogimages.wiley.com/images/db/pdf/9781118095041.excerpt.pdf), @bali2016 describe both methods as ways to limit the influence of extreme values.
 They suggest capping observations that still convey information about genuinely high or low values, and consider truncation when the extremes appear to come from a different process.
-They urge caution when the conclusions depend on which treatment is used. [Bali, Engle, and Murray (2016, §1.2)](https://catalogimages.wiley.com/images/db/pdf/9781118095041.excerpt.pdf)
+They urge caution when the conclusions depend on which treatment is used.
 
 BEM compute the cutoffs separately for each year or month because they analyze each period's cross-section before summarizing the results over time.
 Their 0.5% rule uses the 0.5th and 99.5th percentiles.

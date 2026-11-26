@@ -23,7 +23,7 @@ market = (
 )
 ```
 
-On this vintage of the data, MKT and VWRETD have a monthly excess-return correlation of 0.9995, the same to four decimal places as reported in Bali, Engle, and Murray (BEM).
+On this vintage of the data, MKT and VWRETD have a monthly excess-return correlation of 0.9995, the same to four decimal places as reported by BEM.
 The table puts the means and standard deviations (in percent per month) next to the book's reported numbers.
 The annualized Sharpe ratio uses $\sqrt{12}$ times the ratio of the monthly mean to the monthly standard deviation, as in the book.
 

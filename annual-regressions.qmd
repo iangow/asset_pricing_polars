@@ -18,7 +18,7 @@ The second averages the coefficients across years and estimates their standard e
 
 Compare three univariate regressions with a regression that includes beta, size, and book-to-market together.
 The outcome is the next year's excess return in percent.
-Following BEM, winsorize the regressors at 0.5% in each year's regression sample.
+Following @bali2016 [chap. 6], winsorize the regressors at 0.5% in each year's regression sample.
 Use six Newey–West lags when estimating standard errors for the averages.
 
 ```{python}

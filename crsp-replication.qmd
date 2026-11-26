@@ -4,7 +4,7 @@ jupyter: python3
 
 # The CRSP Sample and Market Factor {#sec-bem-crsp}
 
-This chapter reconstructs the figures and tables in Chapter 7 of Bali, Engle, and Murray (2016), *Empirical Asset Pricing*.
+This chapter reconstructs the figures and tables in Chapter 7 of @bali2016.
 We use a later snapshot of legacy CRSP (SIZ), the same data format used by the authors.
 See @sec-data-vintages for source update dates.
 The comparisons below separate data and convention differences from the calculations themselves.

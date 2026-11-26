@@ -16,7 +16,7 @@ jupyter: python3
 </style>
 ```
 
-We reconstruct Tables 8.1–8.6 of Bali, Engle, and Murray (2016), [*Empirical Asset Pricing*](https://www.wiley.com/en-us/empirical-asset-pricing-the-cross-section-of-stock-returns-p-9781118095041).
+We reconstruct Tables 8.1–8.6 of @bali2016.
 The sample consists of CRSP common stocks at the end of each month from June 1963 through November 2012.
 We use legacy CRSP daily and monthly stock returns and the corresponding Fama–French factors.
 See @sec-data-vintages for the source vintages.

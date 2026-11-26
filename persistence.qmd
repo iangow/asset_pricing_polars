@@ -4,7 +4,7 @@ jupyter: python3
 
 # Persistence Analysis {#sec-bem-persistence}
 
-Bali, Engle, and Murray (2016), Chapter 4, measure persistence by correlating a stock characteristic with its own future value across stocks.
+In Chapter 4, @bali2016 measure persistence by correlating a stock characteristic with its own future value across stocks.
 We use the December 1988–2012 panel from @sec-summary-statistics, including its signed book-to-market ratio (BM).
 
 {{< include _show-table.qmd >}}
