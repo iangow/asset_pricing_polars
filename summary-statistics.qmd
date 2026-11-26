@@ -29,7 +29,22 @@ The sample covers U.S. common stocks at each December 31 from 1988 through 2012.
 We take the December value of the 12-month daily beta from @sec-bem-beta.
 It uses all available daily excess returns in the calendar year and requires at least 200 matched observations.
 
-{{< include _bem-annual-betas.qmd >}}
+```{python}
+import polars as pl
+
+from eap_pl import load_annual_betas
+
+annual_beta = load_annual_betas()
+```
+
+```{python}
+#| echo: false
+#| output: asis
+
+from inspect import getsource
+
+print(f"```python\n{getsource(load_annual_betas)}```")
+```
 
 For each year, compute the statistics across the stocks with a beta.
 We use the sample standard deviation, bias-adjusted skewness and excess kurtosis, and linearly interpolated percentiles.
@@ -97,16 +112,82 @@ The time-series average hides that change.
 ## Presentation and Interpretation {#sec-summary-characteristics}
 
 []{#summarize-several-characteristics}We also summarize year-end market capitalization in millions of dollars, its natural logarithm (size), book-to-market, and the following calendar year's excess return.
+`build_annual_panel()` assembles these observations using `start_year` and `end_year`, which default to 1988 and 2012.
+
+```{python}
+#| include: false
+
+import ast
+from textwrap import dedent
+
+from eap_pl import build_annual_panel
+
+panel_source = getsource(build_annual_panel)
+panel_body = ast.parse(panel_source).body[0].body
+panel_steps = {
+    statement.targets[0].id: dedent(ast.get_source_segment(panel_source, statement, padded=True))
+    for statement in panel_body
+    if isinstance(statement, ast.Assign) and isinstance(statement.targets[0], ast.Name)
+}
+panel_steps["return"] = dedent(ast.get_source_segment(panel_source, panel_body[-1], padded=True))
+
+def show_panel_code(*steps):
+    code = "\n".join(panel_steps[step] for step in steps)
+    print(f"```python\n{code}\n```")
+```
+
+The December beta observations define the stock-years in the panel.
+The helper uses `permno` and formation year as the join keys.
 @sec-size-replication exports December market capitalization and its log.
 @sec-value-replication exports the ratio of prior-year fiscal book equity to prior December market capitalization.
 We use its signed ratio, consistent with the negative observations in BEM Table 2.3.
 
-We compound available CRSP monthly stock returns within the holding year and subtract the compounded risk-free return.
-This construction uses CRSP's reported monthly returns.
-BEM §1.1 does not spell out how its annual returns handle delistings.
-Formation years run through 2012, but the return series ends in 2012, so the last formation year contributes zero observations to the return count and no return moments.
+```{python}
+#| echo: false
+#| output: asis
 
-{{< include _bem2-characteristics.qmd >}}
+show_panel_code("betas", "keys", "capitalizations", "book_to_market")
+```
+
+For each stock and holding year, the helper compounds the available monthly returns reported by CRSP.
+BEM §1.1 does not spell out how its annual returns handle delistings.
+The helper compounds the monthly risk-free returns separately, requiring 12 observations for the year.
+
+```{python}
+#| echo: false
+#| output: asis
+
+show_panel_code("stock_returns", "risk_free")
+```
+
+Subtract the annual risk-free return from the stock return and express the difference in percentage points.
+Subtracting one from the holding year aligns the return with the characteristics measured the preceding December.
+For example, the return earned in 1989 is joined to the stock's 1988 characteristics.
+
+```{python}
+#| echo: false
+#| output: asis
+
+show_panel_code("next_year")
+```
+
+The left joins keep each stock-year in the beta sample even when a characteristic or return is missing.
+`end_year` is both the last formation year and the last calendar year included in the return calculations.
+In the default sample, this leaves the 2012 formation rows with missing next-year returns.
+The final `.collect()` returns the assembled panel as a Polars `DataFrame`.
+
+```{python}
+#| echo: false
+#| output: asis
+
+show_panel_code("return")
+```
+
+```{python}
+from eap_pl import build_annual_panel
+
+annual_panel = build_annual_panel()
+```
 
 Apply the same summary to each variable separately.
 This keeps stocks with a beta but no book-to-market ratio in the beta row.

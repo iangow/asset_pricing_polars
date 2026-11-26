@@ -8,8 +8,14 @@ In Chapter 3, @bali2016 compare the cross-sectional associations among beta, siz
 We use the 1988–2012 annual panel from @sec-summary-statistics.
 
 {{< include _show-table.qmd >}}
-{{< include _bem-annual-betas.qmd >}}
-{{< include _bem2-characteristics.qmd >}}
+
+```{python}
+import polars as pl
+
+from eap_pl import build_annual_panel
+
+annual_panel = build_annual_panel()
+```
 
 ## Implementation
 
@@ -40,7 +46,7 @@ With ties, give equal values their average rank and compute the Pearson correlat
 This is the calculation used by `pl.corr(method="spearman")`, including when @eq-bem3-spearman applies.
 
 ```{python}
-from _bem_monthly import correlation_matrix, period_correlations
+from eap_pl import correlation_matrix, period_correlations
 
 variables = {"Beta": "Beta", "Size": "Size", "BM": "BM", "excess": "Next-year return"}
 annual = period_correlations(annual_panel, variables, "year").sort("year")

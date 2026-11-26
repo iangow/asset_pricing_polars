@@ -4,6 +4,7 @@ A worked book in Python Polars following *Empirical Asset Pricing: The Cross Sec
 We refer to the authors as BEM.
 The methods chapters use their 1988–2012 annual teaching sample.
 The empirical chapters reconstruct the CRSP sample, estimate market beta, and examine the size effect and value premium using legacy CRSP.
+See the [`eap_pl` function reference](eap_pl/reference/index.html) for the shared Polars helpers.
 Render with your own copies of the WRDS data.
 
 See @sec-data for the inputs and @sec-data-vintages for their source update dates.

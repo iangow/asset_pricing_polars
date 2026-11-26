@@ -118,10 +118,9 @@ Their 0.5% rule uses the 0.5th and 99.5th percentiles.
 In @sec-bem-correlation, both variables are winsorized for Pearson correlations, and Spearman correlations use ranks of the original values.
 In @sec-bem-annual-fm, the regressors are winsorized and the excess-return outcome is used as observed.
 
-The replications here use winsorization to handle extreme values.
-The `clip_tails()` helper in `_bem_monthly.py` calls `.era.winsorize(prob=0.005, quantile_method="linear")` to compute the cutoffs by linear interpolation.
-The `winsorized_corr()` helper applies this rule to each variable after keeping pairs with two finite values.
-In @sec-bem-beta, `.over("month")` applies the helper separately to each month's beta estimates.
+We compute the winsorization cutoffs by linear interpolation with `.era.winsorize(prob=0.005, quantile_method="linear")`.
+The `eap_pl.winsorized_corr()` helper applies this rule to each variable after keeping pairs with two finite values.
+In @sec-bem-beta, `.over("month")` computes cutoffs separately for each month's beta estimates.
 We then fit the Fama–MacBeth regressions with `statspai.fama_macbeth()`.
 
 For examples using `.era.winsorize()` and `.era.truncate()` and a comparison with robust regression, see [Chapter 24 of *Empirical Research in Accounting*](https://iangow.github.io/era_pl_book/extreme-vals.html#sec-leone).

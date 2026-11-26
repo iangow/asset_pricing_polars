@@ -1,129 +1,7 @@
-"""Shared calculations for the book's legacy CRSP portfolio chapters."""
-
-from itertools import combinations
+"""Portfolio sorts and inference for the monthly replications."""
 
 import polars as pl
 import statspai as sp
-
-from era_pl import load_parquet
-
-
-KEYS = ["permno", "month"]
-
-
-def monthly_panel(sizes, first, last):
-    betas = load_parquet("betas", "eap").select(*KEYS, beta="12M")
-    stocks = (
-        load_parquet("msf", "crsp")
-        .select("permno", month=pl.col("date").dt.month_start(), ret="ret")
-        .filter(pl.col("month").is_between(first.dt.offset_by("1mo"), last.dt.offset_by("1mo")))
-    )
-    delists = (
-        load_parquet("msedelist", "crsp")
-        .select("permno", "dlret", "dlstcd", month=pl.col("dlstdt").dt.month_start())
-        .filter(pl.col("month").is_between(first.dt.offset_by("1mo"), last.dt.offset_by("1mo")))
-    )
-    poor_performance = (
-        pl.col("dlstcd").is_in([500, 520, 580, 584]) | pl.col("dlstcd").is_between(551, 574)
-    )
-    returns = (
-        stocks.join(delists, on=KEYS, how="full", coalesce=True, validate="1:1")
-        .select(
-            "permno", holding="month",
-            ret=pl.when(pl.col("dlstcd").is_not_null())
-            .then(pl.coalesce("dlret", pl.when(poor_performance).then(-0.30).otherwise(-1.00)))
-            .otherwise(pl.col("ret")),
-        )
-    )
-    market = (
-        load_parquet("factors_monthly", "ff")
-        .select(
-            holding=pl.col("date").dt.month_start(),
-            market=100 * pl.col("mktrf"), rf=pl.col("rf"),
-        )
-    )
-    return (
-        betas.filter(pl.col("month").is_between(first, last))
-        .join(sizes.lazy(), on=KEYS, how="left", validate="1:1")
-        .with_columns(holding=pl.col("month").dt.offset_by("1mo"))
-        .join(returns, on=["permno", "holding"], how="left", validate="1:1")
-        .join(market, on="holding", how="left", validate="m:1")
-        .with_columns(excess=100 * (pl.col("ret") - pl.col("rf")))
-        .drop("ret", "rf", "holding")
-        .collect()
-    )
-
-
-def cross_section(variable):
-    x = pl.col(variable)
-    return [
-        x.mean().alias("Mean"), x.std().alias("SD"),
-        x.skew(bias=False).alias("Skew"), x.kurtosis(fisher=True, bias=False).alias("Kurt."),
-        x.min().alias("Min"), x.quantile(.05, interpolation="linear").alias("5%"),
-        x.quantile(.25, interpolation="linear").alias("25%"), x.median().alias("Median"),
-        x.quantile(.75, interpolation="linear").alias("75%"),
-        x.quantile(.95, interpolation="linear").alias("95%"), x.max().alias("Max"),
-        x.count().alias("n"),
-    ]
-
-
-def mean_cross_sections(panel, variables):
-    return pl.concat([
-        panel.group_by("month").agg(cross_section(column))
-        .select(pl.lit(label).alias("Measure"), pl.exclude("month").mean())
-        for column, label in variables.items()
-    ]).with_columns(pl.col("n").round().cast(pl.Int64))
-
-
-def clip_tails(x):
-    return x.era.winsorize(prob=0.005, quantile_method="linear")
-
-
-def winsorized_corr(a, b):
-    both = pl.all_horizontal(a.is_finite(), b.is_finite())
-    return pl.corr(clip_tails(a.filter(both)), clip_tails(b.filter(both)))
-
-
-def period_correlations(panel, variables, period):
-    cells = []
-    for a, b in combinations(variables, 2):
-        both = pl.all_horizontal(pl.col(a, b).is_finite())
-        x, y = pl.col(a).filter(both), pl.col(b).filter(both)
-        cells.extend([
-            winsorized_corr(pl.col(a), pl.col(b)).alias(f"Pearson {a}–{b}"),
-            pl.corr(x, y, method="spearman").alias(f"Spearman {a}–{b}"),
-        ])
-    return panel.group_by(period).agg(cells).with_columns(pl.exclude(period).fill_nan(None))
-
-
-def correlation_matrix(averages, variables):
-    return pl.DataFrame({
-        "Measure": list(variables.values()),
-        **{
-            label: [
-                None if i == j else averages[
-                    f"Spearman {a}–{b}" if i < j else f"Pearson {b}–{a}"
-                ]
-                for i, a in enumerate(variables)
-            ]
-            for j, (b, label) in enumerate(variables.items())
-        },
-    })
-
-
-def persistence(panel, variables, lags):
-    sample = panel.select(*KEYS, *variables)
-    rows = []
-    for lag in lags:
-        future = sample.with_columns(month=pl.col("month").dt.offset_by(f"-{lag}mo"))
-        coefficient = (
-            sample.join(future, on=KEYS, suffix="_future", validate="1:1")
-            .group_by("month")
-            .agg(winsorized_corr(pl.col(x), pl.col(f"{x}_future")).alias(x) for x in variables)
-            .select(pl.col(list(variables)).fill_nan(None).mean()).row(0)
-        )
-        rows.append([lag, *[f"{v:.3f}" if v is not None else "" for v in coefficient]])
-    return pl.DataFrame(rows, schema=["Lag (months)", *variables.values()], orient="row")
 
 
 def assign_portfolio(data, variable, bins, group, *, nyse=False, label="portfolio"):
@@ -150,10 +28,34 @@ def portfolio_months(members, groups, metrics=(), *, weight="cap"):
 
 
 def hac(formula, data):
+    """Fit a StatsPAI regression with six Newey–West lags.
+
+    The regression uses the small-sample correction. Supply the rows in
+    time order.
+
+    Args:
+        formula (str): StatsPAI regression formula.
+        data (polars.DataFrame): Regression sample in time order.
+
+    Returns:
+        (statspai.EconometricResults): Fitted coefficients, HAC standard
+            errors, and test statistics.
+    """
     return sp.regress(formula, data=data, robust="hac", hac_lags=6, hac_small=True)
 
 
 def format_fit(fit, term):
+    """Format a coefficient and its t statistic for a book table.
+
+    Args:
+        fit (statspai.EconometricResults): Fit exposing `params` and `tvalues`
+            by term.
+        term (str): Coefficient name in the fit.
+
+    Returns:
+        (str): Coefficient and parenthesized t statistic rounded to two decimal
+            places, separated by an HTML line break.
+    """
     return f"{fit.params[term]:.2f}<br>({fit.tvalues[term]:.2f})"
 
 
@@ -172,6 +74,26 @@ def spread(monthly, high, low, key, value):
 
 
 def univariate_panel(panel, variable, nyse, characteristics, *, weight="cap"):
+    """Summarize monthly characteristic deciles and the high-minus-low spread.
+
+    The sample must populate all ten deciles for the table.
+
+    Args:
+        panel (polars.DataFrame): Stock-month data containing `month`,
+            next-month `excess` and `market` in percentage points, the sort
+            variable and weight, and `exchcd` for NYSE breakpoints.
+        variable (str): Characteristic used for the sort.
+        nyse (bool): Compute cutoffs from NYSE stocks when true and all
+            stocks in the sample otherwise.
+        characteristics (Iterable[polars.Expr]): Additional portfolio
+            aggregates to average across months.
+        weight (str): Column containing the formation-month value weights.
+
+    Returns:
+        (polars.DataFrame): A formatted table of characteristics, equal- and
+            value-weighted excess returns, and CAPM alphas, with HAC t
+            statistics for returns and alphas.
+    """
     members = assign_portfolio(
         panel.filter(pl.col(variable).is_finite()), variable, 10, "month", nyse=nyse,
     )
@@ -192,6 +114,24 @@ def univariate_panel(panel, variable, nyse, characteristics, *, weight="cap"):
 
 
 def bivariate_months(panel, control, variable, *, nyse, dependent):
+    """Form monthly quintile portfolios on a control and a target.
+
+    Args:
+        panel (polars.DataFrame): Stock-month data containing `month`,
+            next-month `excess` and `market` in percentage points, `cap`,
+            the sort variables, and `exchcd` for NYSE breakpoints.
+        control (str): Characteristic used to form the control groups.
+        variable (str): Target characteristic.
+        nyse (bool): Compute cutoffs from NYSE stocks when true and all
+            stocks in the sample otherwise.
+        dependent (bool): Set target cutoffs within each control quintile
+            when true and within the entire monthly sample otherwise.
+
+    Returns:
+        (polars.DataFrame): One row per month and occupied control-target
+            cell, with equal-weighted (`EW`) and value-weighted (`VW`)
+            returns and the market excess return (`market`).
+    """
     members = assign_portfolio(panel, control, 5, "month", nyse=nyse, label="control")
     groups = ["month", "control"] if dependent else ["month"]
     members = assign_portfolio(members, variable, 5, groups, nyse=nyse, label="target")
@@ -199,6 +139,22 @@ def bivariate_months(panel, control, variable, *, nyse, dependent):
 
 
 def bivariate_panel(monthly, value, *, independent, spread_only=False):
+    """Report means and quintile spreads from a monthly two-way sort.
+
+    Args:
+        monthly (polars.DataFrame): Monthly cell returns from
+            `bivariate_months()`.
+        value (str): Return column, usually `EW` or `VW`.
+        independent (bool): Include averages and spreads in both sort
+            dimensions for independently sorted portfolios.
+        spread_only (bool): Return two abbreviated tables covering target
+            portfolios averaged across controls and target spreads by control.
+
+    Returns:
+        (polars.DataFrame or tuple[polars.DataFrame, polars.DataFrame]):
+            A formatted panel of means and spreads, or two abbreviated
+            panels when `spread_only` is true.
+    """
     # Group 0 represents an equally weighted average of the five cell returns.
     def average(over, index):
         return (
@@ -260,8 +216,27 @@ def bivariate_panel(monthly, value, *, independent, spread_only=False):
 
 
 def fama_macbeth_table(panel, specifications, labels):
+    """Build a table of monthly Fama–MacBeth regressions.
+
+    Winsorizes the regressors within formation months at the 0.5th and
+    99.5th percentiles, then uses six Newey–West lags for inference on
+    average coefficients.
+
+    Args:
+        panel (polars.DataFrame): Data containing `month`, next-month
+            `excess` in percentage points, and the regressors.
+        specifications (Iterable[list[str]]): Regressor columns for each
+            model.
+        labels (dict[str, str]): Regressor columns mapped to display labels
+            in table order.
+
+    Returns:
+        (polars.DataFrame): Formatted coefficients and t statistics,
+            average adjusted R², and mean monthly sample size by model.
+    """
     clipped = panel.with_columns(
-        clip_tails(pl.col(term)).over("month").alias(term) for term in labels
+        pl.col(term).era.winsorize(prob=0.005, quantile_method="linear").over("month").alias(term)
+        for term in labels
     )
     result = {"Term": [*labels.values(), "Intercept", "Adjusted R²", "n"]}
     for i, terms in enumerate(specifications, 1):
@@ -274,40 +249,3 @@ def fama_macbeth_table(panel, specifications, labels):
             format_fit(fit, term) if term in terms else "" for term in labels
         ] + [format_fit(fit, "Intercept"), f"{adjust.mean():.2f}", f"{periods['nobs'].mean():.0f}"]
     return pl.DataFrame(result)
-
-
-def plot_cumulative_returns(returns, y_label="Cumulative return"):
-    from plotnine_polars import aes
-
-    labels = {"compounded": "Compounded", "cumulative_log": "Cumulative log"}
-    return (
-        returns.select("date", *labels).rename(labels)
-        .unpivot(index="date", variable_name="series", value_name="cumulative_return")
-        .with_columns(pl.col("series").cast(pl.Enum(list(labels.values()))))
-        .ggplot(aes(x="date", y="cumulative_return", color="series", linetype="series"))
-        .geom_line()
-        .facet_wrap("series", ncol=1, scales="free_y")
-        .scale_x_date(date_breaks="10 years", date_labels="%Y")
-        .scale_y_continuous(labels=lambda values: [f"{value:,.0%}" for value in values])
-        .scale_color_manual(values=["#15627c", "#9b552a"], guide=None)
-        .scale_linetype_manual(values=["solid", "dashed"], guide=None)
-        .labs(x="Month", y=y_label)
-        .theme_minimal()
-        .add_theme(figure_size=(8.2, 5))
-    )
-
-
-def plot_factor(factor):
-    returns = (
-        load_parquet("factors_monthly", "ff")
-        .filter(pl.col("date").is_between(pl.date(1926, 7, 1), pl.date(2012, 12, 31)))
-        .select("date", factor)
-        .sort("date")
-        .with_columns(
-            compounded=(1 + pl.col(factor)).cum_prod() - 1,
-            cumulative_log=pl.col(factor).log1p().cum_sum(),
-        )
-        .collect()
-    )
-    assert returns.height == 1038 and returns[factor].null_count() == 0
-    return plot_cumulative_returns(returns)

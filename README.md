@@ -66,9 +66,26 @@ The 2000–2002 size check matched all 215,991 stock-month assignments,
 all 216 portfolio-months per weighting method, and all 12 three-factor
 alphas and HAC t-statistics.
 
+## Package and help site
+
+`uv sync` installs [`eap_pl`](packages/eap_pl/README.md) from this checkout.
+The package has its own build metadata. To build its wheel and source
+distribution, run `uv build packages/eap_pl`.
+
+The help site uses Quarto and quartodoc to generate the function reference
+from the package docstrings. After rendering the book, build and copy the
+help site into the book's GitHub Pages output.
+
+```sh
+sh scripts/build-package-docs.sh
+```
+
+Open `_book/eap_pl/index.html` to preview the help site locally.
+
 ## Publish
 
-Render locally and inspect the HTML in `_book/`. Push the source and run
+Render the book, build the help site, and inspect the HTML in `_book/`.
+Push the source and run
 `quarto publish gh-pages --no-render --no-prompt --no-browser`.
-GitHub Pages serves the rendered output. Keep licensed inputs, generated
-Parquet, and `.env` off both public branches.
+GitHub Pages serves the help site under `eap_pl/` alongside the book.
+Keep licensed inputs, generated Parquet, and `.env` off both public branches.

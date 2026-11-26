@@ -9,8 +9,14 @@ The first step fits a cross-sectional regression in each formation year.
 The second averages the coefficients across years and estimates their standard errors from the time series of annual coefficients.
 
 {{< include _show-table.qmd >}}
-{{< include _bem-annual-betas.qmd >}}
-{{< include _bem2-characteristics.qmd >}}
+
+```{python}
+import polars as pl
+
+from eap_pl import build_annual_panel
+
+annual_panel = build_annual_panel()
+```
 
 ## Implementation
 
@@ -23,14 +29,16 @@ Use six Newey–West lags when estimating standard errors for the averages.
 
 ```{python}
 import statspai as sp
-from _bem_monthly import clip_tails
 
 specifications = [["Beta"], ["Size"], ["BM"], ["Beta", "Size", "BM"]]
 fits = []
 for terms in specifications:
     sample = (
         annual_panel.select("year", "excess", *terms).drop_nulls()
-        .with_columns(clip_tails(pl.col(x)).over("year").alias(x) for x in terms)
+        .with_columns(
+            pl.col(x).era.winsorize(prob=0.005, quantile_method="linear").over("year").alias(x)
+            for x in terms
+        )
     )
     fits.append(sp.fama_macbeth("excess ~ " + " + ".join(terms),
                                data=sample, time="year", lags=6))
@@ -77,7 +85,7 @@ show_table(pl.DataFrame(rows, schema=["Model", "Term", "Average", "SE", "t", "p"
 #| tbl-cap: Compact Fama–MacBeth regression table (BEM Table 6.3)
 #| echo: false
 
-from _bem_monthly import format_fit
+from eap_pl import format_fit
 
 terms = ["Beta", "Size", "BM", "Intercept"]
 columns = {"Term": [*terms, "R²", "Adjusted R²", "n"]}

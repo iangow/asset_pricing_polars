@@ -48,7 +48,37 @@ Use CRSP–Compustat links valid on the fiscal year-end.
 When a direct link is unavailable, try an unambiguous historical CUSIP match.
 We use the legacy monthly names file for this fallback.
 
-{{< include _bem10-links.qmd >}}
+```{python}
+#| echo: false
+
+annual_keys = ["permno", "year"]
+links = (
+    load_parquet("ccmxpf_lnkused", "crsp")
+    .filter(pl.col("usedflag") == 1, pl.col("ulinktype").is_in(["LU", "LC"]), pl.col("upermno") > 0)
+    .select(gvkey="ugvkey", permno=pl.col("upermno").cast(pl.Int32),
+            start="ulinkdt", end="ulinkenddt")
+)
+linked_book = (
+    funda.join(links, on="gvkey")
+    .filter(pl.col("datadate") >= pl.col("start"),
+            (pl.col("datadate") <= pl.col("end")) | pl.col("end").is_null())
+    .select("gvkey", *annual_keys, "be").unique()
+)
+cusips = load_parquet("msenames", "crsp").select("permno", "namedt", "nameendt", cusip="ncusip")
+cusip_book = (
+    funda.join(linked_book.select("gvkey", "year"), on=["gvkey", "year"], how="anti")
+    .filter(pl.col("cusip").str.len_chars() == 8)
+    .join(cusips, on="cusip")
+    .filter(pl.col("datadate").is_between("namedt", "nameendt"))
+    .select("gvkey", *annual_keys, "be").unique()
+    .filter(pl.len().over("gvkey", "year") == 1)
+)
+book = (
+    pl.concat([linked_book, cusip_book])
+    .filter(pl.len().over(*annual_keys) == 1, pl.col("be").is_finite())
+    .select(*annual_keys, "be")
+)
+```
 
 Divide book equity by the nominal December capitalization for the same calendar year, from @sec-size-replication.
 Make that ratio available at the end of the following June and carry it through the next May.
@@ -84,10 +114,12 @@ book_to_market = (
 For this chapter, use positive book equity so the logarithm is defined.
 The optional `eap.book_to_market` export keeps the signed ratio as well for the annual summaries in @sec-summary-characteristics.
 
-{{< include _write-eap.qmd >}}
-
 ```{python}
 #| include: false
+
+import os
+
+from eap_pl import write_eap_table
 
 assert book_to_market.select(pl.struct(keys).n_unique()).item() == book_to_market.height
 if os.environ.get("EAP_WRITE_BOOK_TO_MARKET") == "1":
@@ -107,7 +139,7 @@ The common deflator leaves the book-to-market ratio unchanged.
 {{< include _show-table.qmd >}}
 
 ```{python}
-from _bem_monthly import mean_cross_sections, monthly_panel
+from eap_pl import mean_cross_sections, monthly_panel
 
 panel = monthly_panel(sizes, first, last).join(book_to_market, on=keys, how="left", validate="1:1")
 cpi = pl.read_csv("data/cpi-aucns.csv", try_parse_dates=True).rename(
@@ -146,7 +178,7 @@ The Spearman correlations use the original ranks.
 Since the logarithm preserves order for positive ratios, BM and ln BM have a Spearman correlation of one and the same rank correlation with each other variable.
 
 ```{python}
-from _bem_monthly import correlation_matrix, period_correlations, persistence
+from eap_pl import correlation_matrix, period_correlations, persistence
 
 measures = {"bm": "BM", "log_bm": "ln BM", "beta": "Beta", "log_cap": "Size"}
 corr = period_correlations(value_panel, measures, "month").select(pl.exclude("month").mean())
@@ -183,7 +215,7 @@ Value weights use current market capitalization at formation.
 Returns and CAPM alphas are percentages per month, and $t$-statistics use six Newey–West lags.
 
 ```{python}
-from _bem_monthly import bivariate_months, bivariate_panel, fama_macbeth_table, univariate_panel
+from eap_pl import bivariate_months, bivariate_panel, fama_macbeth_table, univariate_panel
 
 characteristics = [
     pl.col("bm").mean().alias("BM"), pl.col("log_bm").mean().alias("ln BM"),
@@ -293,7 +325,7 @@ We use the published monthly Fama–French HML series from July 1926 through Dec
 #| label: fig-bem10-hml
 #| fig-cap: Cumulative returns on the Fama–French HML factor (BEM Figure 10.1)
 #| echo: false
-from _bem_monthly import plot_factor
+from eap_pl import plot_factor
 
 plot_factor("hml")
 ```

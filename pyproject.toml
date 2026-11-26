@@ -4,6 +4,7 @@ version = "0.1.0"
 requires-python = ">=3.11"
 dependencies = [
   "db2pq==0.2.8",
+  "eap-pl",
   "era-py[polars]==0.0.38",
   "jupyter",
   "plotnine-polars>=0.2.1",
@@ -14,6 +15,7 @@ dependencies = [
 ]
 
 [dependency-groups]
+docs = ["quartodoc>=0.11,<0.12", "griffe<2"]
 parity = [
   "pandas", "numpy", "scipy", "linearmodels",
   "rich", "tqdm", "deprecated", "openpyxl", "seaborn",
@@ -21,3 +23,6 @@ parity = [
 
 [tool.uv]
 package = false
+
+[tool.uv.sources]
+eap-pl = { path = "packages/eap_pl", editable = true }

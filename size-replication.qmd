@@ -117,10 +117,12 @@ sizes = all_sizes.filter(
 The optional export, `eap.sizes`, includes the earlier December market equity needed for book-to-market and December 2012 for the annual teaching sample.
 It records common-stock eligibility separately so the prior December price remains available when a stock's share code changes.
 
-{{< include _write-eap.qmd >}}
-
 ```{python}
 #| include: false
+
+import os
+
+from eap_pl import write_eap_table
 
 assert sizes["month"].n_unique() == 594
 assert all_sizes.select(pl.struct("permno", "month").n_unique()).item() == all_sizes.height
@@ -135,7 +137,7 @@ The mean of the monthly medians describes the middle stock in a typical month.
 It is not a median calculated once on the pooled stock-month data.
 
 ```{python}
-from _bem_monthly import mean_cross_sections
+from eap_pl import mean_cross_sections
 
 stats = mean_cross_sections(sizes, {
     "cap": "MktCap", "cap_real": "MktCap CPI",
@@ -199,7 +201,7 @@ We take the mean of the monthly cross-sectional correlations.
 Below the diagonal are Pearson correlations on winsorized observations, and above it are Spearman correlations on the original ranks.
 
 ```{python}
-from _bem_monthly import correlation_matrix, monthly_panel, period_correlations, persistence
+from eap_pl import correlation_matrix, monthly_panel, period_correlations, persistence
 
 panel = monthly_panel(sizes, first, last)
 measures = {"cap": "MktCap", "log_cap": "Size", "cap_june": "MktCap FF",
@@ -238,7 +240,7 @@ Returns and CAPM alphas are in percent per month.
 The $t$-statistics use six Newey–West lags.
 
 ```{python}
-from _bem_monthly import bivariate_months, bivariate_panel, fama_macbeth_table, univariate_panel
+from eap_pl import bivariate_months, bivariate_panel, fama_macbeth_table, univariate_panel
 
 def size_deciles(nyse):
     return pl.concat([
@@ -352,7 +354,7 @@ For the historical factor series we use the monthly Fama–French SMB from July 
 #| label: fig-bem9-smb
 #| fig-cap: Cumulative returns on the Fama–French SMB factor (BEM Figure 9.2)
 #| echo: false
-from _bem_monthly import plot_factor
+from eap_pl import plot_factor
 
 plot_factor("smb")
 ```

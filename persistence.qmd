@@ -8,8 +8,14 @@ In Chapter 4, @bali2016 measure persistence by correlating a stock characteristi
 We use the December 1988–2012 panel from @sec-summary-statistics, including its signed book-to-market ratio (BM).
 
 {{< include _show-table.qmd >}}
-{{< include _bem-annual-betas.qmd >}}
-{{< include _bem2-characteristics.qmd >}}
+
+```{python}
+import polars as pl
+
+from eap_pl import build_annual_panel
+
+annual_panel = build_annual_panel()
+```
 
 ## Implementation
 
@@ -32,7 +38,7 @@ Shift the future year's join key back by the lag so that each stock's observatio
 Use the same winsorized Pearson correlation as in @sec-bem-correlation.
 
 ```{python}
-from _bem_monthly import winsorized_corr
+from eap_pl import winsorized_corr
 
 measures = ["Beta", "Size", "BM"]
 lags = range(1, 6)

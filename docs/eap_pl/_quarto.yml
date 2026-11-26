@@ -1,0 +1,71 @@
+project:
+  type: website
+  output-dir: _site
+  render:
+    - index.qmd
+    - reference/*.qmd
+
+metadata-files:
+  - reference/_sidebar.yml
+
+website:
+  title: eap_pl
+  site-url: https://iangow.github.io/asset_pricing_polars/eap_pl/
+  description: Function reference for Empirical Asset Pricing with Polars
+  navbar:
+    left:
+      - href: index.qmd
+        text: Overview
+      - href: reference/index.qmd
+        text: Reference
+    right:
+      - text: Book
+        href: https://iangow.github.io/asset_pricing_polars/
+      - icon: github
+        href: https://github.com/iangow/asset_pricing_polars/tree/main/packages/eap_pl
+
+format:
+  html:
+    theme: cosmo
+    code-copy: true
+    toc: true
+    css: reference/_styles-quartodoc.css
+
+quartodoc:
+  style: pkgdown
+  package: eap_pl
+  source_dir: ../../packages/eap_pl/src
+  parser: google
+  dir: reference
+  title: Function reference
+  sidebar:
+    file: reference/_sidebar.yml
+  css: reference/_styles-quartodoc.css
+  options:
+    signature_name: full
+  sections:
+    - title: Data and Parquet
+      contents:
+        - load_annual_betas
+        - build_annual_panel
+        - monthly_panel
+        - write_eap_table
+    - title: Cross-sectional statistics
+      contents:
+        - mean_cross_sections
+        - period_correlations
+        - correlation_matrix
+        - winsorized_corr
+        - persistence
+    - title: Portfolios and inference
+      contents:
+        - univariate_panel
+        - bivariate_months
+        - bivariate_panel
+        - fama_macbeth_table
+        - hac
+        - format_fit
+    - title: Plots
+      contents:
+        - plot_cumulative_returns
+        - plot_factor

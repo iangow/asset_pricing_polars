@@ -1,0 +1,38 @@
+---
+title: eap_pl
+---
+
+`eap_pl` provides the shared Polars calculations used in [*Empirical Asset Pricing with Polars*](https://iangow.github.io/asset_pricing_polars/).
+The [function reference](reference/index.qmd) lists the expected columns, return units, and output for each helper.
+
+## Installation
+
+From the book checkout, `uv sync` installs the local package in the book environment.
+To install just the package into another environment, run this command from the checkout with that environment's Python.
+
+```sh
+python -m pip install ./packages/eap_pl
+```
+
+## Example
+
+Compute cross-sectional correlations within each month.
+Pearson uses the 0.5th and 99.5th percentile cutoffs, and Spearman uses ranks of the original values.
+
+```python
+from datetime import date
+
+import polars as pl
+
+from eap_pl import period_correlations
+
+stocks = pl.DataFrame({
+    "month": [date(2012, 1, 1)] * 4 + [date(2012, 2, 1)] * 4,
+    "beta": [0.6, 0.8, 1.1, 1.4, 0.5, 0.9, 1.0, 1.3],
+    "size": [20.0, 55.0, 40.0, 120.0, 100.0, 50.0, 80.0, 30.0],
+})
+period_correlations(stocks, ["beta", "size"], "month").sort("month")
+```
+
+The data-loading helpers read the local Parquet repository configured in `DATA_DIR`.
+See [Preliminaries in the book](https://iangow.github.io/asset_pricing_polars/data.html) for the required WRDS tables and derived files.

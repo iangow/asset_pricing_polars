@@ -63,9 +63,620 @@ A lag can precede the first stock-return date in the window.
 We omit response dates whose market lead falls after formation and apply the minimum to the remaining complete observations.
 This keeps all beta inputs observable at formation.
 
-{{< include _bem8-estimation.qmd >}}
+```{python}
+import polars as pl
 
-{{< include _bem8-tables.qmd >}}
+from era_pl import load_parquet
+
+first = pl.date(1963, 6, 1)
+last = pl.date(2012, 11, 1)
+last_estimate = last.dt.offset_by("1mo")
+keys = ["permno", "month"]
+
+names = load_parquet("msenames", "crsp").filter(pl.col("shrcd").is_in([10, 11]))
+universe = (
+    names
+    .filter(pl.col("namedt") <= last_estimate.dt.month_end(), pl.col("nameendt") >= first)
+    .with_columns(month=pl.date_ranges(
+        pl.max_horizontal(pl.col("namedt").dt.month_start(), first),
+        pl.min_horizontal(pl.col("nameendt").dt.month_start(), last_estimate),
+        interval="1mo",
+    ))
+    .explode("month")
+    .filter(pl.col("month").dt.month_end().is_between("namedt", "nameendt"))
+    .select(keys)
+    .unique()
+    .collect()
+)
+```
+
+We screen for common shares at formation using historical share codes 10 and 11.
+A stock can contribute its earlier returns to the estimation window even if its historical share code changed.
+We use CRSP's reported returns for estimation and apply the delisting convention in @sec-bem-returns to the next-month returns used to evaluate the beta estimates.
+
+```{python}
+monthly_stock = (
+    load_parquet("msf", "crsp")
+    .filter(pl.col("date").is_between(
+        first.dt.offset_by("-59mo"), last_estimate.dt.month_end()
+    ))
+    .select(
+        "permno",
+        month=pl.col("date").dt.month_start(),
+        ret=pl.col("ret").cast(pl.Float64),
+        cap=pl.when((pl.col("altprc") != 0) & (pl.col("shrout") > 0))
+        .then(pl.col("altprc").abs() * pl.col("shrout")),
+    )
+)
+monthly_market = load_parquet("factors_monthly", "ff").select(
+    pl.col("date").dt.month_start().alias("month"), "mktrf", "rf",
+)
+monthly_excess = (
+    monthly_stock.join(monthly_market, on="month", validate="m:1")
+    .select(*keys, "mktrf", retrf=pl.col("ret") - pl.col("rf"))
+    .filter(pl.all_horizontal(pl.col("retrf", "mktrf").is_finite()))
+)
+
+def beta_slope(stock, market):
+    return pl.cov(stock, market) / pl.col(market).var()
+```
+
+For monthly returns, we can apply the covariance-over-variance formula directly.
+We include the formation dates in the rolling index so a window is evaluated even if the current month's return is missing.
+The window is open at its left endpoint and includes the formation month.
+
+```{python}
+monthly_windows = {"1Y": (12, 10), "2Y": (24, 20), "3Y": (36, 24), "5Y": (60, 24)}
+daily_windows = {"1M": (1, 15), "3M": (3, 50), "6M": (6, 100),
+                 "12M": (12, 200), "24M": (24, 450)}
+
+monthly_returns = (
+    universe.lazy()
+    .join(monthly_excess, on=keys, how="full", coalesce=True, validate="1:1")
+    .sort(keys)
+    .collect()
+)
+
+def monthly_beta(label, months, minimum):
+    return (
+        monthly_returns
+        .rolling("month", period=f"{months}mo", group_by="permno")
+        .agg(
+            beta_slope("retrf", "mktrf").alias(label),
+            pl.col("retrf").count().alias("n"),
+        )
+        .select(
+            *keys,
+            pl.when((pl.col("n") >= minimum) & pl.col(label).is_finite())
+            .then(pl.col(label)),
+        )
+    )
+```
+
+For daily returns, each trading day enters many windows.
+We sum the regression inputs once per stock and month, then roll those sums across months.
+For example, the slope uses $\sum xy-(\sum x)(\sum y)/n$ divided by $\sum x^2-(\sum x)^2/n$.
+The adjusted regressions use the same idea with cross-products between market returns at different offsets.
+
+```{python}
+#| echo: false
+
+from itertools import combinations_with_replacement
+
+import numpy as np
+
+market_offsets = {k: f"mkt_{k + 5}" for k in range(-5, 6)}
+dimson_predictors = list(market_offsets.values())
+sw_predictors = [market_offsets[k] for k in [-1, 0, 1]]
+daily_factors = (
+    load_parquet("factors_daily", "ff")
+    .select("date", "mktrf", "rf")
+    .sort("date")
+    .with_columns(pl.col("mktrf").shift(-k).alias(name) for k, name in market_offsets.items())
+    .with_columns(month=pl.col("date").dt.month_start())
+    .with_columns(days_left=pl.len().over("month") - pl.col("date").cum_count().over("month"))
+    .collect()
+)
+daily_excess = (
+    load_parquet("dsf", "crsp")
+    .filter(pl.col("date").is_between(first.dt.offset_by("-23mo"), last_estimate.dt.month_end()))
+    .select("permno", "date", "ret")
+    .join(daily_factors.lazy(), on="date", validate="m:1")
+    .with_columns(retrf=pl.col("ret") - pl.col("rf"))
+    .filter(pl.all_horizontal(pl.col("retrf", *dimson_predictors).is_finite()))
+    .select(*keys, "retrf", "days_left", *dimson_predictors)
+)
+
+def product_name(left, right):
+    return f"{left}_x_{right}"
+
+def monthly_moments(returns, predictors, *, joint=False):
+    pairs = [(x, "retrf") for x in predictors]
+    pairs += list(combinations_with_replacement(predictors, 2)) if joint else [(x, x) for x in predictors]
+    return returns.group_by(keys).agg(
+        pl.len().cast(pl.Int64).alias("n"),
+        pl.col("retrf", *predictors).sum(),
+        *((pl.col(a) * pl.col(b)).sum().alias(product_name(a, b)) for a, b in pairs),
+    )
+
+def roll_moments(monthly, months):
+    return (
+        monthly.rolling("month", period=f"{months}mo", group_by="permno")
+        .agg(pl.exclude(keys).sum())
+    )
+
+def add_anchors(monthly, anchors):
+    return (
+        monthly.join(anchors, on=keys, how="full", coalesce=True, validate="1:1")
+        .sort(keys)
+    )
+
+def daily_slope(market):
+    n = pl.col("n")
+    x = pl.col(market)
+    numerator = pl.col(product_name(market, "retrf")) - x * pl.col("retrf") / n
+    denominator = pl.col(product_name(market, market)) - x.pow(2) / n
+    return pl.when(denominator > 0).then(numerator / denominator)
+
+def adjusted_window(returns, anchors, predictors, lead, *, joint=False):
+    monthly = monthly_moments(returns, predictors, joint=joint)
+    unavailable = monthly_moments(
+        returns.filter(pl.col("days_left") < lead), predictors, joint=joint,
+    )
+    windows = roll_moments(add_anchors(monthly, anchors), 12)
+    return (
+        anchors.join(windows, on=keys, validate="1:1")
+        .join(unavailable, on=keys, how="left", validate="1:1", suffix="_unavailable")
+        .select(*keys, *(
+            (pl.col(col) - pl.col(f"{col}_unavailable").fill_null(0)).alias(col)
+            for col in monthly.columns if col not in keys
+        ))
+        .filter(pl.col("n") >= 200)
+    )
+
+formation_months = universe.select("month").unique().with_columns(
+    start=pl.col("month").dt.offset_by("-11mo"),
+    end=pl.col("month").dt.month_end(),
+)
+market_rho = (
+    daily_factors.select("date", "mktrf", lag=sw_predictors[0], lag_date=pl.col("date").shift(1))
+    .join_where(
+        formation_months,
+        pl.col("lag_date") >= pl.col("start"),
+        pl.col("date") <= pl.col("end"),
+    )
+    .group_by("month")
+    .agg(rho=pl.corr("mktrf", "lag"))
+)
+
+def dimson_beta(windows):
+    # Center X'X and X'y to fit the slopes of a regression with an intercept.
+    predictors = dimson_predictors
+    n = windows["n"].to_numpy()
+    x = windows.select(predictors).to_numpy()
+    y = windows["retrf"].to_numpy()
+    xy = windows.select(product_name(col, "retrf") for col in predictors).to_numpy()
+    row, col = np.triu_indices(len(predictors))
+    xx = np.empty((windows.height, len(predictors), len(predictors)))
+    upper = windows.select(
+        product_name(a, b) for a, b in combinations_with_replacement(predictors, 2)
+    ).to_numpy()
+    xx[:, row, col] = upper
+    xx[:, col, row] = upper
+
+    gram = xx - x[:, :, None] * x[:, None, :] / n[:, None, None]
+    rhs = xy - x * (y / n)[:, None]
+    coefficients = np.linalg.solve(gram, rhs[:, :, None])[:, :, 0]
+    return windows.select(*keys).with_columns(pl.Series("D", coefficients.sum(axis=1)))
+
+def daily_betas(anchors):
+    low, high = anchors["permno"].min(), anchors["permno"].max()
+    returns = daily_excess.filter(pl.col("permno").is_between(low, high)).collect()
+    monthly = add_anchors(monthly_moments(returns, [market_offsets[0]]), anchors)
+    result = anchors
+    for label, (months, minimum) in daily_windows.items():
+        estimates = roll_moments(monthly, months).select(
+            *keys, pl.when(pl.col("n") >= minimum)
+            .then(daily_slope(market_offsets[0])).alias(label),
+        )
+        result = result.join(estimates, on=keys, how="left", validate="1:1")
+
+    sw = (
+        adjusted_window(returns, anchors, sw_predictors, 1)
+        .join(market_rho, on="month", validate="m:1")
+        .select(*keys, SW=pl.sum_horizontal(
+            *(daily_slope(x) for x in sw_predictors), ignore_nulls=False,
+        ) / (1 + 2 * pl.col("rho")))
+    )
+    dimson = dimson_beta(adjusted_window(returns, anchors, dimson_predictors, 5, joint=True))
+    return result.join(sw, on=keys, how="left", validate="1:1").join(
+        dimson, on=keys, how="left", validate="1:1",
+    )
+```
+
+```{python}
+#| echo: false
+
+# Batch by security to bound the memory needed for the daily cross-products.
+permnos = universe["permno"].unique().sort().to_list()
+batches = [permnos[start:start + 1000] for start in range(0, len(permnos), 1000)]
+daily = pl.concat([
+    daily_betas(universe.filter(pl.col("permno").is_between(batch[0], batch[-1])))
+    for batch in batches
+])
+
+betas = daily
+for label, (months, minimum) in monthly_windows.items():
+    betas = betas.join(monthly_beta(label, months, minimum), on=keys, how="left", validate="1:1")
+
+beta_labels = [*daily_windows, *monthly_windows, "SW", "D"]
+window_months = {label: months for label, (months, _) in (daily_windows | monthly_windows).items()}
+window_months.update(SW=12, D=12)
+```
+
+The tables in this chapter end with November 2012 formation, followed by December 2012 holding returns.
+We also estimate betas as of December 2012 for the last year of the annual summary in @sec-summary-statistics.
+The optional export saves all eleven estimates per stock-month to the local `DATA_DIR/eap/betas.parquet` file.
+
+```{python}
+#| include: false
+
+import os
+
+from eap_pl import write_eap_table
+
+if os.environ.get("EAP_WRITE_BETAS") == "1":
+    write_eap_table(betas.select(*keys, *beta_labels), "betas")
+
+betas = betas.filter(pl.col("month") <= last)
+universe = universe.filter(pl.col("month") <= last)
+```
+
+{{< include _show-table.qmd >}}
+
+```{python}
+#| include: false
+
+assert betas.height == universe.height
+assert betas["month"].n_unique() == 594
+assert all(betas.select(pl.col(beta_labels).is_finite().drop_nulls().all()).row(0))
+```
+
+## Summary Statistics {#compare-the-beta-estimates}
+
+@tbl-bem8-summary averages monthly cross-sectional statistics.
+The count is the average number of stocks with an available estimate in a month.
+For example, the dispersion of the one-month daily beta reflects both differences in stocks' exposures and estimation noise from short return histories.
+We use sample standard deviations, bias-adjusted skewness and excess kurtosis, and linearly interpolated quantiles.
+
+```{python}
+beta_long = betas.unpivot(
+    on=beta_labels, index=keys, variable_name="measure", value_name="beta",
+)
+b = pl.col("beta")
+summary = (
+    beta_long.group_by("measure", "month")
+    .agg(
+        mean=b.mean(), sd=b.std(), skew=b.skew(bias=False),
+        kurt=b.kurtosis(fisher=True, bias=False), min=b.min(),
+        p05=b.quantile(.05, interpolation="linear"),
+        p25=b.quantile(.25, interpolation="linear"), median=b.median(),
+        p75=b.quantile(.75, interpolation="linear"),
+        p95=b.quantile(.95, interpolation="linear"), max=b.max(), n=b.count(),
+    )
+    .group_by("measure")
+    .agg(pl.exclude("measure", "month").mean())
+)
+```
+
+```{python}
+#| label: tbl-bem8-summary
+#| tbl-cap: Cross-sectional summary statistics for market beta (BEM Table 8.1)
+#| echo: false
+
+beta_order = pl.DataFrame({"measure": beta_labels})
+show_table(
+    beta_order.join(summary, on="measure", maintain_order="left")
+    .with_columns(pl.col("n").round().cast(pl.Int64))
+    .rename({"measure": "Beta", "mean": "Mean", "sd": "SD", "skew": "Skew",
+             "kurt": "Kurt.", "min": "Min", "p05": "5%", "p25": "25%",
+             "median": "Median", "p75": "75%", "p95": "95%", "max": "Max"})
+)
+```
+
+The mean and standard deviation of the 12-month daily beta are 0.78 and 0.61, as in BEM.
+The one-month daily estimate is available for 4,759 stocks in the average month, compared with 4,742 in the book.
+Our Dimson estimate is available for 4,431 stocks, compared with 4,440.
+In our data the five-day lead cutoff reduces coverage by eight stocks per month relative to the 12-month daily beta.
+
+## Correlations
+
+@tbl-bem8-correlations reports the mean of the monthly correlations.
+For each pair, we use stocks for which both estimates are available.
+Winsorize each beta within month at the 0.5th and 99.5th percentiles for Pearson correlations below the diagonal.
+Use the original values for Spearman rank correlations above the diagonal.
+
+```{python}
+clipped = betas.with_columns(
+    pl.col(beta_labels).era.winsorize(prob=0.005, quantile_method="linear").over("month")
+)
+
+def mean_correlations(panel, method):
+    return (
+        panel.group_by("month")
+        .agg(
+            pl.corr(a, b, method=method).alias(f"{a}:{b}")
+            for i, a in enumerate(beta_labels) for b in beta_labels[i + 1:]
+        )
+        .select(pl.exclude("month").fill_nan(None).mean())
+        .row(0, named=True)
+    )
+
+pearson = mean_correlations(clipped, "pearson")
+spearman = mean_correlations(betas, "spearman")
+```
+
+```{python}
+#| label: tbl-bem8-correlations
+#| tbl-cap: Monthly Pearson (below diagonal) and Spearman (above diagonal) correlations (BEM Table 8.2)
+#| echo: false
+
+correlations = [
+    [a, *[
+        spearman[f"{a}:{b}"] if i < j else pearson.get(f"{b}:{a}")
+        for j, b in enumerate(beta_labels)
+    ]]
+    for i, a in enumerate(beta_labels)
+]
+show_table(pl.DataFrame(correlations, schema=["Beta", *beta_labels], orient="row"))
+```
+
+BEM describe Table 8.2 as monthly in §8.3 and annual in its caption.
+We use monthly cross-sections, consistent with the discussion and sample construction.
+Correlations between similar lookbacks can partly reflect the observations shared by the estimation windows.
+
+## Persistence {#measure-persistence}
+
+@tbl-bem8-persistence compares a stock's winsorized beta with its beta exactly $\tau$ calendar months later.
+We calculate a Pearson correlation across stocks in each month and average over months.
+We leave cells blank when the stock-return windows overlap.
+This helps distinguish persistence from the effect of using some of the same returns twice.
+
+```{python}
+def persistence(lag):
+    columns = [b for b in beta_labels if window_months[b] <= lag]
+    current = clipped.select(*keys, *columns)
+    future = current.with_columns(month=pl.col("month").dt.offset_by(f"-{lag}mo"))
+    return (
+        current.join(future, on=keys, suffix="_future", validate="1:1")
+        .group_by("month")
+        .agg(pl.corr(b, f"{b}_future").alias(b) for b in columns)
+        .select(pl.lit(lag).alias("Lag (months)"), pl.col(columns).fill_nan(None).mean())
+    )
+
+persistence_table = pl.concat(
+    [persistence(lag) for lag in [1, 3, 6, 12, 24, 36, 48, 60, 120]],
+    how="diagonal",
+)
+```
+
+```{python}
+#| label: tbl-bem8-persistence
+#| tbl-cap: Persistence of beta across nonoverlapping stock-return windows (BEM Table 8.3)
+#| echo: false
+
+show_table(persistence_table.select(
+    "Lag (months)", *daily_windows, "SW", "D", *monthly_windows,
+))
+```
+
+The 12-month daily beta has a correlation of 0.63 with its value one year later, matching BEM.
+A year of monthly returns yields a correlation of 0.20.
+This difference suggests that, over the same one-year lookback, the daily estimate captures a more stable stock characteristic.
+
+## Beta and Stock Returns
+
+### Portfolio Analysis {#sort-stocks-into-beta-deciles}
+
+We form deciles using all eligible stocks with an estimate of the given beta in month $t$.
+A stock's decile is one plus the number of breakpoints its beta exceeds.
+After forming the groups, we join the next month's excess return.
+We keep a holding-period return even if a stock leaves the common-share universe during that month.
+The value weights use market capitalization measured at formation.
+
+```{python}
+#| echo: false
+
+delist = (
+    load_parquet("msedelist", "crsp")
+    .filter(pl.col("dlstdt").is_between(
+        first.dt.offset_by("1mo"), last.dt.offset_by("1mo").dt.month_end()
+    ))
+    .select("permno", month=pl.col("dlstdt").dt.month_start(), dlret="dlret", dlstcd="dlstcd")
+)
+poor_performance = (
+    pl.col("dlstcd").is_in([500, 520, 580, 584])
+    | pl.col("dlstcd").is_between(551, 574)
+)
+imputed_delist = pl.when(poor_performance).then(-0.30).otherwise(-1.00)
+
+holding_returns = (
+    monthly_stock.select(*keys, "ret")
+    .join(delist, on=keys, how="full", coalesce=True, validate="1:1")
+    .join(monthly_market, on="month", validate="m:1")
+    .with_columns(ret_adj=pl.when(pl.col("dlstcd").is_not_null())
+                  .then(pl.coalesce("dlret", imputed_delist)).otherwise(pl.col("ret")))
+    .select(
+        "permno", holding="month",
+        excess=100 * (pl.col("ret_adj") - pl.col("rf")), market=100 * pl.col("mktrf"),
+    )
+)
+outcomes = (
+    universe.lazy().join(monthly_stock.select(*keys, "cap"), on=keys, how="left", validate="1:1")
+    .with_columns(holding=pl.col("month").dt.offset_by("1mo"))
+    .join(holding_returns, on=["permno", "holding"], how="left", validate="1:1")
+    .collect()
+)
+```
+
+```{python}
+deciles = [str(i) for i in range(1, 11)]
+decile = 1 + pl.sum_horizontal(
+    (b > b.quantile(i / 10, interpolation="linear")).cast(pl.UInt8)
+    for i in range(1, 10)
+)
+members = (
+    beta_long.lazy()
+    .filter(pl.col("beta").is_not_null())
+    .with_columns(decile=decile.over("measure", "month").cast(pl.String))
+    .join(outcomes.lazy(), on=keys, validate="m:1")
+)
+
+# Use the same stocks in the numerator and denominator of the weighted return.
+has_weight = pl.all_horizontal(pl.col("cap", "excess").is_finite())
+cap = pl.col("cap").filter(has_weight)
+r = pl.col("excess").filter(has_weight)
+portfolios = (
+    members.group_by("measure", "holding", "decile")
+    .agg(
+        beta=pl.col("beta").mean(),
+        equal=pl.col("excess").filter(pl.col("excess").is_finite()).mean(),
+        value=(cap * r).sum() / cap.sum(),
+        market=pl.col("market").drop_nulls().first(),
+    )
+    .collect()
+)
+```
+
+We compute the high-minus-low return each month.
+Its CAPM alpha is the intercept when that return is regressed on the holding month's market excess return.
+For each portfolio, we report returns and alphas in percent per month and use six Newey–West lags for their $t$-statistics.
+
+```{python}
+import statspai as sp
+
+spread = (
+    portfolios.filter(pl.col("decile").is_in(["1", "10"]))
+    .group_by("measure", "holding")
+    .agg(
+        (pl.col(c).filter(pl.col("decile") == "10").first()
+         - pl.col(c).filter(pl.col("decile") == "1").first()).alias(c)
+        for c in ["beta", "equal", "value"]
+    )
+    .join(outcomes.select("holding", "market").drop_nulls().unique(), on="holding", validate="m:1")
+    .with_columns(decile=pl.lit("10–1"))
+    .select(portfolios.columns)
+)
+portfolio_series = pl.concat([portfolios, spread]).sort("holding")
+
+def portfolio_fit(series, outcome):
+    mean = sp.regress(f"{outcome} ~ 1", data=series, robust="hac", hac_lags=6, hac_small=True)
+    capm = sp.regress(f"{outcome} ~ market", data=series, robust="hac", hac_lags=6, hac_small=True)
+    return (
+        mean.params["Intercept"], mean.tvalues["Intercept"],
+        capm.params["Intercept"], capm.tvalues["Intercept"],
+    )
+```
+
+```{python}
+#| echo: false
+
+def portfolio_table(outcome, include_beta):
+    rows = []
+    for measure in beta_labels:
+        data = portfolio_series.filter(pl.col("measure") == measure)
+        average_beta, average_return, alpha = [], [], []
+        for decile in [*deciles, "10–1"]:
+            series = data.filter(pl.col("decile") == decile)
+            assert series.height == series["holding"].n_unique() == 594
+            assert series.select(pl.col(outcome, "market").is_finite().all()).row(0) == (True, True)
+            avg, avg_t, intercept, intercept_t = portfolio_fit(series, outcome)
+            average_beta.append(series["beta"].mean())
+            average_return.append(f"{avg:.2f}<br>({avg_t:.2f})")
+            alpha.append(f"{intercept:.2f}<br>({intercept_t:.2f})")
+        if include_beta:
+            rows.append([measure, "Mean beta", *[f"{value:.2f}" for value in average_beta]])
+        rows.extend([
+            ["" if include_beta else measure, "Excess return", *average_return],
+            ["", "CAPM alpha", *alpha],
+        ])
+    return pl.DataFrame(rows, schema=["Beta", "Statistic", *deciles, "10–1"], orient="row")
+```
+
+```{python}
+#| label: tbl-bem8-equal
+#| tbl-cap: Equal-weighted returns to beta deciles (BEM Table 8.4)
+#| echo: false
+
+table_8_4 = portfolio_table("equal", include_beta=True)
+show_table(table_8_4)
+```
+
+```{python}
+#| label: tbl-bem8-value
+#| tbl-cap: Value-weighted returns to beta deciles (BEM Table 8.5)
+#| echo: false
+
+table_8_5 = portfolio_table("value", include_beta=False)
+show_table(table_8_5)
+```
+
+Using 12-month daily betas, the high-minus-low excess return is $-0.55\%$ per month with equal weights (@tbl-bem8-equal) and $-0.05\%$ with value weights (@tbl-bem8-value).
+BEM report $-0.53\%$ and $-0.05\%$, respectively.
+The direction of the equal-weighted spread runs against the CAPM prediction, and the spread is much smaller when large stocks receive more weight.
+
+### Fama–MacBeth Regression Analysis {#run-famamacbeth-regressions}
+
+For each measure of beta, we regress next month's excess return on beta in each monthly cross-section,
+
+$$
+r_{i,t+1}=a_{t+1}+b_{t+1}\widehat\beta_{i,t}+u_{i,t+1}.
+$$
+
+We use the same winsorization as for the Pearson correlations and apply six Newey–West lags to the monthly coefficient series.
+The CAPM predicts that the mean slope estimates the market risk premium and the mean intercept is zero.
+
+```{python}
+fm_data = (
+    clipped.unpivot(on=beta_labels, index=keys, variable_name="measure", value_name="beta")
+    .join(outcomes.select(*keys, "excess"), on=keys, validate="m:1")
+    .filter(pl.all_horizontal(pl.col("beta", "excess").is_finite()))
+)
+fm = {
+    b: sp.fama_macbeth(
+        "excess ~ beta", data=fm_data.filter(pl.col("measure") == b),
+        time="month", lags=6,
+    )
+    for b in beta_labels
+}
+```
+
+```{python}
+#| label: tbl-bem8-fm
+#| tbl-cap: Fama–MacBeth regressions of next-month excess returns on beta (BEM Table 8.6)
+#| echo: false
+
+def fm_column(fit):
+    months = fit.model_info["period_coefs"]
+    assert len(months) == 594
+    adjusted_r2 = 1 - (1 - months["r2"]) * (months["nobs"] - 1) / (months["nobs"] - 2)
+    return [
+        f"{fit.params['beta']:.2f}<br>({fit.tvalues['beta']:.2f})",
+        f"{fit.params['Intercept']:.2f}<br>({fit.tvalues['Intercept']:.2f})",
+        f"{adjusted_r2.mean():.2f}",
+        f"{months['nobs'].mean():.0f}",
+    ]
+
+table_8_6 = pl.DataFrame({
+    "Statistic": ["Slope", "Intercept", "Adjusted R²", "n"],
+    **{b: fm_column(fm[b]) for b in beta_labels},
+})
+show_table(table_8_6)
+```
+
+In @tbl-bem8-fm the 12-month daily slope is $-0.27$, compared with BEM's $-0.26$.
+An increase in beta of one is associated with about 0.27 percentage points lower excess return per month.
+The mean intercept is 0.97% per month, and the slopes for the betas estimated from monthly returns are all close to zero.
 
 ## Summary
 
