@@ -371,28 +371,32 @@ for table in portfolio_tables["idioskew"].values():
 #| fig-cap: High-minus-low monthly excess returns by skewness measure and window, with 95% normal-approximation intervals using six-lag Newey–West standard errors
 #| fig-alt: Three panels compare equal- and value-weighted skewness spreads. The one-month total and idiosyncratic skewness spreads differ substantially by weighting.
 
-from matplotlib import pyplot as plt
+from plotnine_polars import aes, element_blank, position_dodge
 
-spreads = pl.DataFrame(spread_estimates)
-fig, axes = plt.subplots(3, 1, figsize=(8.2, 7.0), sharex=True, sharey=True, layout="constrained")
-x = list(range(len(windows)))
-for axis, measure in zip(axes, families.values()):
-    axis.axhline(0, color="#777777", lw=0.8)
-    for weight, description, offset, color, marker in (
-        ("EW", "Equal weighted", -0.12, "#15627c", "o"),
-        ("VW", "Value weighted", 0.12, "#9b552a", "s"),
-    ):
-        sample = spreads.filter(pl.col("measure") == measure, pl.col("weight") == weight)
-        axis.errorbar([tick + offset for tick in x], sample["estimate"].to_numpy(),
-                      yerr=1.96 * sample["se"].to_numpy(), fmt=marker, color=color,
-                      capsize=2, markersize=4, label=description)
-    axis.set_title(measure, loc="left")
-    axis.spines[["top", "right"]].set_visible(False)
-axes[0].legend(loc="best", frameon=False)
-axes[-1].set_xticks(x, list(windows))
-axes[-1].set_xlabel("Estimation window")
-fig.supylabel("High-minus-low excess return (% per month)")
-plt.show()
+spreads = pl.DataFrame(spread_estimates).with_columns(
+    pl.col("measure").cast(pl.Enum(list(families.values()))),
+    pl.col("window").cast(pl.Enum(list(windows))),
+    pl.col("weight").replace({"EW": "Equal weighted", "VW": "Value weighted"}),
+    lower=pl.col("estimate") - 1.96 * pl.col("se"),
+    upper=pl.col("estimate") + 1.96 * pl.col("se"),
+)
+dodge = position_dodge(width=0.48)
+
+(
+    spreads.ggplot(aes(x="window", y="estimate", color="weight", shape="weight"))
+    .geom_hline(yintercept=0, color="#777777", size=0.4)
+    .geom_errorbar(aes(ymin="lower", ymax="upper"), position=dodge, width=0.18,
+                   show_legend=False)
+    .geom_point(position=dodge)
+    .facet_wrap("measure", ncol=1)
+    .scale_color_manual(values=["#15627c", "#9b552a"])
+    .scale_shape_manual(values=["o", "s"])
+    .labs(x="Estimation window", y="High-minus-low excess return (% per month)",
+          color=None, shape=None)
+    .theme_minimal()
+    .add_theme(figure_size=(8.2, 7), legend_position="top",
+               panel_grid_minor=element_blank())
+)
 ```
 
 ### Fama–MacBeth Regressions

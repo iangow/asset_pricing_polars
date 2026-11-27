@@ -76,7 +76,7 @@ sizes = all_sizes.filter(
 )
 ```
 
-The table includes the earlier December market equity needed for book-to-market and December 2012 for the annual teaching sample.
+The table includes the earlier December market equity needed for book-to-market and December 2012 for the methodologies sample.
 It records common-stock eligibility separately so the prior December price remains available when a stock's share code changes.
 
 ```{python}

@@ -4,7 +4,7 @@ jupyter: python3
 
 # Fama and Macbeth Regression Analysis {#sec-bem-annual-fm}
 
-This chapter uses BEM's annual methodology sample from @sec-summary-statistics to illustrate the two steps of a Fama–MacBeth regression.
+This chapter uses BEM's methodologies sample from @sec-summary-statistics to illustrate the two steps of a Fama–MacBeth regression.
 The first step fits a cross-sectional regression in each formation year.
 The second averages the coefficients across years and estimates their standard errors from the time series of annual coefficients.
 

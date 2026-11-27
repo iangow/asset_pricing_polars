@@ -6,7 +6,8 @@ jupyter: python3
 
 ## Sample
 
-@sec-summary-statistics uses the annual teaching sample of @bali2016, covering U.S. common stocks at each year-end from 1988 through 2012.
+We use BEM's label *methodologies sample* [-@bali2016, sec. 1.1] for the annual sample in @sec-summary-statistics.
+It covers U.S. common stocks at each year-end from 1988 through 2012.
 The empirical replications use longer monthly samples.
 
 The examples read local Parquet files through `era_pl.load_parquet()`.

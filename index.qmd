@@ -2,7 +2,7 @@
 
 A reader's companion in Python Polars to *Empirical Asset Pricing: The Cross Section of Stock Returns* by Bali, Engle, and Murray [-@bali2016].
 We refer to the authors as BEM.
-The methods chapters use their 1988–2012 annual teaching sample.
+Part I uses their 1988–2012 methodologies sample.
 The empirical chapters reconstruct the CRSP sample, estimate market beta, and examine the size effect and value premium using legacy CRSP.
 See the [`eap_pl` function reference](eap_pl/reference/index.html) for the shared Polars helpers.
 Render with your own copies of the WRDS data.
