@@ -401,7 +401,7 @@ r_{i,s}=\alpha_i+\beta_{i,M}\mathrm{MKT}_s+\beta_{i,S}\mathrm{SMB}_s
 \operatorname{IdioVol}_i=100\sqrt{m}\,\operatorname{RSE}_i.
 \tag{15.7}\]</span></span></p>
 <p>Formation months run from June 1963 through November 2012. Each window ends in the formation month. The daily windows of 1, 3, 6, and 12 months require 15, 50, 100, and 200 observations. The monthly windows of 1, 2, 3, and 5 years require 10, 20, 24, and 24 observations. For factor models, the minimum applies to matched observations. We use CRSP’s reported stock returns to estimate volatility and download the June 2014 vintage of the factors, including daily momentum, with <a href="eap_pl/reference/get_ff_factors.html"><code>get_ff_factors()</code></a>.</p>
-<div id="74274e4c" class="cell" data-execution_count="1">
+<div id="10b98dea" class="cell" data-execution_count="1">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> polars <span class="im">as</span> pl</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> era_pl <span class="im">import</span> load_parquet, ptime</span>
@@ -438,20 +438,20 @@ r_{i,s}=\alpha_i+\beta_{i,M}\mathrm{MKT}_s+\beta_{i,S}\mathrm{SMB}_s
 <span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> ptime():</span>
 <span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>    daily_vol <span class="op">=</span> rolling_volatility(anchors, daily, daily_factors, daily_windows, <span class="dv">252</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display cell-output-markdown">
-<p><strong>Wall time:</strong> 31.477 s</p>
+<p><strong>Wall time:</strong> 33.263 s</p>
 </div>
 </div>
-<div id="16b7be64" class="cell" data-execution_count="2">
+<div id="6a0ef26d" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> ptime():</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    monthly_vol <span class="op">=</span> rolling_volatility(anchors, monthly, monthly_factors, monthly_windows, <span class="dv">12</span>)</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>volatility <span class="op">=</span> daily_vol.join(monthly_vol, on<span class="op">=</span>keys, validate<span class="op">=</span><span class="st">"1:1"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display cell-output-markdown">
-<p><strong>Wall time:</strong> 40.393 s</p>
+<p><strong>Wall time:</strong> 31.261 s</p>
 </div>
 </div>
 <p>We use the 12-month daily market beta, one-month Amihud illiquidity from <a href="liquidity-replication.html" class="quarto-xref"><span>Chapter 13</span></a>, and the five-year monthly co-skewness and idiosyncratic skewness measures from <a href="skewness-replication.html" class="quarto-xref"><span>Chapter 14</span></a>. We use log market capitalization (<code>log_cap</code>), the cumulative return over the preceding 11 months (<code>mom</code>), and the formation-month return (<code>rev</code>) as controls.</p>
-<div id="6a326bb3" class="cell" data-execution_count="3">
+<div id="023fee27" class="cell" data-execution_count="3">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> eap_pl <span class="im">import</span> build_book_to_market, build_momentum, build_sizes</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> eap_pl._data <span class="im">import</span> monthly_stock_returns</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> eap_pl._skewness <span class="im">import</span> rolling_skewness</span>
@@ -513,7 +513,7 @@ r_{i,s}=\alpha_i+\beta_{i,M}\mathrm{MKT}_s+\beta_{i,S}\mathrm{SMB}_s
 <span id="cb3-59"><a href="#cb3-59" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> family <span class="kw">in</span> families</span>
 <span id="cb3-60"><a href="#cb3-60" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display cell-output-markdown">
-<p><strong>Wall time:</strong> 22.088 s</p>
+<p><strong>Wall time:</strong> 22.050 s</p>
 </div>
 </div>
 </section>
@@ -1383,7 +1383,7 @@ Table&nbsp;15.1: Cross-sectional volatility summary statistics (BEM Table 15.1)
 <section id="correlations" class="level2" data-number="15.4">
 <h2 data-number="15.4" class="anchored" data-anchor-id="correlations"><span class="header-section-number">15.4</span> Correlations</h2>
 <p>Within each formation month, we use stocks with both measures available and winsorize each variable at the 0.5th and 99.5th percentiles. Each table averages the resulting correlations across months. The square tables put Pearson coefficients below the diagonal and Spearman coefficients above it.</p>
-<div id="c94eac14" class="cell" data-execution_count="6">
+<div id="fbf2931a" class="cell" data-execution_count="6">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> itertools <span class="im">import</span> combinations</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> eap_pl <span class="im">import</span> correlation_matrix</span>
@@ -2755,7 +2755,7 @@ Table&nbsp;15.6: Persistence of three-factor idiosyncratic volatility (BEM Table
 <h3 data-number="15.6.1" class="anchored" data-anchor-id="univariate-portfolio-analysis"><span class="header-section-number">15.6.1</span> Univariate Portfolio Analysis</h3>
 <p>We sort each formation month’s eligible stocks into deciles and calculate equal- and value-weighted next-month excess returns. Value weights use formation-month market capitalization. The spread buys the highest-volatility decile and sells the lowest. We compare returns with the delisting adjustments in <a href="crsp-replication.html#sec-bem-returns" class="quarto-xref"><span>Section 7.2</span></a> to returns from CRSP’s unadjusted monthly stock file.</p>
 <p>We run the spread regressions on July 1963 through December 2012 holding returns. The FFCPS model augments the four-factor model with the Pástor–Stambaugh traded liquidity factor bundled with the package. For FFCPS the sample starts in January 1968, when that factor first becomes available. Inference uses six-lag Newey–West standard errors <span class="citation" data-cites="neweywest1987">(<a href="references.html#ref-neweywest1987" role="doc-biblioref">Newey and West 1987</a>)</span>.</p>
-<div id="647e4167" class="cell" data-execution_count="12">
+<div id="0f541367" class="cell" data-execution_count="12">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> eap_pl <span class="im">import</span> format_fit, hac, load_pastor_stambaugh_2013</span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> eap_pl._portfolios <span class="im">import</span> assign_portfolio, portfolio_months, spread</span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -3726,7 +3726,7 @@ Table&nbsp;15.9: Mean formation-month characteristics of one-month idiosyncratic
 <section id="bivariate-portfolio-analysis" class="level3" data-number="15.6.2">
 <h3 data-number="15.6.2" class="anchored" data-anchor-id="bivariate-portfolio-analysis"><span class="header-section-number">15.6.2</span> Bivariate Portfolio Analysis</h3>
 <p>We sort on a control and one-month FF idiosyncratic volatility, using stocks with both variables available. In the dependent sort, we form control quintiles and then sort on volatility within each control quintile. In the independent sort, we form both sets of quintiles from the same monthly sample and intersect them. We report the volatility 5–1 spread within each control quintile and the 5–1 spread after averaging returns across control quintiles.</p>
-<div id="1e381eb6" class="cell" data-execution_count="16">
+<div id="60516edc" class="cell" data-execution_count="16">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> eap_pl <span class="im">import</span> bivariate_months</span>
 <span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -5097,7 +5097,7 @@ Table&nbsp;15.14: One-month FF idiosyncratic volatility without controls, with e
 </figure>
 </div>
 </div>
-<div id="b7960186" class="cell" data-execution_count="22">
+<div id="89ed8c0d" class="cell" data-execution_count="22">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> horizon_regressions(family):</span>
 <span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>    table <span class="op">=</span> {<span class="st">"Term"</span>: [families[family], <span class="op">*</span>controls.values(), <span class="st">"Intercept"</span>, <span class="st">"Adjusted R²"</span>, <span class="st">"n"</span>]}</span>
 <span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> term, window <span class="kw">in</span> labels[family].items():</span>
@@ -5464,32 +5464,26 @@ C_t = 100\left[\prod_{s\le t}(1+r_s)-1\right],
 \qquad L_t = 100\sum_{s\le t}\log(1+r_s).
 \tag{15.9}\]</span></span></p>
 <div id="cell-fig-bem15-low-high" class="cell" data-execution_count="25">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
-<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> matplotlib.ticker <span class="im">import</span> FuncFormatter</span>
-<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>low_high <span class="op">=</span> (</span>
-<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>    spread(adjusted_deciles[target], <span class="dv">1</span>, <span class="dv">10</span>, <span class="st">"portfolio"</span>, <span class="st">"VW"</span>)</span>
-<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>    .select(date<span class="op">=</span>pl.col(<span class="st">"month"</span>).dt.offset_by(<span class="st">"1mo"</span>).dt.month_end(), ret<span class="op">=</span>pl.col(<span class="st">"VW"</span>) <span class="op">/</span> <span class="dv">100</span>)</span>
-<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>    .sort(<span class="st">"date"</span>)</span>
-<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>    .with_columns(compounded<span class="op">=</span><span class="dv">100</span> <span class="op">*</span> ((<span class="dv">1</span> <span class="op">+</span> pl.col(<span class="st">"ret"</span>)).cum_prod() <span class="op">-</span> <span class="dv">1</span>),</span>
-<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>                  cumulative_log<span class="op">=</span><span class="dv">100</span> <span class="op">*</span> pl.col(<span class="st">"ret"</span>).log1p().cum_sum())</span>
-<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb24-12"><a href="#cb24-12" aria-hidden="true" tabindex="-1"></a>fig, axes <span class="op">=</span> plt.subplots(<span class="dv">2</span>, <span class="dv">1</span>, sharex<span class="op">=</span><span class="va">True</span>, figsize<span class="op">=</span>(<span class="dv">8</span>, <span class="dv">5</span>), layout<span class="op">=</span><span class="st">"constrained"</span>)</span>
-<span id="cb24-13"><a href="#cb24-13" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> ax, column, label <span class="kw">in</span> <span class="bu">zip</span>(axes, (<span class="st">"compounded"</span>, <span class="st">"cumulative_log"</span>),</span>
-<span id="cb24-14"><a href="#cb24-14" aria-hidden="true" tabindex="-1"></a>                             (<span class="st">"Compounded return"</span>, <span class="st">"Cumulative log return"</span>)):</span>
-<span id="cb24-15"><a href="#cb24-15" aria-hidden="true" tabindex="-1"></a>    ax.plot(low_high[<span class="st">"date"</span>], low_high[column], color<span class="op">=</span><span class="st">"#285b7a"</span>, linewidth<span class="op">=</span><span class="fl">1.2</span>)</span>
-<span id="cb24-16"><a href="#cb24-16" aria-hidden="true" tabindex="-1"></a>    ax.set_ylabel(label)</span>
-<span id="cb24-17"><a href="#cb24-17" aria-hidden="true" tabindex="-1"></a>    ax.yaxis.set_major_formatter(FuncFormatter(<span class="kw">lambda</span> value, _: <span class="ss">f"</span><span class="sc">{</span>value<span class="sc">:,.0f}</span><span class="ss">%"</span>))</span>
-<span id="cb24-18"><a href="#cb24-18" aria-hidden="true" tabindex="-1"></a>    ax.axhline(<span class="dv">0</span>, color<span class="op">=</span><span class="st">"#777777"</span>, linewidth<span class="op">=</span><span class="fl">0.7</span>)</span>
-<span id="cb24-19"><a href="#cb24-19" aria-hidden="true" tabindex="-1"></a>    ax.grid(axis<span class="op">=</span><span class="st">"y"</span>, alpha<span class="op">=</span><span class="fl">0.25</span>)</span>
-<span id="cb24-20"><a href="#cb24-20" aria-hidden="true" tabindex="-1"></a>axes[<span class="op">-</span><span class="dv">1</span>].set_xlabel(<span class="st">"Holding month"</span>)</span>
-<span id="cb24-21"><a href="#cb24-21" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-display">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> eap_pl <span class="im">import</span> plot_cumulative_returns</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>low_high <span class="op">=</span> (</span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>    spread(adjusted_deciles[target], <span class="dv">1</span>, <span class="dv">10</span>, <span class="st">"portfolio"</span>, <span class="st">"VW"</span>)</span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>    .select(date<span class="op">=</span>pl.col(<span class="st">"month"</span>).dt.offset_by(<span class="st">"1mo"</span>).dt.month_end(), ret<span class="op">=</span>pl.col(<span class="st">"VW"</span>) <span class="op">/</span> <span class="dv">100</span>)</span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>    .sort(<span class="st">"date"</span>)</span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a>    .with_columns(compounded<span class="op">=</span>(<span class="dv">1</span> <span class="op">+</span> pl.col(<span class="st">"ret"</span>)).cum_prod() <span class="op">-</span> <span class="dv">1</span>,</span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a>                  cumulative_log<span class="op">=</span>pl.col(<span class="st">"ret"</span>).log1p().cum_sum())</span>
+<span id="cb24-9"><a href="#cb24-9" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb24-10"><a href="#cb24-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-11"><a href="#cb24-11" aria-hidden="true" tabindex="-1"></a>(</span>
+<span id="cb24-12"><a href="#cb24-12" aria-hidden="true" tabindex="-1"></a>    plot_cumulative_returns(low_high)</span>
+<span id="cb24-13"><a href="#cb24-13" aria-hidden="true" tabindex="-1"></a>    .labs(x<span class="op">=</span><span class="st">"Holding month"</span>)</span>
+<span id="cb24-14"><a href="#cb24-14" aria-hidden="true" tabindex="-1"></a>    .geom_hline(yintercept<span class="op">=</span><span class="dv">0</span>, color<span class="op">=</span><span class="st">"#777777"</span>, size<span class="op">=</span><span class="fl">0.4</span>)</span>
+<span id="cb24-15"><a href="#cb24-15" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="25">
 <div id="fig-bem15-low-high" class="quarto-float quarto-figure quarto-figure-center anchored" alt="Two panels show the cumulative compounded and log returns from July 1963 to December 2012. Both rise over the long term and fall sharply in the early 2000s.">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-bem15-low-high-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="volatility-replication_files/figure-html/fig-bem15-low-high-output-1.png" alt="Two panels show the cumulative compounded and log returns from July 1963 to December 2012. Both rise over the long term and fall sharply in the early 2000s." width="779" height="491" class="figure-img">
+<img src="volatility-replication_files/figure-html/fig-bem15-low-high-output-1.png" alt="Two panels show the cumulative compounded and log returns from July 1963 to December 2012. Both rise over the long term and fall sharply in the early 2000s." width="787" height="480" class="figure-img">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-bem15-low-high-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;15.1: Cumulative returns of the value-weighted low-minus-high idiosyncratic volatility portfolio (BEM Figure 15.1)
