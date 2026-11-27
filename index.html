@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Empirical Asset Pricing with Polars</title>
+<title>Empirical Asset Pricing: A Python Reader’s Companion</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -294,7 +294,7 @@ div.csl-indent {
   <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
     <div class="pt-lg-2 mt-2 text-left sidebar-header">
     <div class="sidebar-title mb-0 py-0">
-      <a href="./">Empirical Asset Pricing with Polars</a> 
+      <a href="./">Empirical Asset Pricing: A Python Reader’s Companion</a> 
         <div class="sidebar-tools-main">
   <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
 </div>
@@ -447,7 +447,10 @@ div.csl-indent {
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#about" id="toc-about" class="nav-link active" data-scroll-target="#about">Preface</a></li>
+  <li><a href="#about" id="toc-about" class="nav-link active" data-scroll-target="#about">Preface</a>
+  <ul class="collapse">
+  <li><a href="#why-python-polars" id="toc-why-python-polars" class="nav-link" data-scroll-target="#why-python-polars">Why Python Polars?</a></li>
+  </ul></li>
   </ul>
 </nav>
     </div>
@@ -457,7 +460,7 @@ div.csl-indent {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Empirical Asset Pricing with Polars</h1>
+<h1 class="title">Empirical Asset Pricing: A Python Reader’s Companion</h1>
 </div>
 
 
@@ -476,9 +479,16 @@ div.csl-indent {
 
 <section id="about" class="level1 unnumbered">
 <h1 class="unnumbered">Preface</h1>
-<p>A reader’s companion in Python Polars to <em>Empirical Asset Pricing: The Cross Section of Stock Returns</em> by Bali, Engle, and Murray <span class="citation" data-cites="bali2016">(<a href="references.html#ref-bali2016" role="doc-biblioref">2016</a>)</span>. We refer to the authors as BEM. The methods chapters use their 1988–2012 annual teaching sample. The empirical chapters reconstruct the CRSP sample, estimate market beta, and examine the size effect and value premium using legacy CRSP. See the <a href="eap_pl/reference/index.html"><code>eap_pl</code> function reference</a> for the shared Polars helpers. Render with your own copies of the WRDS data.</p>
-<p>See <a href="data.html" class="quarto-xref"><span>1&nbsp; Preliminaries</span></a> for the inputs and <a href="data.html#sec-data-vintages" class="quarto-xref"><span>WRDS tables</span></a> for their source update dates.</p>
-<p><span id="data-vintages"></span></p>
+<p>This book aims to provide a reader’s companion to <em>Empirical Asset Pricing: The Cross Section of Stock Returns</em> by Bali, Engle, and Murray <span class="citation" data-cites="bali2016">(<a href="references.html#ref-bali2016" role="doc-biblioref">2016</a>)</span> (“BEM”). While I purchased a copy of BEM in 2021, I have never managed to read it in much depth. I think one reason for this is that there is such a tight connection between what is presented in the book and the detailed data analysis underlying it. This means one is inevitably thinking about the details of analysis as one is reading the book and, for me at least, wishing that one could run the code while reading the book. Unfortunately, the authors do not provide the source code they used to generate the tables and charts in the book.</p>
+<p>With this book, I aim to fill the gap left by BEM by providing code to reproduce every analysis contained in BEM.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> This book largely follows <span class="citation" data-cites="bali2016">Bali et al. (<a href="references.html#ref-bali2016" role="doc-biblioref">2016</a>)</span>.</p>
+<p>Part I introduces the core ideas using the 1988–2012 “methodologies sample” of <span class="citation" data-cites="bali2016">Bali et al. (<a href="references.html#ref-bali2016" role="doc-biblioref">2016</a>)</span>. <a href="data.html" class="quarto-xref"><span>1&nbsp; Preliminaries</span></a> also discusses the software packages used to run the analysis included herein, including the production of tables and charts.</p>
+<p>Part II provides the core empirical analyses of <span class="citation" data-cites="bali2016">Bali et al. (<a href="references.html#ref-bali2016" role="doc-biblioref">2016</a>)</span> starting with the construction of the CRSP sample and estimation of market betas before moving on to examine various dimensions studied in prior research on the cross-section of stock returns.</p>
+<section id="why-python-polars" class="level2">
+<h2 class="anchored" data-anchor-id="why-python-polars">Why Python Polars?</h2>
+<p>My goal here is to allow readers to open the code behind a table, rerun it in a notebook, and change a breakpoint, a sample screen, or a factor model. My hope is that you can carry the workflow I use here into your own research. The software is freely available.<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a> Reproducing the results requires access to the relevant data from Wharton Research Data Services (WRDS, pronounced “words”).</p>
+<p>Having chosen Python, one also needs to choose a data frame library. While pandas has been the default data frame library for Python users since about 2012, when it was really the only such library, Python Polars seems to be the better choice in 2026. With ideas such as lazy data frames and expressions, Polars can process large amounts of data more quickly and with fewer computing resources than pandas can. Python Polars has syntax that is often more intuitive for humans than pandas. If you are new to Polars, or even new to Python, <a href="https://iangow.github.io/era_pl_book/py-intro.html">Chapter 2</a> of the Python Polars edition of <em>Empirical Research in Accounting: Tools and Methods</em> provides a fast-paced introduction to the basic ideas.</p>
+<p>With Python Polars, pretty much every analysis in the book can be run in seconds. Even if you are using AI agents to run your analysis, you will appreciate the performance offered by Python Polars, as you will spend less time waiting for output and have less concern that your AI is going to use up all the RAM on your computer.</p>
+<p>More information about how to set up your computer to run the analyses in this book is provided in <a href="data.html#sec-data" class="quarto-xref"><span>Data</span></a>.</p>
 
 
 <div id="refs" class="references csl-bib-body hanging-indent" role="list" style="display: none">
@@ -486,6 +496,14 @@ div.csl-indent {
 Bali, Turan G., Robert F. Engle, and Scott Murray. 2016. <em>Empirical Asset Pricing: The Cross Section of Stock Returns</em>. John Wiley &amp; Sons. <a href="https://www.wiley.com/en-us/empirical-asset-pricing-the-cross-section-of-stock-returns-p-9781118095041">https://www.wiley.com/en-us/empirical-asset-pricing-the-cross-section-of-stock-returns-p-9781118095041</a>.
 </div>
 </div>
+</section>
+</section>
+<section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
+<hr>
+<ol>
+<li id="fn1"><p>The current version of this book omits Chapter 17 of BEM because this requires the OptionMetrics database.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p> <span class="citation" data-cites="bali2016">Bali et al. (<a href="references.html#ref-bali2016" role="doc-biblioref">2016</a>)</span> do not specify what software they use in writing their book. However, they do mention obtaining SAS data files using SSH <span class="citation" data-cites="bali2016">(<a href="references.html#ref-bali2016" role="doc-biblioref">Bali et al. 2016, 104</a>)</span>, and it is plausible that they used SAS as the statistical programming language for their book.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
 </section>
 
 </main> <!-- /main -->

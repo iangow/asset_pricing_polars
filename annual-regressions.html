@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>6&nbsp; Fama and Macbeth Regression Analysis – Empirical Asset Pricing with Polars</title>
+<title>6&nbsp; Fama and Macbeth Regression Analysis – Empirical Asset Pricing: A Python Reader’s Companion</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -362,7 +362,7 @@ window.Quarto = {
   <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
     <div class="pt-lg-2 mt-2 text-left sidebar-header">
     <div class="sidebar-title mb-0 py-0">
-      <a href="./">Empirical Asset Pricing with Polars</a> 
+      <a href="./">Empirical Asset Pricing: A Python Reader’s Companion</a> 
         <div class="sidebar-tools-main">
   <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
 </div>
@@ -550,17 +550,21 @@ window.Quarto = {
 </header>
 
 
-<p>This chapter uses BEM’s annual methodology sample from <a href="summary-statistics.html" class="quarto-xref"><span>Chapter 2</span></a> to illustrate the two steps of a Fama–MacBeth regression. The first step fits a cross-sectional regression in each formation year. The second averages the coefficients across years and estimates their standard errors from the time series of annual coefficients.</p>
-<style>
-.cell-output-markdown:has(> table) {
-  max-width: 100%;
-  overflow-x: auto;
-}
-.cell-output-markdown > table {
-  white-space: nowrap;
-}
-</style>
-<div id="430fd9cd" class="cell" data-execution_count="2">
+<div class="callout callout-style-default callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Warning</span>Early draft
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>This chapter is an early draft and still needs a thorough review. The APIs used in the examples may change as I continue working on the book.</p>
+</div>
+</div>
+<p>This chapter uses BEM’s methodologies sample from <a href="summary-statistics.html" class="quarto-xref"><span>Chapter 2</span></a> to illustrate the two steps of a Fama–MacBeth regression. The first step fits a cross-sectional regression in each formation year. The second averages the coefficients across years and estimates their standard errors from the time series of annual coefficients.</p>
+<div id="ab2c0fe6" class="cell" data-execution_count="1">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> polars <span class="im">as</span> pl</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> eap_pl <span class="im">import</span> build_annual_panel</span>
@@ -572,7 +576,7 @@ window.Quarto = {
 <section id="periodic-cross-sectional-regressions" class="level3" data-number="6.1.1">
 <h3 data-number="6.1.1" class="anchored" data-anchor-id="periodic-cross-sectional-regressions"><span class="header-section-number">6.1.1</span> Periodic Cross-Sectional Regressions</h3>
 <p>Compare three univariate regressions with a regression that includes beta, size, and book-to-market together. The outcome is the next year’s excess return in percent. Following <span class="citation" data-cites="bali2016">Bali et al. (<a href="references.html#ref-bali2016" role="doc-biblioref">2016, chap. 6</a>)</span>, winsorize the regressors at 0.5% in each year’s regression sample. Use six Newey–West lags when estimating standard errors for the averages.</p>
-<div id="246a8ebe" class="cell" data-execution_count="3">
+<div id="ddb03243" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> statspai <span class="im">as</span> sp</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>specifications <span class="op">=</span> [[<span class="st">"Beta"</span>], [<span class="st">"Size"</span>], [<span class="st">"BM"</span>], [<span class="st">"Beta"</span>, <span class="st">"Size"</span>, <span class="st">"BM"</span>]]</span>
@@ -582,1104 +586,1174 @@ window.Quarto = {
 <span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    sample <span class="op">=</span> (</span>
 <span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>        annual_panel.select(<span class="st">"year"</span>, <span class="st">"excess"</span>, <span class="op">*</span>terms).drop_nulls()</span>
 <span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>        .with_columns(</span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>            pl.col(terms).era.winsorize(prob<span class="op">=</span><span class="fl">0.005</span>, quantile_method<span class="op">=</span><span class="st">"linear"</span>).over(<span class="st">"year"</span>)</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>            pl.col(terms).eap.winsorize(prob<span class="op">=</span><span class="fl">0.005</span>, quantile_method<span class="op">=</span><span class="st">"linear"</span>).over(<span class="st">"year"</span>)</span>
 <span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>        )</span>
 <span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>    )</span>
 <span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>    fits.append(sp.fama_macbeth(<span class="st">"excess ~ "</span> <span class="op">+</span> <span class="st">" + "</span>.join(terms),</span>
 <span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>                               data<span class="op">=</span>sample, time<span class="op">=</span><span class="st">"year"</span>, lags<span class="op">=</span><span class="dv">6</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div class="cell" data-execution_count="4">
-<div id="tbl-bem6-periodic" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="4">
+<div class="cell" data-execution_count="3">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> periodic_results(fit, terms):</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    result <span class="op">=</span> pl.from_pandas(fit.model_info[<span class="st">"period_coefs"</span>].reset_index())</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> result.with_columns(</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>        adj_r2<span class="op">=</span><span class="dv">1</span> <span class="op">-</span> (<span class="dv">1</span> <span class="op">-</span> pl.col(<span class="st">"r2"</span>)) <span class="op">*</span> (pl.col(<span class="st">"nobs"</span>) <span class="op">-</span> <span class="dv">1</span>) <span class="op">/</span> (pl.col(<span class="st">"nobs"</span>) <span class="op">-</span> <span class="bu">len</span>(terms) <span class="op">-</span> <span class="dv">1</span>)</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>periodic <span class="op">=</span> [periodic_results(fit, terms) <span class="cf">for</span> fit, terms <span class="kw">in</span> <span class="bu">zip</span>(fits, specifications)]</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>pl.concat([</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    frame.with_columns(pl.lit(<span class="bu">str</span>(i)).alias(<span class="st">"Model"</span>))</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i, frame <span class="kw">in</span> <span class="bu">enumerate</span>(periodic, <span class="dv">1</span>)</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>], how<span class="op">=</span><span class="st">"diagonal"</span>).select(<span class="st">"Model"</span>, pl.exclude(<span class="st">"Model"</span>)).rename(term_labels).eap.show_table()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div id="tbl-bem6-periodic" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="3">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bem6-periodic-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table&nbsp;6.1: Annual cross-sectional regressions (BEM Table 6.1)
 </figcaption>
 <div aria-describedby="tbl-bem6-periodic-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<div class="cell-output cell-output-display cell-output-markdown">
-<table class="cell caption-top table table-sm table-striped small">
-<colgroup>
-<col style="width: 11%">
-<col style="width: 11%">
-<col style="width: 11%">
-<col style="width: 11%">
-<col style="width: 11%">
-<col style="width: 11%">
-<col style="width: 11%">
-<col style="width: 11%">
-<col style="width: 11%">
-</colgroup>
+<div class="cell-output cell-output-display">
+<div id="ehmmqagibi" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>
+#ehmmqagibi table {
+          font-family: inherit;
+          -webkit-font-smoothing: antialiased;
+          -moz-osx-font-smoothing: grayscale;
+        }
+
+#ehmmqagibi thead, tbody, tfoot, tr, td, th { border-style: none; }
+ tr { background-color: transparent; }
+#ehmmqagibi p { margin: 0; padding: 0; }
+ #ehmmqagibi .gt_table { display: table; border-collapse: collapse; line-height: normal; margin-left: auto; margin-right: auto; color: #333333; font-size: 0.875rem; font-weight: normal; font-style: normal; background-color: #FFFFFF; width: 100%; border-top-style: solid; border-top-width: 2px; border-top-color: #A8A8A8; border-right-style: none; border-right-width: 2px; border-right-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #A8A8A8; border-left-style: none; border-left-width: 2px; border-left-color: #D3D3D3; }
+ #ehmmqagibi .gt_caption { padding-top: 4px; padding-bottom: 4px; }
+ #ehmmqagibi .gt_title { color: #333333; font-size: 125%; font-weight: initial; padding-top: 4px; padding-bottom: 4px; padding-left: 5px; padding-right: 5px; border-bottom-color: #FFFFFF; border-bottom-width: 0; }
+ #ehmmqagibi .gt_subtitle { color: #333333; font-size: 85%; font-weight: initial; padding-top: 3px; padding-bottom: 5px; padding-left: 5px; padding-right: 5px; border-top-color: #FFFFFF; border-top-width: 0; }
+ #ehmmqagibi .gt_heading { background-color: #FFFFFF; text-align: center; border-bottom-color: #FFFFFF; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; }
+ #ehmmqagibi .gt_bottom_border { border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; }
+ #ehmmqagibi .gt_col_headings { border-top-style: solid; border-top-width: 2px; border-top-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; }
+ #ehmmqagibi .gt_col_heading { color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: bold; text-transform: inherit; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: bottom; padding-top: 5px; padding-bottom: 5px; padding-left: 0.45rem; padding-right: 0.45rem; overflow-x: hidden; }
+ #ehmmqagibi .gt_column_spanner_outer { color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: bold; text-transform: inherit; padding-top: 0; padding-bottom: 0; padding-left: 4px; padding-right: 4px; }
+ #ehmmqagibi .gt_column_spanner_outer:first-child { padding-left: 0; }
+ #ehmmqagibi .gt_column_spanner_outer:last-child { padding-right: 0; }
+ #ehmmqagibi .gt_column_spanner { border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; vertical-align: bottom; padding-top: 5px; padding-bottom: 5px; overflow-x: hidden; display: inline-block; width: 100%; }
+ #ehmmqagibi .gt_spanner_row { border-bottom-style: hidden; }
+ #ehmmqagibi .gt_group_heading { padding-top: 8px; padding-bottom: 8px; padding-left: 5px; padding-right: 5px; color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: initial; text-transform: inherit; border-top-style: solid; border-top-width: 2px; border-top-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; text-align: left; }
+ #ehmmqagibi .gt_empty_group_heading { padding: 0.5px; color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: initial; border-top-style: solid; border-top-width: 2px; border-top-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; vertical-align: middle; }
+ #ehmmqagibi .gt_from_md> :first-child { margin-top: 0; }
+ #ehmmqagibi .gt_from_md> :last-child { margin-bottom: 0; }
+ #ehmmqagibi .gt_row { padding-top: 0.25rem; padding-bottom: 0.25rem; padding-left: 0.45rem; padding-right: 0.45rem; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; }
+ #ehmmqagibi .gt_stub { color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: initial; text-transform: inherit; border-right-style: solid; border-right-width: 2px; border-right-color: #D3D3D3; padding-left: 0.45rem; padding-right: 0.45rem; }
+ #ehmmqagibi .gt_indent_1 { text-indent: 5px; }
+ #ehmmqagibi .gt_indent_2 { text-indent: calc(5px * 2); }
+ #ehmmqagibi .gt_indent_3 { text-indent: calc(5px * 3); }
+ #ehmmqagibi .gt_indent_4 { text-indent: calc(5px * 4); }
+ #ehmmqagibi .gt_indent_5 { text-indent: calc(5px * 5); }
+ #ehmmqagibi .gt_stub_row_group { color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: initial; text-transform: inherit; border-right-style: solid; border-right-width: 2px; border-right-color: #D3D3D3; padding-left: 5px; padding-right: 5px; vertical-align: top; }
+ #ehmmqagibi .gt_row_group_first td { border-top-width: 2px; }
+ #ehmmqagibi .gt_row_group_first th { border-top-width: 2px; }
+ #ehmmqagibi .gt_striped { color: #333333; background-color: #F4F4F4; }
+ #ehmmqagibi .gt_table_body { border-top-style: solid; border-top-width: 2px; border-top-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; }
+ #ehmmqagibi .gt_summary_row { color: #333333; background-color: #FFFFFF; text-transform: inherit; padding-top: 8px; padding-bottom: 8px; padding-left: 5px; padding-right: 5px; }
+ #ehmmqagibi .gt_first_summary_row { border-top-style: solid; border-top-width: 2px; border-top-color: #D3D3D3; }
+ #ehmmqagibi .gt_last_summary_row_top { border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; }
+ #ehmmqagibi .gt_grand_summary_row { color: #333333; background-color: #FFFFFF; text-transform: inherit; padding-top: 8px; padding-bottom: 8px; padding-left: 5px; padding-right: 5px; }
+ #ehmmqagibi .gt_first_grand_summary_row_bottom { border-top-style: double; border-top-width: 6px; border-top-color: #D3D3D3; }
+ #ehmmqagibi .gt_last_grand_summary_row_top { border-bottom-style: double; border-bottom-width: 6px; border-bottom-color: #D3D3D3; }
+ #ehmmqagibi .gt_sourcenotes { color: #333333; background-color: #FFFFFF; border-bottom-style: none; border-bottom-width: 2px; border-bottom-color: #D3D3D3; border-left-style: none; border-left-width: 2px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 2px; border-right-color: #D3D3D3; }
+ #ehmmqagibi .gt_sourcenote { font-size: 90%; padding-top: 4px; padding-bottom: 4px; padding-left: 5px; padding-right: 5px; text-align: left; }
+ #ehmmqagibi .gt_left { text-align: left; }
+ #ehmmqagibi .gt_center { text-align: center; }
+ #ehmmqagibi .gt_right { text-align: right; font-variant-numeric: tabular-nums; }
+ #ehmmqagibi .gt_font_normal { font-weight: normal; }
+ #ehmmqagibi .gt_font_bold { font-weight: bold; }
+ #ehmmqagibi .gt_font_italic { font-style: italic; }
+ #ehmmqagibi .gt_super { font-size: 65%; }
+ #ehmmqagibi .gt_footnotes { color: font-color(#FFFFFF); background-color: #FFFFFF; border-bottom-style: none; border-bottom-width: 2px; border-bottom-color: #D3D3D3; border-left-style: none; border-left-width: 2px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 2px; border-right-color: #D3D3D3; }
+ #ehmmqagibi .gt_footnote { margin: 0px; font-size: 90%; padding-top: 4px; padding-bottom: 4px; padding-left: 5px; padding-right: 5px; }
+ #ehmmqagibi .gt_sourcenotes { color: #333333; background-color: #FFFFFF; border-bottom-style: none; border-bottom-width: 2px; border-bottom-color: #D3D3D3; border-left-style: none; border-left-width: 2px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 2px; border-right-color: #D3D3D3; }
+ #ehmmqagibi .gt_sourcenote { font-size: 90%; padding-top: 4px; padding-bottom: 4px; padding-left: 5px; padding-right: 5px; text-align: left; }
+ #ehmmqagibi .gt_footnote_marks { font-size: 75%; vertical-align: 0.4em; position: initial; }
+ #ehmmqagibi .gt_asterisk { font-size: 100%; vertical-align: 0; }
+ 
+</style>
+
+<table class="gt_table cell caption-top table table-sm table-striped small" data-quarto-bootstrap="false">
 <thead>
-<tr class="header">
-<th style="text-align: left;">Model</th>
-<th style="text-align: right;">year</th>
-<th style="text-align: right;">Intercept</th>
-<th style="text-align: right;">Beta</th>
-<th style="text-align: right;">nobs</th>
-<th style="text-align: right;">r2</th>
-<th style="text-align: right;">adj_r2</th>
-<th style="text-align: right;">Size</th>
-<th style="text-align: right;">Book-to-market</th>
+<tr class="gt_col_headings header">
+<th id="Model" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" scope="col">Model</th>
+<th id="year" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">year</th>
+<th id="Intercept" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Intercept</th>
+<th id="Beta" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Beta</th>
+<th id="nobs" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">nobs</th>
+<th id="r2" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">r2</th>
+<th id="adj_r2" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">adj_r2</th>
+<th id="Size" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Size</th>
+<th id="Book-to-market" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Book-to-market</th>
 </tr>
 </thead>
-<tbody>
+<tbody class="gt_table_body">
 <tr class="odd">
-<td style="text-align: left;">1</td>
-<td style="text-align: right;">1988</td>
-<td style="text-align: right;">1.68</td>
-<td style="text-align: right;">5.53</td>
-<td style="text-align: right;">5646</td>
-<td style="text-align: right;">0.00</td>
-<td style="text-align: right;">0.00</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;"></td>
+<td class="gt_row gt_left" headers="Model">1</td>
+<td class="gt_row gt_right" headers="year">1988</td>
+<td class="gt_row gt_right" headers="Intercept">1.68</td>
+<td class="gt_row gt_right" headers="Beta">5.53</td>
+<td class="gt_row gt_right" headers="nobs">5646</td>
+<td class="gt_row gt_right" headers="r2">0.00</td>
+<td class="gt_row gt_right" headers="adj_r2">0.00</td>
+<td class="gt_row gt_right" headers="Size"></td>
+<td class="gt_row gt_right" headers="Book-to-market"></td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">1</td>
-<td style="text-align: right;">1989</td>
-<td style="text-align: right;">-29.54</td>
-<td style="text-align: right;">2.31</td>
-<td style="text-align: right;">5470</td>
-<td style="text-align: right;">0.00</td>
-<td style="text-align: right;">0.00</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;"></td>
+<td class="gt_row gt_left" headers="Model">1</td>
+<td class="gt_row gt_right" headers="year">1989</td>
+<td class="gt_row gt_right" headers="Intercept">-29.54</td>
+<td class="gt_row gt_right" headers="Beta">2.31</td>
+<td class="gt_row gt_right" headers="nobs">5470</td>
+<td class="gt_row gt_right" headers="r2">0.00</td>
+<td class="gt_row gt_right" headers="adj_r2">0.00</td>
+<td class="gt_row gt_right" headers="Size"></td>
+<td class="gt_row gt_right" headers="Book-to-market"></td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">1</td>
-<td style="text-align: right;">1990</td>
-<td style="text-align: right;">41.07</td>
-<td style="text-align: right;">11.82</td>
-<td style="text-align: right;">5361</td>
-<td style="text-align: right;">0.00</td>
-<td style="text-align: right;">0.00</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;"></td>
+<td class="gt_row gt_left" headers="Model">1</td>
+<td class="gt_row gt_right" headers="year">1990</td>
+<td class="gt_row gt_right" headers="Intercept">41.07</td>
+<td class="gt_row gt_right" headers="Beta">11.82</td>
+<td class="gt_row gt_right" headers="nobs">5361</td>
+<td class="gt_row gt_right" headers="r2">0.00</td>
+<td class="gt_row gt_right" headers="adj_r2">0.00</td>
+<td class="gt_row gt_right" headers="Size"></td>
+<td class="gt_row gt_right" headers="Book-to-market"></td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">1</td>
-<td style="text-align: right;">1991</td>
-<td style="text-align: right;">36.33</td>
-<td style="text-align: right;">-17.57</td>
-<td style="text-align: right;">5265</td>
-<td style="text-align: right;">0.01</td>
-<td style="text-align: right;">0.01</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;"></td>
+<td class="gt_row gt_left" headers="Model">1</td>
+<td class="gt_row gt_right" headers="year">1991</td>
+<td class="gt_row gt_right" headers="Intercept">36.33</td>
+<td class="gt_row gt_right" headers="Beta">-17.57</td>
+<td class="gt_row gt_right" headers="nobs">5265</td>
+<td class="gt_row gt_right" headers="r2">0.01</td>
+<td class="gt_row gt_right" headers="adj_r2">0.01</td>
+<td class="gt_row gt_right" headers="Size"></td>
+<td class="gt_row gt_right" headers="Book-to-market"></td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">1</td>
-<td style="text-align: right;">1992</td>
-<td style="text-align: right;">28.09</td>
-<td style="text-align: right;">-9.24</td>
-<td style="text-align: right;">5354</td>
-<td style="text-align: right;">0.01</td>
-<td style="text-align: right;">0.01</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;"></td>
+<td class="gt_row gt_left" headers="Model">1</td>
+<td class="gt_row gt_right" headers="year">1992</td>
+<td class="gt_row gt_right" headers="Intercept">28.09</td>
+<td class="gt_row gt_right" headers="Beta">-9.24</td>
+<td class="gt_row gt_right" headers="nobs">5354</td>
+<td class="gt_row gt_right" headers="r2">0.01</td>
+<td class="gt_row gt_right" headers="adj_r2">0.01</td>
+<td class="gt_row gt_right" headers="Size"></td>
+<td class="gt_row gt_right" headers="Book-to-market"></td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">1</td>
-<td style="text-align: right;">1993</td>
-<td style="text-align: right;">-5.21</td>
-<td style="text-align: right;">-0.50</td>
-<td style="text-align: right;">5635</td>
-<td style="text-align: right;">0.00</td>
-<td style="text-align: right;">-0.00</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;"></td>
+<td class="gt_row gt_left" headers="Model">1</td>
+<td class="gt_row gt_right" headers="year">1993</td>
+<td class="gt_row gt_right" headers="Intercept">-5.21</td>
+<td class="gt_row gt_right" headers="Beta">-0.50</td>
+<td class="gt_row gt_right" headers="nobs">5635</td>
+<td class="gt_row gt_right" headers="r2">0.00</td>
+<td class="gt_row gt_right" headers="adj_r2">-0.00</td>
+<td class="gt_row gt_right" headers="Size"></td>
+<td class="gt_row gt_right" headers="Book-to-market"></td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">1</td>
-<td style="text-align: right;">1994</td>
-<td style="text-align: right;">25.40</td>
-<td style="text-align: right;">2.91</td>
-<td style="text-align: right;">6108</td>
-<td style="text-align: right;">0.00</td>
-<td style="text-align: right;">0.00</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;"></td>
+<td class="gt_row gt_left" headers="Model">1</td>
+<td class="gt_row gt_right" headers="year">1994</td>
+<td class="gt_row gt_right" headers="Intercept">25.40</td>
+<td class="gt_row gt_right" headers="Beta">2.91</td>
+<td class="gt_row gt_right" headers="nobs">6108</td>
+<td class="gt_row gt_right" headers="r2">0.00</td>
+<td class="gt_row gt_right" headers="adj_r2">0.00</td>
+<td class="gt_row gt_right" headers="Size"></td>
+<td class="gt_row gt_right" headers="Book-to-market"></td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">1</td>
-<td style="text-align: right;">1995</td>
-<td style="text-align: right;">18.27</td>
-<td style="text-align: right;">-5.39</td>
-<td style="text-align: right;">6235</td>
-<td style="text-align: right;">0.00</td>
-<td style="text-align: right;">0.00</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;"></td>
+<td class="gt_row gt_left" headers="Model">1</td>
+<td class="gt_row gt_right" headers="year">1995</td>
+<td class="gt_row gt_right" headers="Intercept">18.27</td>
+<td class="gt_row gt_right" headers="Beta">-5.39</td>
+<td class="gt_row gt_right" headers="nobs">6235</td>
+<td class="gt_row gt_right" headers="r2">0.00</td>
+<td class="gt_row gt_right" headers="adj_r2">0.00</td>
+<td class="gt_row gt_right" headers="Size"></td>
+<td class="gt_row gt_right" headers="Book-to-market"></td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">1</td>
-<td style="text-align: right;">1996</td>
-<td style="text-align: right;">31.08</td>
-<td style="text-align: right;">-17.36</td>
-<td style="text-align: right;">6529</td>
-<td style="text-align: right;">0.02</td>
-<td style="text-align: right;">0.02</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;"></td>
+<td class="gt_row gt_left" headers="Model">1</td>
+<td class="gt_row gt_right" headers="year">1996</td>
+<td class="gt_row gt_right" headers="Intercept">31.08</td>
+<td class="gt_row gt_right" headers="Beta">-17.36</td>
+<td class="gt_row gt_right" headers="nobs">6529</td>
+<td class="gt_row gt_right" headers="r2">0.02</td>
+<td class="gt_row gt_right" headers="adj_r2">0.02</td>
+<td class="gt_row gt_right" headers="Size"></td>
+<td class="gt_row gt_right" headers="Book-to-market"></td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">1</td>
-<td style="text-align: right;">1997</td>
-<td style="text-align: right;">-9.35</td>
-<td style="text-align: right;">4.43</td>
-<td style="text-align: right;">6797</td>
-<td style="text-align: right;">0.00</td>
-<td style="text-align: right;">0.00</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;"></td>
+<td class="gt_row gt_left" headers="Model">1</td>
+<td class="gt_row gt_right" headers="year">1997</td>
+<td class="gt_row gt_right" headers="Intercept">-9.35</td>
+<td class="gt_row gt_right" headers="Beta">4.43</td>
+<td class="gt_row gt_right" headers="nobs">6797</td>
+<td class="gt_row gt_right" headers="r2">0.00</td>
+<td class="gt_row gt_right" headers="adj_r2">0.00</td>
+<td class="gt_row gt_right" headers="Size"></td>
+<td class="gt_row gt_right" headers="Book-to-market"></td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">1</td>
-<td style="text-align: right;">1998</td>
-<td style="text-align: right;">1.45</td>
-<td style="text-align: right;">45.89</td>
-<td style="text-align: right;">6520</td>
-<td style="text-align: right;">0.02</td>
-<td style="text-align: right;">0.02</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;"></td>
+<td class="gt_row gt_left" headers="Model">1</td>
+<td class="gt_row gt_right" headers="year">1998</td>
+<td class="gt_row gt_right" headers="Intercept">1.45</td>
+<td class="gt_row gt_right" headers="Beta">45.89</td>
+<td class="gt_row gt_right" headers="nobs">6520</td>
+<td class="gt_row gt_right" headers="r2">0.02</td>
+<td class="gt_row gt_right" headers="adj_r2">0.02</td>
+<td class="gt_row gt_right" headers="Size"></td>
+<td class="gt_row gt_right" headers="Book-to-market"></td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">1</td>
-<td style="text-align: right;">1999</td>
-<td style="text-align: right;">-0.85</td>
-<td style="text-align: right;">-14.58</td>
-<td style="text-align: right;">6035</td>
-<td style="text-align: right;">0.01</td>
-<td style="text-align: right;">0.01</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;"></td>
+<td class="gt_row gt_left" headers="Model">1</td>
+<td class="gt_row gt_right" headers="year">1999</td>
+<td class="gt_row gt_right" headers="Intercept">-0.85</td>
+<td class="gt_row gt_right" headers="Beta">-14.58</td>
+<td class="gt_row gt_right" headers="nobs">6035</td>
+<td class="gt_row gt_right" headers="r2">0.01</td>
+<td class="gt_row gt_right" headers="adj_r2">0.01</td>
+<td class="gt_row gt_right" headers="Size"></td>
+<td class="gt_row gt_right" headers="Book-to-market"></td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">1</td>
-<td style="text-align: right;">2000</td>
-<td style="text-align: right;">37.17</td>
-<td style="text-align: right;">-24.56</td>
-<td style="text-align: right;">5816</td>
-<td style="text-align: right;">0.03</td>
-<td style="text-align: right;">0.03</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;"></td>
+<td class="gt_row gt_left" headers="Model">1</td>
+<td class="gt_row gt_right" headers="year">2000</td>
+<td class="gt_row gt_right" headers="Intercept">37.17</td>
+<td class="gt_row gt_right" headers="Beta">-24.56</td>
+<td class="gt_row gt_right" headers="nobs">5816</td>
+<td class="gt_row gt_right" headers="r2">0.03</td>
+<td class="gt_row gt_right" headers="adj_r2">0.03</td>
+<td class="gt_row gt_right" headers="Size"></td>
+<td class="gt_row gt_right" headers="Book-to-market"></td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">1</td>
-<td style="text-align: right;">2001</td>
-<td style="text-align: right;">7.81</td>
-<td style="text-align: right;">-27.26</td>
-<td style="text-align: right;">5447</td>
-<td style="text-align: right;">0.11</td>
-<td style="text-align: right;">0.11</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;"></td>
+<td class="gt_row gt_left" headers="Model">1</td>
+<td class="gt_row gt_right" headers="year">2001</td>
+<td class="gt_row gt_right" headers="Intercept">7.81</td>
+<td class="gt_row gt_right" headers="Beta">-27.26</td>
+<td class="gt_row gt_right" headers="nobs">5447</td>
+<td class="gt_row gt_right" headers="r2">0.11</td>
+<td class="gt_row gt_right" headers="adj_r2">0.11</td>
+<td class="gt_row gt_right" headers="Size"></td>
+<td class="gt_row gt_right" headers="Book-to-market"></td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">1</td>
-<td style="text-align: right;">2002</td>
-<td style="text-align: right;">72.27</td>
-<td style="text-align: right;">2.19</td>
-<td style="text-align: right;">5035</td>
-<td style="text-align: right;">0.00</td>
-<td style="text-align: right;">-0.00</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;"></td>
+<td class="gt_row gt_left" headers="Model">1</td>
+<td class="gt_row gt_right" headers="year">2002</td>
+<td class="gt_row gt_right" headers="Intercept">72.27</td>
+<td class="gt_row gt_right" headers="Beta">2.19</td>
+<td class="gt_row gt_right" headers="nobs">5035</td>
+<td class="gt_row gt_right" headers="r2">0.00</td>
+<td class="gt_row gt_right" headers="adj_r2">-0.00</td>
+<td class="gt_row gt_right" headers="Size"></td>
+<td class="gt_row gt_right" headers="Book-to-market"></td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">1</td>
-<td style="text-align: right;">2003</td>
-<td style="text-align: right;">28.62</td>
-<td style="text-align: right;">-13.75</td>
-<td style="text-align: right;">4695</td>
-<td style="text-align: right;">0.02</td>
-<td style="text-align: right;">0.02</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;"></td>
+<td class="gt_row gt_left" headers="Model">1</td>
+<td class="gt_row gt_right" headers="year">2003</td>
+<td class="gt_row gt_right" headers="Intercept">28.62</td>
+<td class="gt_row gt_right" headers="Beta">-13.75</td>
+<td class="gt_row gt_right" headers="nobs">4695</td>
+<td class="gt_row gt_right" headers="r2">0.02</td>
+<td class="gt_row gt_right" headers="adj_r2">0.02</td>
+<td class="gt_row gt_right" headers="Size"></td>
+<td class="gt_row gt_right" headers="Book-to-market"></td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">1</td>
-<td style="text-align: right;">2004</td>
-<td style="text-align: right;">7.84</td>
-<td style="text-align: right;">-5.94</td>
-<td style="text-align: right;">4533</td>
-<td style="text-align: right;">0.01</td>
-<td style="text-align: right;">0.01</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;"></td>
+<td class="gt_row gt_left" headers="Model">1</td>
+<td class="gt_row gt_right" headers="year">2004</td>
+<td class="gt_row gt_right" headers="Intercept">7.84</td>
+<td class="gt_row gt_right" headers="Beta">-5.94</td>
+<td class="gt_row gt_right" headers="nobs">4533</td>
+<td class="gt_row gt_right" headers="r2">0.01</td>
+<td class="gt_row gt_right" headers="adj_r2">0.01</td>
+<td class="gt_row gt_right" headers="Size"></td>
+<td class="gt_row gt_right" headers="Book-to-market"></td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">1</td>
-<td style="text-align: right;">2005</td>
-<td style="text-align: right;">12.63</td>
-<td style="text-align: right;">-1.48</td>
-<td style="text-align: right;">4463</td>
-<td style="text-align: right;">0.00</td>
-<td style="text-align: right;">0.00</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;"></td>
+<td class="gt_row gt_left" headers="Model">1</td>
+<td class="gt_row gt_right" headers="year">2005</td>
+<td class="gt_row gt_right" headers="Intercept">12.63</td>
+<td class="gt_row gt_right" headers="Beta">-1.48</td>
+<td class="gt_row gt_right" headers="nobs">4463</td>
+<td class="gt_row gt_right" headers="r2">0.00</td>
+<td class="gt_row gt_right" headers="adj_r2">0.00</td>
+<td class="gt_row gt_right" headers="Size"></td>
+<td class="gt_row gt_right" headers="Book-to-market"></td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">1</td>
-<td style="text-align: right;">2006</td>
-<td style="text-align: right;">-12.06</td>
-<td style="text-align: right;">4.41</td>
-<td style="text-align: right;">4408</td>
-<td style="text-align: right;">0.00</td>
-<td style="text-align: right;">0.00</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;"></td>
+<td class="gt_row gt_left" headers="Model">1</td>
+<td class="gt_row gt_right" headers="year">2006</td>
+<td class="gt_row gt_right" headers="Intercept">-12.06</td>
+<td class="gt_row gt_right" headers="Beta">4.41</td>
+<td class="gt_row gt_right" headers="nobs">4408</td>
+<td class="gt_row gt_right" headers="r2">0.00</td>
+<td class="gt_row gt_right" headers="adj_r2">0.00</td>
+<td class="gt_row gt_right" headers="Size"></td>
+<td class="gt_row gt_right" headers="Book-to-market"></td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">1</td>
-<td style="text-align: right;">2007</td>
-<td style="text-align: right;">-41.06</td>
-<td style="text-align: right;">-0.65</td>
-<td style="text-align: right;">4303</td>
-<td style="text-align: right;">0.00</td>
-<td style="text-align: right;">-0.00</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;"></td>
+<td class="gt_row gt_left" headers="Model">1</td>
+<td class="gt_row gt_right" headers="year">2007</td>
+<td class="gt_row gt_right" headers="Intercept">-41.06</td>
+<td class="gt_row gt_right" headers="Beta">-0.65</td>
+<td class="gt_row gt_right" headers="nobs">4303</td>
+<td class="gt_row gt_right" headers="r2">0.00</td>
+<td class="gt_row gt_right" headers="adj_r2">-0.00</td>
+<td class="gt_row gt_right" headers="Size"></td>
+<td class="gt_row gt_right" headers="Book-to-market"></td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">1</td>
-<td style="text-align: right;">2008</td>
-<td style="text-align: right;">62.65</td>
-<td style="text-align: right;">-1.42</td>
-<td style="text-align: right;">4218</td>
-<td style="text-align: right;">0.00</td>
-<td style="text-align: right;">-0.00</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;"></td>
+<td class="gt_row gt_left" headers="Model">1</td>
+<td class="gt_row gt_right" headers="year">2008</td>
+<td class="gt_row gt_right" headers="Intercept">62.65</td>
+<td class="gt_row gt_right" headers="Beta">-1.42</td>
+<td class="gt_row gt_right" headers="nobs">4218</td>
+<td class="gt_row gt_right" headers="r2">0.00</td>
+<td class="gt_row gt_right" headers="adj_r2">-0.00</td>
+<td class="gt_row gt_right" headers="Size"></td>
+<td class="gt_row gt_right" headers="Book-to-market"></td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">1</td>
-<td style="text-align: right;">2009</td>
-<td style="text-align: right;">17.97</td>
-<td style="text-align: right;">7.79</td>
-<td style="text-align: right;">3940</td>
-<td style="text-align: right;">0.01</td>
-<td style="text-align: right;">0.01</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;"></td>
+<td class="gt_row gt_left" headers="Model">1</td>
+<td class="gt_row gt_right" headers="year">2009</td>
+<td class="gt_row gt_right" headers="Intercept">17.97</td>
+<td class="gt_row gt_right" headers="Beta">7.79</td>
+<td class="gt_row gt_right" headers="nobs">3940</td>
+<td class="gt_row gt_right" headers="r2">0.01</td>
+<td class="gt_row gt_right" headers="adj_r2">0.01</td>
+<td class="gt_row gt_right" headers="Size"></td>
+<td class="gt_row gt_right" headers="Book-to-market"></td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">1</td>
-<td style="text-align: right;">2010</td>
-<td style="text-align: right;">0.59</td>
-<td style="text-align: right;">-6.84</td>
-<td style="text-align: right;">3772</td>
-<td style="text-align: right;">0.01</td>
-<td style="text-align: right;">0.01</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;"></td>
+<td class="gt_row gt_left" headers="Model">1</td>
+<td class="gt_row gt_right" headers="year">2010</td>
+<td class="gt_row gt_right" headers="Intercept">0.59</td>
+<td class="gt_row gt_right" headers="Beta">-6.84</td>
+<td class="gt_row gt_right" headers="nobs">3772</td>
+<td class="gt_row gt_right" headers="r2">0.01</td>
+<td class="gt_row gt_right" headers="adj_r2">0.01</td>
+<td class="gt_row gt_right" headers="Size"></td>
+<td class="gt_row gt_right" headers="Book-to-market"></td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">1</td>
-<td style="text-align: right;">2011</td>
-<td style="text-align: right;">25.99</td>
-<td style="text-align: right;">-5.89</td>
-<td style="text-align: right;">3648</td>
-<td style="text-align: right;">0.00</td>
-<td style="text-align: right;">0.00</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;"></td>
+<td class="gt_row gt_left" headers="Model">1</td>
+<td class="gt_row gt_right" headers="year">2011</td>
+<td class="gt_row gt_right" headers="Intercept">25.99</td>
+<td class="gt_row gt_right" headers="Beta">-5.89</td>
+<td class="gt_row gt_right" headers="nobs">3648</td>
+<td class="gt_row gt_right" headers="r2">0.00</td>
+<td class="gt_row gt_right" headers="adj_r2">0.00</td>
+<td class="gt_row gt_right" headers="Size"></td>
+<td class="gt_row gt_right" headers="Book-to-market"></td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">2</td>
-<td style="text-align: right;">1988</td>
-<td style="text-align: right;">-7.67</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;">6001</td>
-<td style="text-align: right;">0.01</td>
-<td style="text-align: right;">0.01</td>
-<td style="text-align: right;">3.16</td>
-<td style="text-align: right;"></td>
+<td class="gt_row gt_left" headers="Model">2</td>
+<td class="gt_row gt_right" headers="year">1988</td>
+<td class="gt_row gt_right" headers="Intercept">-7.67</td>
+<td class="gt_row gt_right" headers="Beta"></td>
+<td class="gt_row gt_right" headers="nobs">6001</td>
+<td class="gt_row gt_right" headers="r2">0.01</td>
+<td class="gt_row gt_right" headers="adj_r2">0.01</td>
+<td class="gt_row gt_right" headers="Size">3.16</td>
+<td class="gt_row gt_right" headers="Book-to-market"></td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">2</td>
-<td style="text-align: right;">1989</td>
-<td style="text-align: right;">-32.76</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;">5807</td>
-<td style="text-align: right;">0.00</td>
-<td style="text-align: right;">0.00</td>
-<td style="text-align: right;">1.10</td>
-<td style="text-align: right;"></td>
+<td class="gt_row gt_left" headers="Model">2</td>
+<td class="gt_row gt_right" headers="year">1989</td>
+<td class="gt_row gt_right" headers="Intercept">-32.76</td>
+<td class="gt_row gt_right" headers="Beta"></td>
+<td class="gt_row gt_right" headers="nobs">5807</td>
+<td class="gt_row gt_right" headers="r2">0.00</td>
+<td class="gt_row gt_right" headers="adj_r2">0.00</td>
+<td class="gt_row gt_right" headers="Size">1.10</td>
+<td class="gt_row gt_right" headers="Book-to-market"></td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">2</td>
-<td style="text-align: right;">1990</td>
-<td style="text-align: right;">66.80</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;">5671</td>
-<td style="text-align: right;">0.01</td>
-<td style="text-align: right;">0.01</td>
-<td style="text-align: right;">-5.39</td>
-<td style="text-align: right;"></td>
+<td class="gt_row gt_left" headers="Model">2</td>
+<td class="gt_row gt_right" headers="year">1990</td>
+<td class="gt_row gt_right" headers="Intercept">66.80</td>
+<td class="gt_row gt_right" headers="Beta"></td>
+<td class="gt_row gt_right" headers="nobs">5671</td>
+<td class="gt_row gt_right" headers="r2">0.01</td>
+<td class="gt_row gt_right" headers="adj_r2">0.01</td>
+<td class="gt_row gt_right" headers="Size">-5.39</td>
+<td class="gt_row gt_right" headers="Book-to-market"></td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">2</td>
-<td style="text-align: right;">1991</td>
-<td style="text-align: right;">52.85</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;">5726</td>
-<td style="text-align: right;">0.02</td>
-<td style="text-align: right;">0.02</td>
-<td style="text-align: right;">-7.14</td>
-<td style="text-align: right;"></td>
+<td class="gt_row gt_left" headers="Model">2</td>
+<td class="gt_row gt_right" headers="year">1991</td>
+<td class="gt_row gt_right" headers="Intercept">52.85</td>
+<td class="gt_row gt_right" headers="Beta"></td>
+<td class="gt_row gt_right" headers="nobs">5726</td>
+<td class="gt_row gt_right" headers="r2">0.02</td>
+<td class="gt_row gt_right" headers="adj_r2">0.02</td>
+<td class="gt_row gt_right" headers="Size">-7.14</td>
+<td class="gt_row gt_right" headers="Book-to-market"></td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">2</td>
-<td style="text-align: right;">1992</td>
-<td style="text-align: right;">45.03</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;">5854</td>
-<td style="text-align: right;">0.02</td>
-<td style="text-align: right;">0.02</td>
-<td style="text-align: right;">-5.49</td>
-<td style="text-align: right;"></td>
+<td class="gt_row gt_left" headers="Model">2</td>
+<td class="gt_row gt_right" headers="year">1992</td>
+<td class="gt_row gt_right" headers="Intercept">45.03</td>
+<td class="gt_row gt_right" headers="Beta"></td>
+<td class="gt_row gt_right" headers="nobs">5854</td>
+<td class="gt_row gt_right" headers="r2">0.02</td>
+<td class="gt_row gt_right" headers="adj_r2">0.02</td>
+<td class="gt_row gt_right" headers="Size">-5.49</td>
+<td class="gt_row gt_right" headers="Book-to-market"></td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">2</td>
-<td style="text-align: right;">1993</td>
-<td style="text-align: right;">-3.70</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;">6389</td>
-<td style="text-align: right;">0.00</td>
-<td style="text-align: right;">0.00</td>
-<td style="text-align: right;">-0.65</td>
-<td style="text-align: right;"></td>
+<td class="gt_row gt_left" headers="Model">2</td>
+<td class="gt_row gt_right" headers="year">1993</td>
+<td class="gt_row gt_right" headers="Intercept">-3.70</td>
+<td class="gt_row gt_right" headers="Beta"></td>
+<td class="gt_row gt_right" headers="nobs">6389</td>
+<td class="gt_row gt_right" headers="r2">0.00</td>
+<td class="gt_row gt_right" headers="adj_r2">0.00</td>
+<td class="gt_row gt_right" headers="Size">-0.65</td>
+<td class="gt_row gt_right" headers="Book-to-market"></td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">2</td>
-<td style="text-align: right;">1994</td>
-<td style="text-align: right;">30.71</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;">6683</td>
-<td style="text-align: right;">0.00</td>
-<td style="text-align: right;">0.00</td>
-<td style="text-align: right;">-0.63</td>
-<td style="text-align: right;"></td>
+<td class="gt_row gt_left" headers="Model">2</td>
+<td class="gt_row gt_right" headers="year">1994</td>
+<td class="gt_row gt_right" headers="Intercept">30.71</td>
+<td class="gt_row gt_right" headers="Beta"></td>
+<td class="gt_row gt_right" headers="nobs">6683</td>
+<td class="gt_row gt_right" headers="r2">0.00</td>
+<td class="gt_row gt_right" headers="adj_r2">0.00</td>
+<td class="gt_row gt_right" headers="Size">-0.63</td>
+<td class="gt_row gt_right" headers="Book-to-market"></td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">2</td>
-<td style="text-align: right;">1995</td>
-<td style="text-align: right;">18.45</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;">6904</td>
-<td style="text-align: right;">0.00</td>
-<td style="text-align: right;">0.00</td>
-<td style="text-align: right;">-1.10</td>
-<td style="text-align: right;"></td>
+<td class="gt_row gt_left" headers="Model">2</td>
+<td class="gt_row gt_right" headers="year">1995</td>
+<td class="gt_row gt_right" headers="Intercept">18.45</td>
+<td class="gt_row gt_right" headers="Beta"></td>
+<td class="gt_row gt_right" headers="nobs">6904</td>
+<td class="gt_row gt_right" headers="r2">0.00</td>
+<td class="gt_row gt_right" headers="adj_r2">0.00</td>
+<td class="gt_row gt_right" headers="Size">-1.10</td>
+<td class="gt_row gt_right" headers="Book-to-market"></td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">2</td>
-<td style="text-align: right;">1996</td>
-<td style="text-align: right;">14.86</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;">7384</td>
-<td style="text-align: right;">0.00</td>
-<td style="text-align: right;">0.00</td>
-<td style="text-align: right;">0.56</td>
-<td style="text-align: right;"></td>
+<td class="gt_row gt_left" headers="Model">2</td>
+<td class="gt_row gt_right" headers="year">1996</td>
+<td class="gt_row gt_right" headers="Intercept">14.86</td>
+<td class="gt_row gt_right" headers="Beta"></td>
+<td class="gt_row gt_right" headers="nobs">7384</td>
+<td class="gt_row gt_right" headers="r2">0.00</td>
+<td class="gt_row gt_right" headers="adj_r2">0.00</td>
+<td class="gt_row gt_right" headers="Size">0.56</td>
+<td class="gt_row gt_right" headers="Book-to-market"></td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">2</td>
-<td style="text-align: right;">1997</td>
-<td style="text-align: right;">-17.50</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;">7367</td>
-<td style="text-align: right;">0.00</td>
-<td style="text-align: right;">0.00</td>
-<td style="text-align: right;">2.12</td>
-<td style="text-align: right;"></td>
+<td class="gt_row gt_left" headers="Model">2</td>
+<td class="gt_row gt_right" headers="year">1997</td>
+<td class="gt_row gt_right" headers="Intercept">-17.50</td>
+<td class="gt_row gt_right" headers="Beta"></td>
+<td class="gt_row gt_right" headers="nobs">7367</td>
+<td class="gt_row gt_right" headers="r2">0.00</td>
+<td class="gt_row gt_right" headers="adj_r2">0.00</td>
+<td class="gt_row gt_right" headers="Size">2.12</td>
+<td class="gt_row gt_right" headers="Book-to-market"></td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">2</td>
-<td style="text-align: right;">1998</td>
-<td style="text-align: right;">68.04</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;">6918</td>
-<td style="text-align: right;">0.01</td>
-<td style="text-align: right;">0.01</td>
-<td style="text-align: right;">-6.87</td>
-<td style="text-align: right;"></td>
+<td class="gt_row gt_left" headers="Model">2</td>
+<td class="gt_row gt_right" headers="year">1998</td>
+<td class="gt_row gt_right" headers="Intercept">68.04</td>
+<td class="gt_row gt_right" headers="Beta"></td>
+<td class="gt_row gt_right" headers="nobs">6918</td>
+<td class="gt_row gt_right" headers="r2">0.01</td>
+<td class="gt_row gt_right" headers="adj_r2">0.01</td>
+<td class="gt_row gt_right" headers="Size">-6.87</td>
+<td class="gt_row gt_right" headers="Book-to-market"></td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">2</td>
-<td style="text-align: right;">1999</td>
-<td style="text-align: right;">-16.07</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;">6589</td>
-<td style="text-align: right;">0.00</td>
-<td style="text-align: right;">0.00</td>
-<td style="text-align: right;">1.08</td>
-<td style="text-align: right;"></td>
+<td class="gt_row gt_left" headers="Model">2</td>
+<td class="gt_row gt_right" headers="year">1999</td>
+<td class="gt_row gt_right" headers="Intercept">-16.07</td>
+<td class="gt_row gt_right" headers="Beta"></td>
+<td class="gt_row gt_right" headers="nobs">6589</td>
+<td class="gt_row gt_right" headers="r2">0.00</td>
+<td class="gt_row gt_right" headers="adj_r2">0.00</td>
+<td class="gt_row gt_right" headers="Size">1.08</td>
+<td class="gt_row gt_right" headers="Book-to-market"></td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">2</td>
-<td style="text-align: right;">2000</td>
-<td style="text-align: right;">56.70</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;">6271</td>
-<td style="text-align: right;">0.03</td>
-<td style="text-align: right;">0.03</td>
-<td style="text-align: right;">-8.07</td>
-<td style="text-align: right;"></td>
+<td class="gt_row gt_left" headers="Model">2</td>
+<td class="gt_row gt_right" headers="year">2000</td>
+<td class="gt_row gt_right" headers="Intercept">56.70</td>
+<td class="gt_row gt_right" headers="Beta"></td>
+<td class="gt_row gt_right" headers="nobs">6271</td>
+<td class="gt_row gt_right" headers="r2">0.03</td>
+<td class="gt_row gt_right" headers="adj_r2">0.03</td>
+<td class="gt_row gt_right" headers="Size">-8.07</td>
+<td class="gt_row gt_right" headers="Book-to-market"></td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">2</td>
-<td style="text-align: right;">2001</td>
-<td style="text-align: right;">4.71</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;">5591</td>
-<td style="text-align: right;">0.02</td>
-<td style="text-align: right;">0.02</td>
-<td style="text-align: right;">-3.48</td>
-<td style="text-align: right;"></td>
+<td class="gt_row gt_left" headers="Model">2</td>
+<td class="gt_row gt_right" headers="year">2001</td>
+<td class="gt_row gt_right" headers="Intercept">4.71</td>
+<td class="gt_row gt_right" headers="Beta"></td>
+<td class="gt_row gt_right" headers="nobs">5591</td>
+<td class="gt_row gt_right" headers="r2">0.02</td>
+<td class="gt_row gt_right" headers="adj_r2">0.02</td>
+<td class="gt_row gt_right" headers="Size">-3.48</td>
+<td class="gt_row gt_right" headers="Book-to-market"></td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">2</td>
-<td style="text-align: right;">2002</td>
-<td style="text-align: right;">143.00</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;">5168</td>
-<td style="text-align: right;">0.05</td>
-<td style="text-align: right;">0.05</td>
-<td style="text-align: right;">-13.82</td>
-<td style="text-align: right;"></td>
+<td class="gt_row gt_left" headers="Model">2</td>
+<td class="gt_row gt_right" headers="year">2002</td>
+<td class="gt_row gt_right" headers="Intercept">143.00</td>
+<td class="gt_row gt_right" headers="Beta"></td>
+<td class="gt_row gt_right" headers="nobs">5168</td>
+<td class="gt_row gt_right" headers="r2">0.05</td>
+<td class="gt_row gt_right" headers="adj_r2">0.05</td>
+<td class="gt_row gt_right" headers="Size">-13.82</td>
+<td class="gt_row gt_right" headers="Book-to-market"></td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">2</td>
-<td style="text-align: right;">2003</td>
-<td style="text-align: right;">32.94</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;">4857</td>
-<td style="text-align: right;">0.01</td>
-<td style="text-align: right;">0.01</td>
-<td style="text-align: right;">-2.45</td>
-<td style="text-align: right;"></td>
+<td class="gt_row gt_left" headers="Model">2</td>
+<td class="gt_row gt_right" headers="year">2003</td>
+<td class="gt_row gt_right" headers="Intercept">32.94</td>
+<td class="gt_row gt_right" headers="Beta"></td>
+<td class="gt_row gt_right" headers="nobs">4857</td>
+<td class="gt_row gt_right" headers="r2">0.01</td>
+<td class="gt_row gt_right" headers="adj_r2">0.01</td>
+<td class="gt_row gt_right" headers="Size">-2.45</td>
+<td class="gt_row gt_right" headers="Book-to-market"></td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">2</td>
-<td style="text-align: right;">2004</td>
-<td style="text-align: right;">-3.70</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;">4792</td>
-<td style="text-align: right;">0.00</td>
-<td style="text-align: right;">0.00</td>
-<td style="text-align: right;">1.00</td>
-<td style="text-align: right;"></td>
+<td class="gt_row gt_left" headers="Model">2</td>
+<td class="gt_row gt_right" headers="year">2004</td>
+<td class="gt_row gt_right" headers="Intercept">-3.70</td>
+<td class="gt_row gt_right" headers="Beta"></td>
+<td class="gt_row gt_right" headers="nobs">4792</td>
+<td class="gt_row gt_right" headers="r2">0.00</td>
+<td class="gt_row gt_right" headers="adj_r2">0.00</td>
+<td class="gt_row gt_right" headers="Size">1.00</td>
+<td class="gt_row gt_right" headers="Book-to-market"></td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">2</td>
-<td style="text-align: right;">2005</td>
-<td style="text-align: right;">14.29</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;">4721</td>
-<td style="text-align: right;">0.00</td>
-<td style="text-align: right;">0.00</td>
-<td style="text-align: right;">-0.54</td>
-<td style="text-align: right;"></td>
+<td class="gt_row gt_left" headers="Model">2</td>
+<td class="gt_row gt_right" headers="year">2005</td>
+<td class="gt_row gt_right" headers="Intercept">14.29</td>
+<td class="gt_row gt_right" headers="Beta"></td>
+<td class="gt_row gt_right" headers="nobs">4721</td>
+<td class="gt_row gt_right" headers="r2">0.00</td>
+<td class="gt_row gt_right" headers="adj_r2">0.00</td>
+<td class="gt_row gt_right" headers="Size">-0.54</td>
+<td class="gt_row gt_right" headers="Book-to-market"></td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">2</td>
-<td style="text-align: right;">2006</td>
-<td style="text-align: right;">-24.21</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;">4661</td>
-<td style="text-align: right;">0.01</td>
-<td style="text-align: right;">0.01</td>
-<td style="text-align: right;">2.76</td>
-<td style="text-align: right;"></td>
+<td class="gt_row gt_left" headers="Model">2</td>
+<td class="gt_row gt_right" headers="year">2006</td>
+<td class="gt_row gt_right" headers="Intercept">-24.21</td>
+<td class="gt_row gt_right" headers="Beta"></td>
+<td class="gt_row gt_right" headers="nobs">4661</td>
+<td class="gt_row gt_right" headers="r2">0.01</td>
+<td class="gt_row gt_right" headers="adj_r2">0.01</td>
+<td class="gt_row gt_right" headers="Size">2.76</td>
+<td class="gt_row gt_right" headers="Book-to-market"></td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">2</td>
-<td style="text-align: right;">2007</td>
-<td style="text-align: right;">-51.07</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;">4589</td>
-<td style="text-align: right;">0.01</td>
-<td style="text-align: right;">0.01</td>
-<td style="text-align: right;">1.51</td>
-<td style="text-align: right;"></td>
+<td class="gt_row gt_left" headers="Model">2</td>
+<td class="gt_row gt_right" headers="year">2007</td>
+<td class="gt_row gt_right" headers="Intercept">-51.07</td>
+<td class="gt_row gt_right" headers="Beta"></td>
+<td class="gt_row gt_right" headers="nobs">4589</td>
+<td class="gt_row gt_right" headers="r2">0.01</td>
+<td class="gt_row gt_right" headers="adj_r2">0.01</td>
+<td class="gt_row gt_right" headers="Size">1.51</td>
+<td class="gt_row gt_right" headers="Book-to-market"></td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">2</td>
-<td style="text-align: right;">2008</td>
-<td style="text-align: right;">130.99</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;">4306</td>
-<td style="text-align: right;">0.02</td>
-<td style="text-align: right;">0.02</td>
-<td style="text-align: right;">-13.15</td>
-<td style="text-align: right;"></td>
+<td class="gt_row gt_left" headers="Model">2</td>
+<td class="gt_row gt_right" headers="year">2008</td>
+<td class="gt_row gt_right" headers="Intercept">130.99</td>
+<td class="gt_row gt_right" headers="Beta"></td>
+<td class="gt_row gt_right" headers="nobs">4306</td>
+<td class="gt_row gt_right" headers="r2">0.02</td>
+<td class="gt_row gt_right" headers="adj_r2">0.02</td>
+<td class="gt_row gt_right" headers="Size">-13.15</td>
+<td class="gt_row gt_right" headers="Book-to-market"></td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">2</td>
-<td style="text-align: right;">2009</td>
-<td style="text-align: right;">28.88</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;">4055</td>
-<td style="text-align: right;">0.00</td>
-<td style="text-align: right;">0.00</td>
-<td style="text-align: right;">-0.52</td>
-<td style="text-align: right;"></td>
+<td class="gt_row gt_left" headers="Model">2</td>
+<td class="gt_row gt_right" headers="year">2009</td>
+<td class="gt_row gt_right" headers="Intercept">28.88</td>
+<td class="gt_row gt_right" headers="Beta"></td>
+<td class="gt_row gt_right" headers="nobs">4055</td>
+<td class="gt_row gt_right" headers="r2">0.00</td>
+<td class="gt_row gt_right" headers="adj_r2">0.00</td>
+<td class="gt_row gt_right" headers="Size">-0.52</td>
+<td class="gt_row gt_right" headers="Book-to-market"></td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">2</td>
-<td style="text-align: right;">2010</td>
-<td style="text-align: right;">-21.60</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;">3922</td>
-<td style="text-align: right;">0.01</td>
-<td style="text-align: right;">0.01</td>
-<td style="text-align: right;">2.35</td>
-<td style="text-align: right;"></td>
+<td class="gt_row gt_left" headers="Model">2</td>
+<td class="gt_row gt_right" headers="year">2010</td>
+<td class="gt_row gt_right" headers="Intercept">-21.60</td>
+<td class="gt_row gt_right" headers="Beta"></td>
+<td class="gt_row gt_right" headers="nobs">3922</td>
+<td class="gt_row gt_right" headers="r2">0.01</td>
+<td class="gt_row gt_right" headers="adj_r2">0.01</td>
+<td class="gt_row gt_right" headers="Size">2.35</td>
+<td class="gt_row gt_right" headers="Book-to-market"></td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">2</td>
-<td style="text-align: right;">2011</td>
-<td style="text-align: right;">27.39</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;">3757</td>
-<td style="text-align: right;">0.00</td>
-<td style="text-align: right;">0.00</td>
-<td style="text-align: right;">-1.35</td>
-<td style="text-align: right;"></td>
+<td class="gt_row gt_left" headers="Model">2</td>
+<td class="gt_row gt_right" headers="year">2011</td>
+<td class="gt_row gt_right" headers="Intercept">27.39</td>
+<td class="gt_row gt_right" headers="Beta"></td>
+<td class="gt_row gt_right" headers="nobs">3757</td>
+<td class="gt_row gt_right" headers="r2">0.00</td>
+<td class="gt_row gt_right" headers="adj_r2">0.00</td>
+<td class="gt_row gt_right" headers="Size">-1.35</td>
+<td class="gt_row gt_right" headers="Book-to-market"></td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">3</td>
-<td style="text-align: right;">1988</td>
-<td style="text-align: right;">3.50</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;">4379</td>
-<td style="text-align: right;">0.00</td>
-<td style="text-align: right;">0.00</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;">3.00</td>
+<td class="gt_row gt_left" headers="Model">3</td>
+<td class="gt_row gt_right" headers="year">1988</td>
+<td class="gt_row gt_right" headers="Intercept">3.50</td>
+<td class="gt_row gt_right" headers="Beta"></td>
+<td class="gt_row gt_right" headers="nobs">4379</td>
+<td class="gt_row gt_right" headers="r2">0.00</td>
+<td class="gt_row gt_right" headers="adj_r2">0.00</td>
+<td class="gt_row gt_right" headers="Size"></td>
+<td class="gt_row gt_right" headers="Book-to-market">3.00</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">3</td>
-<td style="text-align: right;">1989</td>
-<td style="text-align: right;">-24.69</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;">4320</td>
-<td style="text-align: right;">0.00</td>
-<td style="text-align: right;">0.00</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;">-1.08</td>
+<td class="gt_row gt_left" headers="Model">3</td>
+<td class="gt_row gt_right" headers="year">1989</td>
+<td class="gt_row gt_right" headers="Intercept">-24.69</td>
+<td class="gt_row gt_right" headers="Beta"></td>
+<td class="gt_row gt_right" headers="nobs">4320</td>
+<td class="gt_row gt_right" headers="r2">0.00</td>
+<td class="gt_row gt_right" headers="adj_r2">0.00</td>
+<td class="gt_row gt_right" headers="Size"></td>
+<td class="gt_row gt_right" headers="Book-to-market">-1.08</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">3</td>
-<td style="text-align: right;">1990</td>
-<td style="text-align: right;">54.84</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;">4255</td>
-<td style="text-align: right;">0.00</td>
-<td style="text-align: right;">0.00</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;">-6.56</td>
+<td class="gt_row gt_left" headers="Model">3</td>
+<td class="gt_row gt_right" headers="year">1990</td>
+<td class="gt_row gt_right" headers="Intercept">54.84</td>
+<td class="gt_row gt_right" headers="Beta"></td>
+<td class="gt_row gt_right" headers="nobs">4255</td>
+<td class="gt_row gt_right" headers="r2">0.00</td>
+<td class="gt_row gt_right" headers="adj_r2">0.00</td>
+<td class="gt_row gt_right" headers="Size"></td>
+<td class="gt_row gt_right" headers="Book-to-market">-6.56</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">3</td>
-<td style="text-align: right;">1991</td>
-<td style="text-align: right;">13.39</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;">4249</td>
-<td style="text-align: right;">0.01</td>
-<td style="text-align: right;">0.01</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;">7.38</td>
+<td class="gt_row gt_left" headers="Model">3</td>
+<td class="gt_row gt_right" headers="year">1991</td>
+<td class="gt_row gt_right" headers="Intercept">13.39</td>
+<td class="gt_row gt_right" headers="Beta"></td>
+<td class="gt_row gt_right" headers="nobs">4249</td>
+<td class="gt_row gt_right" headers="r2">0.01</td>
+<td class="gt_row gt_right" headers="adj_r2">0.01</td>
+<td class="gt_row gt_right" headers="Size"></td>
+<td class="gt_row gt_right" headers="Book-to-market">7.38</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">3</td>
-<td style="text-align: right;">1992</td>
-<td style="text-align: right;">15.84</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;">4250</td>
-<td style="text-align: right;">0.01</td>
-<td style="text-align: right;">0.01</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;">6.58</td>
+<td class="gt_row gt_left" headers="Model">3</td>
+<td class="gt_row gt_right" headers="year">1992</td>
+<td class="gt_row gt_right" headers="Intercept">15.84</td>
+<td class="gt_row gt_right" headers="Beta"></td>
+<td class="gt_row gt_right" headers="nobs">4250</td>
+<td class="gt_row gt_right" headers="r2">0.01</td>
+<td class="gt_row gt_right" headers="adj_r2">0.01</td>
+<td class="gt_row gt_right" headers="Size"></td>
+<td class="gt_row gt_right" headers="Book-to-market">6.58</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">3</td>
-<td style="text-align: right;">1993</td>
-<td style="text-align: right;">-10.60</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;">4549</td>
-<td style="text-align: right;">0.01</td>
-<td style="text-align: right;">0.01</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;">6.68</td>
+<td class="gt_row gt_left" headers="Model">3</td>
+<td class="gt_row gt_right" headers="year">1993</td>
+<td class="gt_row gt_right" headers="Intercept">-10.60</td>
+<td class="gt_row gt_right" headers="Beta"></td>
+<td class="gt_row gt_right" headers="nobs">4549</td>
+<td class="gt_row gt_right" headers="r2">0.01</td>
+<td class="gt_row gt_right" headers="adj_r2">0.01</td>
+<td class="gt_row gt_right" headers="Size"></td>
+<td class="gt_row gt_right" headers="Book-to-market">6.68</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">3</td>
-<td style="text-align: right;">1994</td>
-<td style="text-align: right;">25.18</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;">4912</td>
-<td style="text-align: right;">0.00</td>
-<td style="text-align: right;">-0.00</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;">1.88</td>
+<td class="gt_row gt_left" headers="Model">3</td>
+<td class="gt_row gt_right" headers="year">1994</td>
+<td class="gt_row gt_right" headers="Intercept">25.18</td>
+<td class="gt_row gt_right" headers="Beta"></td>
+<td class="gt_row gt_right" headers="nobs">4912</td>
+<td class="gt_row gt_right" headers="r2">0.00</td>
+<td class="gt_row gt_right" headers="adj_r2">-0.00</td>
+<td class="gt_row gt_right" headers="Size"></td>
+<td class="gt_row gt_right" headers="Book-to-market">1.88</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">3</td>
-<td style="text-align: right;">1995</td>
-<td style="text-align: right;">6.28</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;">5098</td>
-<td style="text-align: right;">0.01</td>
-<td style="text-align: right;">0.01</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;">10.46</td>
+<td class="gt_row gt_left" headers="Model">3</td>
+<td class="gt_row gt_right" headers="year">1995</td>
+<td class="gt_row gt_right" headers="Intercept">6.28</td>
+<td class="gt_row gt_right" headers="Beta"></td>
+<td class="gt_row gt_right" headers="nobs">5098</td>
+<td class="gt_row gt_right" headers="r2">0.01</td>
+<td class="gt_row gt_right" headers="adj_r2">0.01</td>
+<td class="gt_row gt_right" headers="Size"></td>
+<td class="gt_row gt_right" headers="Book-to-market">10.46</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">3</td>
-<td style="text-align: right;">1996</td>
-<td style="text-align: right;">7.03</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;">5280</td>
-<td style="text-align: right;">0.01</td>
-<td style="text-align: right;">0.01</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;">11.33</td>
+<td class="gt_row gt_left" headers="Model">3</td>
+<td class="gt_row gt_right" headers="year">1996</td>
+<td class="gt_row gt_right" headers="Intercept">7.03</td>
+<td class="gt_row gt_right" headers="Beta"></td>
+<td class="gt_row gt_right" headers="nobs">5280</td>
+<td class="gt_row gt_right" headers="r2">0.01</td>
+<td class="gt_row gt_right" headers="adj_r2">0.01</td>
+<td class="gt_row gt_right" headers="Size"></td>
+<td class="gt_row gt_right" headers="Book-to-market">11.33</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">3</td>
-<td style="text-align: right;">1997</td>
-<td style="text-align: right;">-9.33</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;">5558</td>
-<td style="text-align: right;">0.00</td>
-<td style="text-align: right;">0.00</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;">4.57</td>
+<td class="gt_row gt_left" headers="Model">3</td>
+<td class="gt_row gt_right" headers="year">1997</td>
+<td class="gt_row gt_right" headers="Intercept">-9.33</td>
+<td class="gt_row gt_right" headers="Beta"></td>
+<td class="gt_row gt_right" headers="nobs">5558</td>
+<td class="gt_row gt_right" headers="r2">0.00</td>
+<td class="gt_row gt_right" headers="adj_r2">0.00</td>
+<td class="gt_row gt_right" headers="Size"></td>
+<td class="gt_row gt_right" headers="Book-to-market">4.57</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">3</td>
-<td style="text-align: right;">1998</td>
-<td style="text-align: right;">46.32</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;">5374</td>
-<td style="text-align: right;">0.00</td>
-<td style="text-align: right;">0.00</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;">-9.88</td>
+<td class="gt_row gt_left" headers="Model">3</td>
+<td class="gt_row gt_right" headers="year">1998</td>
+<td class="gt_row gt_right" headers="Intercept">46.32</td>
+<td class="gt_row gt_right" headers="Beta"></td>
+<td class="gt_row gt_right" headers="nobs">5374</td>
+<td class="gt_row gt_right" headers="r2">0.00</td>
+<td class="gt_row gt_right" headers="adj_r2">0.00</td>
+<td class="gt_row gt_right" headers="Size"></td>
+<td class="gt_row gt_right" headers="Book-to-market">-9.88</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">3</td>
-<td style="text-align: right;">1999</td>
-<td style="text-align: right;">-10.05</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;">4969</td>
-<td style="text-align: right;">0.00</td>
-<td style="text-align: right;">0.00</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;">2.46</td>
+<td class="gt_row gt_left" headers="Model">3</td>
+<td class="gt_row gt_right" headers="year">1999</td>
+<td class="gt_row gt_right" headers="Intercept">-10.05</td>
+<td class="gt_row gt_right" headers="Beta"></td>
+<td class="gt_row gt_right" headers="nobs">4969</td>
+<td class="gt_row gt_right" headers="r2">0.00</td>
+<td class="gt_row gt_right" headers="adj_r2">0.00</td>
+<td class="gt_row gt_right" headers="Size"></td>
+<td class="gt_row gt_right" headers="Book-to-market">2.46</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">3</td>
-<td style="text-align: right;">2000</td>
-<td style="text-align: right;">12.84</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;">4696</td>
-<td style="text-align: right;">0.00</td>
-<td style="text-align: right;">0.00</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;">8.27</td>
+<td class="gt_row gt_left" headers="Model">3</td>
+<td class="gt_row gt_right" headers="year">2000</td>
+<td class="gt_row gt_right" headers="Intercept">12.84</td>
+<td class="gt_row gt_right" headers="Beta"></td>
+<td class="gt_row gt_right" headers="nobs">4696</td>
+<td class="gt_row gt_right" headers="r2">0.00</td>
+<td class="gt_row gt_right" headers="adj_r2">0.00</td>
+<td class="gt_row gt_right" headers="Size"></td>
+<td class="gt_row gt_right" headers="Book-to-market">8.27</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">3</td>
-<td style="text-align: right;">2001</td>
-<td style="text-align: right;">-23.83</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;">4514</td>
-<td style="text-align: right;">0.02</td>
-<td style="text-align: right;">0.02</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;">5.80</td>
+<td class="gt_row gt_left" headers="Model">3</td>
+<td class="gt_row gt_right" headers="year">2001</td>
+<td class="gt_row gt_right" headers="Intercept">-23.83</td>
+<td class="gt_row gt_right" headers="Beta"></td>
+<td class="gt_row gt_right" headers="nobs">4514</td>
+<td class="gt_row gt_right" headers="r2">0.02</td>
+<td class="gt_row gt_right" headers="adj_r2">0.02</td>
+<td class="gt_row gt_right" headers="Size"></td>
+<td class="gt_row gt_right" headers="Book-to-market">5.80</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">3</td>
-<td style="text-align: right;">2002</td>
-<td style="text-align: right;">75.04</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;">4157</td>
-<td style="text-align: right;">0.00</td>
-<td style="text-align: right;">0.00</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;">5.74</td>
+<td class="gt_row gt_left" headers="Model">3</td>
+<td class="gt_row gt_right" headers="year">2002</td>
+<td class="gt_row gt_right" headers="Intercept">75.04</td>
+<td class="gt_row gt_right" headers="Beta"></td>
+<td class="gt_row gt_right" headers="nobs">4157</td>
+<td class="gt_row gt_right" headers="r2">0.00</td>
+<td class="gt_row gt_right" headers="adj_r2">0.00</td>
+<td class="gt_row gt_right" headers="Size"></td>
+<td class="gt_row gt_right" headers="Book-to-market">5.74</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">3</td>
-<td style="text-align: right;">2003</td>
-<td style="text-align: right;">15.25</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;">3892</td>
-<td style="text-align: right;">0.01</td>
-<td style="text-align: right;">0.01</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;">4.66</td>
+<td class="gt_row gt_left" headers="Model">3</td>
+<td class="gt_row gt_right" headers="year">2003</td>
+<td class="gt_row gt_right" headers="Intercept">15.25</td>
+<td class="gt_row gt_right" headers="Beta"></td>
+<td class="gt_row gt_right" headers="nobs">3892</td>
+<td class="gt_row gt_right" headers="r2">0.01</td>
+<td class="gt_row gt_right" headers="adj_r2">0.01</td>
+<td class="gt_row gt_right" headers="Size"></td>
+<td class="gt_row gt_right" headers="Book-to-market">4.66</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">3</td>
-<td style="text-align: right;">2004</td>
-<td style="text-align: right;">-1.05</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;">3748</td>
-<td style="text-align: right;">0.00</td>
-<td style="text-align: right;">0.00</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;">5.85</td>
+<td class="gt_row gt_left" headers="Model">3</td>
+<td class="gt_row gt_right" headers="year">2004</td>
+<td class="gt_row gt_right" headers="Intercept">-1.05</td>
+<td class="gt_row gt_right" headers="Beta"></td>
+<td class="gt_row gt_right" headers="nobs">3748</td>
+<td class="gt_row gt_right" headers="r2">0.00</td>
+<td class="gt_row gt_right" headers="adj_r2">0.00</td>
+<td class="gt_row gt_right" headers="Size"></td>
+<td class="gt_row gt_right" headers="Book-to-market">5.85</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">3</td>
-<td style="text-align: right;">2005</td>
-<td style="text-align: right;">7.94</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;">3942</td>
-<td style="text-align: right;">0.00</td>
-<td style="text-align: right;">0.00</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;">6.43</td>
+<td class="gt_row gt_left" headers="Model">3</td>
+<td class="gt_row gt_right" headers="year">2005</td>
+<td class="gt_row gt_right" headers="Intercept">7.94</td>
+<td class="gt_row gt_right" headers="Beta"></td>
+<td class="gt_row gt_right" headers="nobs">3942</td>
+<td class="gt_row gt_right" headers="r2">0.00</td>
+<td class="gt_row gt_right" headers="adj_r2">0.00</td>
+<td class="gt_row gt_right" headers="Size"></td>
+<td class="gt_row gt_right" headers="Book-to-market">6.43</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">3</td>
-<td style="text-align: right;">2006</td>
-<td style="text-align: right;">-5.64</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;">3897</td>
-<td style="text-align: right;">0.00</td>
-<td style="text-align: right;">-0.00</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;">-1.30</td>
+<td class="gt_row gt_left" headers="Model">3</td>
+<td class="gt_row gt_right" headers="year">2006</td>
+<td class="gt_row gt_right" headers="Intercept">-5.64</td>
+<td class="gt_row gt_right" headers="Beta"></td>
+<td class="gt_row gt_right" headers="nobs">3897</td>
+<td class="gt_row gt_right" headers="r2">0.00</td>
+<td class="gt_row gt_right" headers="adj_r2">-0.00</td>
+<td class="gt_row gt_right" headers="Size"></td>
+<td class="gt_row gt_right" headers="Book-to-market">-1.30</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">3</td>
-<td style="text-align: right;">2007</td>
-<td style="text-align: right;">-40.21</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;">3789</td>
-<td style="text-align: right;">0.00</td>
-<td style="text-align: right;">0.00</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;">-1.87</td>
+<td class="gt_row gt_left" headers="Model">3</td>
+<td class="gt_row gt_right" headers="year">2007</td>
+<td class="gt_row gt_right" headers="Intercept">-40.21</td>
+<td class="gt_row gt_right" headers="Beta"></td>
+<td class="gt_row gt_right" headers="nobs">3789</td>
+<td class="gt_row gt_right" headers="r2">0.00</td>
+<td class="gt_row gt_right" headers="adj_r2">0.00</td>
+<td class="gt_row gt_right" headers="Size"></td>
+<td class="gt_row gt_right" headers="Book-to-market">-1.87</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">3</td>
-<td style="text-align: right;">2008</td>
-<td style="text-align: right;">53.43</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;">3741</td>
-<td style="text-align: right;">0.00</td>
-<td style="text-align: right;">0.00</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;">18.74</td>
+<td class="gt_row gt_left" headers="Model">3</td>
+<td class="gt_row gt_right" headers="year">2008</td>
+<td class="gt_row gt_right" headers="Intercept">53.43</td>
+<td class="gt_row gt_right" headers="Beta"></td>
+<td class="gt_row gt_right" headers="nobs">3741</td>
+<td class="gt_row gt_right" headers="r2">0.00</td>
+<td class="gt_row gt_right" headers="adj_r2">0.00</td>
+<td class="gt_row gt_right" headers="Size"></td>
+<td class="gt_row gt_right" headers="Book-to-market">18.74</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">3</td>
-<td style="text-align: right;">2009</td>
-<td style="text-align: right;">24.84</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;">3565</td>
-<td style="text-align: right;">0.01</td>
-<td style="text-align: right;">0.00</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;">1.99</td>
+<td class="gt_row gt_left" headers="Model">3</td>
+<td class="gt_row gt_right" headers="year">2009</td>
+<td class="gt_row gt_right" headers="Intercept">24.84</td>
+<td class="gt_row gt_right" headers="Beta"></td>
+<td class="gt_row gt_right" headers="nobs">3565</td>
+<td class="gt_row gt_right" headers="r2">0.01</td>
+<td class="gt_row gt_right" headers="adj_r2">0.00</td>
+<td class="gt_row gt_right" headers="Size"></td>
+<td class="gt_row gt_right" headers="Book-to-market">1.99</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">3</td>
-<td style="text-align: right;">2010</td>
-<td style="text-align: right;">-6.09</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;">3412</td>
-<td style="text-align: right;">0.00</td>
-<td style="text-align: right;">-0.00</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;">-0.14</td>
+<td class="gt_row gt_left" headers="Model">3</td>
+<td class="gt_row gt_right" headers="year">2010</td>
+<td class="gt_row gt_right" headers="Intercept">-6.09</td>
+<td class="gt_row gt_right" headers="Beta"></td>
+<td class="gt_row gt_right" headers="nobs">3412</td>
+<td class="gt_row gt_right" headers="r2">0.00</td>
+<td class="gt_row gt_right" headers="adj_r2">-0.00</td>
+<td class="gt_row gt_right" headers="Size"></td>
+<td class="gt_row gt_right" headers="Book-to-market">-0.14</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">3</td>
-<td style="text-align: right;">2011</td>
-<td style="text-align: right;">13.86</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;">3328</td>
-<td style="text-align: right;">0.01</td>
-<td style="text-align: right;">0.01</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;">7.22</td>
+<td class="gt_row gt_left" headers="Model">3</td>
+<td class="gt_row gt_right" headers="year">2011</td>
+<td class="gt_row gt_right" headers="Intercept">13.86</td>
+<td class="gt_row gt_right" headers="Beta"></td>
+<td class="gt_row gt_right" headers="nobs">3328</td>
+<td class="gt_row gt_right" headers="r2">0.01</td>
+<td class="gt_row gt_right" headers="adj_r2">0.01</td>
+<td class="gt_row gt_right" headers="Size"></td>
+<td class="gt_row gt_right" headers="Book-to-market">7.22</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">4</td>
-<td style="text-align: right;">1988</td>
-<td style="text-align: right;">-10.82</td>
-<td style="text-align: right;">-1.53</td>
-<td style="text-align: right;">4361</td>
-<td style="text-align: right;">0.02</td>
-<td style="text-align: right;">0.02</td>
-<td style="text-align: right;">3.69</td>
-<td style="text-align: right;">4.15</td>
+<td class="gt_row gt_left" headers="Model">4</td>
+<td class="gt_row gt_right" headers="year">1988</td>
+<td class="gt_row gt_right" headers="Intercept">-10.82</td>
+<td class="gt_row gt_right" headers="Beta">-1.53</td>
+<td class="gt_row gt_right" headers="nobs">4361</td>
+<td class="gt_row gt_right" headers="r2">0.02</td>
+<td class="gt_row gt_right" headers="adj_r2">0.02</td>
+<td class="gt_row gt_right" headers="Size">3.69</td>
+<td class="gt_row gt_right" headers="Book-to-market">4.15</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">4</td>
-<td style="text-align: right;">1989</td>
-<td style="text-align: right;">-28.49</td>
-<td style="text-align: right;">0.06</td>
-<td style="text-align: right;">4300</td>
-<td style="text-align: right;">0.00</td>
-<td style="text-align: right;">0.00</td>
-<td style="text-align: right;">0.86</td>
-<td style="text-align: right;">-0.74</td>
+<td class="gt_row gt_left" headers="Model">4</td>
+<td class="gt_row gt_right" headers="year">1989</td>
+<td class="gt_row gt_right" headers="Intercept">-28.49</td>
+<td class="gt_row gt_right" headers="Beta">0.06</td>
+<td class="gt_row gt_right" headers="nobs">4300</td>
+<td class="gt_row gt_right" headers="r2">0.00</td>
+<td class="gt_row gt_right" headers="adj_r2">0.00</td>
+<td class="gt_row gt_right" headers="Size">0.86</td>
+<td class="gt_row gt_right" headers="Book-to-market">-0.74</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">4</td>
-<td style="text-align: right;">1990</td>
-<td style="text-align: right;">79.25</td>
-<td style="text-align: right;">25.14</td>
-<td style="text-align: right;">4245</td>
-<td style="text-align: right;">0.02</td>
-<td style="text-align: right;">0.02</td>
-<td style="text-align: right;">-10.40</td>
-<td style="text-align: right;">-9.32</td>
+<td class="gt_row gt_left" headers="Model">4</td>
+<td class="gt_row gt_right" headers="year">1990</td>
+<td class="gt_row gt_right" headers="Intercept">79.25</td>
+<td class="gt_row gt_right" headers="Beta">25.14</td>
+<td class="gt_row gt_right" headers="nobs">4245</td>
+<td class="gt_row gt_right" headers="r2">0.02</td>
+<td class="gt_row gt_right" headers="adj_r2">0.02</td>
+<td class="gt_row gt_right" headers="Size">-10.40</td>
+<td class="gt_row gt_right" headers="Book-to-market">-9.32</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">4</td>
-<td style="text-align: right;">1991</td>
-<td style="text-align: right;">42.75</td>
-<td style="text-align: right;">-7.16</td>
-<td style="text-align: right;">4245</td>
-<td style="text-align: right;">0.03</td>
-<td style="text-align: right;">0.02</td>
-<td style="text-align: right;">-5.64</td>
-<td style="text-align: right;">5.31</td>
+<td class="gt_row gt_left" headers="Model">4</td>
+<td class="gt_row gt_right" headers="year">1991</td>
+<td class="gt_row gt_right" headers="Intercept">42.75</td>
+<td class="gt_row gt_right" headers="Beta">-7.16</td>
+<td class="gt_row gt_right" headers="nobs">4245</td>
+<td class="gt_row gt_right" headers="r2">0.03</td>
+<td class="gt_row gt_right" headers="adj_r2">0.02</td>
+<td class="gt_row gt_right" headers="Size">-5.64</td>
+<td class="gt_row gt_right" headers="Book-to-market">5.31</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">4</td>
-<td style="text-align: right;">1992</td>
-<td style="text-align: right;">41.08</td>
-<td style="text-align: right;">-3.42</td>
-<td style="text-align: right;">4241</td>
-<td style="text-align: right;">0.03</td>
-<td style="text-align: right;">0.03</td>
-<td style="text-align: right;">-4.80</td>
-<td style="text-align: right;">4.27</td>
+<td class="gt_row gt_left" headers="Model">4</td>
+<td class="gt_row gt_right" headers="year">1992</td>
+<td class="gt_row gt_right" headers="Intercept">41.08</td>
+<td class="gt_row gt_right" headers="Beta">-3.42</td>
+<td class="gt_row gt_right" headers="nobs">4241</td>
+<td class="gt_row gt_right" headers="r2">0.03</td>
+<td class="gt_row gt_right" headers="adj_r2">0.03</td>
+<td class="gt_row gt_right" headers="Size">-4.80</td>
+<td class="gt_row gt_right" headers="Book-to-market">4.27</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">4</td>
-<td style="text-align: right;">1993</td>
-<td style="text-align: right;">-8.75</td>
-<td style="text-align: right;">2.37</td>
-<td style="text-align: right;">4540</td>
-<td style="text-align: right;">0.01</td>
-<td style="text-align: right;">0.01</td>
-<td style="text-align: right;">-0.75</td>
-<td style="text-align: right;">6.87</td>
+<td class="gt_row gt_left" headers="Model">4</td>
+<td class="gt_row gt_right" headers="year">1993</td>
+<td class="gt_row gt_right" headers="Intercept">-8.75</td>
+<td class="gt_row gt_right" headers="Beta">2.37</td>
+<td class="gt_row gt_right" headers="nobs">4540</td>
+<td class="gt_row gt_right" headers="r2">0.01</td>
+<td class="gt_row gt_right" headers="adj_r2">0.01</td>
+<td class="gt_row gt_right" headers="Size">-0.75</td>
+<td class="gt_row gt_right" headers="Book-to-market">6.87</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">4</td>
-<td style="text-align: right;">1994</td>
-<td style="text-align: right;">28.82</td>
-<td style="text-align: right;">4.39</td>
-<td style="text-align: right;">4903</td>
-<td style="text-align: right;">0.00</td>
-<td style="text-align: right;">0.00</td>
-<td style="text-align: right;">-1.53</td>
-<td style="text-align: right;">1.88</td>
+<td class="gt_row gt_left" headers="Model">4</td>
+<td class="gt_row gt_right" headers="year">1994</td>
+<td class="gt_row gt_right" headers="Intercept">28.82</td>
+<td class="gt_row gt_right" headers="Beta">4.39</td>
+<td class="gt_row gt_right" headers="nobs">4903</td>
+<td class="gt_row gt_right" headers="r2">0.00</td>
+<td class="gt_row gt_right" headers="adj_r2">0.00</td>
+<td class="gt_row gt_right" headers="Size">-1.53</td>
+<td class="gt_row gt_right" headers="Book-to-market">1.88</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">4</td>
-<td style="text-align: right;">1995</td>
-<td style="text-align: right;">14.27</td>
-<td style="text-align: right;">-4.19</td>
-<td style="text-align: right;">5085</td>
-<td style="text-align: right;">0.01</td>
-<td style="text-align: right;">0.01</td>
-<td style="text-align: right;">-0.89</td>
-<td style="text-align: right;">9.15</td>
+<td class="gt_row gt_left" headers="Model">4</td>
+<td class="gt_row gt_right" headers="year">1995</td>
+<td class="gt_row gt_right" headers="Intercept">14.27</td>
+<td class="gt_row gt_right" headers="Beta">-4.19</td>
+<td class="gt_row gt_right" headers="nobs">5085</td>
+<td class="gt_row gt_right" headers="r2">0.01</td>
+<td class="gt_row gt_right" headers="adj_r2">0.01</td>
+<td class="gt_row gt_right" headers="Size">-0.89</td>
+<td class="gt_row gt_right" headers="Book-to-market">9.15</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">4</td>
-<td style="text-align: right;">1996</td>
-<td style="text-align: right;">7.43</td>
-<td style="text-align: right;">-12.69</td>
-<td style="text-align: right;">5278</td>
-<td style="text-align: right;">0.02</td>
-<td style="text-align: right;">0.02</td>
-<td style="text-align: right;">2.05</td>
-<td style="text-align: right;">9.64</td>
+<td class="gt_row gt_left" headers="Model">4</td>
+<td class="gt_row gt_right" headers="year">1996</td>
+<td class="gt_row gt_right" headers="Intercept">7.43</td>
+<td class="gt_row gt_right" headers="Beta">-12.69</td>
+<td class="gt_row gt_right" headers="nobs">5278</td>
+<td class="gt_row gt_right" headers="r2">0.02</td>
+<td class="gt_row gt_right" headers="adj_r2">0.02</td>
+<td class="gt_row gt_right" headers="Size">2.05</td>
+<td class="gt_row gt_right" headers="Book-to-market">9.64</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">4</td>
-<td style="text-align: right;">1997</td>
-<td style="text-align: right;">-20.58</td>
-<td style="text-align: right;">2.03</td>
-<td style="text-align: right;">5552</td>
-<td style="text-align: right;">0.01</td>
-<td style="text-align: right;">0.01</td>
-<td style="text-align: right;">1.85</td>
-<td style="text-align: right;">6.49</td>
+<td class="gt_row gt_left" headers="Model">4</td>
+<td class="gt_row gt_right" headers="year">1997</td>
+<td class="gt_row gt_right" headers="Intercept">-20.58</td>
+<td class="gt_row gt_right" headers="Beta">2.03</td>
+<td class="gt_row gt_right" headers="nobs">5552</td>
+<td class="gt_row gt_right" headers="r2">0.01</td>
+<td class="gt_row gt_right" headers="adj_r2">0.01</td>
+<td class="gt_row gt_right" headers="Size">1.85</td>
+<td class="gt_row gt_right" headers="Book-to-market">6.49</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">4</td>
-<td style="text-align: right;">1998</td>
-<td style="text-align: right;">69.43</td>
-<td style="text-align: right;">61.42</td>
-<td style="text-align: right;">5364</td>
-<td style="text-align: right;">0.04</td>
-<td style="text-align: right;">0.04</td>
-<td style="text-align: right;">-14.32</td>
-<td style="text-align: right;">-8.30</td>
+<td class="gt_row gt_left" headers="Model">4</td>
+<td class="gt_row gt_right" headers="year">1998</td>
+<td class="gt_row gt_right" headers="Intercept">69.43</td>
+<td class="gt_row gt_right" headers="Beta">61.42</td>
+<td class="gt_row gt_right" headers="nobs">5364</td>
+<td class="gt_row gt_right" headers="r2">0.04</td>
+<td class="gt_row gt_right" headers="adj_r2">0.04</td>
+<td class="gt_row gt_right" headers="Size">-14.32</td>
+<td class="gt_row gt_right" headers="Book-to-market">-8.30</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">4</td>
-<td style="text-align: right;">1999</td>
-<td style="text-align: right;">-30.70</td>
-<td style="text-align: right;">-23.85</td>
-<td style="text-align: right;">4950</td>
-<td style="text-align: right;">0.03</td>
-<td style="text-align: right;">0.03</td>
-<td style="text-align: right;">5.84</td>
-<td style="text-align: right;">4.19</td>
+<td class="gt_row gt_left" headers="Model">4</td>
+<td class="gt_row gt_right" headers="year">1999</td>
+<td class="gt_row gt_right" headers="Intercept">-30.70</td>
+<td class="gt_row gt_right" headers="Beta">-23.85</td>
+<td class="gt_row gt_right" headers="nobs">4950</td>
+<td class="gt_row gt_right" headers="r2">0.03</td>
+<td class="gt_row gt_right" headers="adj_r2">0.03</td>
+<td class="gt_row gt_right" headers="Size">5.84</td>
+<td class="gt_row gt_right" headers="Book-to-market">4.19</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">4</td>
-<td style="text-align: right;">2000</td>
-<td style="text-align: right;">70.05</td>
-<td style="text-align: right;">-20.69</td>
-<td style="text-align: right;">4685</td>
-<td style="text-align: right;">0.04</td>
-<td style="text-align: right;">0.04</td>
-<td style="text-align: right;">-6.88</td>
-<td style="text-align: right;">-3.22</td>
+<td class="gt_row gt_left" headers="Model">4</td>
+<td class="gt_row gt_right" headers="year">2000</td>
+<td class="gt_row gt_right" headers="Intercept">70.05</td>
+<td class="gt_row gt_right" headers="Beta">-20.69</td>
+<td class="gt_row gt_right" headers="nobs">4685</td>
+<td class="gt_row gt_right" headers="r2">0.04</td>
+<td class="gt_row gt_right" headers="adj_r2">0.04</td>
+<td class="gt_row gt_right" headers="Size">-6.88</td>
+<td class="gt_row gt_right" headers="Book-to-market">-3.22</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">4</td>
-<td style="text-align: right;">2001</td>
-<td style="text-align: right;">-2.57</td>
-<td style="text-align: right;">-22.25</td>
-<td style="text-align: right;">4505</td>
-<td style="text-align: right;">0.09</td>
-<td style="text-align: right;">0.09</td>
-<td style="text-align: right;">-0.13</td>
-<td style="text-align: right;">3.64</td>
+<td class="gt_row gt_left" headers="Model">4</td>
+<td class="gt_row gt_right" headers="year">2001</td>
+<td class="gt_row gt_right" headers="Intercept">-2.57</td>
+<td class="gt_row gt_right" headers="Beta">-22.25</td>
+<td class="gt_row gt_right" headers="nobs">4505</td>
+<td class="gt_row gt_right" headers="r2">0.09</td>
+<td class="gt_row gt_right" headers="adj_r2">0.09</td>
+<td class="gt_row gt_right" headers="Size">-0.13</td>
+<td class="gt_row gt_right" headers="Book-to-market">3.64</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">4</td>
-<td style="text-align: right;">2002</td>
-<td style="text-align: right;">152.88</td>
-<td style="text-align: right;">30.54</td>
-<td style="text-align: right;">4154</td>
-<td style="text-align: right;">0.06</td>
-<td style="text-align: right;">0.06</td>
-<td style="text-align: right;">-18.96</td>
-<td style="text-align: right;">-1.02</td>
+<td class="gt_row gt_left" headers="Model">4</td>
+<td class="gt_row gt_right" headers="year">2002</td>
+<td class="gt_row gt_right" headers="Intercept">152.88</td>
+<td class="gt_row gt_right" headers="Beta">30.54</td>
+<td class="gt_row gt_right" headers="nobs">4154</td>
+<td class="gt_row gt_right" headers="r2">0.06</td>
+<td class="gt_row gt_right" headers="adj_r2">0.06</td>
+<td class="gt_row gt_right" headers="Size">-18.96</td>
+<td class="gt_row gt_right" headers="Book-to-market">-1.02</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">4</td>
-<td style="text-align: right;">2003</td>
-<td style="text-align: right;">30.69</td>
-<td style="text-align: right;">-15.61</td>
-<td style="text-align: right;">3878</td>
-<td style="text-align: right;">0.03</td>
-<td style="text-align: right;">0.03</td>
-<td style="text-align: right;">-0.46</td>
-<td style="text-align: right;">3.51</td>
+<td class="gt_row gt_left" headers="Model">4</td>
+<td class="gt_row gt_right" headers="year">2003</td>
+<td class="gt_row gt_right" headers="Intercept">30.69</td>
+<td class="gt_row gt_right" headers="Beta">-15.61</td>
+<td class="gt_row gt_right" headers="nobs">3878</td>
+<td class="gt_row gt_right" headers="r2">0.03</td>
+<td class="gt_row gt_right" headers="adj_r2">0.03</td>
+<td class="gt_row gt_right" headers="Size">-0.46</td>
+<td class="gt_row gt_right" headers="Book-to-market">3.51</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">4</td>
-<td style="text-align: right;">2004</td>
-<td style="text-align: right;">-6.15</td>
-<td style="text-align: right;">-8.06</td>
-<td style="text-align: right;">3742</td>
-<td style="text-align: right;">0.02</td>
-<td style="text-align: right;">0.02</td>
-<td style="text-align: right;">2.45</td>
-<td style="text-align: right;">4.88</td>
+<td class="gt_row gt_left" headers="Model">4</td>
+<td class="gt_row gt_right" headers="year">2004</td>
+<td class="gt_row gt_right" headers="Intercept">-6.15</td>
+<td class="gt_row gt_right" headers="Beta">-8.06</td>
+<td class="gt_row gt_right" headers="nobs">3742</td>
+<td class="gt_row gt_right" headers="r2">0.02</td>
+<td class="gt_row gt_right" headers="adj_r2">0.02</td>
+<td class="gt_row gt_right" headers="Size">2.45</td>
+<td class="gt_row gt_right" headers="Book-to-market">4.88</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">4</td>
-<td style="text-align: right;">2005</td>
-<td style="text-align: right;">12.47</td>
-<td style="text-align: right;">-0.39</td>
-<td style="text-align: right;">3934</td>
-<td style="text-align: right;">0.00</td>
-<td style="text-align: right;">0.00</td>
-<td style="text-align: right;">-0.66</td>
-<td style="text-align: right;">6.03</td>
+<td class="gt_row gt_left" headers="Model">4</td>
+<td class="gt_row gt_right" headers="year">2005</td>
+<td class="gt_row gt_right" headers="Intercept">12.47</td>
+<td class="gt_row gt_right" headers="Beta">-0.39</td>
+<td class="gt_row gt_right" headers="nobs">3934</td>
+<td class="gt_row gt_right" headers="r2">0.00</td>
+<td class="gt_row gt_right" headers="adj_r2">0.00</td>
+<td class="gt_row gt_right" headers="Size">-0.66</td>
+<td class="gt_row gt_right" headers="Book-to-market">6.03</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">4</td>
-<td style="text-align: right;">2006</td>
-<td style="text-align: right;">-24.08</td>
-<td style="text-align: right;">1.08</td>
-<td style="text-align: right;">3894</td>
-<td style="text-align: right;">0.01</td>
-<td style="text-align: right;">0.01</td>
-<td style="text-align: right;">2.68</td>
-<td style="text-align: right;">0.44</td>
+<td class="gt_row gt_left" headers="Model">4</td>
+<td class="gt_row gt_right" headers="year">2006</td>
+<td class="gt_row gt_right" headers="Intercept">-24.08</td>
+<td class="gt_row gt_right" headers="Beta">1.08</td>
+<td class="gt_row gt_right" headers="nobs">3894</td>
+<td class="gt_row gt_right" headers="r2">0.01</td>
+<td class="gt_row gt_right" headers="adj_r2">0.01</td>
+<td class="gt_row gt_right" headers="Size">2.68</td>
+<td class="gt_row gt_right" headers="Book-to-market">0.44</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">4</td>
-<td style="text-align: right;">2007</td>
-<td style="text-align: right;">-49.16</td>
-<td style="text-align: right;">-2.92</td>
-<td style="text-align: right;">3784</td>
-<td style="text-align: right;">0.01</td>
-<td style="text-align: right;">0.01</td>
-<td style="text-align: right;">1.84</td>
-<td style="text-align: right;">-1.06</td>
+<td class="gt_row gt_left" headers="Model">4</td>
+<td class="gt_row gt_right" headers="year">2007</td>
+<td class="gt_row gt_right" headers="Intercept">-49.16</td>
+<td class="gt_row gt_right" headers="Beta">-2.92</td>
+<td class="gt_row gt_right" headers="nobs">3784</td>
+<td class="gt_row gt_right" headers="r2">0.01</td>
+<td class="gt_row gt_right" headers="adj_r2">0.01</td>
+<td class="gt_row gt_right" headers="Size">1.84</td>
+<td class="gt_row gt_right" headers="Book-to-market">-1.06</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">4</td>
-<td style="text-align: right;">2008</td>
-<td style="text-align: right;">133.84</td>
-<td style="text-align: right;">24.87</td>
-<td style="text-align: right;">3738</td>
-<td style="text-align: right;">0.03</td>
-<td style="text-align: right;">0.03</td>
-<td style="text-align: right;">-17.86</td>
-<td style="text-align: right;">7.97</td>
+<td class="gt_row gt_left" headers="Model">4</td>
+<td class="gt_row gt_right" headers="year">2008</td>
+<td class="gt_row gt_right" headers="Intercept">133.84</td>
+<td class="gt_row gt_right" headers="Beta">24.87</td>
+<td class="gt_row gt_right" headers="nobs">3738</td>
+<td class="gt_row gt_right" headers="r2">0.03</td>
+<td class="gt_row gt_right" headers="adj_r2">0.03</td>
+<td class="gt_row gt_right" headers="Size">-17.86</td>
+<td class="gt_row gt_right" headers="Book-to-market">7.97</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">4</td>
-<td style="text-align: right;">2009</td>
-<td style="text-align: right;">23.23</td>
-<td style="text-align: right;">9.47</td>
-<td style="text-align: right;">3557</td>
-<td style="text-align: right;">0.02</td>
-<td style="text-align: right;">0.02</td>
-<td style="text-align: right;">-1.43</td>
-<td style="text-align: right;">1.57</td>
+<td class="gt_row gt_left" headers="Model">4</td>
+<td class="gt_row gt_right" headers="year">2009</td>
+<td class="gt_row gt_right" headers="Intercept">23.23</td>
+<td class="gt_row gt_right" headers="Beta">9.47</td>
+<td class="gt_row gt_right" headers="nobs">3557</td>
+<td class="gt_row gt_right" headers="r2">0.02</td>
+<td class="gt_row gt_right" headers="adj_r2">0.02</td>
+<td class="gt_row gt_right" headers="Size">-1.43</td>
+<td class="gt_row gt_right" headers="Book-to-market">1.57</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">4</td>
-<td style="text-align: right;">2010</td>
-<td style="text-align: right;">-15.33</td>
-<td style="text-align: right;">-11.47</td>
-<td style="text-align: right;">3411</td>
-<td style="text-align: right;">0.03</td>
-<td style="text-align: right;">0.03</td>
-<td style="text-align: right;">3.34</td>
-<td style="text-align: right;">0.79</td>
+<td class="gt_row gt_left" headers="Model">4</td>
+<td class="gt_row gt_right" headers="year">2010</td>
+<td class="gt_row gt_right" headers="Intercept">-15.33</td>
+<td class="gt_row gt_right" headers="Beta">-11.47</td>
+<td class="gt_row gt_right" headers="nobs">3411</td>
+<td class="gt_row gt_right" headers="r2">0.03</td>
+<td class="gt_row gt_right" headers="adj_r2">0.03</td>
+<td class="gt_row gt_right" headers="Size">3.34</td>
+<td class="gt_row gt_right" headers="Book-to-market">0.79</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">4</td>
-<td style="text-align: right;">2011</td>
-<td style="text-align: right;">18.95</td>
-<td style="text-align: right;">-2.35</td>
-<td style="text-align: right;">3326</td>
-<td style="text-align: right;">0.01</td>
-<td style="text-align: right;">0.01</td>
-<td style="text-align: right;">-0.35</td>
-<td style="text-align: right;">6.59</td>
+<td class="gt_row gt_left" headers="Model">4</td>
+<td class="gt_row gt_right" headers="year">2011</td>
+<td class="gt_row gt_right" headers="Intercept">18.95</td>
+<td class="gt_row gt_right" headers="Beta">-2.35</td>
+<td class="gt_row gt_right" headers="nobs">3326</td>
+<td class="gt_row gt_right" headers="r2">0.01</td>
+<td class="gt_row gt_right" headers="adj_r2">0.01</td>
+<td class="gt_row gt_right" headers="Size">-0.35</td>
+<td class="gt_row gt_right" headers="Book-to-market">6.59</td>
 </tr>
 </tbody>
 </table>
+
+
+</div>
 </div>
 </div>
 </figure>
@@ -1688,108 +1762,184 @@ Table&nbsp;6.1: Annual cross-sectional regressions (BEM Table 6.1)
 </section>
 <section id="average-cross-sectional-regression-results" class="level3" data-number="6.1.2">
 <h3 data-number="6.1.2" class="anchored" data-anchor-id="average-cross-sectional-regression-results"><span class="header-section-number">6.1.2</span> Average Cross-Sectional Regression Results</h3>
-<div class="cell" data-execution_count="5">
-<div id="tbl-bem6-summary" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="5">
+<div class="cell" data-execution_count="4">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>rows <span class="op">=</span> [</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    [i, term_labels.get(term, term), fit.params[term], fit.std_errors[term],</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>     fit.tvalues[term], <span class="ss">f"</span><span class="sc">{</span>fit<span class="sc">.</span>pvalues[term]<span class="sc">:.3f}</span><span class="ss">"</span>]</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i, fit <span class="kw">in</span> <span class="bu">enumerate</span>(fits, <span class="dv">1</span>) <span class="cf">for</span> term <span class="kw">in</span> fit.params.index</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>pl.DataFrame(rows, schema<span class="op">=</span>[<span class="st">"Model"</span>, <span class="st">"Term"</span>, <span class="st">"Average"</span>, <span class="st">"SE"</span>, <span class="st">"t"</span>, <span class="st">"p"</span>], orient<span class="op">=</span><span class="st">"row"</span>).eap.show_table()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div id="tbl-bem6-summary" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="4">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bem6-summary-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table&nbsp;6.2: Average coefficients and Newey–West inference (BEM Table 6.2)
 </figcaption>
 <div aria-describedby="tbl-bem6-summary-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<div class="cell-output cell-output-display cell-output-markdown">
-<table class="cell caption-top table table-sm table-striped small">
+<div class="cell-output cell-output-display">
+<div id="tqjydeggxb" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>
+#tqjydeggxb table {
+          font-family: inherit;
+          -webkit-font-smoothing: antialiased;
+          -moz-osx-font-smoothing: grayscale;
+        }
+
+#tqjydeggxb thead, tbody, tfoot, tr, td, th { border-style: none; }
+ tr { background-color: transparent; }
+#tqjydeggxb p { margin: 0; padding: 0; }
+ #tqjydeggxb .gt_table { display: table; border-collapse: collapse; line-height: normal; margin-left: auto; margin-right: auto; color: #333333; font-size: 0.875rem; font-weight: normal; font-style: normal; background-color: #FFFFFF; width: 100%; border-top-style: solid; border-top-width: 2px; border-top-color: #A8A8A8; border-right-style: none; border-right-width: 2px; border-right-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #A8A8A8; border-left-style: none; border-left-width: 2px; border-left-color: #D3D3D3; }
+ #tqjydeggxb .gt_caption { padding-top: 4px; padding-bottom: 4px; }
+ #tqjydeggxb .gt_title { color: #333333; font-size: 125%; font-weight: initial; padding-top: 4px; padding-bottom: 4px; padding-left: 5px; padding-right: 5px; border-bottom-color: #FFFFFF; border-bottom-width: 0; }
+ #tqjydeggxb .gt_subtitle { color: #333333; font-size: 85%; font-weight: initial; padding-top: 3px; padding-bottom: 5px; padding-left: 5px; padding-right: 5px; border-top-color: #FFFFFF; border-top-width: 0; }
+ #tqjydeggxb .gt_heading { background-color: #FFFFFF; text-align: center; border-bottom-color: #FFFFFF; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; }
+ #tqjydeggxb .gt_bottom_border { border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; }
+ #tqjydeggxb .gt_col_headings { border-top-style: solid; border-top-width: 2px; border-top-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; }
+ #tqjydeggxb .gt_col_heading { color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: bold; text-transform: inherit; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: bottom; padding-top: 5px; padding-bottom: 5px; padding-left: 0.45rem; padding-right: 0.45rem; overflow-x: hidden; }
+ #tqjydeggxb .gt_column_spanner_outer { color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: bold; text-transform: inherit; padding-top: 0; padding-bottom: 0; padding-left: 4px; padding-right: 4px; }
+ #tqjydeggxb .gt_column_spanner_outer:first-child { padding-left: 0; }
+ #tqjydeggxb .gt_column_spanner_outer:last-child { padding-right: 0; }
+ #tqjydeggxb .gt_column_spanner { border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; vertical-align: bottom; padding-top: 5px; padding-bottom: 5px; overflow-x: hidden; display: inline-block; width: 100%; }
+ #tqjydeggxb .gt_spanner_row { border-bottom-style: hidden; }
+ #tqjydeggxb .gt_group_heading { padding-top: 8px; padding-bottom: 8px; padding-left: 5px; padding-right: 5px; color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: initial; text-transform: inherit; border-top-style: solid; border-top-width: 2px; border-top-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; text-align: left; }
+ #tqjydeggxb .gt_empty_group_heading { padding: 0.5px; color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: initial; border-top-style: solid; border-top-width: 2px; border-top-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; vertical-align: middle; }
+ #tqjydeggxb .gt_from_md> :first-child { margin-top: 0; }
+ #tqjydeggxb .gt_from_md> :last-child { margin-bottom: 0; }
+ #tqjydeggxb .gt_row { padding-top: 0.25rem; padding-bottom: 0.25rem; padding-left: 0.45rem; padding-right: 0.45rem; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; }
+ #tqjydeggxb .gt_stub { color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: initial; text-transform: inherit; border-right-style: solid; border-right-width: 2px; border-right-color: #D3D3D3; padding-left: 0.45rem; padding-right: 0.45rem; }
+ #tqjydeggxb .gt_indent_1 { text-indent: 5px; }
+ #tqjydeggxb .gt_indent_2 { text-indent: calc(5px * 2); }
+ #tqjydeggxb .gt_indent_3 { text-indent: calc(5px * 3); }
+ #tqjydeggxb .gt_indent_4 { text-indent: calc(5px * 4); }
+ #tqjydeggxb .gt_indent_5 { text-indent: calc(5px * 5); }
+ #tqjydeggxb .gt_stub_row_group { color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: initial; text-transform: inherit; border-right-style: solid; border-right-width: 2px; border-right-color: #D3D3D3; padding-left: 5px; padding-right: 5px; vertical-align: top; }
+ #tqjydeggxb .gt_row_group_first td { border-top-width: 2px; }
+ #tqjydeggxb .gt_row_group_first th { border-top-width: 2px; }
+ #tqjydeggxb .gt_striped { color: #333333; background-color: #F4F4F4; }
+ #tqjydeggxb .gt_table_body { border-top-style: solid; border-top-width: 2px; border-top-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; }
+ #tqjydeggxb .gt_summary_row { color: #333333; background-color: #FFFFFF; text-transform: inherit; padding-top: 8px; padding-bottom: 8px; padding-left: 5px; padding-right: 5px; }
+ #tqjydeggxb .gt_first_summary_row { border-top-style: solid; border-top-width: 2px; border-top-color: #D3D3D3; }
+ #tqjydeggxb .gt_last_summary_row_top { border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; }
+ #tqjydeggxb .gt_grand_summary_row { color: #333333; background-color: #FFFFFF; text-transform: inherit; padding-top: 8px; padding-bottom: 8px; padding-left: 5px; padding-right: 5px; }
+ #tqjydeggxb .gt_first_grand_summary_row_bottom { border-top-style: double; border-top-width: 6px; border-top-color: #D3D3D3; }
+ #tqjydeggxb .gt_last_grand_summary_row_top { border-bottom-style: double; border-bottom-width: 6px; border-bottom-color: #D3D3D3; }
+ #tqjydeggxb .gt_sourcenotes { color: #333333; background-color: #FFFFFF; border-bottom-style: none; border-bottom-width: 2px; border-bottom-color: #D3D3D3; border-left-style: none; border-left-width: 2px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 2px; border-right-color: #D3D3D3; }
+ #tqjydeggxb .gt_sourcenote { font-size: 90%; padding-top: 4px; padding-bottom: 4px; padding-left: 5px; padding-right: 5px; text-align: left; }
+ #tqjydeggxb .gt_left { text-align: left; }
+ #tqjydeggxb .gt_center { text-align: center; }
+ #tqjydeggxb .gt_right { text-align: right; font-variant-numeric: tabular-nums; }
+ #tqjydeggxb .gt_font_normal { font-weight: normal; }
+ #tqjydeggxb .gt_font_bold { font-weight: bold; }
+ #tqjydeggxb .gt_font_italic { font-style: italic; }
+ #tqjydeggxb .gt_super { font-size: 65%; }
+ #tqjydeggxb .gt_footnotes { color: font-color(#FFFFFF); background-color: #FFFFFF; border-bottom-style: none; border-bottom-width: 2px; border-bottom-color: #D3D3D3; border-left-style: none; border-left-width: 2px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 2px; border-right-color: #D3D3D3; }
+ #tqjydeggxb .gt_footnote { margin: 0px; font-size: 90%; padding-top: 4px; padding-bottom: 4px; padding-left: 5px; padding-right: 5px; }
+ #tqjydeggxb .gt_sourcenotes { color: #333333; background-color: #FFFFFF; border-bottom-style: none; border-bottom-width: 2px; border-bottom-color: #D3D3D3; border-left-style: none; border-left-width: 2px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 2px; border-right-color: #D3D3D3; }
+ #tqjydeggxb .gt_sourcenote { font-size: 90%; padding-top: 4px; padding-bottom: 4px; padding-left: 5px; padding-right: 5px; text-align: left; }
+ #tqjydeggxb .gt_footnote_marks { font-size: 75%; vertical-align: 0.4em; position: initial; }
+ #tqjydeggxb .gt_asterisk { font-size: 100%; vertical-align: 0; }
+ 
+</style>
+
+<table class="gt_table cell caption-top table table-sm table-striped small" data-quarto-bootstrap="false">
 <thead>
-<tr class="header">
-<th style="text-align: left;">Model</th>
-<th style="text-align: right;">Term</th>
-<th style="text-align: right;">Average</th>
-<th style="text-align: right;">SE</th>
-<th style="text-align: right;">t</th>
-<th style="text-align: right;">p</th>
+<tr class="gt_col_headings header">
+<th id="Model" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" scope="col">Model</th>
+<th id="Term" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Term</th>
+<th id="Average" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Average</th>
+<th id="SE" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">SE</th>
+<th id="t" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">t</th>
+<th id="p" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">p</th>
 </tr>
 </thead>
-<tbody>
+<tbody class="gt_table_body">
 <tr class="odd">
-<td style="text-align: left;">1</td>
-<td style="text-align: right;">Intercept</td>
-<td style="text-align: right;">14.95</td>
-<td style="text-align: right;">2.99</td>
-<td style="text-align: right;">5.01</td>
-<td style="text-align: right;">0.000</td>
+<td class="gt_row gt_left" headers="Model">1</td>
+<td class="gt_row gt_right" headers="Term">Intercept</td>
+<td class="gt_row gt_right" headers="Average">14.95</td>
+<td class="gt_row gt_right" headers="SE">2.99</td>
+<td class="gt_row gt_right" headers="t">5.01</td>
+<td class="gt_row gt_right" headers="p">0.000</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">1</td>
-<td style="text-align: right;">Beta</td>
-<td style="text-align: right;">-2.71</td>
-<td style="text-align: right;">1.92</td>
-<td style="text-align: right;">-1.41</td>
-<td style="text-align: right;">0.171</td>
+<td class="gt_row gt_left" headers="Model">1</td>
+<td class="gt_row gt_right" headers="Term">Beta</td>
+<td class="gt_row gt_right" headers="Average">-2.71</td>
+<td class="gt_row gt_right" headers="SE">1.92</td>
+<td class="gt_row gt_right" headers="t">-1.41</td>
+<td class="gt_row gt_right" headers="p">0.171</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">2</td>
-<td style="text-align: right;">Intercept</td>
-<td style="text-align: right;">23.22</td>
-<td style="text-align: right;">5.01</td>
-<td style="text-align: right;">4.63</td>
-<td style="text-align: right;">0.000</td>
+<td class="gt_row gt_left" headers="Model">2</td>
+<td class="gt_row gt_right" headers="Term">Intercept</td>
+<td class="gt_row gt_right" headers="Average">23.22</td>
+<td class="gt_row gt_right" headers="SE">5.01</td>
+<td class="gt_row gt_right" headers="t">4.63</td>
+<td class="gt_row gt_right" headers="p">0.000</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">2</td>
-<td style="text-align: right;">Size</td>
-<td style="text-align: right;">-2.29</td>
-<td style="text-align: right;">0.63</td>
-<td style="text-align: right;">-3.64</td>
-<td style="text-align: right;">0.001</td>
+<td class="gt_row gt_left" headers="Model">2</td>
+<td class="gt_row gt_right" headers="Term">Size</td>
+<td class="gt_row gt_right" headers="Average">-2.29</td>
+<td class="gt_row gt_right" headers="SE">0.63</td>
+<td class="gt_row gt_right" headers="t">-3.64</td>
+<td class="gt_row gt_right" headers="p">0.001</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">3</td>
-<td style="text-align: right;">Intercept</td>
-<td style="text-align: right;">10.17</td>
-<td style="text-align: right;">2.19</td>
-<td style="text-align: right;">4.65</td>
-<td style="text-align: right;">0.000</td>
+<td class="gt_row gt_left" headers="Model">3</td>
+<td class="gt_row gt_right" headers="Term">Intercept</td>
+<td class="gt_row gt_right" headers="Average">10.17</td>
+<td class="gt_row gt_right" headers="SE">2.19</td>
+<td class="gt_row gt_right" headers="t">4.65</td>
+<td class="gt_row gt_right" headers="p">0.000</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">3</td>
-<td style="text-align: right;">Book-to-market</td>
-<td style="text-align: right;">4.09</td>
-<td style="text-align: right;">0.71</td>
-<td style="text-align: right;">5.80</td>
-<td style="text-align: right;">0.000</td>
+<td class="gt_row gt_left" headers="Model">3</td>
+<td class="gt_row gt_right" headers="Term">Book-to-market</td>
+<td class="gt_row gt_right" headers="Average">4.09</td>
+<td class="gt_row gt_right" headers="SE">0.71</td>
+<td class="gt_row gt_right" headers="t">5.80</td>
+<td class="gt_row gt_right" headers="p">0.000</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">4</td>
-<td style="text-align: right;">Intercept</td>
-<td style="text-align: right;">22.02</td>
-<td style="text-align: right;">5.29</td>
-<td style="text-align: right;">4.17</td>
-<td style="text-align: right;">0.000</td>
+<td class="gt_row gt_left" headers="Model">4</td>
+<td class="gt_row gt_right" headers="Term">Intercept</td>
+<td class="gt_row gt_right" headers="Average">22.02</td>
+<td class="gt_row gt_right" headers="SE">5.29</td>
+<td class="gt_row gt_right" headers="t">4.17</td>
+<td class="gt_row gt_right" headers="p">0.000</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">4</td>
-<td style="text-align: right;">Beta</td>
-<td style="text-align: right;">1.03</td>
-<td style="text-align: right;">1.86</td>
-<td style="text-align: right;">0.55</td>
-<td style="text-align: right;">0.585</td>
+<td class="gt_row gt_left" headers="Model">4</td>
+<td class="gt_row gt_right" headers="Term">Beta</td>
+<td class="gt_row gt_right" headers="Average">1.03</td>
+<td class="gt_row gt_right" headers="SE">1.86</td>
+<td class="gt_row gt_right" headers="t">0.55</td>
+<td class="gt_row gt_right" headers="p">0.585</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">4</td>
-<td style="text-align: right;">Size</td>
-<td style="text-align: right;">-2.52</td>
-<td style="text-align: right;">0.64</td>
-<td style="text-align: right;">-3.96</td>
-<td style="text-align: right;">0.001</td>
+<td class="gt_row gt_left" headers="Model">4</td>
+<td class="gt_row gt_right" headers="Term">Size</td>
+<td class="gt_row gt_right" headers="Average">-2.52</td>
+<td class="gt_row gt_right" headers="SE">0.64</td>
+<td class="gt_row gt_right" headers="t">-3.96</td>
+<td class="gt_row gt_right" headers="p">0.001</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">4</td>
-<td style="text-align: right;">Book-to-market</td>
-<td style="text-align: right;">2.65</td>
-<td style="text-align: right;">0.73</td>
-<td style="text-align: right;">3.64</td>
-<td style="text-align: right;">0.001</td>
+<td class="gt_row gt_left" headers="Model">4</td>
+<td class="gt_row gt_right" headers="Term">Book-to-market</td>
+<td class="gt_row gt_right" headers="Average">2.65</td>
+<td class="gt_row gt_right" headers="SE">0.73</td>
+<td class="gt_row gt_right" headers="t">3.64</td>
+<td class="gt_row gt_right" headers="p">0.001</td>
 </tr>
 </tbody>
 </table>
+
+
+</div>
 </div>
 </div>
 </figure>
@@ -1800,14 +1950,17 @@ Table&nbsp;6.2: Average coefficients and Newey–West inference (BEM Table 6.2)
 <section id="sec-annual-fm-inference" class="level2" data-number="6.2">
 <h2 data-number="6.2" class="anchored" data-anchor-id="sec-annual-fm-inference"><span class="header-section-number">6.2</span> Interpreting FM Regressions</h2>
 <p>The ordinary Fama–MacBeth standard error is the standard deviation of the annual slopes divided by the square root of the number of years. For the size slope in the regression with all three characteristics, compare the ordinary <span class="math inline">\(t\)</span>-statistic with the six-lag Newey–West <span class="math inline">\(t\)</span>-statistic.</p>
-<div id="488543dd" class="cell" data-execution_count="6">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>size_slopes <span class="op">=</span> periodic[<span class="op">-</span><span class="dv">1</span>][<span class="st">"Size"</span>]</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>ordinary_se <span class="op">=</span> size_slopes.std() <span class="op">/</span> <span class="bu">len</span>(size_slopes)<span class="op">**</span><span class="fl">0.5</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>pl.DataFrame({</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Standard error"</span>: [<span class="st">"Ordinary"</span>, <span class="st">"Newey–West (six lags)"</span>],</span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">"t"</span>: [size_slopes.mean() <span class="op">/</span> ordinary_se, fits[<span class="op">-</span><span class="dv">1</span>].tvalues[<span class="st">"Size"</span>]],</span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>}).with_columns(pl.col(<span class="st">"t"</span>).<span class="bu">round</span>(<span class="dv">2</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-display" data-execution_count="6">
+<div id="f1b9053e" class="cell" data-execution_count="5">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>size_slopes <span class="op">=</span> periodic[<span class="op">-</span><span class="dv">1</span>][<span class="st">"Size"</span>]</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>ordinary_se <span class="op">=</span> size_slopes.std() <span class="op">/</span> <span class="bu">len</span>(size_slopes)<span class="op">**</span><span class="fl">0.5</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>pl.DataFrame({</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Standard error"</span>: [<span class="st">"Ordinary"</span>, <span class="st">"Newey–West (six lags)"</span>],</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">"t"</span>: [size_slopes.mean() <span class="op">/</span> ordinary_se, fits[<span class="op">-</span><span class="dv">1</span>].tvalues[<span class="st">"Size"</span>]],</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>}).with_columns(pl.col(<span class="st">"t"</span>).<span class="bu">round</span>(<span class="dv">2</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="5">
 <div><style>
 .dataframe > thead > tr,
 .dataframe > tbody > tr {
@@ -1845,15 +1998,92 @@ Table&nbsp;6.2: Average coefficients and Newey–West inference (BEM Table 6.2)
 </section>
 <section id="presenting-fm-regressions" class="level2" data-number="6.3">
 <h2 data-number="6.3" class="anchored" data-anchor-id="presenting-fm-regressions"><span class="header-section-number">6.3</span> Presenting FM Regressions</h2>
-<div class="cell" data-execution_count="7">
-<div id="tbl-bem6-compact" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="7">
+<div class="cell" data-execution_count="6">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> eap_pl <span class="im">import</span> format_fit</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>terms <span class="op">=</span> [<span class="st">"Beta"</span>, <span class="st">"Size"</span>, <span class="st">"BM"</span>, <span class="st">"Intercept"</span>]</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>labels <span class="op">=</span> [term_labels.get(term, term) <span class="cf">for</span> term <span class="kw">in</span> terms]</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>columns <span class="op">=</span> {<span class="st">"Term"</span>: [<span class="op">*</span>labels, <span class="st">"R²"</span>, <span class="st">"Adjusted R²"</span>, <span class="st">"n"</span>]}</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i, (fit, frame) <span class="kw">in</span> <span class="bu">enumerate</span>(<span class="bu">zip</span>(fits, periodic), <span class="dv">1</span>):</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    columns[<span class="ss">f"(</span><span class="sc">{</span>i<span class="sc">}</span><span class="ss">)"</span>] <span class="op">=</span> [</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>        format_fit(fit, term) <span class="cf">if</span> term <span class="kw">in</span> fit.params <span class="cf">else</span> <span class="st">""</span> <span class="cf">for</span> term <span class="kw">in</span> terms</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    ] <span class="op">+</span> [<span class="ss">f"</span><span class="sc">{</span>frame[<span class="st">'r2'</span>]<span class="sc">.</span>mean()<span class="sc">:.3f}</span><span class="ss">"</span>, <span class="ss">f"</span><span class="sc">{</span>frame[<span class="st">'adj_r2'</span>]<span class="sc">.</span>mean()<span class="sc">:.3f}</span><span class="ss">"</span>, <span class="ss">f"</span><span class="sc">{</span>frame[<span class="st">'nobs'</span>]<span class="sc">.</span>mean()<span class="sc">:.0f}</span><span class="ss">"</span>]</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>pl.DataFrame(columns).eap.show_table()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div id="tbl-bem6-compact" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="6">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bem6-compact-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table&nbsp;6.3: Compact Fama–MacBeth regression table (BEM Table 6.3)
 </figcaption>
 <div aria-describedby="tbl-bem6-compact-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<div class="cell-output cell-output-display cell-output-markdown">
-<table class="cell caption-top table table-sm table-striped small">
+<div class="cell-output cell-output-display">
+<div id="bavxcyavba" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>
+#bavxcyavba table {
+          font-family: inherit;
+          -webkit-font-smoothing: antialiased;
+          -moz-osx-font-smoothing: grayscale;
+        }
+
+#bavxcyavba thead, tbody, tfoot, tr, td, th { border-style: none; }
+ tr { background-color: transparent; }
+#bavxcyavba p { margin: 0; padding: 0; }
+ #bavxcyavba .gt_table { display: table; border-collapse: collapse; line-height: normal; margin-left: auto; margin-right: auto; color: #333333; font-size: 0.875rem; font-weight: normal; font-style: normal; background-color: #FFFFFF; width: 100%; border-top-style: solid; border-top-width: 2px; border-top-color: #A8A8A8; border-right-style: none; border-right-width: 2px; border-right-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #A8A8A8; border-left-style: none; border-left-width: 2px; border-left-color: #D3D3D3; }
+ #bavxcyavba .gt_caption { padding-top: 4px; padding-bottom: 4px; }
+ #bavxcyavba .gt_title { color: #333333; font-size: 125%; font-weight: initial; padding-top: 4px; padding-bottom: 4px; padding-left: 5px; padding-right: 5px; border-bottom-color: #FFFFFF; border-bottom-width: 0; }
+ #bavxcyavba .gt_subtitle { color: #333333; font-size: 85%; font-weight: initial; padding-top: 3px; padding-bottom: 5px; padding-left: 5px; padding-right: 5px; border-top-color: #FFFFFF; border-top-width: 0; }
+ #bavxcyavba .gt_heading { background-color: #FFFFFF; text-align: center; border-bottom-color: #FFFFFF; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; }
+ #bavxcyavba .gt_bottom_border { border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; }
+ #bavxcyavba .gt_col_headings { border-top-style: solid; border-top-width: 2px; border-top-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; }
+ #bavxcyavba .gt_col_heading { color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: bold; text-transform: inherit; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: bottom; padding-top: 5px; padding-bottom: 5px; padding-left: 0.45rem; padding-right: 0.45rem; overflow-x: hidden; }
+ #bavxcyavba .gt_column_spanner_outer { color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: bold; text-transform: inherit; padding-top: 0; padding-bottom: 0; padding-left: 4px; padding-right: 4px; }
+ #bavxcyavba .gt_column_spanner_outer:first-child { padding-left: 0; }
+ #bavxcyavba .gt_column_spanner_outer:last-child { padding-right: 0; }
+ #bavxcyavba .gt_column_spanner { border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; vertical-align: bottom; padding-top: 5px; padding-bottom: 5px; overflow-x: hidden; display: inline-block; width: 100%; }
+ #bavxcyavba .gt_spanner_row { border-bottom-style: hidden; }
+ #bavxcyavba .gt_group_heading { padding-top: 8px; padding-bottom: 8px; padding-left: 5px; padding-right: 5px; color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: initial; text-transform: inherit; border-top-style: solid; border-top-width: 2px; border-top-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; text-align: left; }
+ #bavxcyavba .gt_empty_group_heading { padding: 0.5px; color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: initial; border-top-style: solid; border-top-width: 2px; border-top-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; vertical-align: middle; }
+ #bavxcyavba .gt_from_md> :first-child { margin-top: 0; }
+ #bavxcyavba .gt_from_md> :last-child { margin-bottom: 0; }
+ #bavxcyavba .gt_row { padding-top: 0.25rem; padding-bottom: 0.25rem; padding-left: 0.45rem; padding-right: 0.45rem; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; }
+ #bavxcyavba .gt_stub { color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: initial; text-transform: inherit; border-right-style: solid; border-right-width: 2px; border-right-color: #D3D3D3; padding-left: 0.45rem; padding-right: 0.45rem; }
+ #bavxcyavba .gt_indent_1 { text-indent: 5px; }
+ #bavxcyavba .gt_indent_2 { text-indent: calc(5px * 2); }
+ #bavxcyavba .gt_indent_3 { text-indent: calc(5px * 3); }
+ #bavxcyavba .gt_indent_4 { text-indent: calc(5px * 4); }
+ #bavxcyavba .gt_indent_5 { text-indent: calc(5px * 5); }
+ #bavxcyavba .gt_stub_row_group { color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: initial; text-transform: inherit; border-right-style: solid; border-right-width: 2px; border-right-color: #D3D3D3; padding-left: 5px; padding-right: 5px; vertical-align: top; }
+ #bavxcyavba .gt_row_group_first td { border-top-width: 2px; }
+ #bavxcyavba .gt_row_group_first th { border-top-width: 2px; }
+ #bavxcyavba .gt_striped { color: #333333; background-color: #F4F4F4; }
+ #bavxcyavba .gt_table_body { border-top-style: solid; border-top-width: 2px; border-top-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; }
+ #bavxcyavba .gt_summary_row { color: #333333; background-color: #FFFFFF; text-transform: inherit; padding-top: 8px; padding-bottom: 8px; padding-left: 5px; padding-right: 5px; }
+ #bavxcyavba .gt_first_summary_row { border-top-style: solid; border-top-width: 2px; border-top-color: #D3D3D3; }
+ #bavxcyavba .gt_last_summary_row_top { border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; }
+ #bavxcyavba .gt_grand_summary_row { color: #333333; background-color: #FFFFFF; text-transform: inherit; padding-top: 8px; padding-bottom: 8px; padding-left: 5px; padding-right: 5px; }
+ #bavxcyavba .gt_first_grand_summary_row_bottom { border-top-style: double; border-top-width: 6px; border-top-color: #D3D3D3; }
+ #bavxcyavba .gt_last_grand_summary_row_top { border-bottom-style: double; border-bottom-width: 6px; border-bottom-color: #D3D3D3; }
+ #bavxcyavba .gt_sourcenotes { color: #333333; background-color: #FFFFFF; border-bottom-style: none; border-bottom-width: 2px; border-bottom-color: #D3D3D3; border-left-style: none; border-left-width: 2px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 2px; border-right-color: #D3D3D3; }
+ #bavxcyavba .gt_sourcenote { font-size: 90%; padding-top: 4px; padding-bottom: 4px; padding-left: 5px; padding-right: 5px; text-align: left; }
+ #bavxcyavba .gt_left { text-align: left; }
+ #bavxcyavba .gt_center { text-align: center; }
+ #bavxcyavba .gt_right { text-align: right; font-variant-numeric: tabular-nums; }
+ #bavxcyavba .gt_font_normal { font-weight: normal; }
+ #bavxcyavba .gt_font_bold { font-weight: bold; }
+ #bavxcyavba .gt_font_italic { font-style: italic; }
+ #bavxcyavba .gt_super { font-size: 65%; }
+ #bavxcyavba .gt_footnotes { color: font-color(#FFFFFF); background-color: #FFFFFF; border-bottom-style: none; border-bottom-width: 2px; border-bottom-color: #D3D3D3; border-left-style: none; border-left-width: 2px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 2px; border-right-color: #D3D3D3; }
+ #bavxcyavba .gt_footnote { margin: 0px; font-size: 90%; padding-top: 4px; padding-bottom: 4px; padding-left: 5px; padding-right: 5px; }
+ #bavxcyavba .gt_sourcenotes { color: #333333; background-color: #FFFFFF; border-bottom-style: none; border-bottom-width: 2px; border-bottom-color: #D3D3D3; border-left-style: none; border-left-width: 2px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 2px; border-right-color: #D3D3D3; }
+ #bavxcyavba .gt_sourcenote { font-size: 90%; padding-top: 4px; padding-bottom: 4px; padding-left: 5px; padding-right: 5px; text-align: left; }
+ #bavxcyavba .gt_footnote_marks { font-size: 75%; vertical-align: 0.4em; position: initial; }
+ #bavxcyavba .gt_asterisk { font-size: 100%; vertical-align: 0; }
+ 
+</style>
+
+<table class="gt_table cell caption-top table table-sm table-striped small" data-quarto-bootstrap="false">
 <colgroup>
 <col style="width: 20%">
 <col style="width: 20%">
@@ -1862,66 +2092,79 @@ Table&nbsp;6.3: Compact Fama–MacBeth regression table (BEM Table 6.3)
 <col style="width: 20%">
 </colgroup>
 <thead>
-<tr class="header">
-<th style="text-align: left;">Term</th>
-<th style="text-align: right;">(1)</th>
-<th style="text-align: right;">(2)</th>
-<th style="text-align: right;">(3)</th>
-<th style="text-align: right;">(4)</th>
+<tr class="gt_col_headings header">
+<th id="Term" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" scope="col">Term</th>
+<th id="1" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">(1)</th>
+<th id="2" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">(2)</th>
+<th id="3" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">(3)</th>
+<th id="4" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">(4)</th>
 </tr>
 </thead>
-<tbody>
+<tbody class="gt_table_body">
 <tr class="odd">
-<td style="text-align: left;">Beta</td>
-<td style="text-align: right;">-2.71<br>(-1.41)</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;">1.03<br>(0.55)</td>
+<td class="gt_row gt_left" headers="Term">Beta</td>
+<td class="gt_row gt_right" headers="1">-2.71<br>
+(-1.41)</td>
+<td class="gt_row gt_right" headers="2"></td>
+<td class="gt_row gt_right" headers="3"></td>
+<td class="gt_row gt_right" headers="4">1.03<br>
+(0.55)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Size</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;">-2.29<br>(-3.64)</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;">-2.52<br>(-3.96)</td>
+<td class="gt_row gt_left" headers="Term">Size</td>
+<td class="gt_row gt_right" headers="1"></td>
+<td class="gt_row gt_right" headers="2">-2.29<br>
+(-3.64)</td>
+<td class="gt_row gt_right" headers="3"></td>
+<td class="gt_row gt_right" headers="4">-2.52<br>
+(-3.96)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">Book-to-market</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;">4.09<br>(5.80)</td>
-<td style="text-align: right;">2.65<br>(3.64)</td>
+<td class="gt_row gt_left" headers="Term">Book-to-market</td>
+<td class="gt_row gt_right" headers="1"></td>
+<td class="gt_row gt_right" headers="2"></td>
+<td class="gt_row gt_right" headers="3">4.09<br>
+(5.80)</td>
+<td class="gt_row gt_right" headers="4">2.65<br>
+(3.64)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Intercept</td>
-<td style="text-align: right;">14.95<br>(5.01)</td>
-<td style="text-align: right;">23.22<br>(4.63)</td>
-<td style="text-align: right;">10.17<br>(4.65)</td>
-<td style="text-align: right;">22.02<br>(4.17)</td>
+<td class="gt_row gt_left" headers="Term">Intercept</td>
+<td class="gt_row gt_right" headers="1">14.95<br>
+(5.01)</td>
+<td class="gt_row gt_right" headers="2">23.22<br>
+(4.63)</td>
+<td class="gt_row gt_right" headers="3">10.17<br>
+(4.65)</td>
+<td class="gt_row gt_right" headers="4">22.02<br>
+(4.17)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">R²</td>
-<td style="text-align: right;">0.011</td>
-<td style="text-align: right;">0.010</td>
-<td style="text-align: right;">0.005</td>
-<td style="text-align: right;">0.024</td>
+<td class="gt_row gt_left" headers="Term">R²</td>
+<td class="gt_row gt_right" headers="1">0.011</td>
+<td class="gt_row gt_right" headers="2">0.010</td>
+<td class="gt_row gt_right" headers="3">0.005</td>
+<td class="gt_row gt_right" headers="4">0.024</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Adjusted R²</td>
-<td style="text-align: right;">0.011</td>
-<td style="text-align: right;">0.009</td>
-<td style="text-align: right;">0.005</td>
-<td style="text-align: right;">0.023</td>
+<td class="gt_row gt_left" headers="Term">Adjusted R²</td>
+<td class="gt_row gt_right" headers="1">0.011</td>
+<td class="gt_row gt_right" headers="2">0.009</td>
+<td class="gt_row gt_right" headers="3">0.005</td>
+<td class="gt_row gt_right" headers="4">0.023</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">n</td>
-<td style="text-align: right;">5218</td>
-<td style="text-align: right;">5583</td>
-<td style="text-align: right;">4328</td>
-<td style="text-align: right;">4320</td>
+<td class="gt_row gt_left" headers="Term">n</td>
+<td class="gt_row gt_right" headers="1">5218</td>
+<td class="gt_row gt_right" headers="2">5583</td>
+<td class="gt_row gt_right" headers="3">4328</td>
+<td class="gt_row gt_right" headers="4">4320</td>
 </tr>
 </tbody>
 </table>
+
+
+</div>
 </div>
 </div>
 </figure>

@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>1&nbsp; Preliminaries – Empirical Asset Pricing with Polars</title>
+<title>1&nbsp; Preliminaries – Empirical Asset Pricing: A Python Reader’s Companion</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -359,7 +359,7 @@ window.Quarto = {
   <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
     <div class="pt-lg-2 mt-2 text-left sidebar-header">
     <div class="sidebar-title mb-0 py-0">
-      <a href="./">Empirical Asset Pricing with Polars</a> 
+      <a href="./">Empirical Asset Pricing: A Python Reader’s Companion</a> 
         <div class="sidebar-tools-main">
   <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
 </div>
@@ -512,15 +512,21 @@ window.Quarto = {
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#sample" id="toc-sample" class="nav-link active" data-scroll-target="#sample"><span class="header-section-number">1.1</span> Sample</a>
+  <li><a href="#sec-data" id="toc-sec-data" class="nav-link active" data-scroll-target="#sec-data"><span class="header-section-number">1.1</span> Data</a>
   <ul class="collapse">
   <li><a href="#sec-data-vintages" id="toc-sec-data-vintages" class="nav-link" data-scroll-target="#sec-data-vintages"><span class="header-section-number">1.1.1</span> WRDS tables</a></li>
-  <li><a href="#sec-create-data-repository" id="toc-sec-create-data-repository" class="nav-link" data-scroll-target="#sec-create-data-repository"><span class="header-section-number">1.1.2</span> Create the Parquet repository</a></li>
-  <li><a href="#other-inputs" id="toc-other-inputs" class="nav-link" data-scroll-target="#other-inputs"><span class="header-section-number">1.1.3</span> Other inputs</a></li>
+  <li><a href="#other-inputs" id="toc-other-inputs" class="nav-link" data-scroll-target="#other-inputs"><span class="header-section-number">1.1.2</span> Other data sources</a></li>
   </ul></li>
   <li><a href="#winsorization-and-truncation" id="toc-winsorization-and-truncation" class="nav-link" data-scroll-target="#winsorization-and-truncation"><span class="header-section-number">1.2</span> Winsorization and Truncation</a></li>
   <li><a href="#newey-and-west-1987-adjustment" id="toc-newey-and-west-1987-adjustment" class="nav-link" data-scroll-target="#newey-and-west-1987-adjustment"><span class="header-section-number">1.3</span> Newey and West (1987) Adjustment</a></li>
-  <li><a href="#summary" id="toc-summary" class="nav-link" data-scroll-target="#summary"><span class="header-section-number">1.4</span> Summary</a></li>
+  <li><a href="#python-packages" id="toc-python-packages" class="nav-link" data-scroll-target="#python-packages"><span class="header-section-number">1.4</span> Python packages</a>
+  <ul class="collapse">
+  <li><a href="#polars" id="toc-polars" class="nav-link" data-scroll-target="#polars"><span class="header-section-number">1.4.1</span> Polars</a></li>
+  <li><a href="#eap_pl" id="toc-eap_pl" class="nav-link" data-scroll-target="#eap_pl"><span class="header-section-number">1.4.2</span> <code>eap_pl</code></a></li>
+  <li><a href="#great-tables" id="toc-great-tables" class="nav-link" data-scroll-target="#great-tables"><span class="header-section-number">1.4.3</span> Great Tables</a></li>
+  <li><a href="#plotnine_polars" id="toc-plotnine_polars" class="nav-link" data-scroll-target="#plotnine_polars"><span class="header-section-number">1.4.4</span> <code>plotnine_polars</code></a></li>
+  <li><a href="#statspai" id="toc-statspai" class="nav-link" data-scroll-target="#statspai"><span class="header-section-number">1.4.5</span> StatsPAI</a></li>
+  </ul></li>
   <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references">References</a></li>
   </ul>
 </nav>
@@ -531,7 +537,7 @@ window.Quarto = {
 
 <header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./data.html">Part I. Statistical Methodologies</a></li><li class="breadcrumb-item"><a href="./data.html"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Preliminaries</span></a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title"><span id="sec-data" class="quarto-section-identifier"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Preliminaries</span></span></h1>
+<h1 class="title"><span id="sec-preliminaries" class="quarto-section-identifier"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Preliminaries</span></span></h1>
 </div>
 
 
@@ -548,16 +554,97 @@ window.Quarto = {
 </header>
 
 
-<section id="sample" class="level2" data-number="1.1">
-<h2 data-number="1.1" class="anchored" data-anchor-id="sample"><span class="header-section-number">1.1</span> Sample</h2>
-<p><a href="summary-statistics.html" class="quarto-xref"><span>Chapter 2</span></a> uses the annual teaching sample of <span class="citation" data-cites="bali2016">Bali et al. (<a href="references.html#ref-bali2016" role="doc-biblioref">2016</a>)</span>, covering U.S. common stocks at each year-end from 1988 through 2012. The empirical replications use longer monthly samples.</p>
-<p>The examples read local Parquet files through <code>era_pl.load_parquet()</code>. The <code>DATA_DIR</code> setting points to the data root, and each table lives at <code>DATA_DIR/schema/table.parquet</code>. You can create these files from WRDS with the setup script in <a href="#sec-create-data-repository" class="quarto-xref"><span>Section 1.1.2</span></a>.</p>
+<section id="sec-data" class="level2" data-number="1.1">
+<h2 data-number="1.1" class="anchored" data-anchor-id="sec-data"><span class="header-section-number">1.1</span> Data</h2>
+<p>The primary data source for the analysis in <span class="citation" data-cites="bali2016">Bali et al. (<a href="references.html#ref-bali2016" role="doc-biblioref">2016</a>)</span> is CRSP. <span class="citation" data-cites="bali2016">Bali et al. (<a href="references.html#ref-bali2016" role="doc-biblioref">2016</a>)</span> discuss several ways of obtaining CRSP data that applied in 2016 before indicating that they obtained CRSP data in form of SAS data accessed on WRDS servers using SSH <span class="citation" data-cites="bali2016">(<a href="references.html#ref-bali2016" role="doc-biblioref">Bali et al. 2016, 104</a>)</span>.</p>
+<p>I store the WRDS tables used in this book as Parquet files.</p>
 <section id="sec-data-vintages" class="level3" data-number="1.1.1">
 <h3 data-number="1.1.1" class="anchored" data-anchor-id="sec-data-vintages"><span class="header-section-number">1.1.1</span> WRDS tables</h3>
-<p><span id="data-vintages"></span>The table lists the inputs used in this build. The source update date comes from the metadata embedded in each Parquet file, read with <a href="https://iangow.github.io/db2pq/">db2pq</a>. It is not the sample end date or the date the file was downloaded.</p>
-<div id="71cffa80" class="cell" data-execution_count="1">
+<p>In 2016, when <span class="citation" data-cites="bali2016">Bali et al. (<a href="references.html#ref-bali2016" role="doc-biblioref">2016</a>)</span> was published, the canonical form of WRDS data was SAS data files. For users with WRDS access, <a href="https://pypi.org/project/wrds2pg/">my <code>wrds2pg</code> package</a> can be use to generate Parquet files from SAS data files. However, I recommend getting data from the WRDS PostgreSQL server instead.</p>
+<p>Since 2017, WRDS has provided data through a PostgreSQL database server. As discussed in <span class="citation" data-cites="GowDing2024">Gow and Ding (<a href="references.html#ref-GowDing2024" role="doc-biblioref">2024</a>)</span>, the SAS data files and the PostgreSQL server can be viewed as <a href="https://iangow.github.io/far_book/parquet-wrds.html#canonical-wrds-data">canonical sources of WRDS data</a>. For users with WRDS access, <a href="https://pypi.org/project/db2pq/">my <code>db2pq</code> package</a> can be used to generate Parquet files from the PostgreSQL database. Because using <code>db2pq</code> is faster and more robust than using <code>wrds2pg</code>, I recommend that you use <code>db2pq</code>.</p>
+<p>Some books and code repositories reduce the quantity of data retrieved from WRDS by taking subsets of observations or variables. For example, Tidy Finance <span class="citation" data-cites="Scheuch2024">(<a href="references.html#ref-Scheuch2024" role="doc-biblioref">Scheuch et al. 2024</a>)</span> use a script to download a selection of variables from the CRSP daily stock file for subsets of firms in batches. In contrast, I download the full tables in each case.</p>
+<p>While downloading the full WRDS data files used here can take several minutes even with a fast internet connection, I think this is a cost worth bearing for several reasons. First, many finance researchers will only have access to annual updates and will use the data on a near-daily basis. So the fixed cost of downloading the data can be amortized over many uses.</p>
+<p>Second, managing vintages of data is much easier with the approach used here. The core <code>db2pq</code> function <code>wrds_update_pq()</code> used below retains information about the vintage of the data on WRDS and this avoids downloading data that is of the same vintage as the user already has. Other functions offered by <code>db2pq</code> allow the user to retain older vintages and swap them easily if one wants to reproduce data using a specific vintage.</p>
+<p>It seems not uncommon for researchers to get a certain set of variables in initial analysis, then need to go back to retrieve additional variables later on when the vintage of the data might be different. In such cases, a research is confronted with a choice of updating all variables, potentially losing finely balanced results in the process, or just getting data for the additional variables, which introduces potential inconsitencies in the data. By getting all variables at the outset, this issue is avoided.</p>
+<p>Another reason to get the full data files relates to reproducibility. If your results are generated on a specific subset of a WRDS data file, then I need to get that specific subset to reproduce them. Because researchers often do not include the code to produce the WRDS data files they use, additional frictions are introduce to reproducibiliy in practice. In contrast, using <code>crsp.dsf</code> produced using <code>db2pq</code> will produce exactly the same results as I’d get from using <code>crsp.dsf</code> in the PostgreSQL database.</p>
+<p>A third approach to managing data avoids storing local data at all. For example, <span class="citation" data-cites="GowDing2024">Gow and Ding (<a href="references.html#ref-GowDing2024" role="doc-biblioref">2024</a>)</span> provide code to run analyses in their book using direct connections to the WRDS PostgreSQL server with little or no persistence of data locally. While this does reduce the initial set-up costs, it introduces issues of performance and even reproducibility that do not seem worth forgoing the modest initial setup costs of the approach used here.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
+<section id="compustat-comp" class="level4" data-number="1.1.1.1">
+<h4 data-number="1.1.1.1" class="anchored" data-anchor-id="compustat-comp"><span class="header-section-number">1.1.1.1</span> Compustat (<code>comp</code>)</h4>
+<p>Compustat is the most common source of financial-statement data for academic research, particulary for US firms. Academic researchers generally get Compustat data through WRDS.</p>
+<p>While Compustat is a rich source of data from income statement, balance sheets, and cash flow statements, its direct use by <span class="citation" data-cites="bali2016">Bali et al. (<a href="references.html#ref-bali2016" role="doc-biblioref">2016</a>)</span> is limited to calculating the book value of common equity. The table from Compustat needed for this purpose is <code>comp.funda</code>, which supplies annual data.</p>
+<p>More on Compustat can be found in <a href="https://iangow.github.io/era_pl_book/fin-state.html">Chapter 6</a> and <a href="https://iangow.github.io/era_pl_book/fin-state-reprise.html">Chapter 8</a> of <span class="citation" data-cites="GowDing2024">Gow and Ding (<a href="references.html#ref-GowDing2024" role="doc-biblioref">2024</a>)</span>.</p>
+<p>While <span class="citation" data-cites="bali2016">Bali et al. (<a href="references.html#ref-bali2016" role="doc-biblioref">2016</a>)</span> make little use of Compustat data, many studies of the cross-section of stock returns go deeper into financial statements. <a href="https://iangow.github.io/era_pl_book/pead.html#post-earnings-announcement-drift">Chapter 14</a> of <span class="citation" data-cites="GowDing2024">Gow and Ding (<a href="references.html#ref-GowDing2024" role="doc-biblioref">2024</a>)</span> covers <span class="citation" data-cites="bernardThomas1989">Bernard and Thomas (<a href="references.html#ref-bernardThomas1989" role="doc-biblioref">1989</a>)</span>, which uses quarterly income before extraordinary items (<code>ibq</code> in <code>comp.fundq</code>) to measure earnings surprises, then compare abnormal returns across earnings-surprise deciles after the announcements. <a href="https://iangow.github.io/era_pl_book/accruals.html#accrual-anomaly">Chapter 15</a> of <span class="citation" data-cites="GowDing2024">Gow and Ding (<a href="references.html#ref-GowDing2024" role="doc-biblioref">2024</a>)</span> focuses on <span class="citation" data-cites="sloan1996">Sloan (<a href="references.html#ref-sloan1996" role="doc-biblioref">1996</a>)</span>, which uses annual financial statements (<code>comp.funda</code>) to separate earnings into accrual and cash-flow components, then compares subsequent returns across portfolios sorted on accruals.</p>
+</section>
+<section id="crsp-crsp" class="level4" data-number="1.1.1.2">
+<h4 data-number="1.1.1.2" class="anchored" data-anchor-id="crsp-crsp"><span class="header-section-number">1.1.1.2</span> CRSP (<code>crsp</code>)</h4>
+<p>The primary source of data in <span class="citation" data-cites="bali2016">Bali et al. (<a href="references.html#ref-bali2016" role="doc-biblioref">2016</a>)</span> is the CRSP database. According to its website, “the Center for Research in Security Prices, LLC (CRSP) maintains the most comprehensive collection of security price, return, and volume data for the NYSE, AMEX and NASDAQ stock markets. Additional CRSP files provide stock indices, beta-based and cap-based portfolios, treasury bond and risk-free rates, mutual funds, and real estate data. [CRSP] maintains the most comprehensive collection of security price, return, and volume data for the NYSE, AMEX and NASDAQ stock markets. Additional CRSP files provide stock indices, beta-based and cap-based portfolios, treasury bond and risk-free rates, mutual funds, and real estate data.”</p>
+<p>According to <a href="https://go.unimelb.edu.au/7cd8">WRDS,</a> “CRSP contains end-of-day and month-end prices on all listed NYSE, Amex, and NASDAQ common stocks along with basic market indices, and includes the most comprehensive distribution information available, with the most accurate total return calculations.”</p>
+<p>In 2022, CRSP introduced a new data format called <em>CIZ</em>.<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a> The CIZ format replaced the <em>SIZ</em> format available when <span class="citation" data-cites="bali2016">Bali et al. (<a href="references.html#ref-bali2016" role="doc-biblioref">2016</a>)</span> was written. CRSP stopped releasing SIZ format data in early 2025, so no data on returns and stock prices are available in the SIZ format for periods after 2024.</p>
+<p>One major change with CIZ was to the layout of the tables, with CIZ tables often being much larger because they contain data from what were multiple tables in SIZ.<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a></p>
+<p>A second change with CIZ affected the calculation of monthly returns. With SIZ, monthly returns are calculated from month-end to month-end, with dividends reinvested at month-end. In contrast, CIZ compounds daily returns over the month, with dividends reinvested on their ex-dividend dates.<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a></p>
+<p>A third change with CIZ was the incorporation of any applicable delisting returns into the reported monthly return. In contrast, the SIZ data available to <span class="citation" data-cites="bali2016">Bali et al. (<a href="references.html#ref-bali2016" role="doc-biblioref">2016</a>)</span> placed delisting returns in a separate table and researchers bore the burden of incorporating delisting returns, which were often missing from that table. See <a href="https://www.crsp.org/crsp_pdf/crsp-us-stock-indexes-databases-siz-to-ciz-executive-summary/">CRSP’s comparison of the formats</a>.</p>
+<p>Because my focus here is on providing a reader’s companion to <span class="citation" data-cites="bali2016">Bali et al. (<a href="references.html#ref-bali2016" role="doc-biblioref">2016</a>)</span>, I use the final vintage of the SIZ data throughout this version of the book. Because the SIZ files I use come from a later CRSP vintage than used in BEM, the underlying data can still differ, though in practice not by much. A later edition of this book may instead use CIZ data or provide a guide to how the analyses could be conducted using CIZ data.</p>
+<p>Daily returns come from <code>crsp.dsf</code> and monthly returns from <code>crsp.msf</code>. We use <code>crsp.msenames</code> for data on industries and the exchanges on which stocks are traded. Delisting returns come from <code>crsp.msedelist</code> and index data from <code>crsp.msi</code>.</p>
+<p>The final CRSP table we use is <code>crsp.ccmxpf_lnkused</code>. CRSP provides PERMNO, its own “permanent identifier” for each security in its database. Additionally, CRSP provides a company-level identifier, PERMCO, for each company. <a href="https://go.unimelb.edu.au/7cd8">WRDS</a> tells us that CRSP’s goals in creating these identifiers are to allow “for clean and accurate backtesting, time-series and event studies, measurement of performance, accurate benchmarking, and securities analysis.” Howver, the firm identifier on Compustat is GVKEY and <code>crsp.ccmxpf_lnkused</code> provides a way to link CRSP data with the relevant Compustat records. <a href="https://iangow.github.io/era_pl_book/identifiers.html#sec-ccm">Chapter 7</a> of <span class="citation" data-cites="GowDing2024">Gow and Ding (<a href="references.html#ref-GowDing2024" role="doc-biblioref">2024</a>)</span> explains how to link CRSP and Compustat.<a href="#fn5" class="footnote-ref" id="fnref5" role="doc-noteref"><sup>5</sup></a></p>
+</section>
+<section id="fama-french-factors-ff" class="level4" data-number="1.1.1.3">
+<h4 data-number="1.1.1.3" class="anchored" data-anchor-id="fama-french-factors-ff"><span class="header-section-number">1.1.1.3</span> Fama-French factors (<code>ff</code>)</h4>
+<p>I use two WRDS tables, <code>ff.factors_monthly</code> and <code>ff.factors_daily</code>, for the Fama–French factors and the risk-free rate in many of the analyses. For example, the <a href="./beta-replication.html">beta chapter</a> uses the market excess return from both tables to estimate daily and monthly betas.</p>
+<p>For some replications I use archived releases from <a href="https://mba.tuck.dartmouth.edu/pages/faculty/ken.french/data_library.html">Kenneth French’s Data Library</a> to get closer to the factor vintages available when BEM prepared their book. The <a href="./skewness-replication.html">skewness</a>, <a href="./volatility-replication.html">idiosyncratic volatility</a>, and <a href="./liquid-samples-replication.html">liquid samples</a> chapters use the June 2014 release. The four-factor volatility model also uses the daily momentum series from that release. <a href="eap_pl/reference/get_ff_factors.html"><code>eap_pl.get_ff_factors()</code></a> retrieves a specified vintage and keeps a checksum-verified local copy for later renders.</p>
+</section>
+<section id="source-vintages" class="level4" data-number="1.1.1.4">
+<h4 data-number="1.1.1.4" class="anchored" data-anchor-id="source-vintages"><span class="header-section-number">1.1.1.4</span> Source vintages</h4>
+<p><a href="#tbl-data-vintages" class="quarto-xref">Table&nbsp;<span>1.1</span></a> lists the inputs used in this build. The source update date comes from the metadata embedded in each Parquet file, read with <a href="https://iangow.github.io/db2pq/">db2pq</a>. It is not the sample end date or the date the file was downloaded.</p>
+<div id="data-vintages">
+<div class="cell" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> re</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> db2pq <span class="im">import</span> pq_last_modified</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> IPython.display <span class="im">import</span> Markdown, display</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>tables <span class="op">=</span> [</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"comp"</span>, <span class="st">"funda"</span>, <span class="st">"Compustat"</span>,</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>     <span class="st">"Annual fundamentals for book equity."</span>),</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"crsp"</span>, <span class="st">"dsf"</span>, <span class="st">"CRSP legacy (SIZ)"</span>,</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>     <span class="st">"Daily returns for beta estimation in @sec-bem-beta and daily prices, returns, and volume for @sec-liquidity-replication."</span>),</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"crsp"</span>, <span class="st">"msf"</span>, <span class="st">"CRSP legacy (SIZ)"</span>,</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>     <span class="st">"Legacy prices, shares outstanding, and monthly returns."</span>),</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"crsp"</span>, <span class="st">"msenames"</span>, <span class="st">"CRSP legacy (SIZ)"</span>,</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>     <span class="st">"Historical share codes, exchanges, and industries."</span>),</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"crsp"</span>, <span class="st">"msedelist"</span>, <span class="st">"CRSP legacy (SIZ)"</span>,</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>     <span class="st">"Delisting returns and codes for monthly holding-period returns."</span>),</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"crsp"</span>, <span class="st">"msi"</span>, <span class="st">"CRSP legacy (SIZ)"</span>,</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>     <span class="st">"CRSP value-weighted index for the market factor comparison."</span>),</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"crsp"</span>, <span class="st">"ccmxpf_lnkused"</span>, <span class="st">"CRSP/Compustat Merged"</span>,</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>     <span class="st">"Historical links from Compustat firms to CRSP securities."</span>),</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"ff"</span>, <span class="st">"factors_monthly"</span>, <span class="st">"Fama–French"</span>,</span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>     <span class="st">"Monthly factors and the risk-free rate for betas, alphas, and market checks."</span>),</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"ff"</span>, <span class="st">"factors_daily"</span>, <span class="st">"Fama–French"</span>,</span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>     <span class="st">"Daily market excess returns for the crash checks in @sec-bem7-market and for estimating daily betas."</span>),</span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>rows <span class="op">=</span> [</span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>    <span class="st">"| WRDS table | Dataset | Used for | Source updated |"</span>,</span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>    <span class="st">"|:---|:---|:---|:---|"</span>,</span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> schema, name, dataset, purpose <span class="kw">in</span> tables:</span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>    metadata <span class="op">=</span> pq_last_modified(name, schema) <span class="kw">or</span> <span class="st">""</span></span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>    match <span class="op">=</span> re.search(<span class="vs">r"Updated </span><span class="kw">(</span><span class="dv">\d</span><span class="op">{4}</span><span class="vs">-</span><span class="dv">\d</span><span class="op">{2}</span><span class="vs">-</span><span class="dv">\d</span><span class="op">{2}</span><span class="kw">)</span><span class="vs">"</span>, metadata)</span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>    updated <span class="op">=</span> match[<span class="dv">1</span>] <span class="cf">if</span> match <span class="cf">else</span> <span class="st">"Not recorded"</span></span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>    rows.append(<span class="ss">f"| `</span><span class="sc">{</span>schema<span class="sc">}</span><span class="ss">.</span><span class="sc">{</span>name<span class="sc">}</span><span class="ss">` | </span><span class="sc">{</span>dataset<span class="sc">}</span><span class="ss"> | </span><span class="sc">{</span>purpose<span class="sc">}</span><span class="ss"> | </span><span class="sc">{</span>updated<span class="sc">}</span><span class="ss"> |"</span>)</span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a>display(Markdown(<span class="st">"</span><span class="ch">\n</span><span class="st">"</span>.join(rows)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div id="tbl-data-vintages" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="1">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-data-vintages-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;1.1: WRDS inputs and source update dates
+</figcaption>
+<div aria-describedby="tbl-data-vintages-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="cell-output cell-output-display cell-output-markdown">
-<table class="caption-top table table-sm table-striped small">
+<table class="cell caption-top table table-sm table-striped small">
 <colgroup>
 <col style="width: 25%">
 <col style="width: 25%">
@@ -574,22 +661,10 @@ window.Quarto = {
 </thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: left;"><code>ff.factors_monthly</code></td>
-<td style="text-align: left;">Fama–French</td>
-<td style="text-align: left;">Monthly factors and the risk-free rate for betas, alphas, and market checks.</td>
-<td style="text-align: left;">2026-05-23</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;"><code>ff.factors_daily</code></td>
-<td style="text-align: left;">Fama–French</td>
-<td style="text-align: left;">Daily market excess returns for the crash checks in <a href="crsp-replication.html#sec-bem7-market" class="quarto-xref"><span>Section 7.3</span></a> and for estimating daily betas.</td>
+<td style="text-align: left;"><code>comp.funda</code></td>
+<td style="text-align: left;">Compustat</td>
+<td style="text-align: left;">Annual fundamentals for book equity.</td>
 <td style="text-align: left;">2026-06-16</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;"><code>crsp.msf</code></td>
-<td style="text-align: left;">CRSP legacy (SIZ)</td>
-<td style="text-align: left;">Legacy prices, shares outstanding, and monthly returns.</td>
-<td style="text-align: left;">2025-02-08</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;"><code>crsp.dsf</code></td>
@@ -598,16 +673,28 @@ window.Quarto = {
 <td style="text-align: left;">2025-02-08</td>
 </tr>
 <tr class="odd">
+<td style="text-align: left;"><code>crsp.msf</code></td>
+<td style="text-align: left;">CRSP legacy (SIZ)</td>
+<td style="text-align: left;">Legacy prices, shares outstanding, and monthly returns.</td>
+<td style="text-align: left;">2025-02-08</td>
+</tr>
+<tr class="even">
 <td style="text-align: left;"><code>crsp.msenames</code></td>
 <td style="text-align: left;">CRSP legacy (SIZ)</td>
 <td style="text-align: left;">Historical share codes, exchanges, and industries.</td>
 <td style="text-align: left;">2025-02-08</td>
 </tr>
+<tr class="odd">
+<td style="text-align: left;"><code>crsp.msedelist</code></td>
+<td style="text-align: left;">CRSP legacy (SIZ)</td>
+<td style="text-align: left;">Delisting returns and codes for monthly holding-period returns.</td>
+<td style="text-align: left;">2025-02-08</td>
+</tr>
 <tr class="even">
-<td style="text-align: left;"><code>comp.funda</code></td>
-<td style="text-align: left;">Compustat</td>
-<td style="text-align: left;">Annual fundamentals for book equity.</td>
-<td style="text-align: left;">2026-06-16</td>
+<td style="text-align: left;"><code>crsp.msi</code></td>
+<td style="text-align: left;">CRSP legacy (SIZ)</td>
+<td style="text-align: left;">CRSP value-weighted index for the market factor comparison.</td>
+<td style="text-align: left;">2025-02-08</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;"><code>crsp.ccmxpf_lnkused</code></td>
@@ -616,68 +703,92 @@ window.Quarto = {
 <td style="text-align: left;">2026-02-06</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;"><code>crsp.msedelist</code></td>
-<td style="text-align: left;">CRSP legacy (SIZ)</td>
-<td style="text-align: left;">Delisting returns and codes for monthly holding-period returns.</td>
-<td style="text-align: left;">2025-02-08</td>
+<td style="text-align: left;"><code>ff.factors_monthly</code></td>
+<td style="text-align: left;">Fama–French</td>
+<td style="text-align: left;">Monthly factors and the risk-free rate for betas, alphas, and market checks.</td>
+<td style="text-align: left;">2026-05-23</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;"><code>crsp.msi</code></td>
-<td style="text-align: left;">CRSP legacy (SIZ)</td>
-<td style="text-align: left;">CRSP value-weighted index for the market factor comparison.</td>
-<td style="text-align: left;">2025-02-08</td>
+<td style="text-align: left;"><code>ff.factors_daily</code></td>
+<td style="text-align: left;">Fama–French</td>
+<td style="text-align: left;">Daily market excess returns for the crash checks in <a href="crsp-replication.html#sec-bem7-market" class="quarto-xref"><span>Section 7.3</span></a> and for estimating daily betas.</td>
+<td style="text-align: left;">2026-06-16</td>
 </tr>
 </tbody>
 </table>
 </div>
 </div>
-<p>The replications use legacy CRSP (SIZ), the format available when BEM wrote the book. The local legacy exports are newer than their original snapshot. The newer CIZ files use different return conventions, including the timing of dividend reinvestment. See <a href="https://www.crsp.org/crsp_pdf/crsp-us-stock-indexes-databases-siz-to-ciz-executive-summary/">CRSP’s comparison of the formats</a>.</p>
+</figure>
+</div>
+</div>
+</div>
 </section>
-<section id="sec-create-data-repository" class="level3" data-number="1.1.2">
-<h3 data-number="1.1.2" class="anchored" data-anchor-id="sec-create-data-repository"><span class="header-section-number">1.1.2</span> Create the Parquet repository</h3>
-<p><span id="create-data-repository"></span>Copy <code>.env.example</code> to <code>.env</code> in the book checkout and set <code>DATA_DIR</code> to your Parquet root and <code>WRDS_ID</code> to your WRDS username. After <code>uv sync</code>, run the setup script from that checkout. If you already have the source files there, you can skip this step. If your WRDS account lacks access to the legacy CRSP tables, use licensed SIZ extracts at the corresponding paths.</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">uv</span> run scripts/download_wrds_tables.py</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<section id="sec-create-data-repository" class="level4" data-number="1.1.1.5">
+<h4 data-number="1.1.1.5" class="anchored" data-anchor-id="sec-create-data-repository"><span class="header-section-number">1.1.1.5</span> Create the Parquet repository</h4>
+<p><span id="create-data-repository"></span>Copy <code>.env.example</code> to <code>.env</code> in the book checkout and set <code>DATA_DIR</code> to your Parquet root and <code>WRDS_ID</code> to your WRDS username. After <code>uv sync</code>, run the setup script from that checkout. If you already have the source files there, you can skip this step. If your WRDS account lacks access to the legacy CRSP tables, use licensed SIZ extracts at the corresponding paths. <code>eap_pl.load_parquet()</code> reads these files from <code>DATA_DIR/schema/table.parquet</code>.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode sh code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="ex">uv</span> run scripts/download_wrds_tables.py</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>The following Python example shows how the script uses <code>db2pq.wrds_update_pq()</code> to export the WRDS tables to <code>DATA_DIR</code>.</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> db2pq <span class="im">import</span> wrds_update_pq</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> dotenv <span class="im">import</span> load_dotenv</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>load_dotenv()</span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>tables <span class="op">=</span> {</span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    <span class="st">"crsp"</span>: [<span class="st">"msf"</span>, <span class="st">"dsf"</span>, <span class="st">"msenames"</span>, <span class="st">"msedelist"</span>, <span class="st">"msi"</span>, <span class="st">"ccmxpf_lnkused"</span>],</span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    <span class="st">"comp"</span>: [<span class="st">"funda"</span>],</span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    <span class="st">"ff"</span>: [<span class="st">"factors_monthly"</span>, <span class="st">"factors_daily"</span>],</span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> schema, names <span class="kw">in</span> tables.items():</span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> name <span class="kw">in</span> names:</span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>        wrds_update_pq(name, schema)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> db2pq <span class="im">import</span> wrds_update_pq</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> dotenv <span class="im">import</span> load_dotenv</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>load_dotenv()</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>tables <span class="op">=</span> {</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    <span class="st">"crsp"</span>: [<span class="st">"msf"</span>, <span class="st">"dsf"</span>, <span class="st">"msenames"</span>, <span class="st">"msedelist"</span>, <span class="st">"msi"</span>, <span class="st">"ccmxpf_lnkused"</span>],</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    <span class="st">"comp"</span>: [<span class="st">"funda"</span>],</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    <span class="st">"ff"</span>: [<span class="st">"factors_monthly"</span>, <span class="st">"factors_daily"</span>],</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> schema, names <span class="kw">in</span> tables.items():</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> name <span class="kw">in</span> names:</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>        wrds_update_pq(name, schema)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
-<section id="other-inputs" class="level3" data-number="1.1.3">
-<h3 data-number="1.1.3" class="anchored" data-anchor-id="other-inputs"><span class="header-section-number">1.1.3</span> Other inputs</h3>
-<p>The annual methods chapters construct December betas, size, and book-to-market from the local source data when needed. See Chapters <a href="beta-replication.html" class="quarto-xref"><span>8</span></a>, <a href="size-replication.html" class="quarto-xref"><span>9</span></a>, and <a href="value-replication.html" class="quarto-xref"><span>10</span></a> for how each measure is constructed. The monthly Size and Value analyses read the 12-month daily beta from <code>eap.betas</code>, which the Beta chapter can export during the full render. See the <a href="https://github.com/iangow/asset_pricing_polars#render">render instructions</a>.</p>
-<p>The size builder and the CRSP and Value chapters use the <a href="https://fred.stlouisfed.org/series/CPIAUCNS">BLS all-items CPI for urban consumers, not seasonally adjusted</a>, from FRED, to express market capitalizations in December 2012 dollars. This file does not come from WRDS.</p>
+</section>
+<section id="other-inputs" class="level3" data-number="1.1.2">
+<h3 data-number="1.1.2" class="anchored" data-anchor-id="other-inputs"><span class="header-section-number">1.1.2</span> Other data sources</h3>
+<p>The annual methods chapters construct December betas, size, and book-to-market from the local source data when needed. See Chapters <a href="beta-replication.html" class="quarto-xref"><span>8</span></a>, <a href="size-replication.html" class="quarto-xref"><span>9</span></a>, and <a href="value-replication.html" class="quarto-xref"><span>10</span></a> for how each measure is constructed. The monthly replications estimate the 12-month daily beta on demand with <a href="eap_pl/reference/load_monthly_betas.html"><code>eap_pl.load_monthly_betas()</code></a>. See the <a href="https://github.com/iangow/eap_py#render">render instructions</a>.</p>
+<p>The size builder and the <a href="./crsp-replication.html">CRSP</a> and <a href="./value-replication.html">Value</a> chapters use the <a href="https://fred.stlouisfed.org/series/CPIAUCNS">BLS all-items CPI for urban consumers, not seasonally adjusted</a>, from FRED, to express market capitalizations in December 2012 dollars. This file does not come from WRDS.</p>
 <p><a href="liquidity-replication.html" class="quarto-xref"><span>Chapter 13</span></a> uses the December 2013 Pástor–Stambaugh liquidity release bundled with <code>eap_pl</code>.</p>
-<p>For comparisons across Fama–French vintages, see <a href="eap_pl/reference/get_ff_factors.html">eap_pl.get_ff_factors()</a>. The loader checks the archive’s checksum and keeps a local copy for later renders. <a href="skewness-replication.html" class="quarto-xref"><span>Chapter 14</span></a> and <a href="volatility-replication.html" class="quarto-xref"><span>Chapter 15</span></a> use the June 2014 archive. The four-factor volatility model also uses its daily momentum factor.</p>
 </section>
 </section>
 <section id="winsorization-and-truncation" class="level2" data-number="1.2">
 <h2 data-number="1.2" class="anchored" data-anchor-id="winsorization-and-truncation"><span class="header-section-number">1.2</span> Winsorization and Truncation</h2>
 <p><strong>Winsorization</strong> caps values outside chosen percentile cutoffs at the corresponding cutoff. <strong>Truncation</strong> sets those values to missing, so analyses that require the variable exclude those observations. In <a href="https://catalogimages.wiley.com/images/db/pdf/9781118095041.excerpt.pdf">Section 1.2</a>, <span class="citation" data-cites="bali2016">Bali et al. (<a href="references.html#ref-bali2016" role="doc-biblioref">2016</a>)</span> describe both methods as ways to limit the influence of extreme values. They suggest capping observations that still convey information about genuinely high or low values, and consider truncation when the extremes appear to come from a different process. They urge caution when the conclusions depend on which treatment is used.</p>
 <p>BEM compute the cutoffs separately for each year or month because they analyze each period’s cross-section before summarizing the results over time. Their 0.5% rule uses the 0.5th and 99.5th percentiles. In <a href="correlation.html" class="quarto-xref"><span>Chapter 3</span></a>, both variables are winsorized for Pearson correlations, and Spearman correlations use ranks of the original values. In <a href="annual-regressions.html" class="quarto-xref"><span>Chapter 6</span></a>, the regressors are winsorized and the excess-return outcome is used as observed.</p>
-<p>We compute the winsorization cutoffs by linear interpolation with <code>.era.winsorize(prob=0.005, quantile_method="linear")</code>. The <code>eap_pl.winsorized_corr()</code> helper applies this rule to each variable after keeping pairs with two finite values. In <a href="beta-replication.html" class="quarto-xref"><span>Chapter 8</span></a>, <code>.over("month")</code> computes cutoffs separately for each month’s beta estimates. We then fit the Fama–MacBeth regressions with <code>statspai.fama_macbeth()</code>.</p>
-<p>For examples using <code>.era.winsorize()</code> and <code>.era.truncate()</code> and a comparison with robust regression, see <a href="https://iangow.github.io/era_pl_book/extreme-vals.html#sec-leone">Chapter 24 of <em>Empirical Research in Accounting</em></a>.</p>
+<p>I compute the winsorization cutoffs by linear interpolation with <code>.eap.winsorize(prob=0.005, quantile_method="linear")</code>. The <code>eap_pl.winsorized_corr()</code> helper applies this rule to each variable after keeping pairs with two finite values. In <a href="beta-replication.html" class="quarto-xref"><span>Chapter 8</span></a>, <code>.over("month")</code> computes cutoffs separately for each month’s beta estimates. I then fit the Fama–MacBeth regressions with <code>statspai.fama_macbeth()</code>.</p>
+<p>For examples of winsorization and truncation and a comparison with robust regression, see <a href="https://iangow.github.io/era_pl_book/extreme-vals.html#sec-leone">Chapter 24 of <em>Empirical Research in Accounting</em></a>.</p>
 </section>
 <section id="newey-and-west-1987-adjustment" class="level2" data-number="1.3">
 <h2 data-number="1.3" class="anchored" data-anchor-id="newey-and-west-1987-adjustment"><span class="header-section-number">1.3</span> Newey and West (1987) Adjustment</h2>
 <p>In Section 1.3, <span class="citation" data-cites="bali2016">Bali et al. (<a href="references.html#ref-bali2016" role="doc-biblioref">2016</a>)</span> explain why inference on a time-series mean can be sensitive to changing variance and correlation across periods. Regressing a series on a constant gives its sample mean as the intercept. The adjustment of <span class="citation" data-cites="neweywest1987">Newey and West (<a href="references.html#ref-neweywest1987" role="doc-biblioref">1987</a>)</span> estimates the standard error using covariances across periods, with less weight on more distant lags. Depending on the pattern of autocorrelation, the adjustment can increase or decrease the standard error. In <a href="portfolio-analysis.html" class="quarto-xref"><span>Chapter 5</span></a>, BEM use the adjustment for average portfolio returns and spreads, and in time-series factor regressions for portfolio alphas.</p>
 <p>For Fama–MacBeth regressions, BEM apply the adjustment to the sequence of estimated coefficients, with one estimate per cross-section. BEM motivate six lags with a rule of thumb for a series of about 600 monthly observations and also use six lags in their annual example, which has only 24 coefficient estimates. <span class="citation" data-cites="gow2010">Gow et al. (<a href="references.html#ref-gow2010" role="doc-biblioref">2010</a>)</span> call this procedure FM-NW and find that its standard errors can remain too small when the underlying panel has both cross-sectional and time-series dependence. A short coefficient series provides limited information about persistence in the underlying data <span class="citation" data-cites="gow2010">(<a href="references.html#ref-gow2010" role="doc-biblioref">Gow et al. 2010, 488</a>)</span>.</p>
-<p>The annual, beta, size, and book-to-market regressions replicated here use realized excess returns over nonoverlapping holding periods. This resembles the return-based application in <span class="citation" data-cites="gow2010">Gow et al. (<a href="references.html#ref-gow2010" role="doc-biblioref">2010, sec. V</a>)</span>, where shared shocks across stocks are the main concern. For slope inference, the relevant serial dependence involves the joint behavior of regressors and residuals. Size is highly persistent in our replications. Across specifications, the pooled lag-one correlations between residuals for the same stock range from about <span class="math inline">\(-0.05\)</span> to <span class="math inline">\(-0.01\)</span>.</p>
+<p>The annual, beta, size, and book-to-market regressions replicated here use realized excess returns over nonoverlapping holding periods. This resembles the return-based application in <span class="citation" data-cites="gow2010">Gow et al. (<a href="references.html#ref-gow2010" role="doc-biblioref">2010, sec. V</a>)</span>, where shared shocks across stocks are the main concern. For slope inference, the relevant serial dependence involves the joint behavior of regressors and residuals. Size is highly persistent in my replications. Across specifications, the pooled lag-one correlations between residuals for the same stock range from about <span class="math inline">\(-0.05\)</span> to <span class="math inline">\(-0.01\)</span>.</p>
 <p>For every slope in the monthly replications, the ordinary and six-lag tests agree at the 5% level. <a href="annual-regressions.html#sec-annual-fm-inference" class="quarto-xref"><span>Section 6.2</span></a> shows how the adjustment changes inference on size in the annual example.</p>
 <p>For more on Newey–West, Fama–MacBeth, and clustering, see Section 5.6 of <em>Empirical Research in Accounting</em> in the <a href="https://iangow.github.io/era_statpai/stat-inf.html#sec-dependence">StatsPAI edition</a> or the <a href="https://iangow.github.io/era_pl_book/stat-inf.html#sec-dependence">Polars edition</a>.</p>
 </section>
-<section id="summary" class="level2" data-number="1.4">
-<h2 data-number="1.4" class="anchored" data-anchor-id="summary"><span class="header-section-number">1.4</span> Summary</h2>
+<section id="python-packages" class="level2" data-number="1.4">
+<h2 data-number="1.4" class="anchored" data-anchor-id="python-packages"><span class="header-section-number">1.4</span> Python packages</h2>
+<section id="polars" class="level3" data-number="1.4.1">
+<h3 data-number="1.4.1" class="anchored" data-anchor-id="polars"><span class="header-section-number">1.4.1</span> Polars</h3>
+<p>I use Polars, imported as <code>pl</code>, to filter, join, and summarize the data throughout the book. A <code>DataFrame</code> holds the data in memory, and a <code>LazyFrame</code> describes a query that runs when I call <code>.collect()</code>. Expressions such as <code>pl.col("ret")</code> refer to columns, and <code>.over("month")</code> applies a calculation separately within each month. See the <a href="https://docs.pola.rs/user-guide/">Polars user guide</a>.</p>
+</section>
+<section id="eap_pl" class="level3" data-number="1.4.2">
+<h3 data-number="1.4.2" class="anchored" data-anchor-id="eap_pl"><span class="header-section-number">1.4.2</span> <code>eap_pl</code></h3>
+<p>Here <code>eap</code> stands for “Empirical Asset Pricing” and <code>pl</code> is the standard abbreviation for Polars. The <code>eap_pl</code> package was created specifically for this reader’s companion and streamlines work that recurs across chapters, including reading local Parquet tables, constructing stock-level variables, and forming portfolios.</p>
+<p>Importing <code>eap_pl</code> also registers the <code>.eap</code> namespace for Polars expressions and DataFrames. For example, <code>.eap.winsorize()</code> clips an expression at quantile cutoffs. For more details, see the <a href="eap_pl/reference/index.html"><code>eap_pl</code> function reference</a>.</p>
+</section>
+<section id="great-tables" class="level3" data-number="1.4.3">
+<h3 data-number="1.4.3" class="anchored" data-anchor-id="great-tables"><span class="header-section-number">1.4.3</span> Great Tables</h3>
+<p>I use Great Tables to format the book’s tables, usually through <code>.eap.show_table()</code> on a Polars DataFrame. For tables that need grouped rows or spanning column headings, I use Great Tables methods through <code>.style</code>, as in the <a href="./portfolio-analysis.html#tbl-bem5-risk-adjusted">table of beta portfolio alphas and factor loadings</a>. See the <a href="https://posit-dev.github.io/great-tables/">Great Tables documentation</a>.</p>
+</section>
+<section id="plotnine_polars" class="level3" data-number="1.4.4">
+<h3 data-number="1.4.4" class="anchored" data-anchor-id="plotnine_polars"><span class="header-section-number">1.4.4</span> <code>plotnine_polars</code></h3>
+<p>I use <code>plotnine_polars</code> for all figures in the book. It adds <code>.ggplot()</code> to Polars DataFrames and lets me build figures by adding layers, scales, and labels using plotnine’s grammar of graphics. The figures on the <a href="./crsp-replication.html#sec-bem7-composition">composition of the CRSP sample</a> show how this works with time series grouped by exchange or industry. See the <a href="https://iangow.github.io/plotnine_polars/"><code>plotnine_polars</code> documentation</a>.</p>
+</section>
+<section id="statspai" class="level3" data-number="1.4.5">
+<h3 data-number="1.4.5" class="anchored" data-anchor-id="statspai"><span class="header-section-number">1.4.5</span> StatsPAI</h3>
+<p>I use StatsPAI (<code>statspai</code>) to estimate regressions and calculate standard errors. For example, <code>statspai.fama_macbeth()</code> fits a cross-sectional regression in each period, averages the coefficients over time, and can apply a Newey–West adjustment to the standard errors of those averages. The <a href="./annual-regressions.html">Fama–MacBeth chapter</a> shows this for annual data. See the <a href="https://github.com/brycewang-stanford/StatsPAI">StatsPAI project page</a>.</p>
+</section>
 </section>
 <section id="references" class="level2 unnumbered">
 <h2 class="unnumbered anchored" data-anchor-id="references">References</h2>
@@ -687,13 +798,35 @@ window.Quarto = {
 <div id="ref-bali2016" class="csl-entry" role="listitem">
 Bali, Turan G., Robert F. Engle, and Scott Murray. 2016. <em>Empirical Asset Pricing: The Cross Section of Stock Returns</em>. John Wiley &amp; Sons. <a href="https://www.wiley.com/en-us/empirical-asset-pricing-the-cross-section-of-stock-returns-p-9781118095041">https://www.wiley.com/en-us/empirical-asset-pricing-the-cross-section-of-stock-returns-p-9781118095041</a>.
 </div>
+<div id="ref-bernardThomas1989" class="csl-entry" role="listitem">
+Bernard, Victor L., and Jacob K. Thomas. 1989. <span>“Post-Earnings-Announcement Drift: Delayed Price Response or Risk Premium?”</span> <em>Journal of Accounting Research</em> 27: 1–36. <a href="https://doi.org/10.2307/2491062">https://doi.org/10.2307/2491062</a>.
+</div>
+<div id="ref-GowDing2024" class="csl-entry" role="listitem">
+Gow, Ian D., and Tongqing Ding. 2024. <em>Empirical Research in Accounting: Tools and Methods</em>. Chapman; Hall/CRC. <a href="https://doi.org/10.1201/9781003456230">https://doi.org/10.1201/9781003456230</a>.
+</div>
 <div id="ref-gow2010" class="csl-entry" role="listitem">
 Gow, Ian D., Gaizka Ormazabal, and Daniel J. Taylor. 2010. <span>“Correcting for Cross-Sectional and Time-Series Dependence in Accounting Research.”</span> <em>The Accounting Review</em> 85 (2): 483–512. <a href="https://doi.org/10.2308/accr.2010.85.2.483">https://doi.org/10.2308/accr.2010.85.2.483</a>.
 </div>
 <div id="ref-neweywest1987" class="csl-entry" role="listitem">
 Newey, Whitney K., and Kenneth D. West. 1987. <span>“A Simple, Positive Semi-Definite, Heteroskedasticity and Autocorrelation Consistent Covariance Matrix.”</span> <em>Econometrica</em> 55 (3): 703–8. <a href="https://doi.org/10.2307/1913610">https://doi.org/10.2307/1913610</a>.
 </div>
+<div id="ref-Scheuch2024" class="csl-entry" role="listitem">
+Scheuch, Christoph, Stefan Voigt, Patrick Weiss, and Christoph Frey. 2024. <em>Tidy Finance with <span>Python</span></em>. 1st ed. Chapman; Hall/CRC. <a href="https://doi.org/10.1201/9781032684307">https://doi.org/10.1201/9781032684307</a>.
 </div>
+<div id="ref-sloan1996" class="csl-entry" role="listitem">
+Sloan, Richard G. 1996. <span>“Do Stock Prices Fully Reflect Information in Accruals and Cash Flows about Future Earnings?”</span> <em>The Accounting Review</em> 71 (3): 289–315. <a href="https://www.jstor.org/stable/248290">https://www.jstor.org/stable/248290</a>.
+</div>
+</div>
+</section>
+<section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
+<hr>
+<ol>
+<li id="fn1"><p> In addition, <span class="citation" data-cites="GowDing2024">Gow and Ding (<a href="references.html#ref-GowDing2024" role="doc-biblioref">2024</a>)</span> rely on features of the R packages they use have no exact equivalents in Python.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>For more on CIZ, see the <a href="https://indexes.morningstar.com/docs/guide/crsp-us-stock-databases-guide-for-flat-file-format-2-0?isRdp=true">CIZ database guide</a>.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p> My local Parquet extract of the CIZ table <code>crsp.dsf_v2</code> is 4.63 GB, about 2.1 times the size of the 2.21 GB extract of the SIZ table <code>crsp.dsf</code>. The CIZ extract has 50 columns and the SIZ extract has 20.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4"><p> Of course, this is not necessary more “correct”, as dividends can only be reinvested once they are received, which would be long after the ex-dividend date. To be sure, one could pledge one’s claim to dividends to raise cash for reinvestment on the ex-dividend date, but there would be transaction costs and interest associated with this approach that the CRSP calculation ignores. Any calculation of returns that assumes that you can buy at the month-end price in one month and sell at the month-end price in another will always be an approximation of the returns that a hypothetical investor could actually earn.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn5"><p> The chapter’s worked example uses <code>crsp.ccmxpf_lnkhist</code>. <a href="https://gist.github.com/iangow/fca4cb10b048f5c798113da7039c2688">This comparison of the CRSP–Compustat link tables</a> shows how to reconstruct <code>crsp.ccmxpf_lnkused</code> from <code>crsp.ccmxpf_lnkhist</code> apart from the <code>ulinkid</code> field.<a href="#fnref5" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
 </section>
 
 </main> <!-- /main -->

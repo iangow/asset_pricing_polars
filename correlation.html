@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>3&nbsp; Correlation – Empirical Asset Pricing with Polars</title>
+<title>3&nbsp; Correlation – Empirical Asset Pricing: A Python Reader’s Companion</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -80,7 +80,7 @@ div.csl-indent {
 }</style>
 
 
-<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js" integrity="sha384-ZvpUoO/+PpLXR1lu4jmpXWu80pZlYUAfxl5NsBMWOEPSjUn/6Z/hRTt8+pR6L4N2" crossorigin="anonymous"></script><script src="site_libs/quarto-nav/quarto-nav.js"></script>
 <script src="site_libs/quarto-nav/headroom.min.js"></script>
 <script src="site_libs/clipboard/clipboard.min.js"></script>
 <script src="site_libs/quarto-search/autocomplete.umd.js"></script>
@@ -130,6 +130,9 @@ div.csl-indent {
     "search-label": "Search"
   }
 }</script>
+<script src="https://cdn.jsdelivr.net/npm/requirejs@2.3.6/require.min.js" integrity="sha384-c9c+LnTbwQ3aujuU7ULEPVvgLs+Fn6fJUvIGTsuu1ZcCf11fiEubah0ttpca4ntM sha384-6V1/AdqZRWk1KAlWbKBlGhN7VG4iE/yAZcO6NZPMF8od0vukrvr0tg4qY6NSrItx" crossorigin="anonymous"></script>
+
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
 
   <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
   <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
@@ -359,7 +362,7 @@ window.Quarto = {
   <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
     <div class="pt-lg-2 mt-2 text-left sidebar-header">
     <div class="sidebar-title mb-0 py-0">
-      <a href="./">Empirical Asset Pricing with Polars</a> 
+      <a href="./">Empirical Asset Pricing: A Python Reader’s Companion</a> 
         <div class="sidebar-tools-main">
   <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
 </div>
@@ -547,17 +550,21 @@ window.Quarto = {
 </header>
 
 
-<p>In Chapter 3, <span class="citation" data-cites="bali2016">Bali et al. (<a href="references.html#ref-bali2016" role="doc-biblioref">2016</a>)</span> compare the cross-sectional associations among beta, size, book-to-market, and next-year excess return. We use the 1988–2012 annual panel from <a href="summary-statistics.html" class="quarto-xref"><span>Chapter 2</span></a>.</p>
-<style>
-.cell-output-markdown:has(> table) {
-  max-width: 100%;
-  overflow-x: auto;
-}
-.cell-output-markdown > table {
-  white-space: nowrap;
-}
-</style>
-<div id="18282f3b" class="cell" data-execution_count="2">
+<div class="callout callout-style-default callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Warning</span>Early draft
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>This chapter is an early draft and still needs a thorough review. The APIs used in the examples may change as I continue working on the book.</p>
+</div>
+</div>
+<p>In Chapter 3, <span class="citation" data-cites="bali2016">Bali et al. (<a href="references.html#ref-bali2016" role="doc-biblioref">2016</a>)</span> compare the cross-sectional associations among beta, size, book-to-market, and next-year excess return. I use the 1988–2012 annual panel from <a href="summary-statistics.html" class="quarto-xref"><span>Chapter 2</span></a>.</p>
+<div id="8af1a39c" class="cell" data-execution_count="1">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> polars <span class="im">as</span> pl</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> eap_pl <span class="im">import</span> build_annual_panel</span>
@@ -581,431 +588,491 @@ window.Quarto = {
 \rho_t^S(X,Y)=1-\frac{6\sum_{i=1}^{n_t}d_{i,t}^2}{n_t(n_t^2-1)}.
 \tag{3.2}\]</span></span></p>
 <p>With ties, give equal values their average rank and compute the Pearson correlation of the two rank vectors. This is the calculation used by <code>pl.corr(method="spearman")</code>, including when <a href="#eq-bem3-spearman" class="quarto-xref">Equation&nbsp;<span>3.2</span></a> applies.</p>
-<div id="87ee6ff6" class="cell" data-execution_count="3">
+<div id="6ed48467" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> eap_pl <span class="im">import</span> correlation_matrix, period_correlations</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>variables <span class="op">=</span> {<span class="st">"Beta"</span>: <span class="st">"Beta"</span>, <span class="st">"Size"</span>: <span class="st">"Size"</span>, <span class="st">"BM"</span>: <span class="st">"Book-to-market"</span>, <span class="st">"excess"</span>: <span class="st">"Next-year return"</span>}</span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>annual <span class="op">=</span> period_correlations(annual_panel, variables, <span class="st">"year"</span>).sort(<span class="st">"year"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div class="cell" data-execution_count="4">
-<div id="tbl-bem3-annual" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="4">
+<div class="cell" data-execution_count="3">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>pair_labels <span class="op">=</span> {</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    c: c.replace(<span class="st">"excess"</span>, <span class="st">"Return"</span>).replace(<span class="st">"BM"</span>, <span class="st">"Book-to-market"</span>)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> c <span class="kw">in</span> annual.columns <span class="cf">if</span> <span class="st">"excess"</span> <span class="kw">in</span> c <span class="kw">or</span> <span class="st">"BM"</span> <span class="kw">in</span> c</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>annual.rename(pair_labels).rename({<span class="st">"year"</span>: <span class="st">"Year"</span>}).eap.show_table()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div id="tbl-bem3-annual" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="3">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bem3-annual-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table&nbsp;3.1: Annual Pearson and Spearman correlations (BEM Table 3.1)
 </figcaption>
 <div aria-describedby="tbl-bem3-annual-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<div class="cell-output cell-output-display cell-output-markdown">
-<table class="cell caption-top table table-sm table-striped small">
-<colgroup>
-<col style="width: 7%">
-<col style="width: 7%">
-<col style="width: 7%">
-<col style="width: 7%">
-<col style="width: 7%">
-<col style="width: 7%">
-<col style="width: 7%">
-<col style="width: 7%">
-<col style="width: 7%">
-<col style="width: 7%">
-<col style="width: 7%">
-<col style="width: 7%">
-<col style="width: 7%">
-</colgroup>
+<div class="cell-output cell-output-display">
+<div id="orwjsenotw" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>
+#orwjsenotw table {
+          font-family: inherit;
+          -webkit-font-smoothing: antialiased;
+          -moz-osx-font-smoothing: grayscale;
+        }
+
+#orwjsenotw thead, tbody, tfoot, tr, td, th { border-style: none; }
+ tr { background-color: transparent; }
+#orwjsenotw p { margin: 0; padding: 0; }
+ #orwjsenotw .gt_table { display: table; border-collapse: collapse; line-height: normal; margin-left: auto; margin-right: auto; color: #333333; font-size: 0.875rem; font-weight: normal; font-style: normal; background-color: #FFFFFF; width: 100%; border-top-style: solid; border-top-width: 2px; border-top-color: #A8A8A8; border-right-style: none; border-right-width: 2px; border-right-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #A8A8A8; border-left-style: none; border-left-width: 2px; border-left-color: #D3D3D3; }
+ #orwjsenotw .gt_caption { padding-top: 4px; padding-bottom: 4px; }
+ #orwjsenotw .gt_title { color: #333333; font-size: 125%; font-weight: initial; padding-top: 4px; padding-bottom: 4px; padding-left: 5px; padding-right: 5px; border-bottom-color: #FFFFFF; border-bottom-width: 0; }
+ #orwjsenotw .gt_subtitle { color: #333333; font-size: 85%; font-weight: initial; padding-top: 3px; padding-bottom: 5px; padding-left: 5px; padding-right: 5px; border-top-color: #FFFFFF; border-top-width: 0; }
+ #orwjsenotw .gt_heading { background-color: #FFFFFF; text-align: center; border-bottom-color: #FFFFFF; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; }
+ #orwjsenotw .gt_bottom_border { border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; }
+ #orwjsenotw .gt_col_headings { border-top-style: solid; border-top-width: 2px; border-top-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; }
+ #orwjsenotw .gt_col_heading { color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: bold; text-transform: inherit; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: bottom; padding-top: 5px; padding-bottom: 5px; padding-left: 0.45rem; padding-right: 0.45rem; overflow-x: hidden; }
+ #orwjsenotw .gt_column_spanner_outer { color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: bold; text-transform: inherit; padding-top: 0; padding-bottom: 0; padding-left: 4px; padding-right: 4px; }
+ #orwjsenotw .gt_column_spanner_outer:first-child { padding-left: 0; }
+ #orwjsenotw .gt_column_spanner_outer:last-child { padding-right: 0; }
+ #orwjsenotw .gt_column_spanner { border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; vertical-align: bottom; padding-top: 5px; padding-bottom: 5px; overflow-x: hidden; display: inline-block; width: 100%; }
+ #orwjsenotw .gt_spanner_row { border-bottom-style: hidden; }
+ #orwjsenotw .gt_group_heading { padding-top: 8px; padding-bottom: 8px; padding-left: 5px; padding-right: 5px; color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: initial; text-transform: inherit; border-top-style: solid; border-top-width: 2px; border-top-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; text-align: left; }
+ #orwjsenotw .gt_empty_group_heading { padding: 0.5px; color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: initial; border-top-style: solid; border-top-width: 2px; border-top-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; vertical-align: middle; }
+ #orwjsenotw .gt_from_md> :first-child { margin-top: 0; }
+ #orwjsenotw .gt_from_md> :last-child { margin-bottom: 0; }
+ #orwjsenotw .gt_row { padding-top: 0.25rem; padding-bottom: 0.25rem; padding-left: 0.45rem; padding-right: 0.45rem; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; }
+ #orwjsenotw .gt_stub { color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: initial; text-transform: inherit; border-right-style: solid; border-right-width: 2px; border-right-color: #D3D3D3; padding-left: 0.45rem; padding-right: 0.45rem; }
+ #orwjsenotw .gt_indent_1 { text-indent: 5px; }
+ #orwjsenotw .gt_indent_2 { text-indent: calc(5px * 2); }
+ #orwjsenotw .gt_indent_3 { text-indent: calc(5px * 3); }
+ #orwjsenotw .gt_indent_4 { text-indent: calc(5px * 4); }
+ #orwjsenotw .gt_indent_5 { text-indent: calc(5px * 5); }
+ #orwjsenotw .gt_stub_row_group { color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: initial; text-transform: inherit; border-right-style: solid; border-right-width: 2px; border-right-color: #D3D3D3; padding-left: 5px; padding-right: 5px; vertical-align: top; }
+ #orwjsenotw .gt_row_group_first td { border-top-width: 2px; }
+ #orwjsenotw .gt_row_group_first th { border-top-width: 2px; }
+ #orwjsenotw .gt_striped { color: #333333; background-color: #F4F4F4; }
+ #orwjsenotw .gt_table_body { border-top-style: solid; border-top-width: 2px; border-top-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; }
+ #orwjsenotw .gt_summary_row { color: #333333; background-color: #FFFFFF; text-transform: inherit; padding-top: 8px; padding-bottom: 8px; padding-left: 5px; padding-right: 5px; }
+ #orwjsenotw .gt_first_summary_row { border-top-style: solid; border-top-width: 2px; border-top-color: #D3D3D3; }
+ #orwjsenotw .gt_last_summary_row_top { border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; }
+ #orwjsenotw .gt_grand_summary_row { color: #333333; background-color: #FFFFFF; text-transform: inherit; padding-top: 8px; padding-bottom: 8px; padding-left: 5px; padding-right: 5px; }
+ #orwjsenotw .gt_first_grand_summary_row_bottom { border-top-style: double; border-top-width: 6px; border-top-color: #D3D3D3; }
+ #orwjsenotw .gt_last_grand_summary_row_top { border-bottom-style: double; border-bottom-width: 6px; border-bottom-color: #D3D3D3; }
+ #orwjsenotw .gt_sourcenotes { color: #333333; background-color: #FFFFFF; border-bottom-style: none; border-bottom-width: 2px; border-bottom-color: #D3D3D3; border-left-style: none; border-left-width: 2px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 2px; border-right-color: #D3D3D3; }
+ #orwjsenotw .gt_sourcenote { font-size: 90%; padding-top: 4px; padding-bottom: 4px; padding-left: 5px; padding-right: 5px; text-align: left; }
+ #orwjsenotw .gt_left { text-align: left; }
+ #orwjsenotw .gt_center { text-align: center; }
+ #orwjsenotw .gt_right { text-align: right; font-variant-numeric: tabular-nums; }
+ #orwjsenotw .gt_font_normal { font-weight: normal; }
+ #orwjsenotw .gt_font_bold { font-weight: bold; }
+ #orwjsenotw .gt_font_italic { font-style: italic; }
+ #orwjsenotw .gt_super { font-size: 65%; }
+ #orwjsenotw .gt_footnotes { color: font-color(#FFFFFF); background-color: #FFFFFF; border-bottom-style: none; border-bottom-width: 2px; border-bottom-color: #D3D3D3; border-left-style: none; border-left-width: 2px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 2px; border-right-color: #D3D3D3; }
+ #orwjsenotw .gt_footnote { margin: 0px; font-size: 90%; padding-top: 4px; padding-bottom: 4px; padding-left: 5px; padding-right: 5px; }
+ #orwjsenotw .gt_sourcenotes { color: #333333; background-color: #FFFFFF; border-bottom-style: none; border-bottom-width: 2px; border-bottom-color: #D3D3D3; border-left-style: none; border-left-width: 2px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 2px; border-right-color: #D3D3D3; }
+ #orwjsenotw .gt_sourcenote { font-size: 90%; padding-top: 4px; padding-bottom: 4px; padding-left: 5px; padding-right: 5px; text-align: left; }
+ #orwjsenotw .gt_footnote_marks { font-size: 75%; vertical-align: 0.4em; position: initial; }
+ #orwjsenotw .gt_asterisk { font-size: 100%; vertical-align: 0; }
+ 
+</style>
+
+<table class="gt_table cell caption-top table table-sm table-striped small" data-quarto-bootstrap="false">
 <thead>
-<tr class="header">
-<th style="text-align: left;">Year</th>
-<th style="text-align: right;">Pearson Beta–Size</th>
-<th style="text-align: right;">Spearman Beta–Size</th>
-<th style="text-align: right;">Pearson Beta–Book-to-market</th>
-<th style="text-align: right;">Spearman Beta–Book-to-market</th>
-<th style="text-align: right;">Pearson Beta–Return</th>
-<th style="text-align: right;">Spearman Beta–Return</th>
-<th style="text-align: right;">Pearson Size–Book-to-market</th>
-<th style="text-align: right;">Spearman Size–Book-to-market</th>
-<th style="text-align: right;">Pearson Size–Return</th>
-<th style="text-align: right;">Spearman Size–Return</th>
-<th style="text-align: right;">Pearson Book-to-market–Return</th>
-<th style="text-align: right;">Spearman Book-to-market–Return</th>
+<tr class="gt_col_headings header">
+<th id="Year" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" scope="col">Year</th>
+<th id="Pearson-Beta-Size" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Pearson Beta–Size</th>
+<th id="Spearman-Beta-Size" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Spearman Beta–Size</th>
+<th id="Pearson-Beta-Book-to-market" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Pearson Beta–Book-to-market</th>
+<th id="Spearman-Beta-Book-to-market" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Spearman Beta–Book-to-market</th>
+<th id="Pearson-Beta-Return" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Pearson Beta–Return</th>
+<th id="Spearman-Beta-Return" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Spearman Beta–Return</th>
+<th id="Pearson-Size-Book-to-market" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Pearson Size–Book-to-market</th>
+<th id="Spearman-Size-Book-to-market" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Spearman Size–Book-to-market</th>
+<th id="Pearson-Size-Return" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Pearson Size–Return</th>
+<th id="Spearman-Size-Return" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Spearman Size–Return</th>
+<th id="Pearson-Book-to-market-Return" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Pearson Book-to-market–Return</th>
+<th id="Spearman-Book-to-market-Return" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Spearman Book-to-market–Return</th>
 </tr>
 </thead>
-<tbody>
+<tbody class="gt_table_body">
 <tr class="odd">
-<td style="text-align: left;">1988</td>
-<td style="text-align: right;">0.47</td>
-<td style="text-align: right;">0.45</td>
-<td style="text-align: right;">-0.10</td>
-<td style="text-align: right;">-0.12</td>
-<td style="text-align: right;">0.04</td>
-<td style="text-align: right;">0.06</td>
-<td style="text-align: right;">-0.15</td>
-<td style="text-align: right;">-0.11</td>
-<td style="text-align: right;">0.13</td>
-<td style="text-align: right;">0.24</td>
-<td style="text-align: right;">0.04</td>
-<td style="text-align: right;">0.05</td>
+<td class="gt_row gt_left" headers="Year">1988</td>
+<td class="gt_row gt_right" headers="Pearson-Beta-Size">0.47</td>
+<td class="gt_row gt_right" headers="Spearman-Beta-Size">0.45</td>
+<td class="gt_row gt_right" headers="Pearson-Beta-Book-to-market">-0.10</td>
+<td class="gt_row gt_right" headers="Spearman-Beta-Book-to-market">-0.12</td>
+<td class="gt_row gt_right" headers="Pearson-Beta-Return">0.04</td>
+<td class="gt_row gt_right" headers="Spearman-Beta-Return">0.06</td>
+<td class="gt_row gt_right" headers="Pearson-Size-Book-to-market">-0.15</td>
+<td class="gt_row gt_right" headers="Spearman-Size-Book-to-market">-0.11</td>
+<td class="gt_row gt_right" headers="Pearson-Size-Return">0.13</td>
+<td class="gt_row gt_right" headers="Spearman-Size-Return">0.24</td>
+<td class="gt_row gt_right" headers="Pearson-Book-to-market-Return">0.04</td>
+<td class="gt_row gt_right" headers="Spearman-Book-to-market-Return">0.05</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">1989</td>
-<td style="text-align: right;">0.44</td>
-<td style="text-align: right;">0.45</td>
-<td style="text-align: right;">-0.14</td>
-<td style="text-align: right;">-0.16</td>
-<td style="text-align: right;">0.02</td>
-<td style="text-align: right;">0.02</td>
-<td style="text-align: right;">-0.14</td>
-<td style="text-align: right;">-0.11</td>
-<td style="text-align: right;">0.07</td>
-<td style="text-align: right;">0.17</td>
-<td style="text-align: right;">0.00</td>
-<td style="text-align: right;">0.04</td>
+<td class="gt_row gt_left" headers="Year">1989</td>
+<td class="gt_row gt_right" headers="Pearson-Beta-Size">0.44</td>
+<td class="gt_row gt_right" headers="Spearman-Beta-Size">0.45</td>
+<td class="gt_row gt_right" headers="Pearson-Beta-Book-to-market">-0.14</td>
+<td class="gt_row gt_right" headers="Spearman-Beta-Book-to-market">-0.16</td>
+<td class="gt_row gt_right" headers="Pearson-Beta-Return">0.02</td>
+<td class="gt_row gt_right" headers="Spearman-Beta-Return">0.02</td>
+<td class="gt_row gt_right" headers="Pearson-Size-Book-to-market">-0.14</td>
+<td class="gt_row gt_right" headers="Spearman-Size-Book-to-market">-0.11</td>
+<td class="gt_row gt_right" headers="Pearson-Size-Return">0.07</td>
+<td class="gt_row gt_right" headers="Spearman-Size-Return">0.17</td>
+<td class="gt_row gt_right" headers="Pearson-Book-to-market-Return">0.00</td>
+<td class="gt_row gt_right" headers="Spearman-Book-to-market-Return">0.04</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">1990</td>
-<td style="text-align: right;">0.43</td>
-<td style="text-align: right;">0.45</td>
-<td style="text-align: right;">-0.17</td>
-<td style="text-align: right;">-0.23</td>
-<td style="text-align: right;">0.07</td>
-<td style="text-align: right;">0.15</td>
-<td style="text-align: right;">-0.19</td>
-<td style="text-align: right;">-0.16</td>
-<td style="text-align: right;">-0.07</td>
-<td style="text-align: right;">0.10</td>
-<td style="text-align: right;">-0.05</td>
-<td style="text-align: right;">-0.06</td>
+<td class="gt_row gt_left" headers="Year">1990</td>
+<td class="gt_row gt_right" headers="Pearson-Beta-Size">0.43</td>
+<td class="gt_row gt_right" headers="Spearman-Beta-Size">0.45</td>
+<td class="gt_row gt_right" headers="Pearson-Beta-Book-to-market">-0.17</td>
+<td class="gt_row gt_right" headers="Spearman-Beta-Book-to-market">-0.23</td>
+<td class="gt_row gt_right" headers="Pearson-Beta-Return">0.07</td>
+<td class="gt_row gt_right" headers="Spearman-Beta-Return">0.15</td>
+<td class="gt_row gt_right" headers="Pearson-Size-Book-to-market">-0.19</td>
+<td class="gt_row gt_right" headers="Spearman-Size-Book-to-market">-0.16</td>
+<td class="gt_row gt_right" headers="Pearson-Size-Return">-0.07</td>
+<td class="gt_row gt_right" headers="Spearman-Size-Return">0.10</td>
+<td class="gt_row gt_right" headers="Pearson-Book-to-market-Return">-0.05</td>
+<td class="gt_row gt_right" headers="Spearman-Book-to-market-Return">-0.06</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">1991</td>
-<td style="text-align: right;">0.45</td>
-<td style="text-align: right;">0.49</td>
-<td style="text-align: right;">-0.09</td>
-<td style="text-align: right;">-0.17</td>
-<td style="text-align: right;">-0.09</td>
-<td style="text-align: right;">-0.09</td>
-<td style="text-align: right;">-0.23</td>
-<td style="text-align: right;">-0.23</td>
-<td style="text-align: right;">-0.15</td>
-<td style="text-align: right;">-0.03</td>
-<td style="text-align: right;">0.13</td>
-<td style="text-align: right;">0.19</td>
+<td class="gt_row gt_left" headers="Year">1991</td>
+<td class="gt_row gt_right" headers="Pearson-Beta-Size">0.45</td>
+<td class="gt_row gt_right" headers="Spearman-Beta-Size">0.49</td>
+<td class="gt_row gt_right" headers="Pearson-Beta-Book-to-market">-0.09</td>
+<td class="gt_row gt_right" headers="Spearman-Beta-Book-to-market">-0.17</td>
+<td class="gt_row gt_right" headers="Pearson-Beta-Return">-0.09</td>
+<td class="gt_row gt_right" headers="Spearman-Beta-Return">-0.09</td>
+<td class="gt_row gt_right" headers="Pearson-Size-Book-to-market">-0.23</td>
+<td class="gt_row gt_right" headers="Spearman-Size-Book-to-market">-0.23</td>
+<td class="gt_row gt_right" headers="Pearson-Size-Return">-0.15</td>
+<td class="gt_row gt_right" headers="Spearman-Size-Return">-0.03</td>
+<td class="gt_row gt_right" headers="Pearson-Book-to-market-Return">0.13</td>
+<td class="gt_row gt_right" headers="Spearman-Book-to-market-Return">0.19</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">1992</td>
-<td style="text-align: right;">0.34</td>
-<td style="text-align: right;">0.37</td>
-<td style="text-align: right;">-0.20</td>
-<td style="text-align: right;">-0.30</td>
-<td style="text-align: right;">-0.10</td>
-<td style="text-align: right;">-0.10</td>
-<td style="text-align: right;">-0.21</td>
-<td style="text-align: right;">-0.18</td>
-<td style="text-align: right;">-0.14</td>
-<td style="text-align: right;">-0.04</td>
-<td style="text-align: right;">0.11</td>
-<td style="text-align: right;">0.20</td>
+<td class="gt_row gt_left" headers="Year">1992</td>
+<td class="gt_row gt_right" headers="Pearson-Beta-Size">0.34</td>
+<td class="gt_row gt_right" headers="Spearman-Beta-Size">0.37</td>
+<td class="gt_row gt_right" headers="Pearson-Beta-Book-to-market">-0.20</td>
+<td class="gt_row gt_right" headers="Spearman-Beta-Book-to-market">-0.30</td>
+<td class="gt_row gt_right" headers="Pearson-Beta-Return">-0.10</td>
+<td class="gt_row gt_right" headers="Spearman-Beta-Return">-0.10</td>
+<td class="gt_row gt_right" headers="Pearson-Size-Book-to-market">-0.21</td>
+<td class="gt_row gt_right" headers="Spearman-Size-Book-to-market">-0.18</td>
+<td class="gt_row gt_right" headers="Pearson-Size-Return">-0.14</td>
+<td class="gt_row gt_right" headers="Spearman-Size-Return">-0.04</td>
+<td class="gt_row gt_right" headers="Pearson-Book-to-market-Return">0.11</td>
+<td class="gt_row gt_right" headers="Spearman-Book-to-market-Return">0.20</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">1993</td>
-<td style="text-align: right;">0.36</td>
-<td style="text-align: right;">0.38</td>
-<td style="text-align: right;">-0.19</td>
-<td style="text-align: right;">-0.25</td>
-<td style="text-align: right;">-0.01</td>
-<td style="text-align: right;">-0.03</td>
-<td style="text-align: right;">-0.19</td>
-<td style="text-align: right;">-0.17</td>
-<td style="text-align: right;">-0.00</td>
-<td style="text-align: right;">0.07</td>
-<td style="text-align: right;">0.10</td>
-<td style="text-align: right;">0.16</td>
+<td class="gt_row gt_left" headers="Year">1993</td>
+<td class="gt_row gt_right" headers="Pearson-Beta-Size">0.36</td>
+<td class="gt_row gt_right" headers="Spearman-Beta-Size">0.38</td>
+<td class="gt_row gt_right" headers="Pearson-Beta-Book-to-market">-0.19</td>
+<td class="gt_row gt_right" headers="Spearman-Beta-Book-to-market">-0.25</td>
+<td class="gt_row gt_right" headers="Pearson-Beta-Return">-0.01</td>
+<td class="gt_row gt_right" headers="Spearman-Beta-Return">-0.03</td>
+<td class="gt_row gt_right" headers="Pearson-Size-Book-to-market">-0.19</td>
+<td class="gt_row gt_right" headers="Spearman-Size-Book-to-market">-0.17</td>
+<td class="gt_row gt_right" headers="Pearson-Size-Return">-0.00</td>
+<td class="gt_row gt_right" headers="Spearman-Size-Return">0.07</td>
+<td class="gt_row gt_right" headers="Pearson-Book-to-market-Return">0.10</td>
+<td class="gt_row gt_right" headers="Spearman-Book-to-market-Return">0.16</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">1994</td>
-<td style="text-align: right;">0.31</td>
-<td style="text-align: right;">0.35</td>
-<td style="text-align: right;">-0.18</td>
-<td style="text-align: right;">-0.23</td>
-<td style="text-align: right;">0.03</td>
-<td style="text-align: right;">0.02</td>
-<td style="text-align: right;">-0.17</td>
-<td style="text-align: right;">-0.12</td>
-<td style="text-align: right;">-0.00</td>
-<td style="text-align: right;">0.11</td>
-<td style="text-align: right;">0.01</td>
-<td style="text-align: right;">0.06</td>
+<td class="gt_row gt_left" headers="Year">1994</td>
+<td class="gt_row gt_right" headers="Pearson-Beta-Size">0.31</td>
+<td class="gt_row gt_right" headers="Spearman-Beta-Size">0.35</td>
+<td class="gt_row gt_right" headers="Pearson-Beta-Book-to-market">-0.18</td>
+<td class="gt_row gt_right" headers="Spearman-Beta-Book-to-market">-0.23</td>
+<td class="gt_row gt_right" headers="Pearson-Beta-Return">0.03</td>
+<td class="gt_row gt_right" headers="Spearman-Beta-Return">0.02</td>
+<td class="gt_row gt_right" headers="Pearson-Size-Book-to-market">-0.17</td>
+<td class="gt_row gt_right" headers="Spearman-Size-Book-to-market">-0.12</td>
+<td class="gt_row gt_right" headers="Pearson-Size-Return">-0.00</td>
+<td class="gt_row gt_right" headers="Spearman-Size-Return">0.11</td>
+<td class="gt_row gt_right" headers="Pearson-Book-to-market-Return">0.01</td>
+<td class="gt_row gt_right" headers="Spearman-Book-to-market-Return">0.06</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">1995</td>
-<td style="text-align: right;">0.31</td>
-<td style="text-align: right;">0.32</td>
-<td style="text-align: right;">-0.17</td>
-<td style="text-align: right;">-0.21</td>
-<td style="text-align: right;">-0.06</td>
-<td style="text-align: right;">-0.08</td>
-<td style="text-align: right;">-0.21</td>
-<td style="text-align: right;">-0.19</td>
-<td style="text-align: right;">-0.01</td>
-<td style="text-align: right;">0.09</td>
-<td style="text-align: right;">0.09</td>
-<td style="text-align: right;">0.14</td>
+<td class="gt_row gt_left" headers="Year">1995</td>
+<td class="gt_row gt_right" headers="Pearson-Beta-Size">0.31</td>
+<td class="gt_row gt_right" headers="Spearman-Beta-Size">0.32</td>
+<td class="gt_row gt_right" headers="Pearson-Beta-Book-to-market">-0.17</td>
+<td class="gt_row gt_right" headers="Spearman-Beta-Book-to-market">-0.21</td>
+<td class="gt_row gt_right" headers="Pearson-Beta-Return">-0.06</td>
+<td class="gt_row gt_right" headers="Spearman-Beta-Return">-0.08</td>
+<td class="gt_row gt_right" headers="Pearson-Size-Book-to-market">-0.21</td>
+<td class="gt_row gt_right" headers="Spearman-Size-Book-to-market">-0.19</td>
+<td class="gt_row gt_right" headers="Pearson-Size-Return">-0.01</td>
+<td class="gt_row gt_right" headers="Spearman-Size-Return">0.09</td>
+<td class="gt_row gt_right" headers="Pearson-Book-to-market-Return">0.09</td>
+<td class="gt_row gt_right" headers="Spearman-Book-to-market-Return">0.14</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">1996</td>
-<td style="text-align: right;">0.30</td>
-<td style="text-align: right;">0.32</td>
-<td style="text-align: right;">-0.26</td>
-<td style="text-align: right;">-0.36</td>
-<td style="text-align: right;">-0.17</td>
-<td style="text-align: right;">-0.19</td>
-<td style="text-align: right;">-0.21</td>
-<td style="text-align: right;">-0.18</td>
-<td style="text-align: right;">0.04</td>
-<td style="text-align: right;">0.10</td>
-<td style="text-align: right;">0.11</td>
-<td style="text-align: right;">0.21</td>
+<td class="gt_row gt_left" headers="Year">1996</td>
+<td class="gt_row gt_right" headers="Pearson-Beta-Size">0.30</td>
+<td class="gt_row gt_right" headers="Spearman-Beta-Size">0.32</td>
+<td class="gt_row gt_right" headers="Pearson-Beta-Book-to-market">-0.26</td>
+<td class="gt_row gt_right" headers="Spearman-Beta-Book-to-market">-0.36</td>
+<td class="gt_row gt_right" headers="Pearson-Beta-Return">-0.17</td>
+<td class="gt_row gt_right" headers="Spearman-Beta-Return">-0.19</td>
+<td class="gt_row gt_right" headers="Pearson-Size-Book-to-market">-0.21</td>
+<td class="gt_row gt_right" headers="Spearman-Size-Book-to-market">-0.18</td>
+<td class="gt_row gt_right" headers="Pearson-Size-Return">0.04</td>
+<td class="gt_row gt_right" headers="Spearman-Size-Return">0.10</td>
+<td class="gt_row gt_right" headers="Pearson-Book-to-market-Return">0.11</td>
+<td class="gt_row gt_right" headers="Spearman-Book-to-market-Return">0.21</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">1997</td>
-<td style="text-align: right;">0.42</td>
-<td style="text-align: right;">0.43</td>
-<td style="text-align: right;">-0.22</td>
-<td style="text-align: right;">-0.29</td>
-<td style="text-align: right;">0.03</td>
-<td style="text-align: right;">-0.00</td>
-<td style="text-align: right;">-0.20</td>
-<td style="text-align: right;">-0.18</td>
-<td style="text-align: right;">0.08</td>
-<td style="text-align: right;">0.18</td>
-<td style="text-align: right;">0.03</td>
-<td style="text-align: right;">0.07</td>
+<td class="gt_row gt_left" headers="Year">1997</td>
+<td class="gt_row gt_right" headers="Pearson-Beta-Size">0.42</td>
+<td class="gt_row gt_right" headers="Spearman-Beta-Size">0.43</td>
+<td class="gt_row gt_right" headers="Pearson-Beta-Book-to-market">-0.22</td>
+<td class="gt_row gt_right" headers="Spearman-Beta-Book-to-market">-0.29</td>
+<td class="gt_row gt_right" headers="Pearson-Beta-Return">0.03</td>
+<td class="gt_row gt_right" headers="Spearman-Beta-Return">-0.00</td>
+<td class="gt_row gt_right" headers="Pearson-Size-Book-to-market">-0.20</td>
+<td class="gt_row gt_right" headers="Spearman-Size-Book-to-market">-0.18</td>
+<td class="gt_row gt_right" headers="Pearson-Size-Return">0.08</td>
+<td class="gt_row gt_right" headers="Spearman-Size-Return">0.18</td>
+<td class="gt_row gt_right" headers="Pearson-Book-to-market-Return">0.03</td>
+<td class="gt_row gt_right" headers="Spearman-Book-to-market-Return">0.07</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">1998</td>
-<td style="text-align: right;">0.38</td>
-<td style="text-align: right;">0.40</td>
-<td style="text-align: right;">-0.25</td>
-<td style="text-align: right;">-0.33</td>
-<td style="text-align: right;">0.15</td>
-<td style="text-align: right;">0.11</td>
-<td style="text-align: right;">-0.22</td>
-<td style="text-align: right;">-0.24</td>
-<td style="text-align: right;">-0.09</td>
-<td style="text-align: right;">-0.04</td>
-<td style="text-align: right;">-0.04</td>
-<td style="text-align: right;">-0.03</td>
+<td class="gt_row gt_left" headers="Year">1998</td>
+<td class="gt_row gt_right" headers="Pearson-Beta-Size">0.38</td>
+<td class="gt_row gt_right" headers="Spearman-Beta-Size">0.40</td>
+<td class="gt_row gt_right" headers="Pearson-Beta-Book-to-market">-0.25</td>
+<td class="gt_row gt_right" headers="Spearman-Beta-Book-to-market">-0.33</td>
+<td class="gt_row gt_right" headers="Pearson-Beta-Return">0.15</td>
+<td class="gt_row gt_right" headers="Spearman-Beta-Return">0.11</td>
+<td class="gt_row gt_right" headers="Pearson-Size-Book-to-market">-0.22</td>
+<td class="gt_row gt_right" headers="Spearman-Size-Book-to-market">-0.24</td>
+<td class="gt_row gt_right" headers="Pearson-Size-Return">-0.09</td>
+<td class="gt_row gt_right" headers="Spearman-Size-Return">-0.04</td>
+<td class="gt_row gt_right" headers="Pearson-Book-to-market-Return">-0.04</td>
+<td class="gt_row gt_right" headers="Spearman-Book-to-market-Return">-0.03</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">1999</td>
-<td style="text-align: right;">0.48</td>
-<td style="text-align: right;">0.47</td>
-<td style="text-align: right;">-0.23</td>
-<td style="text-align: right;">-0.33</td>
-<td style="text-align: right;">-0.11</td>
-<td style="text-align: right;">-0.10</td>
-<td style="text-align: right;">-0.33</td>
-<td style="text-align: right;">-0.38</td>
-<td style="text-align: right;">0.04</td>
-<td style="text-align: right;">0.07</td>
-<td style="text-align: right;">0.03</td>
-<td style="text-align: right;">0.08</td>
+<td class="gt_row gt_left" headers="Year">1999</td>
+<td class="gt_row gt_right" headers="Pearson-Beta-Size">0.48</td>
+<td class="gt_row gt_right" headers="Spearman-Beta-Size">0.47</td>
+<td class="gt_row gt_right" headers="Pearson-Beta-Book-to-market">-0.23</td>
+<td class="gt_row gt_right" headers="Spearman-Beta-Book-to-market">-0.33</td>
+<td class="gt_row gt_right" headers="Pearson-Beta-Return">-0.11</td>
+<td class="gt_row gt_right" headers="Spearman-Beta-Return">-0.10</td>
+<td class="gt_row gt_right" headers="Pearson-Size-Book-to-market">-0.33</td>
+<td class="gt_row gt_right" headers="Spearman-Size-Book-to-market">-0.38</td>
+<td class="gt_row gt_right" headers="Pearson-Size-Return">0.04</td>
+<td class="gt_row gt_right" headers="Spearman-Size-Return">0.07</td>
+<td class="gt_row gt_right" headers="Pearson-Book-to-market-Return">0.03</td>
+<td class="gt_row gt_right" headers="Spearman-Book-to-market-Return">0.08</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">2000</td>
-<td style="text-align: right;">0.24</td>
-<td style="text-align: right;">0.27</td>
-<td style="text-align: right;">-0.38</td>
-<td style="text-align: right;">-0.54</td>
-<td style="text-align: right;">-0.20</td>
-<td style="text-align: right;">-0.27</td>
-<td style="text-align: right;">-0.25</td>
-<td style="text-align: right;">-0.25</td>
-<td style="text-align: right;">-0.19</td>
-<td style="text-align: right;">-0.13</td>
-<td style="text-align: right;">0.08</td>
-<td style="text-align: right;">0.17</td>
+<td class="gt_row gt_left" headers="Year">2000</td>
+<td class="gt_row gt_right" headers="Pearson-Beta-Size">0.24</td>
+<td class="gt_row gt_right" headers="Spearman-Beta-Size">0.27</td>
+<td class="gt_row gt_right" headers="Pearson-Beta-Book-to-market">-0.38</td>
+<td class="gt_row gt_right" headers="Spearman-Beta-Book-to-market">-0.54</td>
+<td class="gt_row gt_right" headers="Pearson-Beta-Return">-0.20</td>
+<td class="gt_row gt_right" headers="Spearman-Beta-Return">-0.27</td>
+<td class="gt_row gt_right" headers="Pearson-Size-Book-to-market">-0.25</td>
+<td class="gt_row gt_right" headers="Spearman-Size-Book-to-market">-0.25</td>
+<td class="gt_row gt_right" headers="Pearson-Size-Return">-0.19</td>
+<td class="gt_row gt_right" headers="Spearman-Size-Return">-0.13</td>
+<td class="gt_row gt_right" headers="Pearson-Book-to-market-Return">0.08</td>
+<td class="gt_row gt_right" headers="Spearman-Book-to-market-Return">0.17</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">2001</td>
-<td style="text-align: right;">0.32</td>
-<td style="text-align: right;">0.38</td>
-<td style="text-align: right;">-0.20</td>
-<td style="text-align: right;">-0.35</td>
-<td style="text-align: right;">-0.38</td>
-<td style="text-align: right;">-0.44</td>
-<td style="text-align: right;">-0.32</td>
-<td style="text-align: right;">-0.39</td>
-<td style="text-align: right;">-0.13</td>
-<td style="text-align: right;">-0.09</td>
-<td style="text-align: right;">0.17</td>
-<td style="text-align: right;">0.25</td>
+<td class="gt_row gt_left" headers="Year">2001</td>
+<td class="gt_row gt_right" headers="Pearson-Beta-Size">0.32</td>
+<td class="gt_row gt_right" headers="Spearman-Beta-Size">0.38</td>
+<td class="gt_row gt_right" headers="Pearson-Beta-Book-to-market">-0.20</td>
+<td class="gt_row gt_right" headers="Spearman-Beta-Book-to-market">-0.35</td>
+<td class="gt_row gt_right" headers="Pearson-Beta-Return">-0.38</td>
+<td class="gt_row gt_right" headers="Spearman-Beta-Return">-0.44</td>
+<td class="gt_row gt_right" headers="Pearson-Size-Book-to-market">-0.32</td>
+<td class="gt_row gt_right" headers="Spearman-Size-Book-to-market">-0.39</td>
+<td class="gt_row gt_right" headers="Pearson-Size-Return">-0.13</td>
+<td class="gt_row gt_right" headers="Spearman-Size-Return">-0.09</td>
+<td class="gt_row gt_right" headers="Pearson-Book-to-market-Return">0.17</td>
+<td class="gt_row gt_right" headers="Spearman-Book-to-market-Return">0.25</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">2002</td>
-<td style="text-align: right;">0.46</td>
-<td style="text-align: right;">0.54</td>
-<td style="text-align: right;">-0.23</td>
-<td style="text-align: right;">-0.31</td>
-<td style="text-align: right;">0.01</td>
-<td style="text-align: right;">0.04</td>
-<td style="text-align: right;">-0.27</td>
-<td style="text-align: right;">-0.29</td>
-<td style="text-align: right;">-0.23</td>
-<td style="text-align: right;">-0.15</td>
-<td style="text-align: right;">0.05</td>
-<td style="text-align: right;">0.03</td>
+<td class="gt_row gt_left" headers="Year">2002</td>
+<td class="gt_row gt_right" headers="Pearson-Beta-Size">0.46</td>
+<td class="gt_row gt_right" headers="Spearman-Beta-Size">0.54</td>
+<td class="gt_row gt_right" headers="Pearson-Beta-Book-to-market">-0.23</td>
+<td class="gt_row gt_right" headers="Spearman-Beta-Book-to-market">-0.31</td>
+<td class="gt_row gt_right" headers="Pearson-Beta-Return">0.01</td>
+<td class="gt_row gt_right" headers="Spearman-Beta-Return">0.04</td>
+<td class="gt_row gt_right" headers="Pearson-Size-Book-to-market">-0.27</td>
+<td class="gt_row gt_right" headers="Spearman-Size-Book-to-market">-0.29</td>
+<td class="gt_row gt_right" headers="Pearson-Size-Return">-0.23</td>
+<td class="gt_row gt_right" headers="Spearman-Size-Return">-0.15</td>
+<td class="gt_row gt_right" headers="Pearson-Book-to-market-Return">0.05</td>
+<td class="gt_row gt_right" headers="Spearman-Book-to-market-Return">0.03</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">2003</td>
-<td style="text-align: right;">0.51</td>
-<td style="text-align: right;">0.59</td>
-<td style="text-align: right;">-0.14</td>
-<td style="text-align: right;">-0.18</td>
-<td style="text-align: right;">-0.14</td>
-<td style="text-align: right;">-0.13</td>
-<td style="text-align: right;">-0.24</td>
-<td style="text-align: right;">-0.30</td>
-<td style="text-align: right;">-0.08</td>
-<td style="text-align: right;">0.03</td>
-<td style="text-align: right;">0.11</td>
-<td style="text-align: right;">0.10</td>
+<td class="gt_row gt_left" headers="Year">2003</td>
+<td class="gt_row gt_right" headers="Pearson-Beta-Size">0.51</td>
+<td class="gt_row gt_right" headers="Spearman-Beta-Size">0.59</td>
+<td class="gt_row gt_right" headers="Pearson-Beta-Book-to-market">-0.14</td>
+<td class="gt_row gt_right" headers="Spearman-Beta-Book-to-market">-0.18</td>
+<td class="gt_row gt_right" headers="Pearson-Beta-Return">-0.14</td>
+<td class="gt_row gt_right" headers="Spearman-Beta-Return">-0.13</td>
+<td class="gt_row gt_right" headers="Pearson-Size-Book-to-market">-0.24</td>
+<td class="gt_row gt_right" headers="Spearman-Size-Book-to-market">-0.30</td>
+<td class="gt_row gt_right" headers="Pearson-Size-Return">-0.08</td>
+<td class="gt_row gt_right" headers="Spearman-Size-Return">0.03</td>
+<td class="gt_row gt_right" headers="Pearson-Book-to-market-Return">0.11</td>
+<td class="gt_row gt_right" headers="Spearman-Book-to-market-Return">0.10</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">2004</td>
-<td style="text-align: right;">0.32</td>
-<td style="text-align: right;">0.40</td>
-<td style="text-align: right;">-0.26</td>
-<td style="text-align: right;">-0.28</td>
-<td style="text-align: right;">-0.09</td>
-<td style="text-align: right;">-0.08</td>
-<td style="text-align: right;">-0.17</td>
-<td style="text-align: right;">-0.13</td>
-<td style="text-align: right;">0.06</td>
-<td style="text-align: right;">0.14</td>
-<td style="text-align: right;">0.07</td>
-<td style="text-align: right;">0.13</td>
+<td class="gt_row gt_left" headers="Year">2004</td>
+<td class="gt_row gt_right" headers="Pearson-Beta-Size">0.32</td>
+<td class="gt_row gt_right" headers="Spearman-Beta-Size">0.40</td>
+<td class="gt_row gt_right" headers="Pearson-Beta-Book-to-market">-0.26</td>
+<td class="gt_row gt_right" headers="Spearman-Beta-Book-to-market">-0.28</td>
+<td class="gt_row gt_right" headers="Pearson-Beta-Return">-0.09</td>
+<td class="gt_row gt_right" headers="Spearman-Beta-Return">-0.08</td>
+<td class="gt_row gt_right" headers="Pearson-Size-Book-to-market">-0.17</td>
+<td class="gt_row gt_right" headers="Spearman-Size-Book-to-market">-0.13</td>
+<td class="gt_row gt_right" headers="Pearson-Size-Return">0.06</td>
+<td class="gt_row gt_right" headers="Spearman-Size-Return">0.14</td>
+<td class="gt_row gt_right" headers="Pearson-Book-to-market-Return">0.07</td>
+<td class="gt_row gt_right" headers="Spearman-Book-to-market-Return">0.13</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">2005</td>
-<td style="text-align: right;">0.45</td>
-<td style="text-align: right;">0.50</td>
-<td style="text-align: right;">-0.16</td>
-<td style="text-align: right;">-0.15</td>
-<td style="text-align: right;">-0.01</td>
-<td style="text-align: right;">0.03</td>
-<td style="text-align: right;">-0.13</td>
-<td style="text-align: right;">-0.11</td>
-<td style="text-align: right;">-0.01</td>
-<td style="text-align: right;">0.08</td>
-<td style="text-align: right;">0.07</td>
-<td style="text-align: right;">0.13</td>
+<td class="gt_row gt_left" headers="Year">2005</td>
+<td class="gt_row gt_right" headers="Pearson-Beta-Size">0.45</td>
+<td class="gt_row gt_right" headers="Spearman-Beta-Size">0.50</td>
+<td class="gt_row gt_right" headers="Pearson-Beta-Book-to-market">-0.16</td>
+<td class="gt_row gt_right" headers="Spearman-Beta-Book-to-market">-0.15</td>
+<td class="gt_row gt_right" headers="Pearson-Beta-Return">-0.01</td>
+<td class="gt_row gt_right" headers="Spearman-Beta-Return">0.03</td>
+<td class="gt_row gt_right" headers="Pearson-Size-Book-to-market">-0.13</td>
+<td class="gt_row gt_right" headers="Spearman-Size-Book-to-market">-0.11</td>
+<td class="gt_row gt_right" headers="Pearson-Size-Return">-0.01</td>
+<td class="gt_row gt_right" headers="Spearman-Size-Return">0.08</td>
+<td class="gt_row gt_right" headers="Pearson-Book-to-market-Return">0.07</td>
+<td class="gt_row gt_right" headers="Spearman-Book-to-market-Return">0.13</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">2006</td>
-<td style="text-align: right;">0.41</td>
-<td style="text-align: right;">0.48</td>
-<td style="text-align: right;">-0.19</td>
-<td style="text-align: right;">-0.22</td>
-<td style="text-align: right;">0.07</td>
-<td style="text-align: right;">0.06</td>
-<td style="text-align: right;">-0.15</td>
-<td style="text-align: right;">-0.15</td>
-<td style="text-align: right;">0.12</td>
-<td style="text-align: right;">0.19</td>
-<td style="text-align: right;">-0.02</td>
-<td style="text-align: right;">-0.03</td>
+<td class="gt_row gt_left" headers="Year">2006</td>
+<td class="gt_row gt_right" headers="Pearson-Beta-Size">0.41</td>
+<td class="gt_row gt_right" headers="Spearman-Beta-Size">0.48</td>
+<td class="gt_row gt_right" headers="Pearson-Beta-Book-to-market">-0.19</td>
+<td class="gt_row gt_right" headers="Spearman-Beta-Book-to-market">-0.22</td>
+<td class="gt_row gt_right" headers="Pearson-Beta-Return">0.07</td>
+<td class="gt_row gt_right" headers="Spearman-Beta-Return">0.06</td>
+<td class="gt_row gt_right" headers="Pearson-Size-Book-to-market">-0.15</td>
+<td class="gt_row gt_right" headers="Spearman-Size-Book-to-market">-0.15</td>
+<td class="gt_row gt_right" headers="Pearson-Size-Return">0.12</td>
+<td class="gt_row gt_right" headers="Spearman-Size-Return">0.19</td>
+<td class="gt_row gt_right" headers="Pearson-Book-to-market-Return">-0.02</td>
+<td class="gt_row gt_right" headers="Spearman-Book-to-market-Return">-0.03</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">2007</td>
-<td style="text-align: right;">0.47</td>
-<td style="text-align: right;">0.52</td>
-<td style="text-align: right;">-0.11</td>
-<td style="text-align: right;">-0.13</td>
-<td style="text-align: right;">-0.01</td>
-<td style="text-align: right;">-0.01</td>
-<td style="text-align: right;">-0.15</td>
-<td style="text-align: right;">-0.17</td>
-<td style="text-align: right;">0.09</td>
-<td style="text-align: right;">0.16</td>
-<td style="text-align: right;">-0.02</td>
-<td style="text-align: right;">-0.00</td>
+<td class="gt_row gt_left" headers="Year">2007</td>
+<td class="gt_row gt_right" headers="Pearson-Beta-Size">0.47</td>
+<td class="gt_row gt_right" headers="Spearman-Beta-Size">0.52</td>
+<td class="gt_row gt_right" headers="Pearson-Beta-Book-to-market">-0.11</td>
+<td class="gt_row gt_right" headers="Spearman-Beta-Book-to-market">-0.13</td>
+<td class="gt_row gt_right" headers="Pearson-Beta-Return">-0.01</td>
+<td class="gt_row gt_right" headers="Spearman-Beta-Return">-0.01</td>
+<td class="gt_row gt_right" headers="Pearson-Size-Book-to-market">-0.15</td>
+<td class="gt_row gt_right" headers="Spearman-Size-Book-to-market">-0.17</td>
+<td class="gt_row gt_right" headers="Pearson-Size-Return">0.09</td>
+<td class="gt_row gt_right" headers="Spearman-Size-Return">0.16</td>
+<td class="gt_row gt_right" headers="Pearson-Book-to-market-Return">-0.02</td>
+<td class="gt_row gt_right" headers="Spearman-Book-to-market-Return">-0.00</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">2008</td>
-<td style="text-align: right;">0.44</td>
-<td style="text-align: right;">0.48</td>
-<td style="text-align: right;">-0.07</td>
-<td style="text-align: right;">-0.13</td>
-<td style="text-align: right;">0.03</td>
-<td style="text-align: right;">0.09</td>
-<td style="text-align: right;">-0.21</td>
-<td style="text-align: right;">-0.23</td>
-<td style="text-align: right;">-0.18</td>
-<td style="text-align: right;">-0.04</td>
-<td style="text-align: right;">0.08</td>
-<td style="text-align: right;">-0.06</td>
+<td class="gt_row gt_left" headers="Year">2008</td>
+<td class="gt_row gt_right" headers="Pearson-Beta-Size">0.44</td>
+<td class="gt_row gt_right" headers="Spearman-Beta-Size">0.48</td>
+<td class="gt_row gt_right" headers="Pearson-Beta-Book-to-market">-0.07</td>
+<td class="gt_row gt_right" headers="Spearman-Beta-Book-to-market">-0.13</td>
+<td class="gt_row gt_right" headers="Pearson-Beta-Return">0.03</td>
+<td class="gt_row gt_right" headers="Spearman-Beta-Return">0.09</td>
+<td class="gt_row gt_right" headers="Pearson-Size-Book-to-market">-0.21</td>
+<td class="gt_row gt_right" headers="Spearman-Size-Book-to-market">-0.23</td>
+<td class="gt_row gt_right" headers="Pearson-Size-Return">-0.18</td>
+<td class="gt_row gt_right" headers="Spearman-Size-Return">-0.04</td>
+<td class="gt_row gt_right" headers="Pearson-Book-to-market-Return">0.08</td>
+<td class="gt_row gt_right" headers="Spearman-Book-to-market-Return">-0.06</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">2009</td>
-<td style="text-align: right;">0.31</td>
-<td style="text-align: right;">0.37</td>
-<td style="text-align: right;">0.02</td>
-<td style="text-align: right;">0.01</td>
-<td style="text-align: right;">0.11</td>
-<td style="text-align: right;">0.13</td>
-<td style="text-align: right;">-0.25</td>
-<td style="text-align: right;">-0.34</td>
-<td style="text-align: right;">-0.00</td>
-<td style="text-align: right;">0.09</td>
-<td style="text-align: right;">0.05</td>
-<td style="text-align: right;">0.04</td>
+<td class="gt_row gt_left" headers="Year">2009</td>
+<td class="gt_row gt_right" headers="Pearson-Beta-Size">0.31</td>
+<td class="gt_row gt_right" headers="Spearman-Beta-Size">0.37</td>
+<td class="gt_row gt_right" headers="Pearson-Beta-Book-to-market">0.02</td>
+<td class="gt_row gt_right" headers="Spearman-Beta-Book-to-market">0.01</td>
+<td class="gt_row gt_right" headers="Pearson-Beta-Return">0.11</td>
+<td class="gt_row gt_right" headers="Spearman-Beta-Return">0.13</td>
+<td class="gt_row gt_right" headers="Pearson-Size-Book-to-market">-0.25</td>
+<td class="gt_row gt_right" headers="Spearman-Size-Book-to-market">-0.34</td>
+<td class="gt_row gt_right" headers="Pearson-Size-Return">-0.00</td>
+<td class="gt_row gt_right" headers="Spearman-Size-Return">0.09</td>
+<td class="gt_row gt_right" headers="Pearson-Book-to-market-Return">0.05</td>
+<td class="gt_row gt_right" headers="Spearman-Book-to-market-Return">0.04</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">2010</td>
-<td style="text-align: right;">0.39</td>
-<td style="text-align: right;">0.39</td>
-<td style="text-align: right;">-0.15</td>
-<td style="text-align: right;">-0.14</td>
-<td style="text-align: right;">-0.10</td>
-<td style="text-align: right;">-0.12</td>
-<td style="text-align: right;">-0.27</td>
-<td style="text-align: right;">-0.28</td>
-<td style="text-align: right;">0.14</td>
-<td style="text-align: right;">0.18</td>
-<td style="text-align: right;">-0.00</td>
-<td style="text-align: right;">0.01</td>
+<td class="gt_row gt_left" headers="Year">2010</td>
+<td class="gt_row gt_right" headers="Pearson-Beta-Size">0.39</td>
+<td class="gt_row gt_right" headers="Spearman-Beta-Size">0.39</td>
+<td class="gt_row gt_right" headers="Pearson-Beta-Book-to-market">-0.15</td>
+<td class="gt_row gt_right" headers="Spearman-Beta-Book-to-market">-0.14</td>
+<td class="gt_row gt_right" headers="Pearson-Beta-Return">-0.10</td>
+<td class="gt_row gt_right" headers="Spearman-Beta-Return">-0.12</td>
+<td class="gt_row gt_right" headers="Pearson-Size-Book-to-market">-0.27</td>
+<td class="gt_row gt_right" headers="Spearman-Size-Book-to-market">-0.28</td>
+<td class="gt_row gt_right" headers="Pearson-Size-Return">0.14</td>
+<td class="gt_row gt_right" headers="Spearman-Size-Return">0.18</td>
+<td class="gt_row gt_right" headers="Pearson-Book-to-market-Return">-0.00</td>
+<td class="gt_row gt_right" headers="Spearman-Book-to-market-Return">0.01</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">2011</td>
-<td style="text-align: right;">0.37</td>
-<td style="text-align: right;">0.36</td>
-<td style="text-align: right;">-0.22</td>
-<td style="text-align: right;">-0.22</td>
-<td style="text-align: right;">-0.05</td>
-<td style="text-align: right;">-0.02</td>
-<td style="text-align: right;">-0.26</td>
-<td style="text-align: right;">-0.26</td>
-<td style="text-align: right;">-0.04</td>
-<td style="text-align: right;">0.04</td>
-<td style="text-align: right;">0.11</td>
-<td style="text-align: right;">0.13</td>
+<td class="gt_row gt_left" headers="Year">2011</td>
+<td class="gt_row gt_right" headers="Pearson-Beta-Size">0.37</td>
+<td class="gt_row gt_right" headers="Spearman-Beta-Size">0.36</td>
+<td class="gt_row gt_right" headers="Pearson-Beta-Book-to-market">-0.22</td>
+<td class="gt_row gt_right" headers="Spearman-Beta-Book-to-market">-0.22</td>
+<td class="gt_row gt_right" headers="Pearson-Beta-Return">-0.05</td>
+<td class="gt_row gt_right" headers="Spearman-Beta-Return">-0.02</td>
+<td class="gt_row gt_right" headers="Pearson-Size-Book-to-market">-0.26</td>
+<td class="gt_row gt_right" headers="Spearman-Size-Book-to-market">-0.26</td>
+<td class="gt_row gt_right" headers="Pearson-Size-Return">-0.04</td>
+<td class="gt_row gt_right" headers="Spearman-Size-Return">0.04</td>
+<td class="gt_row gt_right" headers="Pearson-Book-to-market-Return">0.11</td>
+<td class="gt_row gt_right" headers="Spearman-Book-to-market-Return">0.13</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">2012</td>
-<td style="text-align: right;">0.35</td>
-<td style="text-align: right;">0.36</td>
-<td style="text-align: right;">-0.15</td>
-<td style="text-align: right;">-0.16</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;">-0.29</td>
-<td style="text-align: right;">-0.31</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;"></td>
+<td class="gt_row gt_left" headers="Year">2012</td>
+<td class="gt_row gt_right" headers="Pearson-Beta-Size">0.35</td>
+<td class="gt_row gt_right" headers="Spearman-Beta-Size">0.36</td>
+<td class="gt_row gt_right" headers="Pearson-Beta-Book-to-market">-0.15</td>
+<td class="gt_row gt_right" headers="Spearman-Beta-Book-to-market">-0.16</td>
+<td class="gt_row gt_right" headers="Pearson-Beta-Return"></td>
+<td class="gt_row gt_right" headers="Spearman-Beta-Return"></td>
+<td class="gt_row gt_right" headers="Pearson-Size-Book-to-market">-0.29</td>
+<td class="gt_row gt_right" headers="Spearman-Size-Book-to-market">-0.31</td>
+<td class="gt_row gt_right" headers="Pearson-Size-Return"></td>
+<td class="gt_row gt_right" headers="Spearman-Size-Return"></td>
+<td class="gt_row gt_right" headers="Pearson-Book-to-market-Return"></td>
+<td class="gt_row gt_right" headers="Spearman-Book-to-market-Return"></td>
 </tr>
 </tbody>
 </table>
+
+
+</div>
 </div>
 </div>
 </figure>
@@ -1023,65 +1090,122 @@ Table&nbsp;3.1: Annual Pearson and Spearman correlations (BEM Table 3.1)
 \bar\rho^S(X,Y)=\frac{1}{N_{XY}}\sum_{t\in\mathcal T_{XY}}\rho_t^S(X,Y).
 \tag{3.4}\]</span></span></p>
 <p>Each available year has the same weight. The next-year return is unavailable for the 2012 formation cohort, so return correlations are averaged over 24 years. The other pairs use all 25 years.</p>
-<div id="c36be687" class="cell" data-execution_count="5">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>average <span class="op">=</span> annual.select(pl.exclude(<span class="st">"year"</span>).mean())</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="adfd046a" class="cell" data-execution_count="4">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>average <span class="op">=</span> annual.select(pl.exclude(<span class="st">"year"</span>).mean())</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div class="cell" data-execution_count="6">
-<div id="tbl-bem3-average" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="6">
+<div class="cell" data-execution_count="5">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>average.rename(pair_labels).eap.show_table()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div id="tbl-bem3-average" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="5">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bem3-average-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table&nbsp;3.2: Average annual correlations by pair (BEM Table 3.2)
 </figcaption>
 <div aria-describedby="tbl-bem3-average-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<div class="cell-output cell-output-display cell-output-markdown">
-<table class="cell caption-top table table-sm table-striped small">
-<colgroup>
-<col style="width: 8%">
-<col style="width: 8%">
-<col style="width: 8%">
-<col style="width: 8%">
-<col style="width: 8%">
-<col style="width: 8%">
-<col style="width: 8%">
-<col style="width: 8%">
-<col style="width: 8%">
-<col style="width: 8%">
-<col style="width: 8%">
-<col style="width: 8%">
-</colgroup>
+<div class="cell-output cell-output-display">
+<div id="ojnfvggeeo" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>
+#ojnfvggeeo table {
+          font-family: inherit;
+          -webkit-font-smoothing: antialiased;
+          -moz-osx-font-smoothing: grayscale;
+        }
+
+#ojnfvggeeo thead, tbody, tfoot, tr, td, th { border-style: none; }
+ tr { background-color: transparent; }
+#ojnfvggeeo p { margin: 0; padding: 0; }
+ #ojnfvggeeo .gt_table { display: table; border-collapse: collapse; line-height: normal; margin-left: auto; margin-right: auto; color: #333333; font-size: 0.875rem; font-weight: normal; font-style: normal; background-color: #FFFFFF; width: 100%; border-top-style: solid; border-top-width: 2px; border-top-color: #A8A8A8; border-right-style: none; border-right-width: 2px; border-right-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #A8A8A8; border-left-style: none; border-left-width: 2px; border-left-color: #D3D3D3; }
+ #ojnfvggeeo .gt_caption { padding-top: 4px; padding-bottom: 4px; }
+ #ojnfvggeeo .gt_title { color: #333333; font-size: 125%; font-weight: initial; padding-top: 4px; padding-bottom: 4px; padding-left: 5px; padding-right: 5px; border-bottom-color: #FFFFFF; border-bottom-width: 0; }
+ #ojnfvggeeo .gt_subtitle { color: #333333; font-size: 85%; font-weight: initial; padding-top: 3px; padding-bottom: 5px; padding-left: 5px; padding-right: 5px; border-top-color: #FFFFFF; border-top-width: 0; }
+ #ojnfvggeeo .gt_heading { background-color: #FFFFFF; text-align: center; border-bottom-color: #FFFFFF; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; }
+ #ojnfvggeeo .gt_bottom_border { border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; }
+ #ojnfvggeeo .gt_col_headings { border-top-style: solid; border-top-width: 2px; border-top-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; }
+ #ojnfvggeeo .gt_col_heading { color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: bold; text-transform: inherit; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: bottom; padding-top: 5px; padding-bottom: 5px; padding-left: 0.45rem; padding-right: 0.45rem; overflow-x: hidden; }
+ #ojnfvggeeo .gt_column_spanner_outer { color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: bold; text-transform: inherit; padding-top: 0; padding-bottom: 0; padding-left: 4px; padding-right: 4px; }
+ #ojnfvggeeo .gt_column_spanner_outer:first-child { padding-left: 0; }
+ #ojnfvggeeo .gt_column_spanner_outer:last-child { padding-right: 0; }
+ #ojnfvggeeo .gt_column_spanner { border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; vertical-align: bottom; padding-top: 5px; padding-bottom: 5px; overflow-x: hidden; display: inline-block; width: 100%; }
+ #ojnfvggeeo .gt_spanner_row { border-bottom-style: hidden; }
+ #ojnfvggeeo .gt_group_heading { padding-top: 8px; padding-bottom: 8px; padding-left: 5px; padding-right: 5px; color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: initial; text-transform: inherit; border-top-style: solid; border-top-width: 2px; border-top-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; text-align: left; }
+ #ojnfvggeeo .gt_empty_group_heading { padding: 0.5px; color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: initial; border-top-style: solid; border-top-width: 2px; border-top-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; vertical-align: middle; }
+ #ojnfvggeeo .gt_from_md> :first-child { margin-top: 0; }
+ #ojnfvggeeo .gt_from_md> :last-child { margin-bottom: 0; }
+ #ojnfvggeeo .gt_row { padding-top: 0.25rem; padding-bottom: 0.25rem; padding-left: 0.45rem; padding-right: 0.45rem; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; }
+ #ojnfvggeeo .gt_stub { color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: initial; text-transform: inherit; border-right-style: solid; border-right-width: 2px; border-right-color: #D3D3D3; padding-left: 0.45rem; padding-right: 0.45rem; }
+ #ojnfvggeeo .gt_indent_1 { text-indent: 5px; }
+ #ojnfvggeeo .gt_indent_2 { text-indent: calc(5px * 2); }
+ #ojnfvggeeo .gt_indent_3 { text-indent: calc(5px * 3); }
+ #ojnfvggeeo .gt_indent_4 { text-indent: calc(5px * 4); }
+ #ojnfvggeeo .gt_indent_5 { text-indent: calc(5px * 5); }
+ #ojnfvggeeo .gt_stub_row_group { color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: initial; text-transform: inherit; border-right-style: solid; border-right-width: 2px; border-right-color: #D3D3D3; padding-left: 5px; padding-right: 5px; vertical-align: top; }
+ #ojnfvggeeo .gt_row_group_first td { border-top-width: 2px; }
+ #ojnfvggeeo .gt_row_group_first th { border-top-width: 2px; }
+ #ojnfvggeeo .gt_striped { color: #333333; background-color: #F4F4F4; }
+ #ojnfvggeeo .gt_table_body { border-top-style: solid; border-top-width: 2px; border-top-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; }
+ #ojnfvggeeo .gt_summary_row { color: #333333; background-color: #FFFFFF; text-transform: inherit; padding-top: 8px; padding-bottom: 8px; padding-left: 5px; padding-right: 5px; }
+ #ojnfvggeeo .gt_first_summary_row { border-top-style: solid; border-top-width: 2px; border-top-color: #D3D3D3; }
+ #ojnfvggeeo .gt_last_summary_row_top { border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; }
+ #ojnfvggeeo .gt_grand_summary_row { color: #333333; background-color: #FFFFFF; text-transform: inherit; padding-top: 8px; padding-bottom: 8px; padding-left: 5px; padding-right: 5px; }
+ #ojnfvggeeo .gt_first_grand_summary_row_bottom { border-top-style: double; border-top-width: 6px; border-top-color: #D3D3D3; }
+ #ojnfvggeeo .gt_last_grand_summary_row_top { border-bottom-style: double; border-bottom-width: 6px; border-bottom-color: #D3D3D3; }
+ #ojnfvggeeo .gt_sourcenotes { color: #333333; background-color: #FFFFFF; border-bottom-style: none; border-bottom-width: 2px; border-bottom-color: #D3D3D3; border-left-style: none; border-left-width: 2px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 2px; border-right-color: #D3D3D3; }
+ #ojnfvggeeo .gt_sourcenote { font-size: 90%; padding-top: 4px; padding-bottom: 4px; padding-left: 5px; padding-right: 5px; text-align: left; }
+ #ojnfvggeeo .gt_left { text-align: left; }
+ #ojnfvggeeo .gt_center { text-align: center; }
+ #ojnfvggeeo .gt_right { text-align: right; font-variant-numeric: tabular-nums; }
+ #ojnfvggeeo .gt_font_normal { font-weight: normal; }
+ #ojnfvggeeo .gt_font_bold { font-weight: bold; }
+ #ojnfvggeeo .gt_font_italic { font-style: italic; }
+ #ojnfvggeeo .gt_super { font-size: 65%; }
+ #ojnfvggeeo .gt_footnotes { color: font-color(#FFFFFF); background-color: #FFFFFF; border-bottom-style: none; border-bottom-width: 2px; border-bottom-color: #D3D3D3; border-left-style: none; border-left-width: 2px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 2px; border-right-color: #D3D3D3; }
+ #ojnfvggeeo .gt_footnote { margin: 0px; font-size: 90%; padding-top: 4px; padding-bottom: 4px; padding-left: 5px; padding-right: 5px; }
+ #ojnfvggeeo .gt_sourcenotes { color: #333333; background-color: #FFFFFF; border-bottom-style: none; border-bottom-width: 2px; border-bottom-color: #D3D3D3; border-left-style: none; border-left-width: 2px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 2px; border-right-color: #D3D3D3; }
+ #ojnfvggeeo .gt_sourcenote { font-size: 90%; padding-top: 4px; padding-bottom: 4px; padding-left: 5px; padding-right: 5px; text-align: left; }
+ #ojnfvggeeo .gt_footnote_marks { font-size: 75%; vertical-align: 0.4em; position: initial; }
+ #ojnfvggeeo .gt_asterisk { font-size: 100%; vertical-align: 0; }
+ 
+</style>
+
+<table class="gt_table cell caption-top table table-sm table-striped small" data-quarto-bootstrap="false">
 <thead>
-<tr class="header">
-<th style="text-align: left;">Pearson Beta–Size</th>
-<th style="text-align: right;">Spearman Beta–Size</th>
-<th style="text-align: right;">Pearson Beta–Book-to-market</th>
-<th style="text-align: right;">Spearman Beta–Book-to-market</th>
-<th style="text-align: right;">Pearson Beta–Return</th>
-<th style="text-align: right;">Spearman Beta–Return</th>
-<th style="text-align: right;">Pearson Size–Book-to-market</th>
-<th style="text-align: right;">Spearman Size–Book-to-market</th>
-<th style="text-align: right;">Pearson Size–Return</th>
-<th style="text-align: right;">Spearman Size–Return</th>
-<th style="text-align: right;">Pearson Book-to-market–Return</th>
-<th style="text-align: right;">Spearman Book-to-market–Return</th>
+<tr class="gt_col_headings header">
+<th id="Pearson-Beta-Size" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" scope="col">Pearson Beta–Size</th>
+<th id="Spearman-Beta-Size" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Spearman Beta–Size</th>
+<th id="Pearson-Beta-Book-to-market" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Pearson Beta–Book-to-market</th>
+<th id="Spearman-Beta-Book-to-market" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Spearman Beta–Book-to-market</th>
+<th id="Pearson-Beta-Return" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Pearson Beta–Return</th>
+<th id="Spearman-Beta-Return" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Spearman Beta–Return</th>
+<th id="Pearson-Size-Book-to-market" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Pearson Size–Book-to-market</th>
+<th id="Spearman-Size-Book-to-market" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Spearman Size–Book-to-market</th>
+<th id="Pearson-Size-Return" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Pearson Size–Return</th>
+<th id="Spearman-Size-Return" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Spearman Size–Return</th>
+<th id="Pearson-Book-to-market-Return" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Pearson Book-to-market–Return</th>
+<th id="Spearman-Book-to-market-Return" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Spearman Book-to-market–Return</th>
 </tr>
 </thead>
-<tbody>
+<tbody class="gt_table_body">
 <tr class="odd">
-<td style="text-align: left;">0.39</td>
-<td style="text-align: right;">0.42</td>
-<td style="text-align: right;">-0.18</td>
-<td style="text-align: right;">-0.23</td>
-<td style="text-align: right;">-0.04</td>
-<td style="text-align: right;">-0.04</td>
-<td style="text-align: right;">-0.22</td>
-<td style="text-align: right;">-0.22</td>
-<td style="text-align: right;">-0.02</td>
-<td style="text-align: right;">0.06</td>
-<td style="text-align: right;">0.06</td>
-<td style="text-align: right;">0.08</td>
+<td class="gt_row gt_left" headers="Pearson-Beta-Size">0.39</td>
+<td class="gt_row gt_right" headers="Spearman-Beta-Size">0.42</td>
+<td class="gt_row gt_right" headers="Pearson-Beta-Book-to-market">-0.18</td>
+<td class="gt_row gt_right" headers="Spearman-Beta-Book-to-market">-0.23</td>
+<td class="gt_row gt_right" headers="Pearson-Beta-Return">-0.04</td>
+<td class="gt_row gt_right" headers="Spearman-Beta-Return">-0.04</td>
+<td class="gt_row gt_right" headers="Pearson-Size-Book-to-market">-0.22</td>
+<td class="gt_row gt_right" headers="Spearman-Size-Book-to-market">-0.22</td>
+<td class="gt_row gt_right" headers="Pearson-Size-Return">-0.02</td>
+<td class="gt_row gt_right" headers="Spearman-Size-Return">0.06</td>
+<td class="gt_row gt_right" headers="Pearson-Book-to-market-Return">0.06</td>
+<td class="gt_row gt_right" headers="Spearman-Book-to-market-Return">0.08</td>
 </tr>
 </tbody>
 </table>
+
+
+</div>
 </div>
 </div>
 </figure>
@@ -1092,33 +1216,36 @@ Table&nbsp;3.2: Average annual correlations by pair (BEM Table 3.2)
 <section id="interpret-the-correlations" class="level2" data-number="3.2">
 <h2 data-number="3.2" class="anchored" data-anchor-id="interpret-the-correlations"><span class="header-section-number">3.2</span> Interpreting Correlations</h2>
 <p>The two companion figures plot the annual coefficients in <a href="#tbl-bem3-annual" class="quarto-xref">Table&nbsp;<span>3.1</span></a>. Each panel uses formation years on the horizontal axis. In the second figure, the return paired with year <span class="math inline">\(t\)</span> comes from year <span class="math inline">\(t+1\)</span>.</p>
-<div id="cell-fig-bem3-characteristics" class="cell" data-execution_count="7">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> plotnine_polars <span class="im">import</span> aes</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> plot_correlations(pairs):</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    labels <span class="op">=</span> [<span class="ss">f"</span><span class="sc">{</span>variables[a]<span class="sc">}</span><span class="ss"> and </span><span class="sc">{</span>variables[b]<span class="sc">}</span><span class="ss">"</span> <span class="cf">for</span> a, b <span class="kw">in</span> pairs]</span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    correlations <span class="op">=</span> pl.concat(</span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>        annual.select(<span class="st">"year"</span>, Pearson<span class="op">=</span><span class="ss">f"Pearson </span><span class="sc">{</span>a<span class="sc">}</span><span class="ss">–</span><span class="sc">{</span>b<span class="sc">}</span><span class="ss">"</span>, Spearman<span class="op">=</span><span class="ss">f"Spearman </span><span class="sc">{</span>a<span class="sc">}</span><span class="ss">–</span><span class="sc">{</span>b<span class="sc">}</span><span class="ss">"</span>)</span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>        .unpivot(index<span class="op">=</span><span class="st">"year"</span>, variable_name<span class="op">=</span><span class="st">"method"</span>, value_name<span class="op">=</span><span class="st">"correlation"</span>)</span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>        .with_columns(pair<span class="op">=</span>pl.lit(label))</span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> (a, b), label <span class="kw">in</span> <span class="bu">zip</span>(pairs, labels, strict<span class="op">=</span><span class="va">True</span>)</span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>    ).with_columns(pl.col(<span class="st">"pair"</span>).cast(pl.Enum(labels)))</span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> (</span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>        correlations</span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>        .ggplot(aes(x<span class="op">=</span><span class="st">"year"</span>, y<span class="op">=</span><span class="st">"correlation"</span>, color<span class="op">=</span><span class="st">"method"</span>, linetype<span class="op">=</span><span class="st">"method"</span>))</span>
-<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>        .geom_hline(yintercept<span class="op">=</span><span class="dv">0</span>, color<span class="op">=</span><span class="st">"#b3b3b3"</span>, size<span class="op">=</span><span class="fl">0.4</span>)</span>
-<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>        .geom_line(na_rm<span class="op">=</span><span class="va">True</span>)</span>
-<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>        .facet_wrap(<span class="st">"pair"</span>, ncol<span class="op">=</span><span class="dv">1</span>)</span>
-<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>        .scale_x_continuous(breaks<span class="op">=</span><span class="bu">range</span>(<span class="dv">1988</span>, <span class="dv">2013</span>, <span class="dv">4</span>))</span>
-<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>        .scale_color_manual(values<span class="op">=</span>{<span class="st">"Pearson"</span>: <span class="st">"#24639a"</span>, <span class="st">"Spearman"</span>: <span class="st">"#ac4c27"</span>})</span>
-<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>        .scale_linetype_manual(values<span class="op">=</span>{<span class="st">"Pearson"</span>: <span class="st">"solid"</span>, <span class="st">"Spearman"</span>: <span class="st">"dashed"</span>})</span>
-<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>        .labs(x<span class="op">=</span><span class="st">"Formation year"</span>, y<span class="op">=</span><span class="st">"Correlation"</span>, color<span class="op">=</span><span class="st">""</span>, linetype<span class="op">=</span><span class="st">""</span>)</span>
-<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>        .theme_minimal()</span>
-<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>        .add_theme(figure_size<span class="op">=</span>(<span class="dv">8</span>, <span class="dv">6</span>), legend_position<span class="op">=</span><span class="st">"top"</span>)</span>
-<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>plot_correlations([(<span class="st">"Beta"</span>, <span class="st">"Size"</span>), (<span class="st">"Beta"</span>, <span class="st">"BM"</span>), (<span class="st">"Size"</span>, <span class="st">"BM"</span>)])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-display" data-execution_count="7">
+<div id="cell-fig-bem3-characteristics" class="cell" data-execution_count="6">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> plotnine_polars <span class="im">import</span> aes</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> plot_correlations(pairs):</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    labels <span class="op">=</span> [<span class="ss">f"</span><span class="sc">{</span>variables[a]<span class="sc">}</span><span class="ss"> and </span><span class="sc">{</span>variables[b]<span class="sc">}</span><span class="ss">"</span> <span class="cf">for</span> a, b <span class="kw">in</span> pairs]</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    correlations <span class="op">=</span> pl.concat(</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>        annual.select(<span class="st">"year"</span>, Pearson<span class="op">=</span><span class="ss">f"Pearson </span><span class="sc">{</span>a<span class="sc">}</span><span class="ss">–</span><span class="sc">{</span>b<span class="sc">}</span><span class="ss">"</span>, Spearman<span class="op">=</span><span class="ss">f"Spearman </span><span class="sc">{</span>a<span class="sc">}</span><span class="ss">–</span><span class="sc">{</span>b<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>        .unpivot(index<span class="op">=</span><span class="st">"year"</span>, variable_name<span class="op">=</span><span class="st">"method"</span>, value_name<span class="op">=</span><span class="st">"correlation"</span>)</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>        .with_columns(pair<span class="op">=</span>pl.lit(label))</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> (a, b), label <span class="kw">in</span> <span class="bu">zip</span>(pairs, labels, strict<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>    ).with_columns(pl.col(<span class="st">"pair"</span>).cast(pl.Enum(labels)))</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> (</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>        correlations</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>        .ggplot(aes(x<span class="op">=</span><span class="st">"year"</span>, y<span class="op">=</span><span class="st">"correlation"</span>, color<span class="op">=</span><span class="st">"method"</span>, linetype<span class="op">=</span><span class="st">"method"</span>))</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>        .geom_hline(yintercept<span class="op">=</span><span class="dv">0</span>, color<span class="op">=</span><span class="st">"#b3b3b3"</span>, size<span class="op">=</span><span class="fl">0.4</span>)</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>        .geom_line(na_rm<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>        .facet_wrap(<span class="st">"pair"</span>, ncol<span class="op">=</span><span class="dv">1</span>)</span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>        .scale_x_continuous(breaks<span class="op">=</span><span class="bu">range</span>(<span class="dv">1988</span>, <span class="dv">2013</span>, <span class="dv">4</span>))</span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>        .scale_color_manual(values<span class="op">=</span>{<span class="st">"Pearson"</span>: <span class="st">"#24639a"</span>, <span class="st">"Spearman"</span>: <span class="st">"#ac4c27"</span>})</span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>        .scale_linetype_manual(values<span class="op">=</span>{<span class="st">"Pearson"</span>: <span class="st">"solid"</span>, <span class="st">"Spearman"</span>: <span class="st">"dashed"</span>})</span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>        .labs(x<span class="op">=</span><span class="st">"Formation year"</span>, y<span class="op">=</span><span class="st">"Correlation"</span>, color<span class="op">=</span><span class="st">""</span>, linetype<span class="op">=</span><span class="st">""</span>)</span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>        .theme_minimal()</span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>        .add_theme(figure_size<span class="op">=</span>(<span class="dv">8</span>, <span class="dv">6</span>), legend_position<span class="op">=</span><span class="st">"top"</span>)</span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a>plot_correlations([(<span class="st">"Beta"</span>, <span class="st">"Size"</span>), (<span class="st">"Beta"</span>, <span class="st">"BM"</span>), (<span class="st">"Size"</span>, <span class="st">"BM"</span>)])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="6">
 <div id="fig-bem3-characteristics" class="quarto-float quarto-figure quarto-figure-center anchored" alt="Three line plots compare Pearson and Spearman correlations by formation year. Beta and size move together, while their correlations with book-to-market are usually negative.">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-bem3-characteristics-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
@@ -1132,9 +1259,12 @@ Figure&nbsp;3.1: Annual correlations among beta, size, and book-to-market
 </div>
 </div>
 <p>Larger stocks tend to have higher betas. Both measures of correlation also show that larger stocks tend to have lower book-to-market ratios. Market capitalization enters the denominator of book-to-market, which helps explain part of the association.</p>
-<div id="cell-fig-bem3-returns" class="cell" data-execution_count="8">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>plot_correlations([(<span class="st">"Beta"</span>, <span class="st">"excess"</span>), (<span class="st">"Size"</span>, <span class="st">"excess"</span>), (<span class="st">"BM"</span>, <span class="st">"excess"</span>)])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-display" data-execution_count="8">
+<div id="cell-fig-bem3-returns" class="cell" data-execution_count="7">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>plot_correlations([(<span class="st">"Beta"</span>, <span class="st">"excess"</span>), (<span class="st">"Size"</span>, <span class="st">"excess"</span>), (<span class="st">"BM"</span>, <span class="st">"excess"</span>)])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="7">
 <div id="fig-bem3-returns" class="quarto-float quarto-figure quarto-figure-center anchored" alt="Three line plots show Pearson and Spearman return correlations varying over formation years. The beta and return correlations turn sharply negative in 2001. The series end in 2011.">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-bem3-returns-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
@@ -1152,55 +1282,126 @@ Figure&nbsp;3.2: Annual correlations of stock characteristics with next-year exc
 <section id="present-the-correlations" class="level2" data-number="3.3">
 <h2 data-number="3.3" class="anchored" data-anchor-id="present-the-correlations"><span class="header-section-number">3.3</span> Presenting Correlations</h2>
 <p><a href="#tbl-bem3-matrix" class="quarto-xref">Table&nbsp;<span>3.3</span></a> puts the same averages in a compact matrix. Read Pearson correlations below the diagonal and Spearman correlations above it.</p>
-<div class="cell" data-execution_count="9">
-<div id="tbl-bem3-matrix" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="9">
+<div class="cell" data-execution_count="8">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>correlation_matrix(average.row(<span class="dv">0</span>, named<span class="op">=</span><span class="va">True</span>), variables).eap.show_table()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div id="tbl-bem3-matrix" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="8">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bem3-matrix-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table&nbsp;3.3: Average Pearson (below diagonal) and Spearman (above diagonal) correlations (BEM Table 3.3)
 </figcaption>
 <div aria-describedby="tbl-bem3-matrix-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<div class="cell-output cell-output-display cell-output-markdown">
-<table class="cell caption-top table table-sm table-striped small">
+<div class="cell-output cell-output-display">
+<div id="flwwnvvdxr" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>
+#flwwnvvdxr table {
+          font-family: inherit;
+          -webkit-font-smoothing: antialiased;
+          -moz-osx-font-smoothing: grayscale;
+        }
+
+#flwwnvvdxr thead, tbody, tfoot, tr, td, th { border-style: none; }
+ tr { background-color: transparent; }
+#flwwnvvdxr p { margin: 0; padding: 0; }
+ #flwwnvvdxr .gt_table { display: table; border-collapse: collapse; line-height: normal; margin-left: auto; margin-right: auto; color: #333333; font-size: 0.875rem; font-weight: normal; font-style: normal; background-color: #FFFFFF; width: 100%; border-top-style: solid; border-top-width: 2px; border-top-color: #A8A8A8; border-right-style: none; border-right-width: 2px; border-right-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #A8A8A8; border-left-style: none; border-left-width: 2px; border-left-color: #D3D3D3; }
+ #flwwnvvdxr .gt_caption { padding-top: 4px; padding-bottom: 4px; }
+ #flwwnvvdxr .gt_title { color: #333333; font-size: 125%; font-weight: initial; padding-top: 4px; padding-bottom: 4px; padding-left: 5px; padding-right: 5px; border-bottom-color: #FFFFFF; border-bottom-width: 0; }
+ #flwwnvvdxr .gt_subtitle { color: #333333; font-size: 85%; font-weight: initial; padding-top: 3px; padding-bottom: 5px; padding-left: 5px; padding-right: 5px; border-top-color: #FFFFFF; border-top-width: 0; }
+ #flwwnvvdxr .gt_heading { background-color: #FFFFFF; text-align: center; border-bottom-color: #FFFFFF; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; }
+ #flwwnvvdxr .gt_bottom_border { border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; }
+ #flwwnvvdxr .gt_col_headings { border-top-style: solid; border-top-width: 2px; border-top-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; }
+ #flwwnvvdxr .gt_col_heading { color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: bold; text-transform: inherit; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: bottom; padding-top: 5px; padding-bottom: 5px; padding-left: 0.45rem; padding-right: 0.45rem; overflow-x: hidden; }
+ #flwwnvvdxr .gt_column_spanner_outer { color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: bold; text-transform: inherit; padding-top: 0; padding-bottom: 0; padding-left: 4px; padding-right: 4px; }
+ #flwwnvvdxr .gt_column_spanner_outer:first-child { padding-left: 0; }
+ #flwwnvvdxr .gt_column_spanner_outer:last-child { padding-right: 0; }
+ #flwwnvvdxr .gt_column_spanner { border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; vertical-align: bottom; padding-top: 5px; padding-bottom: 5px; overflow-x: hidden; display: inline-block; width: 100%; }
+ #flwwnvvdxr .gt_spanner_row { border-bottom-style: hidden; }
+ #flwwnvvdxr .gt_group_heading { padding-top: 8px; padding-bottom: 8px; padding-left: 5px; padding-right: 5px; color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: initial; text-transform: inherit; border-top-style: solid; border-top-width: 2px; border-top-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; text-align: left; }
+ #flwwnvvdxr .gt_empty_group_heading { padding: 0.5px; color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: initial; border-top-style: solid; border-top-width: 2px; border-top-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; vertical-align: middle; }
+ #flwwnvvdxr .gt_from_md> :first-child { margin-top: 0; }
+ #flwwnvvdxr .gt_from_md> :last-child { margin-bottom: 0; }
+ #flwwnvvdxr .gt_row { padding-top: 0.25rem; padding-bottom: 0.25rem; padding-left: 0.45rem; padding-right: 0.45rem; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; }
+ #flwwnvvdxr .gt_stub { color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: initial; text-transform: inherit; border-right-style: solid; border-right-width: 2px; border-right-color: #D3D3D3; padding-left: 0.45rem; padding-right: 0.45rem; }
+ #flwwnvvdxr .gt_indent_1 { text-indent: 5px; }
+ #flwwnvvdxr .gt_indent_2 { text-indent: calc(5px * 2); }
+ #flwwnvvdxr .gt_indent_3 { text-indent: calc(5px * 3); }
+ #flwwnvvdxr .gt_indent_4 { text-indent: calc(5px * 4); }
+ #flwwnvvdxr .gt_indent_5 { text-indent: calc(5px * 5); }
+ #flwwnvvdxr .gt_stub_row_group { color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: initial; text-transform: inherit; border-right-style: solid; border-right-width: 2px; border-right-color: #D3D3D3; padding-left: 5px; padding-right: 5px; vertical-align: top; }
+ #flwwnvvdxr .gt_row_group_first td { border-top-width: 2px; }
+ #flwwnvvdxr .gt_row_group_first th { border-top-width: 2px; }
+ #flwwnvvdxr .gt_striped { color: #333333; background-color: #F4F4F4; }
+ #flwwnvvdxr .gt_table_body { border-top-style: solid; border-top-width: 2px; border-top-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; }
+ #flwwnvvdxr .gt_summary_row { color: #333333; background-color: #FFFFFF; text-transform: inherit; padding-top: 8px; padding-bottom: 8px; padding-left: 5px; padding-right: 5px; }
+ #flwwnvvdxr .gt_first_summary_row { border-top-style: solid; border-top-width: 2px; border-top-color: #D3D3D3; }
+ #flwwnvvdxr .gt_last_summary_row_top { border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; }
+ #flwwnvvdxr .gt_grand_summary_row { color: #333333; background-color: #FFFFFF; text-transform: inherit; padding-top: 8px; padding-bottom: 8px; padding-left: 5px; padding-right: 5px; }
+ #flwwnvvdxr .gt_first_grand_summary_row_bottom { border-top-style: double; border-top-width: 6px; border-top-color: #D3D3D3; }
+ #flwwnvvdxr .gt_last_grand_summary_row_top { border-bottom-style: double; border-bottom-width: 6px; border-bottom-color: #D3D3D3; }
+ #flwwnvvdxr .gt_sourcenotes { color: #333333; background-color: #FFFFFF; border-bottom-style: none; border-bottom-width: 2px; border-bottom-color: #D3D3D3; border-left-style: none; border-left-width: 2px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 2px; border-right-color: #D3D3D3; }
+ #flwwnvvdxr .gt_sourcenote { font-size: 90%; padding-top: 4px; padding-bottom: 4px; padding-left: 5px; padding-right: 5px; text-align: left; }
+ #flwwnvvdxr .gt_left { text-align: left; }
+ #flwwnvvdxr .gt_center { text-align: center; }
+ #flwwnvvdxr .gt_right { text-align: right; font-variant-numeric: tabular-nums; }
+ #flwwnvvdxr .gt_font_normal { font-weight: normal; }
+ #flwwnvvdxr .gt_font_bold { font-weight: bold; }
+ #flwwnvvdxr .gt_font_italic { font-style: italic; }
+ #flwwnvvdxr .gt_super { font-size: 65%; }
+ #flwwnvvdxr .gt_footnotes { color: font-color(#FFFFFF); background-color: #FFFFFF; border-bottom-style: none; border-bottom-width: 2px; border-bottom-color: #D3D3D3; border-left-style: none; border-left-width: 2px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 2px; border-right-color: #D3D3D3; }
+ #flwwnvvdxr .gt_footnote { margin: 0px; font-size: 90%; padding-top: 4px; padding-bottom: 4px; padding-left: 5px; padding-right: 5px; }
+ #flwwnvvdxr .gt_sourcenotes { color: #333333; background-color: #FFFFFF; border-bottom-style: none; border-bottom-width: 2px; border-bottom-color: #D3D3D3; border-left-style: none; border-left-width: 2px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 2px; border-right-color: #D3D3D3; }
+ #flwwnvvdxr .gt_sourcenote { font-size: 90%; padding-top: 4px; padding-bottom: 4px; padding-left: 5px; padding-right: 5px; text-align: left; }
+ #flwwnvvdxr .gt_footnote_marks { font-size: 75%; vertical-align: 0.4em; position: initial; }
+ #flwwnvvdxr .gt_asterisk { font-size: 100%; vertical-align: 0; }
+ 
+</style>
+
+<table class="gt_table cell caption-top table table-sm table-striped small" data-quarto-bootstrap="false">
 <thead>
-<tr class="header">
-<th style="text-align: left;">Measure</th>
-<th style="text-align: right;">Beta</th>
-<th style="text-align: right;">Size</th>
-<th style="text-align: right;">Book-to-market</th>
-<th style="text-align: right;">Next-year return</th>
+<tr class="gt_col_headings header">
+<th id="Measure" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" scope="col">Measure</th>
+<th id="Beta" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Beta</th>
+<th id="Size" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Size</th>
+<th id="Book-to-market" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Book-to-market</th>
+<th id="Next-year-return" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Next-year return</th>
 </tr>
 </thead>
-<tbody>
+<tbody class="gt_table_body">
 <tr class="odd">
-<td style="text-align: left;">Beta</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;">0.42</td>
-<td style="text-align: right;">-0.23</td>
-<td style="text-align: right;">-0.04</td>
+<td class="gt_row gt_left" headers="Measure">Beta</td>
+<td class="gt_row gt_right" headers="Beta"></td>
+<td class="gt_row gt_right" headers="Size">0.42</td>
+<td class="gt_row gt_right" headers="Book-to-market">-0.23</td>
+<td class="gt_row gt_right" headers="Next-year-return">-0.04</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Size</td>
-<td style="text-align: right;">0.39</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;">-0.22</td>
-<td style="text-align: right;">0.06</td>
+<td class="gt_row gt_left" headers="Measure">Size</td>
+<td class="gt_row gt_right" headers="Beta">0.39</td>
+<td class="gt_row gt_right" headers="Size"></td>
+<td class="gt_row gt_right" headers="Book-to-market">-0.22</td>
+<td class="gt_row gt_right" headers="Next-year-return">0.06</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">Book-to-market</td>
-<td style="text-align: right;">-0.18</td>
-<td style="text-align: right;">-0.22</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;">0.08</td>
+<td class="gt_row gt_left" headers="Measure">Book-to-market</td>
+<td class="gt_row gt_right" headers="Beta">-0.18</td>
+<td class="gt_row gt_right" headers="Size">-0.22</td>
+<td class="gt_row gt_right" headers="Book-to-market"></td>
+<td class="gt_row gt_right" headers="Next-year-return">0.08</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Next-year return</td>
-<td style="text-align: right;">-0.04</td>
-<td style="text-align: right;">-0.02</td>
-<td style="text-align: right;">0.06</td>
-<td style="text-align: right;"></td>
+<td class="gt_row gt_left" headers="Measure">Next-year return</td>
+<td class="gt_row gt_right" headers="Beta">-0.04</td>
+<td class="gt_row gt_right" headers="Size">-0.02</td>
+<td class="gt_row gt_right" headers="Book-to-market">0.06</td>
+<td class="gt_row gt_right" headers="Next-year-return"></td>
 </tr>
 </tbody>
 </table>
+
+
+</div>
 </div>
 </div>
 </figure>

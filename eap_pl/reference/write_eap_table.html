@@ -138,11 +138,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </ul>
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
   <li class="nav-item">
-    <a class="nav-link" href="https://iangow.github.io/asset_pricing_polars/"> 
+    <a class="nav-link" href="https://iangow.github.io/eap_py/"> 
 <span class="menu-text">Book</span></a>
   </li>  
   <li class="nav-item compact">
-    <a class="nav-link" href="https://github.com/iangow/asset_pricing_polars/tree/main/packages/eap_pl"> <i class="bi bi-github" role="img">
+    <a class="nav-link" href="https://github.com/iangow/eap_py/tree/main/packages/eap_pl"> <i class="bi bi-github" role="img">
 </i> 
 <span class="menu-text"></span></a>
   </li>  
@@ -157,7 +157,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../reference/load_annual_betas.html">Data and Parquet</a></li><li class="breadcrumb-item"><a href="../reference/write_eap_table.html">write_eap_table</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../reference/load_parquet.html">Data and Parquet</a></li><li class="breadcrumb-item"><a href="../reference/write_eap_table.html">write_eap_table</a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
     </div>
@@ -186,8 +186,20 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="../reference/load_parquet.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">load_parquet</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="../reference/load_annual_betas.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">load_annual_betas</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../reference/load_monthly_betas.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">load_monthly_betas</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -248,6 +260,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <div class="sidebar-item-container"> 
   <a href="../reference/write_eap_table.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">write_eap_table</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../reference/ptime.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">ptime</span></a>
   </div>
 </li>
       </ul>
@@ -380,6 +398,70 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
       </ul>
   </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true">
+ <span class="menu-text">Polars expression methods</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-6" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-6" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../reference/EAPExprNamespace.ntile.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">EAPExprNamespace.ntile</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../reference/EAPExprNamespace.winsorize.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">EAPExprNamespace.winsorize</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../reference/EAPExprNamespace.truncate.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">EAPExprNamespace.truncate</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../reference/EAPExprNamespace.div_if_pos.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">EAPExprNamespace.div_if_pos</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true">
+ <span class="menu-text">DataFrame methods</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-7" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-7" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../reference/EAPDataFrameNamespace.show_table.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">EAPDataFrameNamespace.show_table</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../reference/EAPDataFrameNamespace.show_grid.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">EAPDataFrameNamespace.show_grid</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../reference/EAPDataFrameNamespace.map_by.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">EAPDataFrameNamespace.map_by</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
     </ul>
     </div>
 </nav>
@@ -398,7 +480,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </nav>
     </div>
 <!-- main -->
-<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../reference/load_annual_betas.html">Data and Parquet</a></li><li class="breadcrumb-item"><a href="../reference/write_eap_table.html">write_eap_table</a></li></ol></nav></header>
+<main class="content" id="quarto-document-content"><header id="title-block-header" class="quarto-title-block"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../reference/load_parquet.html">Data and Parquet</a></li><li class="breadcrumb-item"><a href="../reference/write_eap_table.html">write_eap_table</a></li></ol></nav></header>
 
 
 
@@ -519,7 +601,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     }
       var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
       var mailtoRegex = new RegExp(/^mailto:/);
-        var filterRegex = new RegExp("https:\/\/iangow\.github\.io\/asset_pricing_polars\/eap_pl\/");
+        var filterRegex = new RegExp("https:\/\/iangow\.github\.io\/eap_py\/eap_pl\/");
       var isInternal = (href) => {
           return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
       }

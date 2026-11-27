@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>2&nbsp; Summary Statistics – Empirical Asset Pricing with Polars</title>
+<title>2&nbsp; Summary Statistics – Empirical Asset Pricing: A Python Reader’s Companion</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -80,7 +80,7 @@ div.csl-indent {
 }</style>
 
 
-<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js" integrity="sha384-ZvpUoO/+PpLXR1lu4jmpXWu80pZlYUAfxl5NsBMWOEPSjUn/6Z/hRTt8+pR6L4N2" crossorigin="anonymous"></script><script src="site_libs/quarto-nav/quarto-nav.js"></script>
 <script src="site_libs/quarto-nav/headroom.min.js"></script>
 <script src="site_libs/clipboard/clipboard.min.js"></script>
 <script src="site_libs/quarto-search/autocomplete.umd.js"></script>
@@ -130,6 +130,9 @@ div.csl-indent {
     "search-label": "Search"
   }
 }</script>
+<script src="https://cdn.jsdelivr.net/npm/requirejs@2.3.6/require.min.js" integrity="sha384-c9c+LnTbwQ3aujuU7ULEPVvgLs+Fn6fJUvIGTsuu1ZcCf11fiEubah0ttpca4ntM sha384-6V1/AdqZRWk1KAlWbKBlGhN7VG4iE/yAZcO6NZPMF8od0vukrvr0tg4qY6NSrItx" crossorigin="anonymous"></script>
+
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
 
   <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
   <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
@@ -359,7 +362,7 @@ window.Quarto = {
   <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
     <div class="pt-lg-2 mt-2 text-left sidebar-header">
     <div class="sidebar-title mb-0 py-0">
-      <a href="./">Empirical Asset Pricing with Polars</a> 
+      <a href="./">Empirical Asset Pricing: A Python Reader’s Companion</a> 
         <div class="sidebar-tools-main">
   <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
 </div>
@@ -546,6 +549,19 @@ window.Quarto = {
 </header>
 
 
+<div class="callout callout-style-default callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Warning</span>Early draft
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>This chapter is an early draft and still needs a thorough review. The APIs used in the examples may change as I continue working on the book.</p>
+</div>
+</div>
 <style>
 [id^="tbl-bem2-"] .cell-output-markdown {
   max-width: 100%;
@@ -555,30 +571,21 @@ window.Quarto = {
   white-space: nowrap;
 }
 </style>
-<style>
-.cell-output-markdown:has(> table) {
-  max-width: 100%;
-  overflow-x: auto;
-}
-.cell-output-markdown > table {
-  white-space: nowrap;
-}
-</style>
 <p>In Chapter 2, <span class="citation" data-cites="bali2016">Bali et al. (<a href="references.html#ref-bali2016" role="doc-biblioref">2016</a>)</span> summarize the distribution of stock characteristics within each year, then average those statistics across years. This gives each year’s cross-section equal weight.</p>
 <section id="implementation" class="level2" data-number="2.1">
 <h2 data-number="2.1" class="anchored" data-anchor-id="implementation"><span class="header-section-number">2.1</span> Implementation</h2>
 <section id="annual-cross-sections" class="level3" data-number="2.1.1">
 <h3 data-number="2.1.1" class="anchored" data-anchor-id="annual-cross-sections"><span class="header-section-number">2.1.1</span> Periodic Cross-Sectional Summary Statistics</h3>
-<p>The sample covers U.S. common stocks at each December 31 from 1988 through 2012. We take the December value of the 12-month daily beta from <a href="beta-replication.html" class="quarto-xref"><span>Chapter 8</span></a>. It uses all available daily excess returns in the calendar year and requires at least 200 matched observations.</p>
-<div id="f4306548" class="cell" data-execution_count="2">
+<p>The <em>methodologies sample</em> <span class="citation" data-cites="bali2016">(<a href="references.html#ref-bali2016" role="doc-biblioref">Bali et al. 2016, sec. 1.1</a>)</span> covers US common stocks at each December 31 from 1988 through 2012. I take the December value of the 12-month daily beta from <a href="beta-replication.html" class="quarto-xref"><span>Chapter 8</span></a>. It uses all available daily excess returns in the calendar year and requires at least 200 matched observations.</p>
+<div id="56550a21" class="cell" data-execution_count="1">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> polars <span class="im">as</span> pl</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> eap_pl <span class="im">import</span> build_annual_panel, load_annual_betas</span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>annual_beta <span class="op">=</span> load_annual_betas().collect()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<p>For each year, compute the statistics across the stocks with a beta. We use the sample standard deviation, bias-adjusted skewness and excess kurtosis, and linearly interpolated percentiles. The count is the number of available values in that cross-section.</p>
-<div id="d4ffbcf3" class="cell" data-execution_count="3">
+<p>For each year, compute the statistics across the stocks with a beta. I use the sample standard deviation, bias-adjusted skewness and excess kurtosis, and linearly interpolated percentiles. The count is the number of available values in that cross-section.</p>
+<div id="b5fee347" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> cross_section(variable):</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> pl.col(variable)</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> [</span>
@@ -602,425 +609,481 @@ window.Quarto = {
 <span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>    .sort(<span class="st">"year"</span>)</span>
 <span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div class="cell" data-execution_count="4">
-<div id="tbl-bem2-annual" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="4">
+<div class="cell" data-execution_count="3">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>annual_stats.rename({<span class="st">"year"</span>: <span class="st">"Year"</span>}).eap.show_table()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div id="tbl-bem2-annual" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="3">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bem2-annual-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table&nbsp;2.1: Annual summary statistics for market beta (BEM Table 2.1)
 </figcaption>
 <div aria-describedby="tbl-bem2-annual-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<div class="cell-output cell-output-display cell-output-markdown">
-<table class="cell caption-top table table-sm table-striped small">
-<colgroup>
-<col style="width: 7%">
-<col style="width: 7%">
-<col style="width: 7%">
-<col style="width: 7%">
-<col style="width: 7%">
-<col style="width: 7%">
-<col style="width: 7%">
-<col style="width: 7%">
-<col style="width: 7%">
-<col style="width: 7%">
-<col style="width: 7%">
-<col style="width: 7%">
-<col style="width: 7%">
-</colgroup>
+<div class="cell-output cell-output-display">
+<div id="fxnqlslptt" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>
+#fxnqlslptt table {
+          font-family: inherit;
+          -webkit-font-smoothing: antialiased;
+          -moz-osx-font-smoothing: grayscale;
+        }
+
+#fxnqlslptt thead, tbody, tfoot, tr, td, th { border-style: none; }
+ tr { background-color: transparent; }
+#fxnqlslptt p { margin: 0; padding: 0; }
+ #fxnqlslptt .gt_table { display: table; border-collapse: collapse; line-height: normal; margin-left: auto; margin-right: auto; color: #333333; font-size: 0.875rem; font-weight: normal; font-style: normal; background-color: #FFFFFF; width: 100%; border-top-style: solid; border-top-width: 2px; border-top-color: #A8A8A8; border-right-style: none; border-right-width: 2px; border-right-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #A8A8A8; border-left-style: none; border-left-width: 2px; border-left-color: #D3D3D3; }
+ #fxnqlslptt .gt_caption { padding-top: 4px; padding-bottom: 4px; }
+ #fxnqlslptt .gt_title { color: #333333; font-size: 125%; font-weight: initial; padding-top: 4px; padding-bottom: 4px; padding-left: 5px; padding-right: 5px; border-bottom-color: #FFFFFF; border-bottom-width: 0; }
+ #fxnqlslptt .gt_subtitle { color: #333333; font-size: 85%; font-weight: initial; padding-top: 3px; padding-bottom: 5px; padding-left: 5px; padding-right: 5px; border-top-color: #FFFFFF; border-top-width: 0; }
+ #fxnqlslptt .gt_heading { background-color: #FFFFFF; text-align: center; border-bottom-color: #FFFFFF; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; }
+ #fxnqlslptt .gt_bottom_border { border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; }
+ #fxnqlslptt .gt_col_headings { border-top-style: solid; border-top-width: 2px; border-top-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; }
+ #fxnqlslptt .gt_col_heading { color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: bold; text-transform: inherit; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: bottom; padding-top: 5px; padding-bottom: 5px; padding-left: 0.45rem; padding-right: 0.45rem; overflow-x: hidden; }
+ #fxnqlslptt .gt_column_spanner_outer { color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: bold; text-transform: inherit; padding-top: 0; padding-bottom: 0; padding-left: 4px; padding-right: 4px; }
+ #fxnqlslptt .gt_column_spanner_outer:first-child { padding-left: 0; }
+ #fxnqlslptt .gt_column_spanner_outer:last-child { padding-right: 0; }
+ #fxnqlslptt .gt_column_spanner { border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; vertical-align: bottom; padding-top: 5px; padding-bottom: 5px; overflow-x: hidden; display: inline-block; width: 100%; }
+ #fxnqlslptt .gt_spanner_row { border-bottom-style: hidden; }
+ #fxnqlslptt .gt_group_heading { padding-top: 8px; padding-bottom: 8px; padding-left: 5px; padding-right: 5px; color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: initial; text-transform: inherit; border-top-style: solid; border-top-width: 2px; border-top-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; text-align: left; }
+ #fxnqlslptt .gt_empty_group_heading { padding: 0.5px; color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: initial; border-top-style: solid; border-top-width: 2px; border-top-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; vertical-align: middle; }
+ #fxnqlslptt .gt_from_md> :first-child { margin-top: 0; }
+ #fxnqlslptt .gt_from_md> :last-child { margin-bottom: 0; }
+ #fxnqlslptt .gt_row { padding-top: 0.25rem; padding-bottom: 0.25rem; padding-left: 0.45rem; padding-right: 0.45rem; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; }
+ #fxnqlslptt .gt_stub { color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: initial; text-transform: inherit; border-right-style: solid; border-right-width: 2px; border-right-color: #D3D3D3; padding-left: 0.45rem; padding-right: 0.45rem; }
+ #fxnqlslptt .gt_indent_1 { text-indent: 5px; }
+ #fxnqlslptt .gt_indent_2 { text-indent: calc(5px * 2); }
+ #fxnqlslptt .gt_indent_3 { text-indent: calc(5px * 3); }
+ #fxnqlslptt .gt_indent_4 { text-indent: calc(5px * 4); }
+ #fxnqlslptt .gt_indent_5 { text-indent: calc(5px * 5); }
+ #fxnqlslptt .gt_stub_row_group { color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: initial; text-transform: inherit; border-right-style: solid; border-right-width: 2px; border-right-color: #D3D3D3; padding-left: 5px; padding-right: 5px; vertical-align: top; }
+ #fxnqlslptt .gt_row_group_first td { border-top-width: 2px; }
+ #fxnqlslptt .gt_row_group_first th { border-top-width: 2px; }
+ #fxnqlslptt .gt_striped { color: #333333; background-color: #F4F4F4; }
+ #fxnqlslptt .gt_table_body { border-top-style: solid; border-top-width: 2px; border-top-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; }
+ #fxnqlslptt .gt_summary_row { color: #333333; background-color: #FFFFFF; text-transform: inherit; padding-top: 8px; padding-bottom: 8px; padding-left: 5px; padding-right: 5px; }
+ #fxnqlslptt .gt_first_summary_row { border-top-style: solid; border-top-width: 2px; border-top-color: #D3D3D3; }
+ #fxnqlslptt .gt_last_summary_row_top { border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; }
+ #fxnqlslptt .gt_grand_summary_row { color: #333333; background-color: #FFFFFF; text-transform: inherit; padding-top: 8px; padding-bottom: 8px; padding-left: 5px; padding-right: 5px; }
+ #fxnqlslptt .gt_first_grand_summary_row_bottom { border-top-style: double; border-top-width: 6px; border-top-color: #D3D3D3; }
+ #fxnqlslptt .gt_last_grand_summary_row_top { border-bottom-style: double; border-bottom-width: 6px; border-bottom-color: #D3D3D3; }
+ #fxnqlslptt .gt_sourcenotes { color: #333333; background-color: #FFFFFF; border-bottom-style: none; border-bottom-width: 2px; border-bottom-color: #D3D3D3; border-left-style: none; border-left-width: 2px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 2px; border-right-color: #D3D3D3; }
+ #fxnqlslptt .gt_sourcenote { font-size: 90%; padding-top: 4px; padding-bottom: 4px; padding-left: 5px; padding-right: 5px; text-align: left; }
+ #fxnqlslptt .gt_left { text-align: left; }
+ #fxnqlslptt .gt_center { text-align: center; }
+ #fxnqlslptt .gt_right { text-align: right; font-variant-numeric: tabular-nums; }
+ #fxnqlslptt .gt_font_normal { font-weight: normal; }
+ #fxnqlslptt .gt_font_bold { font-weight: bold; }
+ #fxnqlslptt .gt_font_italic { font-style: italic; }
+ #fxnqlslptt .gt_super { font-size: 65%; }
+ #fxnqlslptt .gt_footnotes { color: font-color(#FFFFFF); background-color: #FFFFFF; border-bottom-style: none; border-bottom-width: 2px; border-bottom-color: #D3D3D3; border-left-style: none; border-left-width: 2px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 2px; border-right-color: #D3D3D3; }
+ #fxnqlslptt .gt_footnote { margin: 0px; font-size: 90%; padding-top: 4px; padding-bottom: 4px; padding-left: 5px; padding-right: 5px; }
+ #fxnqlslptt .gt_sourcenotes { color: #333333; background-color: #FFFFFF; border-bottom-style: none; border-bottom-width: 2px; border-bottom-color: #D3D3D3; border-left-style: none; border-left-width: 2px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 2px; border-right-color: #D3D3D3; }
+ #fxnqlslptt .gt_sourcenote { font-size: 90%; padding-top: 4px; padding-bottom: 4px; padding-left: 5px; padding-right: 5px; text-align: left; }
+ #fxnqlslptt .gt_footnote_marks { font-size: 75%; vertical-align: 0.4em; position: initial; }
+ #fxnqlslptt .gt_asterisk { font-size: 100%; vertical-align: 0; }
+ 
+</style>
+
+<table class="gt_table cell caption-top table table-sm table-striped small" data-quarto-bootstrap="false">
 <thead>
-<tr class="header">
-<th style="text-align: left;">Year</th>
-<th style="text-align: right;">Mean</th>
-<th style="text-align: right;">SD</th>
-<th style="text-align: right;">Skew</th>
-<th style="text-align: right;">Kurt.</th>
-<th style="text-align: right;">Min</th>
-<th style="text-align: right;">5%</th>
-<th style="text-align: right;">25%</th>
-<th style="text-align: right;">Median</th>
-<th style="text-align: right;">75%</th>
-<th style="text-align: right;">95%</th>
-<th style="text-align: right;">Max</th>
-<th style="text-align: right;">n</th>
+<tr class="gt_col_headings header">
+<th id="Year" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" scope="col">Year</th>
+<th id="Mean" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Mean</th>
+<th id="SD" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">SD</th>
+<th id="Skew" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Skew</th>
+<th id="Kurt." class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Kurt.</th>
+<th id="Min" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Min</th>
+<th id="5" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">5%</th>
+<th id="25" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">25%</th>
+<th id="Median" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Median</th>
+<th id="75" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">75%</th>
+<th id="95" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">95%</th>
+<th id="Max" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Max</th>
+<th id="n" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">n</th>
 </tr>
 </thead>
-<tbody>
+<tbody class="gt_table_body">
 <tr class="odd">
-<td style="text-align: left;">1988</td>
-<td style="text-align: right;">0.46</td>
-<td style="text-align: right;">0.48</td>
-<td style="text-align: right;">0.17</td>
-<td style="text-align: right;">2.81</td>
-<td style="text-align: right;">-4.30</td>
-<td style="text-align: right;">-0.20</td>
-<td style="text-align: right;">0.13</td>
-<td style="text-align: right;">0.40</td>
-<td style="text-align: right;">0.76</td>
-<td style="text-align: right;">1.31</td>
-<td style="text-align: right;">3.28</td>
-<td style="text-align: right;">5690</td>
+<td class="gt_row gt_left" headers="Year">1988</td>
+<td class="gt_row gt_right" headers="Mean">0.46</td>
+<td class="gt_row gt_right" headers="SD">0.48</td>
+<td class="gt_row gt_right" headers="Skew">0.17</td>
+<td class="gt_row gt_right" headers="Kurt.">2.81</td>
+<td class="gt_row gt_right" headers="Min">-4.30</td>
+<td class="gt_row gt_right" headers="5">-0.20</td>
+<td class="gt_row gt_right" headers="25">0.13</td>
+<td class="gt_row gt_right" headers="Median">0.40</td>
+<td class="gt_row gt_right" headers="75">0.76</td>
+<td class="gt_row gt_right" headers="95">1.31</td>
+<td class="gt_row gt_right" headers="Max">3.28</td>
+<td class="gt_row gt_right" headers="n">5690</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">1989</td>
-<td style="text-align: right;">0.46</td>
-<td style="text-align: right;">0.53</td>
-<td style="text-align: right;">0.15</td>
-<td style="text-align: right;">1.90</td>
-<td style="text-align: right;">-3.52</td>
-<td style="text-align: right;">-0.27</td>
-<td style="text-align: right;">0.11</td>
-<td style="text-align: right;">0.40</td>
-<td style="text-align: right;">0.79</td>
-<td style="text-align: right;">1.38</td>
-<td style="text-align: right;">3.63</td>
-<td style="text-align: right;">5519</td>
+<td class="gt_row gt_left" headers="Year">1989</td>
+<td class="gt_row gt_right" headers="Mean">0.46</td>
+<td class="gt_row gt_right" headers="SD">0.53</td>
+<td class="gt_row gt_right" headers="Skew">0.15</td>
+<td class="gt_row gt_right" headers="Kurt.">1.90</td>
+<td class="gt_row gt_right" headers="Min">-3.52</td>
+<td class="gt_row gt_right" headers="5">-0.27</td>
+<td class="gt_row gt_right" headers="25">0.11</td>
+<td class="gt_row gt_right" headers="Median">0.40</td>
+<td class="gt_row gt_right" headers="75">0.79</td>
+<td class="gt_row gt_right" headers="95">1.38</td>
+<td class="gt_row gt_right" headers="Max">3.63</td>
+<td class="gt_row gt_right" headers="n">5519</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">1990</td>
-<td style="text-align: right;">0.58</td>
-<td style="text-align: right;">0.59</td>
-<td style="text-align: right;">0.23</td>
-<td style="text-align: right;">1.14</td>
-<td style="text-align: right;">-3.15</td>
-<td style="text-align: right;">-0.24</td>
-<td style="text-align: right;">0.16</td>
-<td style="text-align: right;">0.51</td>
-<td style="text-align: right;">0.96</td>
-<td style="text-align: right;">1.61</td>
-<td style="text-align: right;">3.65</td>
-<td style="text-align: right;">5410</td>
+<td class="gt_row gt_left" headers="Year">1990</td>
+<td class="gt_row gt_right" headers="Mean">0.58</td>
+<td class="gt_row gt_right" headers="SD">0.59</td>
+<td class="gt_row gt_right" headers="Skew">0.23</td>
+<td class="gt_row gt_right" headers="Kurt.">1.14</td>
+<td class="gt_row gt_right" headers="Min">-3.15</td>
+<td class="gt_row gt_right" headers="5">-0.24</td>
+<td class="gt_row gt_right" headers="25">0.16</td>
+<td class="gt_row gt_right" headers="Median">0.51</td>
+<td class="gt_row gt_right" headers="75">0.96</td>
+<td class="gt_row gt_right" headers="95">1.61</td>
+<td class="gt_row gt_right" headers="Max">3.65</td>
+<td class="gt_row gt_right" headers="n">5410</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">1991</td>
-<td style="text-align: right;">0.57</td>
-<td style="text-align: right;">0.61</td>
-<td style="text-align: right;">0.23</td>
-<td style="text-align: right;">1.96</td>
-<td style="text-align: right;">-3.29</td>
-<td style="text-align: right;">-0.30</td>
-<td style="text-align: right;">0.17</td>
-<td style="text-align: right;">0.52</td>
-<td style="text-align: right;">0.95</td>
-<td style="text-align: right;">1.62</td>
-<td style="text-align: right;">5.28</td>
-<td style="text-align: right;">5303</td>
+<td class="gt_row gt_left" headers="Year">1991</td>
+<td class="gt_row gt_right" headers="Mean">0.57</td>
+<td class="gt_row gt_right" headers="SD">0.61</td>
+<td class="gt_row gt_right" headers="Skew">0.23</td>
+<td class="gt_row gt_right" headers="Kurt.">1.96</td>
+<td class="gt_row gt_right" headers="Min">-3.29</td>
+<td class="gt_row gt_right" headers="5">-0.30</td>
+<td class="gt_row gt_right" headers="25">0.17</td>
+<td class="gt_row gt_right" headers="Median">0.52</td>
+<td class="gt_row gt_right" headers="75">0.95</td>
+<td class="gt_row gt_right" headers="95">1.62</td>
+<td class="gt_row gt_right" headers="Max">5.28</td>
+<td class="gt_row gt_right" headers="n">5303</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">1992</td>
-<td style="text-align: right;">0.65</td>
-<td style="text-align: right;">0.83</td>
-<td style="text-align: right;">0.35</td>
-<td style="text-align: right;">6.08</td>
-<td style="text-align: right;">-5.15</td>
-<td style="text-align: right;">-0.50</td>
-<td style="text-align: right;">0.17</td>
-<td style="text-align: right;">0.59</td>
-<td style="text-align: right;">1.09</td>
-<td style="text-align: right;">2.05</td>
-<td style="text-align: right;">9.90</td>
-<td style="text-align: right;">5390</td>
+<td class="gt_row gt_left" headers="Year">1992</td>
+<td class="gt_row gt_right" headers="Mean">0.65</td>
+<td class="gt_row gt_right" headers="SD">0.83</td>
+<td class="gt_row gt_right" headers="Skew">0.35</td>
+<td class="gt_row gt_right" headers="Kurt.">6.08</td>
+<td class="gt_row gt_right" headers="Min">-5.15</td>
+<td class="gt_row gt_right" headers="5">-0.50</td>
+<td class="gt_row gt_right" headers="25">0.17</td>
+<td class="gt_row gt_right" headers="Median">0.59</td>
+<td class="gt_row gt_right" headers="75">1.09</td>
+<td class="gt_row gt_right" headers="95">2.05</td>
+<td class="gt_row gt_right" headers="Max">9.90</td>
+<td class="gt_row gt_right" headers="n">5390</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">1993</td>
-<td style="text-align: right;">0.62</td>
-<td style="text-align: right;">0.77</td>
-<td style="text-align: right;">-0.10</td>
-<td style="text-align: right;">4.25</td>
-<td style="text-align: right;">-4.66</td>
-<td style="text-align: right;">-0.55</td>
-<td style="text-align: right;">0.20</td>
-<td style="text-align: right;">0.57</td>
-<td style="text-align: right;">1.04</td>
-<td style="text-align: right;">1.90</td>
-<td style="text-align: right;">7.57</td>
-<td style="text-align: right;">5671</td>
+<td class="gt_row gt_left" headers="Year">1993</td>
+<td class="gt_row gt_right" headers="Mean">0.62</td>
+<td class="gt_row gt_right" headers="SD">0.77</td>
+<td class="gt_row gt_right" headers="Skew">-0.10</td>
+<td class="gt_row gt_right" headers="Kurt.">4.25</td>
+<td class="gt_row gt_right" headers="Min">-4.66</td>
+<td class="gt_row gt_right" headers="5">-0.55</td>
+<td class="gt_row gt_right" headers="25">0.20</td>
+<td class="gt_row gt_right" headers="Median">0.57</td>
+<td class="gt_row gt_right" headers="75">1.04</td>
+<td class="gt_row gt_right" headers="95">1.90</td>
+<td class="gt_row gt_right" headers="Max">7.57</td>
+<td class="gt_row gt_right" headers="n">5671</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">1994</td>
-<td style="text-align: right;">0.70</td>
-<td style="text-align: right;">0.71</td>
-<td style="text-align: right;">-0.18</td>
-<td style="text-align: right;">6.69</td>
-<td style="text-align: right;">-6.95</td>
-<td style="text-align: right;">-0.32</td>
-<td style="text-align: right;">0.27</td>
-<td style="text-align: right;">0.67</td>
-<td style="text-align: right;">1.07</td>
-<td style="text-align: right;">1.89</td>
-<td style="text-align: right;">6.52</td>
-<td style="text-align: right;">6149</td>
+<td class="gt_row gt_left" headers="Year">1994</td>
+<td class="gt_row gt_right" headers="Mean">0.70</td>
+<td class="gt_row gt_right" headers="SD">0.71</td>
+<td class="gt_row gt_right" headers="Skew">-0.18</td>
+<td class="gt_row gt_right" headers="Kurt.">6.69</td>
+<td class="gt_row gt_right" headers="Min">-6.95</td>
+<td class="gt_row gt_right" headers="5">-0.32</td>
+<td class="gt_row gt_right" headers="25">0.27</td>
+<td class="gt_row gt_right" headers="Median">0.67</td>
+<td class="gt_row gt_right" headers="75">1.07</td>
+<td class="gt_row gt_right" headers="95">1.89</td>
+<td class="gt_row gt_right" headers="Max">6.52</td>
+<td class="gt_row gt_right" headers="n">6149</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">1995</td>
-<td style="text-align: right;">0.64</td>
-<td style="text-align: right;">0.84</td>
-<td style="text-align: right;">0.29</td>
-<td style="text-align: right;">5.11</td>
-<td style="text-align: right;">-6.32</td>
-<td style="text-align: right;">-0.49</td>
-<td style="text-align: right;">0.19</td>
-<td style="text-align: right;">0.56</td>
-<td style="text-align: right;">1.02</td>
-<td style="text-align: right;">2.15</td>
-<td style="text-align: right;">8.64</td>
-<td style="text-align: right;">6289</td>
+<td class="gt_row gt_left" headers="Year">1995</td>
+<td class="gt_row gt_right" headers="Mean">0.64</td>
+<td class="gt_row gt_right" headers="SD">0.84</td>
+<td class="gt_row gt_right" headers="Skew">0.29</td>
+<td class="gt_row gt_right" headers="Kurt.">5.11</td>
+<td class="gt_row gt_right" headers="Min">-6.32</td>
+<td class="gt_row gt_right" headers="5">-0.49</td>
+<td class="gt_row gt_right" headers="25">0.19</td>
+<td class="gt_row gt_right" headers="Median">0.56</td>
+<td class="gt_row gt_right" headers="75">1.02</td>
+<td class="gt_row gt_right" headers="95">2.15</td>
+<td class="gt_row gt_right" headers="Max">8.64</td>
+<td class="gt_row gt_right" headers="n">6289</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">1996</td>
-<td style="text-align: right;">0.67</td>
-<td style="text-align: right;">0.64</td>
-<td style="text-align: right;">0.46</td>
-<td style="text-align: right;">1.98</td>
-<td style="text-align: right;">-4.32</td>
-<td style="text-align: right;">-0.20</td>
-<td style="text-align: right;">0.26</td>
-<td style="text-align: right;">0.59</td>
-<td style="text-align: right;">1.01</td>
-<td style="text-align: right;">1.89</td>
-<td style="text-align: right;">3.99</td>
-<td style="text-align: right;">6586</td>
+<td class="gt_row gt_left" headers="Year">1996</td>
+<td class="gt_row gt_right" headers="Mean">0.67</td>
+<td class="gt_row gt_right" headers="SD">0.64</td>
+<td class="gt_row gt_right" headers="Skew">0.46</td>
+<td class="gt_row gt_right" headers="Kurt.">1.98</td>
+<td class="gt_row gt_right" headers="Min">-4.32</td>
+<td class="gt_row gt_right" headers="5">-0.20</td>
+<td class="gt_row gt_right" headers="25">0.26</td>
+<td class="gt_row gt_right" headers="Median">0.59</td>
+<td class="gt_row gt_right" headers="75">1.01</td>
+<td class="gt_row gt_right" headers="95">1.89</td>
+<td class="gt_row gt_right" headers="Max">3.99</td>
+<td class="gt_row gt_right" headers="n">6586</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">1997</td>
-<td style="text-align: right;">0.53</td>
-<td style="text-align: right;">0.48</td>
-<td style="text-align: right;">0.39</td>
-<td style="text-align: right;">1.46</td>
-<td style="text-align: right;">-2.36</td>
-<td style="text-align: right;">-0.13</td>
-<td style="text-align: right;">0.21</td>
-<td style="text-align: right;">0.48</td>
-<td style="text-align: right;">0.80</td>
-<td style="text-align: right;">1.38</td>
-<td style="text-align: right;">3.20</td>
-<td style="text-align: right;">6868</td>
+<td class="gt_row gt_left" headers="Year">1997</td>
+<td class="gt_row gt_right" headers="Mean">0.53</td>
+<td class="gt_row gt_right" headers="SD">0.48</td>
+<td class="gt_row gt_right" headers="Skew">0.39</td>
+<td class="gt_row gt_right" headers="Kurt.">1.46</td>
+<td class="gt_row gt_right" headers="Min">-2.36</td>
+<td class="gt_row gt_right" headers="5">-0.13</td>
+<td class="gt_row gt_right" headers="25">0.21</td>
+<td class="gt_row gt_right" headers="Median">0.48</td>
+<td class="gt_row gt_right" headers="75">0.80</td>
+<td class="gt_row gt_right" headers="95">1.38</td>
+<td class="gt_row gt_right" headers="Max">3.20</td>
+<td class="gt_row gt_right" headers="n">6868</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">1998</td>
-<td style="text-align: right;">0.71</td>
-<td style="text-align: right;">0.51</td>
-<td style="text-align: right;">0.49</td>
-<td style="text-align: right;">0.96</td>
-<td style="text-align: right;">-1.80</td>
-<td style="text-align: right;">0.01</td>
-<td style="text-align: right;">0.34</td>
-<td style="text-align: right;">0.66</td>
-<td style="text-align: right;">1.03</td>
-<td style="text-align: right;">1.62</td>
-<td style="text-align: right;">3.75</td>
-<td style="text-align: right;">6610</td>
+<td class="gt_row gt_left" headers="Year">1998</td>
+<td class="gt_row gt_right" headers="Mean">0.71</td>
+<td class="gt_row gt_right" headers="SD">0.51</td>
+<td class="gt_row gt_right" headers="Skew">0.49</td>
+<td class="gt_row gt_right" headers="Kurt.">0.96</td>
+<td class="gt_row gt_right" headers="Min">-1.80</td>
+<td class="gt_row gt_right" headers="5">0.01</td>
+<td class="gt_row gt_right" headers="25">0.34</td>
+<td class="gt_row gt_right" headers="Median">0.66</td>
+<td class="gt_row gt_right" headers="75">1.03</td>
+<td class="gt_row gt_right" headers="95">1.62</td>
+<td class="gt_row gt_right" headers="Max">3.75</td>
+<td class="gt_row gt_right" headers="n">6610</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">1999</td>
-<td style="text-align: right;">0.41</td>
-<td style="text-align: right;">0.50</td>
-<td style="text-align: right;">1.39</td>
-<td style="text-align: right;">4.82</td>
-<td style="text-align: right;">-2.22</td>
-<td style="text-align: right;">-0.18</td>
-<td style="text-align: right;">0.11</td>
-<td style="text-align: right;">0.32</td>
-<td style="text-align: right;">0.61</td>
-<td style="text-align: right;">1.33</td>
-<td style="text-align: right;">3.77</td>
-<td style="text-align: right;">6096</td>
+<td class="gt_row gt_left" headers="Year">1999</td>
+<td class="gt_row gt_right" headers="Mean">0.41</td>
+<td class="gt_row gt_right" headers="SD">0.50</td>
+<td class="gt_row gt_right" headers="Skew">1.39</td>
+<td class="gt_row gt_right" headers="Kurt.">4.82</td>
+<td class="gt_row gt_right" headers="Min">-2.22</td>
+<td class="gt_row gt_right" headers="5">-0.18</td>
+<td class="gt_row gt_right" headers="25">0.11</td>
+<td class="gt_row gt_right" headers="Median">0.32</td>
+<td class="gt_row gt_right" headers="75">0.61</td>
+<td class="gt_row gt_right" headers="95">1.33</td>
+<td class="gt_row gt_right" headers="Max">3.77</td>
+<td class="gt_row gt_right" headers="n">6096</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">2000</td>
-<td style="text-align: right;">0.70</td>
-<td style="text-align: right;">0.72</td>
-<td style="text-align: right;">1.27</td>
-<td style="text-align: right;">1.33</td>
-<td style="text-align: right;">-1.10</td>
-<td style="text-align: right;">-0.06</td>
-<td style="text-align: right;">0.19</td>
-<td style="text-align: right;">0.49</td>
-<td style="text-align: right;">1.01</td>
-<td style="text-align: right;">2.23</td>
-<td style="text-align: right;">3.76</td>
-<td style="text-align: right;">5900</td>
+<td class="gt_row gt_left" headers="Year">2000</td>
+<td class="gt_row gt_right" headers="Mean">0.70</td>
+<td class="gt_row gt_right" headers="SD">0.72</td>
+<td class="gt_row gt_right" headers="Skew">1.27</td>
+<td class="gt_row gt_right" headers="Kurt.">1.33</td>
+<td class="gt_row gt_right" headers="Min">-1.10</td>
+<td class="gt_row gt_right" headers="5">-0.06</td>
+<td class="gt_row gt_right" headers="25">0.19</td>
+<td class="gt_row gt_right" headers="Median">0.49</td>
+<td class="gt_row gt_right" headers="75">1.01</td>
+<td class="gt_row gt_right" headers="95">2.23</td>
+<td class="gt_row gt_right" headers="Max">3.76</td>
+<td class="gt_row gt_right" headers="n">5900</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">2001</td>
-<td style="text-align: right;">0.76</td>
-<td style="text-align: right;">0.73</td>
-<td style="text-align: right;">1.29</td>
-<td style="text-align: right;">2.13</td>
-<td style="text-align: right;">-1.48</td>
-<td style="text-align: right;">-0.05</td>
-<td style="text-align: right;">0.25</td>
-<td style="text-align: right;">0.60</td>
-<td style="text-align: right;">1.07</td>
-<td style="text-align: right;">2.25</td>
-<td style="text-align: right;">4.21</td>
-<td style="text-align: right;">5506</td>
+<td class="gt_row gt_left" headers="Year">2001</td>
+<td class="gt_row gt_right" headers="Mean">0.76</td>
+<td class="gt_row gt_right" headers="SD">0.73</td>
+<td class="gt_row gt_right" headers="Skew">1.29</td>
+<td class="gt_row gt_right" headers="Kurt.">2.13</td>
+<td class="gt_row gt_right" headers="Min">-1.48</td>
+<td class="gt_row gt_right" headers="5">-0.05</td>
+<td class="gt_row gt_right" headers="25">0.25</td>
+<td class="gt_row gt_right" headers="Median">0.60</td>
+<td class="gt_row gt_right" headers="75">1.07</td>
+<td class="gt_row gt_right" headers="95">2.25</td>
+<td class="gt_row gt_right" headers="Max">4.21</td>
+<td class="gt_row gt_right" headers="n">5506</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">2002</td>
-<td style="text-align: right;">0.67</td>
-<td style="text-align: right;">0.55</td>
-<td style="text-align: right;">0.71</td>
-<td style="text-align: right;">0.69</td>
-<td style="text-align: right;">-1.19</td>
-<td style="text-align: right;">-0.04</td>
-<td style="text-align: right;">0.25</td>
-<td style="text-align: right;">0.62</td>
-<td style="text-align: right;">0.97</td>
-<td style="text-align: right;">1.73</td>
-<td style="text-align: right;">2.99</td>
-<td style="text-align: right;">5097</td>
+<td class="gt_row gt_left" headers="Year">2002</td>
+<td class="gt_row gt_right" headers="Mean">0.67</td>
+<td class="gt_row gt_right" headers="SD">0.55</td>
+<td class="gt_row gt_right" headers="Skew">0.71</td>
+<td class="gt_row gt_right" headers="Kurt.">0.69</td>
+<td class="gt_row gt_right" headers="Min">-1.19</td>
+<td class="gt_row gt_right" headers="5">-0.04</td>
+<td class="gt_row gt_right" headers="25">0.25</td>
+<td class="gt_row gt_right" headers="Median">0.62</td>
+<td class="gt_row gt_right" headers="75">0.97</td>
+<td class="gt_row gt_right" headers="95">1.73</td>
+<td class="gt_row gt_right" headers="Max">2.99</td>
+<td class="gt_row gt_right" headers="n">5097</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">2003</td>
-<td style="text-align: right;">0.72</td>
-<td style="text-align: right;">0.56</td>
-<td style="text-align: right;">0.41</td>
-<td style="text-align: right;">0.49</td>
-<td style="text-align: right;">-2.16</td>
-<td style="text-align: right;">-0.04</td>
-<td style="text-align: right;">0.30</td>
-<td style="text-align: right;">0.68</td>
-<td style="text-align: right;">1.06</td>
-<td style="text-align: right;">1.72</td>
-<td style="text-align: right;">3.04</td>
-<td style="text-align: right;">4734</td>
+<td class="gt_row gt_left" headers="Year">2003</td>
+<td class="gt_row gt_right" headers="Mean">0.72</td>
+<td class="gt_row gt_right" headers="SD">0.56</td>
+<td class="gt_row gt_right" headers="Skew">0.41</td>
+<td class="gt_row gt_right" headers="Kurt.">0.49</td>
+<td class="gt_row gt_right" headers="Min">-2.16</td>
+<td class="gt_row gt_right" headers="5">-0.04</td>
+<td class="gt_row gt_right" headers="25">0.30</td>
+<td class="gt_row gt_right" headers="Median">0.68</td>
+<td class="gt_row gt_right" headers="75">1.06</td>
+<td class="gt_row gt_right" headers="95">1.72</td>
+<td class="gt_row gt_right" headers="Max">3.04</td>
+<td class="gt_row gt_right" headers="n">4734</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">2004</td>
-<td style="text-align: right;">1.03</td>
-<td style="text-align: right;">0.70</td>
-<td style="text-align: right;">0.43</td>
-<td style="text-align: right;">0.24</td>
-<td style="text-align: right;">-1.75</td>
-<td style="text-align: right;">0.01</td>
-<td style="text-align: right;">0.53</td>
-<td style="text-align: right;">0.99</td>
-<td style="text-align: right;">1.46</td>
-<td style="text-align: right;">2.30</td>
-<td style="text-align: right;">4.02</td>
-<td style="text-align: right;">4571</td>
+<td class="gt_row gt_left" headers="Year">2004</td>
+<td class="gt_row gt_right" headers="Mean">1.03</td>
+<td class="gt_row gt_right" headers="SD">0.70</td>
+<td class="gt_row gt_right" headers="Skew">0.43</td>
+<td class="gt_row gt_right" headers="Kurt.">0.24</td>
+<td class="gt_row gt_right" headers="Min">-1.75</td>
+<td class="gt_row gt_right" headers="5">0.01</td>
+<td class="gt_row gt_right" headers="25">0.53</td>
+<td class="gt_row gt_right" headers="Median">0.99</td>
+<td class="gt_row gt_right" headers="75">1.46</td>
+<td class="gt_row gt_right" headers="95">2.30</td>
+<td class="gt_row gt_right" headers="Max">4.02</td>
+<td class="gt_row gt_right" headers="n">4571</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">2005</td>
-<td style="text-align: right;">0.95</td>
-<td style="text-align: right;">0.64</td>
-<td style="text-align: right;">-0.00</td>
-<td style="text-align: right;">-0.18</td>
-<td style="text-align: right;">-1.60</td>
-<td style="text-align: right;">-0.06</td>
-<td style="text-align: right;">0.46</td>
-<td style="text-align: right;">0.99</td>
-<td style="text-align: right;">1.39</td>
-<td style="text-align: right;">1.96</td>
-<td style="text-align: right;">3.69</td>
-<td style="text-align: right;">4494</td>
+<td class="gt_row gt_left" headers="Year">2005</td>
+<td class="gt_row gt_right" headers="Mean">0.95</td>
+<td class="gt_row gt_right" headers="SD">0.64</td>
+<td class="gt_row gt_right" headers="Skew">-0.00</td>
+<td class="gt_row gt_right" headers="Kurt.">-0.18</td>
+<td class="gt_row gt_right" headers="Min">-1.60</td>
+<td class="gt_row gt_right" headers="5">-0.06</td>
+<td class="gt_row gt_right" headers="25">0.46</td>
+<td class="gt_row gt_right" headers="Median">0.99</td>
+<td class="gt_row gt_right" headers="75">1.39</td>
+<td class="gt_row gt_right" headers="95">1.96</td>
+<td class="gt_row gt_right" headers="Max">3.69</td>
+<td class="gt_row gt_right" headers="n">4494</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">2006</td>
-<td style="text-align: right;">1.02</td>
-<td style="text-align: right;">0.70</td>
-<td style="text-align: right;">0.08</td>
-<td style="text-align: right;">0.17</td>
-<td style="text-align: right;">-3.71</td>
-<td style="text-align: right;">-0.03</td>
-<td style="text-align: right;">0.48</td>
-<td style="text-align: right;">1.00</td>
-<td style="text-align: right;">1.51</td>
-<td style="text-align: right;">2.18</td>
-<td style="text-align: right;">3.75</td>
-<td style="text-align: right;">4450</td>
+<td class="gt_row gt_left" headers="Year">2006</td>
+<td class="gt_row gt_right" headers="Mean">1.02</td>
+<td class="gt_row gt_right" headers="SD">0.70</td>
+<td class="gt_row gt_right" headers="Skew">0.08</td>
+<td class="gt_row gt_right" headers="Kurt.">0.17</td>
+<td class="gt_row gt_right" headers="Min">-3.71</td>
+<td class="gt_row gt_right" headers="5">-0.03</td>
+<td class="gt_row gt_right" headers="25">0.48</td>
+<td class="gt_row gt_right" headers="Median">1.00</td>
+<td class="gt_row gt_right" headers="75">1.51</td>
+<td class="gt_row gt_right" headers="95">2.18</td>
+<td class="gt_row gt_right" headers="Max">3.75</td>
+<td class="gt_row gt_right" headers="n">4450</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">2007</td>
-<td style="text-align: right;">0.87</td>
-<td style="text-align: right;">0.54</td>
-<td style="text-align: right;">-0.04</td>
-<td style="text-align: right;">-0.20</td>
-<td style="text-align: right;">-1.50</td>
-<td style="text-align: right;">0.01</td>
-<td style="text-align: right;">0.45</td>
-<td style="text-align: right;">0.91</td>
-<td style="text-align: right;">1.26</td>
-<td style="text-align: right;">1.72</td>
-<td style="text-align: right;">3.06</td>
-<td style="text-align: right;">4325</td>
+<td class="gt_row gt_left" headers="Year">2007</td>
+<td class="gt_row gt_right" headers="Mean">0.87</td>
+<td class="gt_row gt_right" headers="SD">0.54</td>
+<td class="gt_row gt_right" headers="Skew">-0.04</td>
+<td class="gt_row gt_right" headers="Kurt.">-0.20</td>
+<td class="gt_row gt_right" headers="Min">-1.50</td>
+<td class="gt_row gt_right" headers="5">0.01</td>
+<td class="gt_row gt_right" headers="25">0.45</td>
+<td class="gt_row gt_right" headers="Median">0.91</td>
+<td class="gt_row gt_right" headers="75">1.26</td>
+<td class="gt_row gt_right" headers="95">1.72</td>
+<td class="gt_row gt_right" headers="Max">3.06</td>
+<td class="gt_row gt_right" headers="n">4325</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">2008</td>
-<td style="text-align: right;">0.87</td>
-<td style="text-align: right;">0.53</td>
-<td style="text-align: right;">0.17</td>
-<td style="text-align: right;">0.06</td>
-<td style="text-align: right;">-1.49</td>
-<td style="text-align: right;">0.03</td>
-<td style="text-align: right;">0.48</td>
-<td style="text-align: right;">0.87</td>
-<td style="text-align: right;">1.22</td>
-<td style="text-align: right;">1.74</td>
-<td style="text-align: right;">3.45</td>
-<td style="text-align: right;">4258</td>
+<td class="gt_row gt_left" headers="Year">2008</td>
+<td class="gt_row gt_right" headers="Mean">0.87</td>
+<td class="gt_row gt_right" headers="SD">0.53</td>
+<td class="gt_row gt_right" headers="Skew">0.17</td>
+<td class="gt_row gt_right" headers="Kurt.">0.06</td>
+<td class="gt_row gt_right" headers="Min">-1.49</td>
+<td class="gt_row gt_right" headers="5">0.03</td>
+<td class="gt_row gt_right" headers="25">0.48</td>
+<td class="gt_row gt_right" headers="Median">0.87</td>
+<td class="gt_row gt_right" headers="75">1.22</td>
+<td class="gt_row gt_right" headers="95">1.74</td>
+<td class="gt_row gt_right" headers="Max">3.45</td>
+<td class="gt_row gt_right" headers="n">4258</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">2009</td>
-<td style="text-align: right;">1.10</td>
-<td style="text-align: right;">0.72</td>
-<td style="text-align: right;">0.51</td>
-<td style="text-align: right;">0.62</td>
-<td style="text-align: right;">-1.75</td>
-<td style="text-align: right;">0.09</td>
-<td style="text-align: right;">0.55</td>
-<td style="text-align: right;">1.03</td>
-<td style="text-align: right;">1.57</td>
-<td style="text-align: right;">2.36</td>
-<td style="text-align: right;">5.32</td>
-<td style="text-align: right;">3969</td>
+<td class="gt_row gt_left" headers="Year">2009</td>
+<td class="gt_row gt_right" headers="Mean">1.10</td>
+<td class="gt_row gt_right" headers="SD">0.72</td>
+<td class="gt_row gt_right" headers="Skew">0.51</td>
+<td class="gt_row gt_right" headers="Kurt.">0.62</td>
+<td class="gt_row gt_right" headers="Min">-1.75</td>
+<td class="gt_row gt_right" headers="5">0.09</td>
+<td class="gt_row gt_right" headers="25">0.55</td>
+<td class="gt_row gt_right" headers="Median">1.03</td>
+<td class="gt_row gt_right" headers="75">1.57</td>
+<td class="gt_row gt_right" headers="95">2.36</td>
+<td class="gt_row gt_right" headers="Max">5.32</td>
+<td class="gt_row gt_right" headers="n">3969</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">2010</td>
-<td style="text-align: right;">1.04</td>
-<td style="text-align: right;">0.54</td>
-<td style="text-align: right;">-0.07</td>
-<td style="text-align: right;">-0.15</td>
-<td style="text-align: right;">-0.85</td>
-<td style="text-align: right;">0.10</td>
-<td style="text-align: right;">0.68</td>
-<td style="text-align: right;">1.05</td>
-<td style="text-align: right;">1.41</td>
-<td style="text-align: right;">1.90</td>
-<td style="text-align: right;">2.95</td>
-<td style="text-align: right;">3794</td>
+<td class="gt_row gt_left" headers="Year">2010</td>
+<td class="gt_row gt_right" headers="Mean">1.04</td>
+<td class="gt_row gt_right" headers="SD">0.54</td>
+<td class="gt_row gt_right" headers="Skew">-0.07</td>
+<td class="gt_row gt_right" headers="Kurt.">-0.15</td>
+<td class="gt_row gt_right" headers="Min">-0.85</td>
+<td class="gt_row gt_right" headers="5">0.10</td>
+<td class="gt_row gt_right" headers="25">0.68</td>
+<td class="gt_row gt_right" headers="Median">1.05</td>
+<td class="gt_row gt_right" headers="75">1.41</td>
+<td class="gt_row gt_right" headers="95">1.90</td>
+<td class="gt_row gt_right" headers="Max">2.95</td>
+<td class="gt_row gt_right" headers="n">3794</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">2011</td>
-<td style="text-align: right;">1.07</td>
-<td style="text-align: right;">0.54</td>
-<td style="text-align: right;">-0.14</td>
-<td style="text-align: right;">-0.37</td>
-<td style="text-align: right;">-0.62</td>
-<td style="text-align: right;">0.14</td>
-<td style="text-align: right;">0.70</td>
-<td style="text-align: right;">1.13</td>
-<td style="text-align: right;">1.45</td>
-<td style="text-align: right;">1.93</td>
-<td style="text-align: right;">3.03</td>
-<td style="text-align: right;">3672</td>
+<td class="gt_row gt_left" headers="Year">2011</td>
+<td class="gt_row gt_right" headers="Mean">1.07</td>
+<td class="gt_row gt_right" headers="SD">0.54</td>
+<td class="gt_row gt_right" headers="Skew">-0.14</td>
+<td class="gt_row gt_right" headers="Kurt.">-0.37</td>
+<td class="gt_row gt_right" headers="Min">-0.62</td>
+<td class="gt_row gt_right" headers="5">0.14</td>
+<td class="gt_row gt_right" headers="25">0.70</td>
+<td class="gt_row gt_right" headers="Median">1.13</td>
+<td class="gt_row gt_right" headers="75">1.45</td>
+<td class="gt_row gt_right" headers="95">1.93</td>
+<td class="gt_row gt_right" headers="Max">3.03</td>
+<td class="gt_row gt_right" headers="n">3672</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">2012</td>
-<td style="text-align: right;">1.04</td>
-<td style="text-align: right;">0.57</td>
-<td style="text-align: right;">0.04</td>
-<td style="text-align: right;">0.46</td>
-<td style="text-align: right;">-2.32</td>
-<td style="text-align: right;">0.10</td>
-<td style="text-align: right;">0.65</td>
-<td style="text-align: right;">1.05</td>
-<td style="text-align: right;">1.40</td>
-<td style="text-align: right;">1.99</td>
-<td style="text-align: right;">3.43</td>
-<td style="text-align: right;">3534</td>
+<td class="gt_row gt_left" headers="Year">2012</td>
+<td class="gt_row gt_right" headers="Mean">1.04</td>
+<td class="gt_row gt_right" headers="SD">0.57</td>
+<td class="gt_row gt_right" headers="Skew">0.04</td>
+<td class="gt_row gt_right" headers="Kurt.">0.46</td>
+<td class="gt_row gt_right" headers="Min">-2.32</td>
+<td class="gt_row gt_right" headers="5">0.10</td>
+<td class="gt_row gt_right" headers="25">0.65</td>
+<td class="gt_row gt_right" headers="Median">1.05</td>
+<td class="gt_row gt_right" headers="75">1.40</td>
+<td class="gt_row gt_right" headers="95">1.99</td>
+<td class="gt_row gt_right" headers="Max">3.43</td>
+<td class="gt_row gt_right" headers="n">3534</td>
 </tr>
 </tbody>
 </table>
+
+
+</div>
 </div>
 </div>
 </figure>
@@ -1030,65 +1093,122 @@ Table&nbsp;2.1: Annual summary statistics for market beta (BEM Table 2.1)
 <section id="average-across-years" class="level3" data-number="2.1.2">
 <h3 data-number="2.1.2" class="anchored" data-anchor-id="average-across-years"><span class="header-section-number">2.1.2</span> Average Cross-Sectional Summary Statistics</h3>
 <p>To describe the typical cross-section, take the mean of each column in <a href="#tbl-bem2-annual" class="quarto-xref">Table&nbsp;<span>2.1</span></a>. For example, if <span class="math inline">\(n_t\)</span> stocks have valid betas in year <span class="math inline">\(t\)</span>, their mean is <span class="math inline">\(\bar{\beta}_t = \sum_{i=1}^{n_t}\widehat{\beta}_{i,t}/n_t\)</span>. The table reports <span class="math inline">\(T^{-1}\sum_{t=1}^{T}\bar{\beta}_t\)</span>. A pooled mean would instead give years with more observations more weight. The same two-step procedure applies to the median and other statistics.</p>
-<div id="dc37bc2c" class="cell" data-execution_count="5">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>average_stats <span class="op">=</span> annual_stats.select(pl.exclude(<span class="st">"year"</span>).mean())</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="12cd46e8" class="cell" data-execution_count="4">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>average_stats <span class="op">=</span> annual_stats.select(pl.exclude(<span class="st">"year"</span>).mean())</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div class="cell" data-execution_count="6">
-<div id="tbl-bem2-average" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="6">
+<div class="cell" data-execution_count="5">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>average_stats.with_columns(pl.col(<span class="st">"n"</span>).<span class="bu">round</span>().cast(pl.Int64)).eap.show_table()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div id="tbl-bem2-average" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="5">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bem2-average-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table&nbsp;2.2: Average cross-sectional summary statistics for market beta (BEM Table 2.2)
 </figcaption>
 <div aria-describedby="tbl-bem2-average-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<div class="cell-output cell-output-display cell-output-markdown">
-<table class="cell caption-top table table-sm table-striped small">
-<colgroup>
-<col style="width: 8%">
-<col style="width: 8%">
-<col style="width: 8%">
-<col style="width: 8%">
-<col style="width: 8%">
-<col style="width: 8%">
-<col style="width: 8%">
-<col style="width: 8%">
-<col style="width: 8%">
-<col style="width: 8%">
-<col style="width: 8%">
-<col style="width: 8%">
-</colgroup>
+<div class="cell-output cell-output-display">
+<div id="jxgawrbrmb" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>
+#jxgawrbrmb table {
+          font-family: inherit;
+          -webkit-font-smoothing: antialiased;
+          -moz-osx-font-smoothing: grayscale;
+        }
+
+#jxgawrbrmb thead, tbody, tfoot, tr, td, th { border-style: none; }
+ tr { background-color: transparent; }
+#jxgawrbrmb p { margin: 0; padding: 0; }
+ #jxgawrbrmb .gt_table { display: table; border-collapse: collapse; line-height: normal; margin-left: auto; margin-right: auto; color: #333333; font-size: 0.875rem; font-weight: normal; font-style: normal; background-color: #FFFFFF; width: 100%; border-top-style: solid; border-top-width: 2px; border-top-color: #A8A8A8; border-right-style: none; border-right-width: 2px; border-right-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #A8A8A8; border-left-style: none; border-left-width: 2px; border-left-color: #D3D3D3; }
+ #jxgawrbrmb .gt_caption { padding-top: 4px; padding-bottom: 4px; }
+ #jxgawrbrmb .gt_title { color: #333333; font-size: 125%; font-weight: initial; padding-top: 4px; padding-bottom: 4px; padding-left: 5px; padding-right: 5px; border-bottom-color: #FFFFFF; border-bottom-width: 0; }
+ #jxgawrbrmb .gt_subtitle { color: #333333; font-size: 85%; font-weight: initial; padding-top: 3px; padding-bottom: 5px; padding-left: 5px; padding-right: 5px; border-top-color: #FFFFFF; border-top-width: 0; }
+ #jxgawrbrmb .gt_heading { background-color: #FFFFFF; text-align: center; border-bottom-color: #FFFFFF; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; }
+ #jxgawrbrmb .gt_bottom_border { border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; }
+ #jxgawrbrmb .gt_col_headings { border-top-style: solid; border-top-width: 2px; border-top-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; }
+ #jxgawrbrmb .gt_col_heading { color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: bold; text-transform: inherit; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: bottom; padding-top: 5px; padding-bottom: 5px; padding-left: 0.45rem; padding-right: 0.45rem; overflow-x: hidden; }
+ #jxgawrbrmb .gt_column_spanner_outer { color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: bold; text-transform: inherit; padding-top: 0; padding-bottom: 0; padding-left: 4px; padding-right: 4px; }
+ #jxgawrbrmb .gt_column_spanner_outer:first-child { padding-left: 0; }
+ #jxgawrbrmb .gt_column_spanner_outer:last-child { padding-right: 0; }
+ #jxgawrbrmb .gt_column_spanner { border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; vertical-align: bottom; padding-top: 5px; padding-bottom: 5px; overflow-x: hidden; display: inline-block; width: 100%; }
+ #jxgawrbrmb .gt_spanner_row { border-bottom-style: hidden; }
+ #jxgawrbrmb .gt_group_heading { padding-top: 8px; padding-bottom: 8px; padding-left: 5px; padding-right: 5px; color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: initial; text-transform: inherit; border-top-style: solid; border-top-width: 2px; border-top-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; text-align: left; }
+ #jxgawrbrmb .gt_empty_group_heading { padding: 0.5px; color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: initial; border-top-style: solid; border-top-width: 2px; border-top-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; vertical-align: middle; }
+ #jxgawrbrmb .gt_from_md> :first-child { margin-top: 0; }
+ #jxgawrbrmb .gt_from_md> :last-child { margin-bottom: 0; }
+ #jxgawrbrmb .gt_row { padding-top: 0.25rem; padding-bottom: 0.25rem; padding-left: 0.45rem; padding-right: 0.45rem; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; }
+ #jxgawrbrmb .gt_stub { color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: initial; text-transform: inherit; border-right-style: solid; border-right-width: 2px; border-right-color: #D3D3D3; padding-left: 0.45rem; padding-right: 0.45rem; }
+ #jxgawrbrmb .gt_indent_1 { text-indent: 5px; }
+ #jxgawrbrmb .gt_indent_2 { text-indent: calc(5px * 2); }
+ #jxgawrbrmb .gt_indent_3 { text-indent: calc(5px * 3); }
+ #jxgawrbrmb .gt_indent_4 { text-indent: calc(5px * 4); }
+ #jxgawrbrmb .gt_indent_5 { text-indent: calc(5px * 5); }
+ #jxgawrbrmb .gt_stub_row_group { color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: initial; text-transform: inherit; border-right-style: solid; border-right-width: 2px; border-right-color: #D3D3D3; padding-left: 5px; padding-right: 5px; vertical-align: top; }
+ #jxgawrbrmb .gt_row_group_first td { border-top-width: 2px; }
+ #jxgawrbrmb .gt_row_group_first th { border-top-width: 2px; }
+ #jxgawrbrmb .gt_striped { color: #333333; background-color: #F4F4F4; }
+ #jxgawrbrmb .gt_table_body { border-top-style: solid; border-top-width: 2px; border-top-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; }
+ #jxgawrbrmb .gt_summary_row { color: #333333; background-color: #FFFFFF; text-transform: inherit; padding-top: 8px; padding-bottom: 8px; padding-left: 5px; padding-right: 5px; }
+ #jxgawrbrmb .gt_first_summary_row { border-top-style: solid; border-top-width: 2px; border-top-color: #D3D3D3; }
+ #jxgawrbrmb .gt_last_summary_row_top { border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; }
+ #jxgawrbrmb .gt_grand_summary_row { color: #333333; background-color: #FFFFFF; text-transform: inherit; padding-top: 8px; padding-bottom: 8px; padding-left: 5px; padding-right: 5px; }
+ #jxgawrbrmb .gt_first_grand_summary_row_bottom { border-top-style: double; border-top-width: 6px; border-top-color: #D3D3D3; }
+ #jxgawrbrmb .gt_last_grand_summary_row_top { border-bottom-style: double; border-bottom-width: 6px; border-bottom-color: #D3D3D3; }
+ #jxgawrbrmb .gt_sourcenotes { color: #333333; background-color: #FFFFFF; border-bottom-style: none; border-bottom-width: 2px; border-bottom-color: #D3D3D3; border-left-style: none; border-left-width: 2px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 2px; border-right-color: #D3D3D3; }
+ #jxgawrbrmb .gt_sourcenote { font-size: 90%; padding-top: 4px; padding-bottom: 4px; padding-left: 5px; padding-right: 5px; text-align: left; }
+ #jxgawrbrmb .gt_left { text-align: left; }
+ #jxgawrbrmb .gt_center { text-align: center; }
+ #jxgawrbrmb .gt_right { text-align: right; font-variant-numeric: tabular-nums; }
+ #jxgawrbrmb .gt_font_normal { font-weight: normal; }
+ #jxgawrbrmb .gt_font_bold { font-weight: bold; }
+ #jxgawrbrmb .gt_font_italic { font-style: italic; }
+ #jxgawrbrmb .gt_super { font-size: 65%; }
+ #jxgawrbrmb .gt_footnotes { color: font-color(#FFFFFF); background-color: #FFFFFF; border-bottom-style: none; border-bottom-width: 2px; border-bottom-color: #D3D3D3; border-left-style: none; border-left-width: 2px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 2px; border-right-color: #D3D3D3; }
+ #jxgawrbrmb .gt_footnote { margin: 0px; font-size: 90%; padding-top: 4px; padding-bottom: 4px; padding-left: 5px; padding-right: 5px; }
+ #jxgawrbrmb .gt_sourcenotes { color: #333333; background-color: #FFFFFF; border-bottom-style: none; border-bottom-width: 2px; border-bottom-color: #D3D3D3; border-left-style: none; border-left-width: 2px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 2px; border-right-color: #D3D3D3; }
+ #jxgawrbrmb .gt_sourcenote { font-size: 90%; padding-top: 4px; padding-bottom: 4px; padding-left: 5px; padding-right: 5px; text-align: left; }
+ #jxgawrbrmb .gt_footnote_marks { font-size: 75%; vertical-align: 0.4em; position: initial; }
+ #jxgawrbrmb .gt_asterisk { font-size: 100%; vertical-align: 0; }
+ 
+</style>
+
+<table class="gt_table cell caption-top table table-sm table-striped small" data-quarto-bootstrap="false">
 <thead>
-<tr class="header">
-<th style="text-align: left;">Mean</th>
-<th style="text-align: right;">SD</th>
-<th style="text-align: right;">Skew</th>
-<th style="text-align: right;">Kurt.</th>
-<th style="text-align: right;">Min</th>
-<th style="text-align: right;">5%</th>
-<th style="text-align: right;">25%</th>
-<th style="text-align: right;">Median</th>
-<th style="text-align: right;">75%</th>
-<th style="text-align: right;">95%</th>
-<th style="text-align: right;">Max</th>
-<th style="text-align: right;">n</th>
+<tr class="gt_col_headings header">
+<th id="Mean" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" scope="col">Mean</th>
+<th id="SD" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">SD</th>
+<th id="Skew" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Skew</th>
+<th id="Kurt." class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Kurt.</th>
+<th id="Min" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Min</th>
+<th id="5" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">5%</th>
+<th id="25" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">25%</th>
+<th id="Median" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Median</th>
+<th id="75" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">75%</th>
+<th id="95" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">95%</th>
+<th id="Max" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Max</th>
+<th id="n" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">n</th>
 </tr>
 </thead>
-<tbody>
+<tbody class="gt_table_body">
 <tr class="odd">
-<td style="text-align: left;">0.75</td>
-<td style="text-align: right;">0.62</td>
-<td style="text-align: right;">0.34</td>
-<td style="text-align: right;">1.78</td>
-<td style="text-align: right;">-2.78</td>
-<td style="text-align: right;">-0.13</td>
-<td style="text-align: right;">0.33</td>
-<td style="text-align: right;">0.71</td>
-<td style="text-align: right;">1.12</td>
-<td style="text-align: right;">1.85</td>
-<td style="text-align: right;">4.40</td>
-<td style="text-align: right;">5195</td>
+<td class="gt_row gt_left" headers="Mean">0.75</td>
+<td class="gt_row gt_right" headers="SD">0.62</td>
+<td class="gt_row gt_right" headers="Skew">0.34</td>
+<td class="gt_row gt_right" headers="Kurt.">1.78</td>
+<td class="gt_row gt_right" headers="Min">-2.78</td>
+<td class="gt_row gt_right" headers="5">-0.13</td>
+<td class="gt_row gt_right" headers="25">0.33</td>
+<td class="gt_row gt_right" headers="Median">0.71</td>
+<td class="gt_row gt_right" headers="75">1.12</td>
+<td class="gt_row gt_right" headers="95">1.85</td>
+<td class="gt_row gt_right" headers="Max">4.40</td>
+<td class="gt_row gt_right" headers="n">5195</td>
 </tr>
 </tbody>
 </table>
+
+
+</div>
 </div>
 </div>
 </figure>
@@ -1099,191 +1219,256 @@ Table&nbsp;2.2: Average cross-sectional summary statistics for market beta (BEM 
 </section>
 <section id="sec-summary-characteristics" class="level2" data-number="2.2">
 <h2 data-number="2.2" class="anchored" data-anchor-id="sec-summary-characteristics"><span class="header-section-number">2.2</span> Presentation and Interpretation</h2>
-<p><span id="summarize-several-characteristics"></span>We also summarize year-end market capitalization in millions of dollars, its natural logarithm (size), book-to-market, and the following calendar year’s excess return. <code>build_annual_panel()</code> assembles these observations using <code>start_year</code> and <code>end_year</code>, which default to 1988 and 2012.</p>
-<p>The December beta observations already calculated for <a href="#tbl-bem2-annual" class="quarto-xref">Table&nbsp;<span>2.1</span></a> define the stock-years in the panel. The helper uses <code>permno</code> and formation year as the join keys. <code>build_sizes()</code> provides December market capitalization and its log, as described in <a href="size-replication.html" class="quarto-xref"><span>Chapter 9</span></a>. <code>build_book_to_market()</code> supplies the ratio of prior-year fiscal book equity to prior December market capitalization, as described in <a href="value-replication.html" class="quarto-xref"><span>Chapter 10</span></a>. We use its signed ratio, consistent with the negative observations in BEM Table 2.3.</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>betas <span class="op">=</span> annual_betas.lazy().<span class="bu">filter</span>(pl.col(<span class="st">"year"</span>).is_between(start_year, end_year))</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>keys <span class="op">=</span> [<span class="st">"permno"</span>, <span class="st">"year"</span>]</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>sizes <span class="op">=</span> build_sizes()</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>capitalizations <span class="op">=</span> (</span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    sizes.lazy()</span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    .<span class="bu">filter</span>(pl.col(<span class="st">"month"</span>).dt.month() <span class="op">==</span> <span class="dv">12</span>)</span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    .select(<span class="st">"permno"</span>, year<span class="op">=</span>pl.col(<span class="st">"month"</span>).dt.year(), MktCap<span class="op">=</span><span class="st">"cap"</span>, Size<span class="op">=</span><span class="st">"log_cap"</span>)</span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    .<span class="bu">filter</span>(pl.col(<span class="st">"year"</span>).is_between(start_year, end_year))</span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>book_to_market <span class="op">=</span> (</span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    build_book_to_market(sizes).lazy()</span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>    .<span class="bu">filter</span>(pl.col(<span class="st">"month"</span>).dt.month() <span class="op">==</span> <span class="dv">12</span>)</span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>    .select(<span class="st">"permno"</span>, year<span class="op">=</span>pl.col(<span class="st">"month"</span>).dt.year(), BM<span class="op">=</span><span class="st">"bm_raw"</span>)</span>
-<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>    .<span class="bu">filter</span>(pl.col(<span class="st">"year"</span>).is_between(start_year, end_year))</span>
-<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><span id="summarize-several-characteristics"></span>I also summarize year-end market capitalization in millions of dollars, its natural logarithm (size), book-to-market, and the following calendar year’s excess return. <code>build_annual_panel()</code> assembles these observations using <code>start_year</code> and <code>end_year</code>, which default to 1988 and 2012.</p>
+<p>The December beta observations already calculated for <a href="#tbl-bem2-annual" class="quarto-xref">Table&nbsp;<span>2.1</span></a> define the stock-years in the panel. The helper uses <code>permno</code> and formation year as the join keys. <code>build_sizes()</code> provides December market capitalization and its log, as described in <a href="size-replication.html" class="quarto-xref"><span>Chapter 9</span></a>. <code>build_book_to_market()</code> supplies the ratio of prior-year fiscal book equity to prior December market capitalization, as described in <a href="value-replication.html" class="quarto-xref"><span>Chapter 10</span></a>. I use its signed ratio, consistent with the negative observations in BEM Table 2.3.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>betas <span class="op">=</span> annual_betas.lazy().<span class="bu">filter</span>(pl.col(<span class="st">"year"</span>).is_between(start_year, end_year))</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>keys <span class="op">=</span> [<span class="st">"permno"</span>, <span class="st">"year"</span>]</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>sizes <span class="op">=</span> build_sizes()</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>capitalizations <span class="op">=</span> (</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    sizes.lazy()</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    .<span class="bu">filter</span>(pl.col(<span class="st">"month"</span>).dt.month() <span class="op">==</span> <span class="dv">12</span>)</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    .select(<span class="st">"permno"</span>, year<span class="op">=</span>pl.col(<span class="st">"month"</span>).dt.year(), MktCap<span class="op">=</span><span class="st">"cap"</span>, Size<span class="op">=</span><span class="st">"log_cap"</span>)</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    .<span class="bu">filter</span>(pl.col(<span class="st">"year"</span>).is_between(start_year, end_year))</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>book_to_market <span class="op">=</span> (</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>    build_book_to_market(sizes).lazy()</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>    .<span class="bu">filter</span>(pl.col(<span class="st">"month"</span>).dt.month() <span class="op">==</span> <span class="dv">12</span>)</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>    .select(<span class="st">"permno"</span>, year<span class="op">=</span>pl.col(<span class="st">"month"</span>).dt.year(), BM<span class="op">=</span><span class="st">"bm_raw"</span>)</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>    .<span class="bu">filter</span>(pl.col(<span class="st">"year"</span>).is_between(start_year, end_year))</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>For each stock and holding year, the helper compounds the available monthly returns reported by CRSP. BEM §1.1 does not spell out how its annual returns handle delistings. The helper compounds the monthly risk-free returns separately, requiring 12 observations for the year.</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>stock_returns <span class="op">=</span> (</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    load_parquet(<span class="st">"msf"</span>, <span class="st">"crsp"</span>)</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    .<span class="bu">filter</span>(</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>        pl.col(<span class="st">"date"</span>).is_between(pl.date(start_year <span class="op">+</span> <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>), pl.date(end_year, <span class="dv">12</span>, <span class="dv">31</span>)),</span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>        pl.col(<span class="st">"ret"</span>).is_finite(),</span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    .with_columns(year<span class="op">=</span>pl.col(<span class="st">"date"</span>).dt.year())</span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>    .group_by(keys)</span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>    .agg(gross_stock<span class="op">=</span>(<span class="dv">1</span> <span class="op">+</span> pl.col(<span class="st">"ret"</span>)).product())</span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>risk_free <span class="op">=</span> (</span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>    load_parquet(<span class="st">"factors_monthly"</span>, <span class="st">"ff"</span>)</span>
-<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>    .with_columns(year<span class="op">=</span>pl.col(<span class="st">"date"</span>).dt.year())</span>
-<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>    .<span class="bu">filter</span>(pl.col(<span class="st">"year"</span>).is_between(start_year <span class="op">+</span> <span class="dv">1</span>, end_year))</span>
-<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>    .group_by(<span class="st">"year"</span>)</span>
-<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>    .agg(gross_rf<span class="op">=</span>(<span class="dv">1</span> <span class="op">+</span> pl.col(<span class="st">"rf"</span>)).product(), n<span class="op">=</span>pl.col(<span class="st">"rf"</span>).count())</span>
-<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>    .<span class="bu">filter</span>(pl.col(<span class="st">"n"</span>) <span class="op">==</span> <span class="dv">12</span>)</span>
-<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>stock_returns <span class="op">=</span> (</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    load_parquet(<span class="st">"msf"</span>, <span class="st">"crsp"</span>)</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    .<span class="bu">filter</span>(</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>        pl.col(<span class="st">"date"</span>).is_between(pl.date(start_year <span class="op">+</span> <span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">1</span>), pl.date(end_year, <span class="dv">12</span>, <span class="dv">31</span>)),</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>        pl.col(<span class="st">"ret"</span>).is_finite(),</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>    .with_columns(year<span class="op">=</span>pl.col(<span class="st">"date"</span>).dt.year())</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>    .group_by(keys)</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>    .agg(gross_stock<span class="op">=</span>(<span class="dv">1</span> <span class="op">+</span> pl.col(<span class="st">"ret"</span>)).product())</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>risk_free <span class="op">=</span> (</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>    load_parquet(<span class="st">"factors_monthly"</span>, <span class="st">"ff"</span>)</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>    .with_columns(year<span class="op">=</span>pl.col(<span class="st">"date"</span>).dt.year())</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>    .<span class="bu">filter</span>(pl.col(<span class="st">"year"</span>).is_between(start_year <span class="op">+</span> <span class="dv">1</span>, end_year))</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>    .group_by(<span class="st">"year"</span>)</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>    .agg(gross_rf<span class="op">=</span>(<span class="dv">1</span> <span class="op">+</span> pl.col(<span class="st">"rf"</span>)).product(), n<span class="op">=</span>pl.col(<span class="st">"rf"</span>).count())</span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>    .<span class="bu">filter</span>(pl.col(<span class="st">"n"</span>) <span class="op">==</span> <span class="dv">12</span>)</span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Subtract the annual risk-free return from the stock return and express the difference in percentage points. Subtracting one from the holding year aligns the return with the characteristics measured the preceding December. For example, the return earned in 1989 is joined to the stock’s 1988 characteristics.</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>next_year <span class="op">=</span> (</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    stock_returns.join(risk_free, on<span class="op">=</span><span class="st">"year"</span>, validate<span class="op">=</span><span class="st">"m:1"</span>)</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    .select(</span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>        <span class="st">"permno"</span>,</span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>        year<span class="op">=</span>pl.col(<span class="st">"year"</span>) <span class="op">-</span> <span class="dv">1</span>,</span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>        excess<span class="op">=</span><span class="dv">100</span> <span class="op">*</span> (pl.col(<span class="st">"gross_stock"</span>) <span class="op">-</span> pl.col(<span class="st">"gross_rf"</span>)),</span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>next_year <span class="op">=</span> (</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    stock_returns.join(risk_free, on<span class="op">=</span><span class="st">"year"</span>, validate<span class="op">=</span><span class="st">"m:1"</span>)</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    .select(</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>        <span class="st">"permno"</span>,</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>        year<span class="op">=</span>pl.col(<span class="st">"year"</span>) <span class="op">-</span> <span class="dv">1</span>,</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>        excess<span class="op">=</span><span class="dv">100</span> <span class="op">*</span> (pl.col(<span class="st">"gross_stock"</span>) <span class="op">-</span> pl.col(<span class="st">"gross_rf"</span>)),</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>The left joins keep each stock-year in the beta sample even when a characteristic or return is missing. <code>end_year</code> is both the last formation year and the last calendar year included in the return calculations. In the default sample, this leaves the 2012 formation rows with missing next-year returns. The final <code>.collect()</code> returns the assembled panel as a Polars <code>DataFrame</code>.</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="cf">return</span> (</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    betas.join(capitalizations, on<span class="op">=</span>keys, how<span class="op">=</span><span class="st">"left"</span>, validate<span class="op">=</span><span class="st">"1:1"</span>)</span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    .join(book_to_market, on<span class="op">=</span>keys, how<span class="op">=</span><span class="st">"left"</span>, validate<span class="op">=</span><span class="st">"1:1"</span>)</span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    .join(next_year, on<span class="op">=</span>keys, how<span class="op">=</span><span class="st">"left"</span>, validate<span class="op">=</span><span class="st">"1:1"</span>)</span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    .collect()</span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div id="a9978cbc" class="cell" data-execution_count="12">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>annual_panel <span class="op">=</span> build_annual_panel(annual_betas<span class="op">=</span>annual_beta)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="cf">return</span> (</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>    betas.join(capitalizations, on<span class="op">=</span>keys, how<span class="op">=</span><span class="st">"left"</span>, validate<span class="op">=</span><span class="st">"1:1"</span>)</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    .join(book_to_market, on<span class="op">=</span>keys, how<span class="op">=</span><span class="st">"left"</span>, validate<span class="op">=</span><span class="st">"1:1"</span>)</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    .join(next_year, on<span class="op">=</span>keys, how<span class="op">=</span><span class="st">"left"</span>, validate<span class="op">=</span><span class="st">"1:1"</span>)</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>    .collect()</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="a41b8f96" class="cell" data-execution_count="11">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>annual_panel <span class="op">=</span> build_annual_panel(annual_betas<span class="op">=</span>annual_beta)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Apply the same summary to each variable separately. This keeps stocks with a beta but no book-to-market ratio in the beta row. The observation count reflects the available data for each variable.</p>
-<div id="735cf330" class="cell" data-execution_count="13">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>variables <span class="op">=</span> [<span class="st">"Beta"</span>, <span class="st">"MktCap"</span>, <span class="st">"Size"</span>, <span class="st">"BM"</span>, <span class="st">"excess"</span>]</span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>all_stats <span class="op">=</span> (</span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    annual_panel.unpivot(on<span class="op">=</span>variables, index<span class="op">=</span><span class="st">"year"</span>, variable_name<span class="op">=</span><span class="st">"Measure"</span>)</span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    .group_by(<span class="st">"year"</span>, <span class="st">"Measure"</span>)</span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>    .agg(cross_section(<span class="st">"value"</span>))</span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>    .group_by(<span class="st">"Measure"</span>)</span>
-<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>    .agg(pl.exclude(<span class="st">"year"</span>, <span class="st">"Measure"</span>).mean())</span>
-<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="565a60a5" class="cell" data-execution_count="12">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>variables <span class="op">=</span> [<span class="st">"Beta"</span>, <span class="st">"MktCap"</span>, <span class="st">"Size"</span>, <span class="st">"BM"</span>, <span class="st">"excess"</span>]</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>all_stats <span class="op">=</span> (</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>    annual_panel.unpivot(on<span class="op">=</span>variables, index<span class="op">=</span><span class="st">"year"</span>, variable_name<span class="op">=</span><span class="st">"Measure"</span>)</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    .group_by(<span class="st">"year"</span>, <span class="st">"Measure"</span>)</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>    .agg(cross_section(<span class="st">"value"</span>))</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>    .group_by(<span class="st">"Measure"</span>)</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>    .agg(pl.exclude(<span class="st">"year"</span>, <span class="st">"Measure"</span>).mean())</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div class="cell" data-execution_count="14">
-<div id="tbl-bem2-characteristics" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="14">
+<div class="cell" data-execution_count="13">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>table_2_3 <span class="op">=</span> (</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>    pl.DataFrame({<span class="st">"Measure"</span>: variables}).join(all_stats, on<span class="op">=</span><span class="st">"Measure"</span>, maintain_order<span class="op">=</span><span class="st">"left"</span>)</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>    .with_columns(</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>        pl.col(<span class="st">"n"</span>).<span class="bu">round</span>().cast(pl.Int64),</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>        pl.col(<span class="st">"Measure"</span>).replace({</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>            <span class="st">"MktCap"</span>: <span class="st">"Market cap"</span>, <span class="st">"BM"</span>: <span class="st">"Book-to-market"</span>, <span class="st">"excess"</span>: <span class="st">"Next-year excess return (%)"</span>,</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>        }),</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>table_2_3.eap.show_table()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div id="tbl-bem2-characteristics" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="13">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bem2-characteristics-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table&nbsp;2.3: Average annual summary statistics for stock characteristics and next-year returns (BEM Table 2.3)
 </figcaption>
 <div aria-describedby="tbl-bem2-characteristics-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<div class="cell-output cell-output-display cell-output-markdown">
-<table class="cell caption-top table table-sm table-striped small">
-<colgroup>
-<col style="width: 7%">
-<col style="width: 7%">
-<col style="width: 7%">
-<col style="width: 7%">
-<col style="width: 7%">
-<col style="width: 7%">
-<col style="width: 7%">
-<col style="width: 7%">
-<col style="width: 7%">
-<col style="width: 7%">
-<col style="width: 7%">
-<col style="width: 7%">
-<col style="width: 7%">
-</colgroup>
+<div class="cell-output cell-output-display">
+<div id="chnsmtckfd" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>
+#chnsmtckfd table {
+          font-family: inherit;
+          -webkit-font-smoothing: antialiased;
+          -moz-osx-font-smoothing: grayscale;
+        }
+
+#chnsmtckfd thead, tbody, tfoot, tr, td, th { border-style: none; }
+ tr { background-color: transparent; }
+#chnsmtckfd p { margin: 0; padding: 0; }
+ #chnsmtckfd .gt_table { display: table; border-collapse: collapse; line-height: normal; margin-left: auto; margin-right: auto; color: #333333; font-size: 0.875rem; font-weight: normal; font-style: normal; background-color: #FFFFFF; width: 100%; border-top-style: solid; border-top-width: 2px; border-top-color: #A8A8A8; border-right-style: none; border-right-width: 2px; border-right-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #A8A8A8; border-left-style: none; border-left-width: 2px; border-left-color: #D3D3D3; }
+ #chnsmtckfd .gt_caption { padding-top: 4px; padding-bottom: 4px; }
+ #chnsmtckfd .gt_title { color: #333333; font-size: 125%; font-weight: initial; padding-top: 4px; padding-bottom: 4px; padding-left: 5px; padding-right: 5px; border-bottom-color: #FFFFFF; border-bottom-width: 0; }
+ #chnsmtckfd .gt_subtitle { color: #333333; font-size: 85%; font-weight: initial; padding-top: 3px; padding-bottom: 5px; padding-left: 5px; padding-right: 5px; border-top-color: #FFFFFF; border-top-width: 0; }
+ #chnsmtckfd .gt_heading { background-color: #FFFFFF; text-align: center; border-bottom-color: #FFFFFF; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; }
+ #chnsmtckfd .gt_bottom_border { border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; }
+ #chnsmtckfd .gt_col_headings { border-top-style: solid; border-top-width: 2px; border-top-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; }
+ #chnsmtckfd .gt_col_heading { color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: bold; text-transform: inherit; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: bottom; padding-top: 5px; padding-bottom: 5px; padding-left: 0.45rem; padding-right: 0.45rem; overflow-x: hidden; }
+ #chnsmtckfd .gt_column_spanner_outer { color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: bold; text-transform: inherit; padding-top: 0; padding-bottom: 0; padding-left: 4px; padding-right: 4px; }
+ #chnsmtckfd .gt_column_spanner_outer:first-child { padding-left: 0; }
+ #chnsmtckfd .gt_column_spanner_outer:last-child { padding-right: 0; }
+ #chnsmtckfd .gt_column_spanner { border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; vertical-align: bottom; padding-top: 5px; padding-bottom: 5px; overflow-x: hidden; display: inline-block; width: 100%; }
+ #chnsmtckfd .gt_spanner_row { border-bottom-style: hidden; }
+ #chnsmtckfd .gt_group_heading { padding-top: 8px; padding-bottom: 8px; padding-left: 5px; padding-right: 5px; color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: initial; text-transform: inherit; border-top-style: solid; border-top-width: 2px; border-top-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; text-align: left; }
+ #chnsmtckfd .gt_empty_group_heading { padding: 0.5px; color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: initial; border-top-style: solid; border-top-width: 2px; border-top-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; vertical-align: middle; }
+ #chnsmtckfd .gt_from_md> :first-child { margin-top: 0; }
+ #chnsmtckfd .gt_from_md> :last-child { margin-bottom: 0; }
+ #chnsmtckfd .gt_row { padding-top: 0.25rem; padding-bottom: 0.25rem; padding-left: 0.45rem; padding-right: 0.45rem; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; }
+ #chnsmtckfd .gt_stub { color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: initial; text-transform: inherit; border-right-style: solid; border-right-width: 2px; border-right-color: #D3D3D3; padding-left: 0.45rem; padding-right: 0.45rem; }
+ #chnsmtckfd .gt_indent_1 { text-indent: 5px; }
+ #chnsmtckfd .gt_indent_2 { text-indent: calc(5px * 2); }
+ #chnsmtckfd .gt_indent_3 { text-indent: calc(5px * 3); }
+ #chnsmtckfd .gt_indent_4 { text-indent: calc(5px * 4); }
+ #chnsmtckfd .gt_indent_5 { text-indent: calc(5px * 5); }
+ #chnsmtckfd .gt_stub_row_group { color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: initial; text-transform: inherit; border-right-style: solid; border-right-width: 2px; border-right-color: #D3D3D3; padding-left: 5px; padding-right: 5px; vertical-align: top; }
+ #chnsmtckfd .gt_row_group_first td { border-top-width: 2px; }
+ #chnsmtckfd .gt_row_group_first th { border-top-width: 2px; }
+ #chnsmtckfd .gt_striped { color: #333333; background-color: #F4F4F4; }
+ #chnsmtckfd .gt_table_body { border-top-style: solid; border-top-width: 2px; border-top-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; }
+ #chnsmtckfd .gt_summary_row { color: #333333; background-color: #FFFFFF; text-transform: inherit; padding-top: 8px; padding-bottom: 8px; padding-left: 5px; padding-right: 5px; }
+ #chnsmtckfd .gt_first_summary_row { border-top-style: solid; border-top-width: 2px; border-top-color: #D3D3D3; }
+ #chnsmtckfd .gt_last_summary_row_top { border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; }
+ #chnsmtckfd .gt_grand_summary_row { color: #333333; background-color: #FFFFFF; text-transform: inherit; padding-top: 8px; padding-bottom: 8px; padding-left: 5px; padding-right: 5px; }
+ #chnsmtckfd .gt_first_grand_summary_row_bottom { border-top-style: double; border-top-width: 6px; border-top-color: #D3D3D3; }
+ #chnsmtckfd .gt_last_grand_summary_row_top { border-bottom-style: double; border-bottom-width: 6px; border-bottom-color: #D3D3D3; }
+ #chnsmtckfd .gt_sourcenotes { color: #333333; background-color: #FFFFFF; border-bottom-style: none; border-bottom-width: 2px; border-bottom-color: #D3D3D3; border-left-style: none; border-left-width: 2px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 2px; border-right-color: #D3D3D3; }
+ #chnsmtckfd .gt_sourcenote { font-size: 90%; padding-top: 4px; padding-bottom: 4px; padding-left: 5px; padding-right: 5px; text-align: left; }
+ #chnsmtckfd .gt_left { text-align: left; }
+ #chnsmtckfd .gt_center { text-align: center; }
+ #chnsmtckfd .gt_right { text-align: right; font-variant-numeric: tabular-nums; }
+ #chnsmtckfd .gt_font_normal { font-weight: normal; }
+ #chnsmtckfd .gt_font_bold { font-weight: bold; }
+ #chnsmtckfd .gt_font_italic { font-style: italic; }
+ #chnsmtckfd .gt_super { font-size: 65%; }
+ #chnsmtckfd .gt_footnotes { color: font-color(#FFFFFF); background-color: #FFFFFF; border-bottom-style: none; border-bottom-width: 2px; border-bottom-color: #D3D3D3; border-left-style: none; border-left-width: 2px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 2px; border-right-color: #D3D3D3; }
+ #chnsmtckfd .gt_footnote { margin: 0px; font-size: 90%; padding-top: 4px; padding-bottom: 4px; padding-left: 5px; padding-right: 5px; }
+ #chnsmtckfd .gt_sourcenotes { color: #333333; background-color: #FFFFFF; border-bottom-style: none; border-bottom-width: 2px; border-bottom-color: #D3D3D3; border-left-style: none; border-left-width: 2px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 2px; border-right-color: #D3D3D3; }
+ #chnsmtckfd .gt_sourcenote { font-size: 90%; padding-top: 4px; padding-bottom: 4px; padding-left: 5px; padding-right: 5px; text-align: left; }
+ #chnsmtckfd .gt_footnote_marks { font-size: 75%; vertical-align: 0.4em; position: initial; }
+ #chnsmtckfd .gt_asterisk { font-size: 100%; vertical-align: 0; }
+ 
+</style>
+
+<table class="gt_table cell caption-top table table-sm table-striped small" data-quarto-bootstrap="false">
 <thead>
-<tr class="header">
-<th style="text-align: left;">Measure</th>
-<th style="text-align: right;">Mean</th>
-<th style="text-align: right;">SD</th>
-<th style="text-align: right;">Skew</th>
-<th style="text-align: right;">Kurt.</th>
-<th style="text-align: right;">Min</th>
-<th style="text-align: right;">5%</th>
-<th style="text-align: right;">25%</th>
-<th style="text-align: right;">Median</th>
-<th style="text-align: right;">75%</th>
-<th style="text-align: right;">95%</th>
-<th style="text-align: right;">Max</th>
-<th style="text-align: right;">n</th>
+<tr class="gt_col_headings header">
+<th id="Measure" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" scope="col">Measure</th>
+<th id="Mean" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Mean</th>
+<th id="SD" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">SD</th>
+<th id="Skew" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Skew</th>
+<th id="Kurt." class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Kurt.</th>
+<th id="Min" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Min</th>
+<th id="5" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">5%</th>
+<th id="25" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">25%</th>
+<th id="Median" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Median</th>
+<th id="75" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">75%</th>
+<th id="95" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">95%</th>
+<th id="Max" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Max</th>
+<th id="n" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">n</th>
 </tr>
 </thead>
-<tbody>
+<tbody class="gt_table_body">
 <tr class="odd">
-<td style="text-align: left;">Beta</td>
-<td style="text-align: right;">0.75</td>
-<td style="text-align: right;">0.62</td>
-<td style="text-align: right;">0.34</td>
-<td style="text-align: right;">1.78</td>
-<td style="text-align: right;">-2.78</td>
-<td style="text-align: right;">-0.13</td>
-<td style="text-align: right;">0.33</td>
-<td style="text-align: right;">0.71</td>
-<td style="text-align: right;">1.12</td>
-<td style="text-align: right;">1.85</td>
-<td style="text-align: right;">4.40</td>
-<td style="text-align: right;">5195</td>
+<td class="gt_row gt_left" headers="Measure">Beta</td>
+<td class="gt_row gt_right" headers="Mean">0.75</td>
+<td class="gt_row gt_right" headers="SD">0.62</td>
+<td class="gt_row gt_right" headers="Skew">0.34</td>
+<td class="gt_row gt_right" headers="Kurt.">1.78</td>
+<td class="gt_row gt_right" headers="Min">-2.78</td>
+<td class="gt_row gt_right" headers="5">-0.13</td>
+<td class="gt_row gt_right" headers="25">0.33</td>
+<td class="gt_row gt_right" headers="Median">0.71</td>
+<td class="gt_row gt_right" headers="75">1.12</td>
+<td class="gt_row gt_right" headers="95">1.85</td>
+<td class="gt_row gt_right" headers="Max">4.40</td>
+<td class="gt_row gt_right" headers="n">5195</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Market cap</td>
-<td style="text-align: right;">2031.97</td>
-<td style="text-align: right;">10238.24</td>
-<td style="text-align: right;">14.20</td>
-<td style="text-align: right;">282.92</td>
-<td style="text-align: right;">0.44</td>
-<td style="text-align: right;">8.95</td>
-<td style="text-align: right;">47.73</td>
-<td style="text-align: right;">188.44</td>
-<td style="text-align: right;">802.39</td>
-<td style="text-align: right;">7526.89</td>
-<td style="text-align: right;">286996.50</td>
-<td style="text-align: right;">5549</td>
+<td class="gt_row gt_left" headers="Measure">Market cap</td>
+<td class="gt_row gt_right" headers="Mean">2031.97</td>
+<td class="gt_row gt_right" headers="SD">10238.24</td>
+<td class="gt_row gt_right" headers="Skew">14.20</td>
+<td class="gt_row gt_right" headers="Kurt.">282.92</td>
+<td class="gt_row gt_right" headers="Min">0.44</td>
+<td class="gt_row gt_right" headers="5">8.95</td>
+<td class="gt_row gt_right" headers="25">47.73</td>
+<td class="gt_row gt_right" headers="Median">188.44</td>
+<td class="gt_row gt_right" headers="75">802.39</td>
+<td class="gt_row gt_right" headers="95">7526.89</td>
+<td class="gt_row gt_right" headers="Max">286996.50</td>
+<td class="gt_row gt_right" headers="n">5549</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">Size</td>
-<td style="text-align: right;">5.04</td>
-<td style="text-align: right;">2.07</td>
-<td style="text-align: right;">0.31</td>
-<td style="text-align: right;">-0.07</td>
-<td style="text-align: right;">-1.19</td>
-<td style="text-align: right;">1.89</td>
-<td style="text-align: right;">3.56</td>
-<td style="text-align: right;">4.91</td>
-<td style="text-align: right;">6.39</td>
-<td style="text-align: right;">8.70</td>
-<td style="text-align: right;">12.33</td>
-<td style="text-align: right;">5549</td>
+<td class="gt_row gt_left" headers="Measure">Size</td>
+<td class="gt_row gt_right" headers="Mean">5.04</td>
+<td class="gt_row gt_right" headers="SD">2.07</td>
+<td class="gt_row gt_right" headers="Skew">0.31</td>
+<td class="gt_row gt_right" headers="Kurt.">-0.07</td>
+<td class="gt_row gt_right" headers="Min">-1.19</td>
+<td class="gt_row gt_right" headers="5">1.89</td>
+<td class="gt_row gt_right" headers="25">3.56</td>
+<td class="gt_row gt_right" headers="Median">4.91</td>
+<td class="gt_row gt_right" headers="75">6.39</td>
+<td class="gt_row gt_right" headers="95">8.70</td>
+<td class="gt_row gt_right" headers="Max">12.33</td>
+<td class="gt_row gt_right" headers="n">5549</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Book-to-market</td>
-<td style="text-align: right;">0.74</td>
-<td style="text-align: right;">3.05</td>
-<td style="text-align: right;">-5.89</td>
-<td style="text-align: right;">1105.03</td>
-<td style="text-align: right;">-124.31</td>
-<td style="text-align: right;">0.05</td>
-<td style="text-align: right;">0.29</td>
-<td style="text-align: right;">0.57</td>
-<td style="text-align: right;">0.98</td>
-<td style="text-align: right;">2.22</td>
-<td style="text-align: right;">51.65</td>
-<td style="text-align: right;">4336</td>
+<td class="gt_row gt_left" headers="Measure">Book-to-market</td>
+<td class="gt_row gt_right" headers="Mean">0.74</td>
+<td class="gt_row gt_right" headers="SD">3.05</td>
+<td class="gt_row gt_right" headers="Skew">-5.89</td>
+<td class="gt_row gt_right" headers="Kurt.">1105.03</td>
+<td class="gt_row gt_right" headers="Min">-124.31</td>
+<td class="gt_row gt_right" headers="5">0.05</td>
+<td class="gt_row gt_right" headers="25">0.29</td>
+<td class="gt_row gt_right" headers="Median">0.57</td>
+<td class="gt_row gt_right" headers="75">0.98</td>
+<td class="gt_row gt_right" headers="95">2.22</td>
+<td class="gt_row gt_right" headers="Max">51.65</td>
+<td class="gt_row gt_right" headers="n">4336</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">Next-year excess return (%)</td>
-<td style="text-align: right;">12.40</td>
-<td style="text-align: right;">80.84</td>
-<td style="text-align: right;">5.95</td>
-<td style="text-align: right;">125.40</td>
-<td style="text-align: right;">-101.93</td>
-<td style="text-align: right;">-67.47</td>
-<td style="text-align: right;">-26.86</td>
-<td style="text-align: right;">0.90</td>
-<td style="text-align: right;">31.83</td>
-<td style="text-align: right;">124.58</td>
-<td style="text-align: right;">1918.16</td>
-<td style="text-align: right;">5379</td>
+<td class="gt_row gt_left" headers="Measure">Next-year excess return (%)</td>
+<td class="gt_row gt_right" headers="Mean">12.40</td>
+<td class="gt_row gt_right" headers="SD">80.84</td>
+<td class="gt_row gt_right" headers="Skew">5.95</td>
+<td class="gt_row gt_right" headers="Kurt.">125.40</td>
+<td class="gt_row gt_right" headers="Min">-101.93</td>
+<td class="gt_row gt_right" headers="5">-67.47</td>
+<td class="gt_row gt_right" headers="25">-26.86</td>
+<td class="gt_row gt_right" headers="Median">0.90</td>
+<td class="gt_row gt_right" headers="75">31.83</td>
+<td class="gt_row gt_right" headers="95">124.58</td>
+<td class="gt_row gt_right" headers="Max">1918.16</td>
+<td class="gt_row gt_right" headers="n">5379</td>
 </tr>
 </tbody>
 </table>
+
+
+</div>
 </div>
 </div>
 </figure>

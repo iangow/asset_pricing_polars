@@ -2,3 +2,30 @@
   max-width: 100%;
   height: auto;
 }
+
+.quarto-dark main :is(h1, h2, h3, h4, h5, h6) code {
+  color: inherit;
+  background-color: transparent;
+}
+
+main .gt_table {
+  --table-rule-color: color-mix(in srgb, var(--bs-body-color) 30%, var(--bs-body-bg));
+  color: var(--bs-body-color) !important;
+  background-color: var(--bs-body-bg) !important;
+  border-color: var(--table-rule-color) !important;
+  font-variant-numeric: tabular-nums;
+}
+
+main .gt_table :is(th, td, code, .gt_sourcenotes) {
+  color: inherit !important;
+  background-color: transparent !important;
+  box-shadow: none;
+}
+
+main .gt_table :is(th, td, thead, tbody, tfoot, .gt_col_headings, .gt_column_spanner) {
+  border-color: var(--table-rule-color) !important;
+}
+
+main .gt_table .gt_row {
+  white-space: nowrap;
+}

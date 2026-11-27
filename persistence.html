@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>4&nbsp; Persistence Analysis – Empirical Asset Pricing with Polars</title>
+<title>4&nbsp; Persistence Analysis – Empirical Asset Pricing: A Python Reader’s Companion</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -80,7 +80,7 @@ div.csl-indent {
 }</style>
 
 
-<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js" integrity="sha384-ZvpUoO/+PpLXR1lu4jmpXWu80pZlYUAfxl5NsBMWOEPSjUn/6Z/hRTt8+pR6L4N2" crossorigin="anonymous"></script><script src="site_libs/quarto-nav/quarto-nav.js"></script>
 <script src="site_libs/quarto-nav/headroom.min.js"></script>
 <script src="site_libs/clipboard/clipboard.min.js"></script>
 <script src="site_libs/quarto-search/autocomplete.umd.js"></script>
@@ -130,6 +130,9 @@ div.csl-indent {
     "search-label": "Search"
   }
 }</script>
+<script src="https://cdn.jsdelivr.net/npm/requirejs@2.3.6/require.min.js" integrity="sha384-c9c+LnTbwQ3aujuU7ULEPVvgLs+Fn6fJUvIGTsuu1ZcCf11fiEubah0ttpca4ntM sha384-6V1/AdqZRWk1KAlWbKBlGhN7VG4iE/yAZcO6NZPMF8od0vukrvr0tg4qY6NSrItx" crossorigin="anonymous"></script>
+
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
 
   <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
   <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
@@ -359,7 +362,7 @@ window.Quarto = {
   <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
     <div class="pt-lg-2 mt-2 text-left sidebar-header">
     <div class="sidebar-title mb-0 py-0">
-      <a href="./">Empirical Asset Pricing with Polars</a> 
+      <a href="./">Empirical Asset Pricing: A Python Reader’s Companion</a> 
         <div class="sidebar-tools-main">
   <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
 </div>
@@ -547,17 +550,21 @@ window.Quarto = {
 </header>
 
 
-<p>In Chapter 4, <span class="citation" data-cites="bali2016">Bali et al. (<a href="references.html#ref-bali2016" role="doc-biblioref">2016</a>)</span> measure persistence by correlating a stock characteristic with its own future value across stocks. We use the December 1988–2012 panel from <a href="summary-statistics.html" class="quarto-xref"><span>Chapter 2</span></a>, including its signed book-to-market ratio.</p>
-<style>
-.cell-output-markdown:has(> table) {
-  max-width: 100%;
-  overflow-x: auto;
-}
-.cell-output-markdown > table {
-  white-space: nowrap;
-}
-</style>
-<div id="68255fd1" class="cell" data-execution_count="2">
+<div class="callout callout-style-default callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Warning</span>Early draft
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>This chapter is an early draft and still needs a thorough review. The APIs used in the examples may change as I continue working on the book.</p>
+</div>
+</div>
+<p>In Chapter 4, <span class="citation" data-cites="bali2016">Bali et al. (<a href="references.html#ref-bali2016" role="doc-biblioref">2016</a>)</span> measure persistence by correlating a stock characteristic with its own future value across stocks. I use the December 1988–2012 panel from <a href="summary-statistics.html" class="quarto-xref"><span>Chapter 2</span></a>, including its signed book-to-market ratio.</p>
+<div id="81496a0e" class="cell" data-execution_count="1">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> polars <span class="im">as</span> pl</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> eap_pl <span class="im">import</span> build_annual_panel</span>
@@ -577,7 +584,7 @@ window.Quarto = {
                    \sqrt{\sum_{i\in\mathcal S_{t,\tau}}(X_{i,t+\tau}-\bar X_{t+\tau})^2}}.
 \tag{4.1}\]</span></span></p>
 <p>Shift the future year’s join key back by the lag so that each stock’s observation in <span class="math inline">\(t+\tau\)</span> joins its observation in <span class="math inline">\(t\)</span>. Use the same winsorized Pearson correlation as in <a href="correlation.html" class="quarto-xref"><span>Chapter 3</span></a>.</p>
-<div id="fdd2c34a" class="cell" data-execution_count="3">
+<div id="e5a313ad" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> eap_pl <span class="im">import</span> winsorized_corr</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>measures <span class="op">=</span> [<span class="st">"Beta"</span>, <span class="st">"Size"</span>, <span class="st">"BM"</span>]</span>
@@ -598,243 +605,322 @@ window.Quarto = {
 <span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>annual <span class="op">=</span> pl.concat([annual_persistence(lag) <span class="cf">for</span> lag <span class="kw">in</span> lags]).sort(<span class="st">"Lag"</span>, <span class="st">"year"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div class="cell" data-execution_count="4">
-<div id="tbl-bem4-annual" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="4">
+<div class="cell" data-execution_count="3">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>beta_by_year <span class="op">=</span> (</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    annual.pivot(on<span class="op">=</span><span class="st">"Lag"</span>, index<span class="op">=</span><span class="st">"year"</span>, values<span class="op">=</span><span class="st">"Beta"</span>, sort_columns<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    .sort(<span class="st">"year"</span>)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    .rename({<span class="st">"year"</span>: <span class="st">"Year"</span>, <span class="op">**</span>{<span class="bu">str</span>(lag): <span class="ss">f"Lag </span><span class="sc">{</span>lag<span class="sc">}</span><span class="ss">"</span> <span class="cf">for</span> lag <span class="kw">in</span> lags}})</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>beta_by_year.eap.show_table()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div id="tbl-bem4-annual" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="3">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bem4-annual-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table&nbsp;4.1: Annual cross-sectional persistence of beta (BEM Table 4.1)
 </figcaption>
 <div aria-describedby="tbl-bem4-annual-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<div class="cell-output cell-output-display cell-output-markdown">
-<table class="cell caption-top table table-sm table-striped small">
+<div class="cell-output cell-output-display">
+<div id="bleoqwecry" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>
+#bleoqwecry table {
+          font-family: inherit;
+          -webkit-font-smoothing: antialiased;
+          -moz-osx-font-smoothing: grayscale;
+        }
+
+#bleoqwecry thead, tbody, tfoot, tr, td, th { border-style: none; }
+ tr { background-color: transparent; }
+#bleoqwecry p { margin: 0; padding: 0; }
+ #bleoqwecry .gt_table { display: table; border-collapse: collapse; line-height: normal; margin-left: auto; margin-right: auto; color: #333333; font-size: 0.875rem; font-weight: normal; font-style: normal; background-color: #FFFFFF; width: 100%; border-top-style: solid; border-top-width: 2px; border-top-color: #A8A8A8; border-right-style: none; border-right-width: 2px; border-right-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #A8A8A8; border-left-style: none; border-left-width: 2px; border-left-color: #D3D3D3; }
+ #bleoqwecry .gt_caption { padding-top: 4px; padding-bottom: 4px; }
+ #bleoqwecry .gt_title { color: #333333; font-size: 125%; font-weight: initial; padding-top: 4px; padding-bottom: 4px; padding-left: 5px; padding-right: 5px; border-bottom-color: #FFFFFF; border-bottom-width: 0; }
+ #bleoqwecry .gt_subtitle { color: #333333; font-size: 85%; font-weight: initial; padding-top: 3px; padding-bottom: 5px; padding-left: 5px; padding-right: 5px; border-top-color: #FFFFFF; border-top-width: 0; }
+ #bleoqwecry .gt_heading { background-color: #FFFFFF; text-align: center; border-bottom-color: #FFFFFF; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; }
+ #bleoqwecry .gt_bottom_border { border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; }
+ #bleoqwecry .gt_col_headings { border-top-style: solid; border-top-width: 2px; border-top-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; }
+ #bleoqwecry .gt_col_heading { color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: bold; text-transform: inherit; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: bottom; padding-top: 5px; padding-bottom: 5px; padding-left: 0.45rem; padding-right: 0.45rem; overflow-x: hidden; }
+ #bleoqwecry .gt_column_spanner_outer { color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: bold; text-transform: inherit; padding-top: 0; padding-bottom: 0; padding-left: 4px; padding-right: 4px; }
+ #bleoqwecry .gt_column_spanner_outer:first-child { padding-left: 0; }
+ #bleoqwecry .gt_column_spanner_outer:last-child { padding-right: 0; }
+ #bleoqwecry .gt_column_spanner { border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; vertical-align: bottom; padding-top: 5px; padding-bottom: 5px; overflow-x: hidden; display: inline-block; width: 100%; }
+ #bleoqwecry .gt_spanner_row { border-bottom-style: hidden; }
+ #bleoqwecry .gt_group_heading { padding-top: 8px; padding-bottom: 8px; padding-left: 5px; padding-right: 5px; color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: initial; text-transform: inherit; border-top-style: solid; border-top-width: 2px; border-top-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; text-align: left; }
+ #bleoqwecry .gt_empty_group_heading { padding: 0.5px; color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: initial; border-top-style: solid; border-top-width: 2px; border-top-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; vertical-align: middle; }
+ #bleoqwecry .gt_from_md> :first-child { margin-top: 0; }
+ #bleoqwecry .gt_from_md> :last-child { margin-bottom: 0; }
+ #bleoqwecry .gt_row { padding-top: 0.25rem; padding-bottom: 0.25rem; padding-left: 0.45rem; padding-right: 0.45rem; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; }
+ #bleoqwecry .gt_stub { color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: initial; text-transform: inherit; border-right-style: solid; border-right-width: 2px; border-right-color: #D3D3D3; padding-left: 0.45rem; padding-right: 0.45rem; }
+ #bleoqwecry .gt_indent_1 { text-indent: 5px; }
+ #bleoqwecry .gt_indent_2 { text-indent: calc(5px * 2); }
+ #bleoqwecry .gt_indent_3 { text-indent: calc(5px * 3); }
+ #bleoqwecry .gt_indent_4 { text-indent: calc(5px * 4); }
+ #bleoqwecry .gt_indent_5 { text-indent: calc(5px * 5); }
+ #bleoqwecry .gt_stub_row_group { color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: initial; text-transform: inherit; border-right-style: solid; border-right-width: 2px; border-right-color: #D3D3D3; padding-left: 5px; padding-right: 5px; vertical-align: top; }
+ #bleoqwecry .gt_row_group_first td { border-top-width: 2px; }
+ #bleoqwecry .gt_row_group_first th { border-top-width: 2px; }
+ #bleoqwecry .gt_striped { color: #333333; background-color: #F4F4F4; }
+ #bleoqwecry .gt_table_body { border-top-style: solid; border-top-width: 2px; border-top-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; }
+ #bleoqwecry .gt_summary_row { color: #333333; background-color: #FFFFFF; text-transform: inherit; padding-top: 8px; padding-bottom: 8px; padding-left: 5px; padding-right: 5px; }
+ #bleoqwecry .gt_first_summary_row { border-top-style: solid; border-top-width: 2px; border-top-color: #D3D3D3; }
+ #bleoqwecry .gt_last_summary_row_top { border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; }
+ #bleoqwecry .gt_grand_summary_row { color: #333333; background-color: #FFFFFF; text-transform: inherit; padding-top: 8px; padding-bottom: 8px; padding-left: 5px; padding-right: 5px; }
+ #bleoqwecry .gt_first_grand_summary_row_bottom { border-top-style: double; border-top-width: 6px; border-top-color: #D3D3D3; }
+ #bleoqwecry .gt_last_grand_summary_row_top { border-bottom-style: double; border-bottom-width: 6px; border-bottom-color: #D3D3D3; }
+ #bleoqwecry .gt_sourcenotes { color: #333333; background-color: #FFFFFF; border-bottom-style: none; border-bottom-width: 2px; border-bottom-color: #D3D3D3; border-left-style: none; border-left-width: 2px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 2px; border-right-color: #D3D3D3; }
+ #bleoqwecry .gt_sourcenote { font-size: 90%; padding-top: 4px; padding-bottom: 4px; padding-left: 5px; padding-right: 5px; text-align: left; }
+ #bleoqwecry .gt_left { text-align: left; }
+ #bleoqwecry .gt_center { text-align: center; }
+ #bleoqwecry .gt_right { text-align: right; font-variant-numeric: tabular-nums; }
+ #bleoqwecry .gt_font_normal { font-weight: normal; }
+ #bleoqwecry .gt_font_bold { font-weight: bold; }
+ #bleoqwecry .gt_font_italic { font-style: italic; }
+ #bleoqwecry .gt_super { font-size: 65%; }
+ #bleoqwecry .gt_footnotes { color: font-color(#FFFFFF); background-color: #FFFFFF; border-bottom-style: none; border-bottom-width: 2px; border-bottom-color: #D3D3D3; border-left-style: none; border-left-width: 2px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 2px; border-right-color: #D3D3D3; }
+ #bleoqwecry .gt_footnote { margin: 0px; font-size: 90%; padding-top: 4px; padding-bottom: 4px; padding-left: 5px; padding-right: 5px; }
+ #bleoqwecry .gt_sourcenotes { color: #333333; background-color: #FFFFFF; border-bottom-style: none; border-bottom-width: 2px; border-bottom-color: #D3D3D3; border-left-style: none; border-left-width: 2px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 2px; border-right-color: #D3D3D3; }
+ #bleoqwecry .gt_sourcenote { font-size: 90%; padding-top: 4px; padding-bottom: 4px; padding-left: 5px; padding-right: 5px; text-align: left; }
+ #bleoqwecry .gt_footnote_marks { font-size: 75%; vertical-align: 0.4em; position: initial; }
+ #bleoqwecry .gt_asterisk { font-size: 100%; vertical-align: 0; }
+ 
+</style>
+
+<table class="gt_table cell caption-top table table-sm table-striped small" data-quarto-bootstrap="false">
 <thead>
-<tr class="header">
-<th style="text-align: left;">Year</th>
-<th style="text-align: right;">Lag 1</th>
-<th style="text-align: right;">Lag 2</th>
-<th style="text-align: right;">Lag 3</th>
-<th style="text-align: right;">Lag 4</th>
-<th style="text-align: right;">Lag 5</th>
+<tr class="gt_col_headings header">
+<th id="Year" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" scope="col">Year</th>
+<th id="Lag-1" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Lag 1</th>
+<th id="Lag-2" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Lag 2</th>
+<th id="Lag-3" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Lag 3</th>
+<th id="Lag-4" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Lag 4</th>
+<th id="Lag-5" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Lag 5</th>
 </tr>
 </thead>
-<tbody>
+<tbody class="gt_table_body">
 <tr class="odd">
-<td style="text-align: left;">1988</td>
-<td style="text-align: right;">0.50</td>
-<td style="text-align: right;">0.48</td>
-<td style="text-align: right;">0.47</td>
-<td style="text-align: right;">0.39</td>
-<td style="text-align: right;">0.34</td>
+<td class="gt_row gt_left" headers="Year">1988</td>
+<td class="gt_row gt_right" headers="Lag-1">0.50</td>
+<td class="gt_row gt_right" headers="Lag-2">0.48</td>
+<td class="gt_row gt_right" headers="Lag-3">0.47</td>
+<td class="gt_row gt_right" headers="Lag-4">0.39</td>
+<td class="gt_row gt_right" headers="Lag-5">0.34</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">1989</td>
-<td style="text-align: right;">0.52</td>
-<td style="text-align: right;">0.45</td>
-<td style="text-align: right;">0.38</td>
-<td style="text-align: right;">0.35</td>
-<td style="text-align: right;">0.36</td>
+<td class="gt_row gt_left" headers="Year">1989</td>
+<td class="gt_row gt_right" headers="Lag-1">0.52</td>
+<td class="gt_row gt_right" headers="Lag-2">0.45</td>
+<td class="gt_row gt_right" headers="Lag-3">0.38</td>
+<td class="gt_row gt_right" headers="Lag-4">0.35</td>
+<td class="gt_row gt_right" headers="Lag-5">0.36</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">1990</td>
-<td style="text-align: right;">0.55</td>
-<td style="text-align: right;">0.45</td>
-<td style="text-align: right;">0.42</td>
-<td style="text-align: right;">0.40</td>
-<td style="text-align: right;">0.37</td>
+<td class="gt_row gt_left" headers="Year">1990</td>
+<td class="gt_row gt_right" headers="Lag-1">0.55</td>
+<td class="gt_row gt_right" headers="Lag-2">0.45</td>
+<td class="gt_row gt_right" headers="Lag-3">0.42</td>
+<td class="gt_row gt_right" headers="Lag-4">0.40</td>
+<td class="gt_row gt_right" headers="Lag-5">0.37</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">1991</td>
-<td style="text-align: right;">0.46</td>
-<td style="text-align: right;">0.43</td>
-<td style="text-align: right;">0.41</td>
-<td style="text-align: right;">0.37</td>
-<td style="text-align: right;">0.40</td>
+<td class="gt_row gt_left" headers="Year">1991</td>
+<td class="gt_row gt_right" headers="Lag-1">0.46</td>
+<td class="gt_row gt_right" headers="Lag-2">0.43</td>
+<td class="gt_row gt_right" headers="Lag-3">0.41</td>
+<td class="gt_row gt_right" headers="Lag-4">0.37</td>
+<td class="gt_row gt_right" headers="Lag-5">0.40</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">1992</td>
-<td style="text-align: right;">0.39</td>
-<td style="text-align: right;">0.37</td>
-<td style="text-align: right;">0.36</td>
-<td style="text-align: right;">0.41</td>
-<td style="text-align: right;">0.38</td>
+<td class="gt_row gt_left" headers="Year">1992</td>
+<td class="gt_row gt_right" headers="Lag-1">0.39</td>
+<td class="gt_row gt_right" headers="Lag-2">0.37</td>
+<td class="gt_row gt_right" headers="Lag-3">0.36</td>
+<td class="gt_row gt_right" headers="Lag-4">0.41</td>
+<td class="gt_row gt_right" headers="Lag-5">0.38</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">1993</td>
-<td style="text-align: right;">0.40</td>
-<td style="text-align: right;">0.33</td>
-<td style="text-align: right;">0.38</td>
-<td style="text-align: right;">0.39</td>
-<td style="text-align: right;">0.39</td>
+<td class="gt_row gt_left" headers="Year">1993</td>
+<td class="gt_row gt_right" headers="Lag-1">0.40</td>
+<td class="gt_row gt_right" headers="Lag-2">0.33</td>
+<td class="gt_row gt_right" headers="Lag-3">0.38</td>
+<td class="gt_row gt_right" headers="Lag-4">0.39</td>
+<td class="gt_row gt_right" headers="Lag-5">0.39</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">1994</td>
-<td style="text-align: right;">0.38</td>
-<td style="text-align: right;">0.39</td>
-<td style="text-align: right;">0.38</td>
-<td style="text-align: right;">0.37</td>
-<td style="text-align: right;">0.33</td>
+<td class="gt_row gt_left" headers="Year">1994</td>
+<td class="gt_row gt_right" headers="Lag-1">0.38</td>
+<td class="gt_row gt_right" headers="Lag-2">0.39</td>
+<td class="gt_row gt_right" headers="Lag-3">0.38</td>
+<td class="gt_row gt_right" headers="Lag-4">0.37</td>
+<td class="gt_row gt_right" headers="Lag-5">0.33</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">1995</td>
-<td style="text-align: right;">0.46</td>
-<td style="text-align: right;">0.44</td>
-<td style="text-align: right;">0.38</td>
-<td style="text-align: right;">0.40</td>
-<td style="text-align: right;">0.48</td>
+<td class="gt_row gt_left" headers="Year">1995</td>
+<td class="gt_row gt_right" headers="Lag-1">0.46</td>
+<td class="gt_row gt_right" headers="Lag-2">0.44</td>
+<td class="gt_row gt_right" headers="Lag-3">0.38</td>
+<td class="gt_row gt_right" headers="Lag-4">0.40</td>
+<td class="gt_row gt_right" headers="Lag-5">0.48</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">1996</td>
-<td style="text-align: right;">0.53</td>
-<td style="text-align: right;">0.48</td>
-<td style="text-align: right;">0.43</td>
-<td style="text-align: right;">0.52</td>
-<td style="text-align: right;">0.53</td>
+<td class="gt_row gt_left" headers="Year">1996</td>
+<td class="gt_row gt_right" headers="Lag-1">0.53</td>
+<td class="gt_row gt_right" headers="Lag-2">0.48</td>
+<td class="gt_row gt_right" headers="Lag-3">0.43</td>
+<td class="gt_row gt_right" headers="Lag-4">0.52</td>
+<td class="gt_row gt_right" headers="Lag-5">0.53</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">1997</td>
-<td style="text-align: right;">0.55</td>
-<td style="text-align: right;">0.46</td>
-<td style="text-align: right;">0.48</td>
-<td style="text-align: right;">0.51</td>
-<td style="text-align: right;">0.53</td>
+<td class="gt_row gt_left" headers="Year">1997</td>
+<td class="gt_row gt_right" headers="Lag-1">0.55</td>
+<td class="gt_row gt_right" headers="Lag-2">0.46</td>
+<td class="gt_row gt_right" headers="Lag-3">0.48</td>
+<td class="gt_row gt_right" headers="Lag-4">0.51</td>
+<td class="gt_row gt_right" headers="Lag-5">0.53</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">1998</td>
-<td style="text-align: right;">0.51</td>
-<td style="text-align: right;">0.50</td>
-<td style="text-align: right;">0.53</td>
-<td style="text-align: right;">0.53</td>
-<td style="text-align: right;">0.50</td>
+<td class="gt_row gt_left" headers="Year">1998</td>
+<td class="gt_row gt_right" headers="Lag-1">0.51</td>
+<td class="gt_row gt_right" headers="Lag-2">0.50</td>
+<td class="gt_row gt_right" headers="Lag-3">0.53</td>
+<td class="gt_row gt_right" headers="Lag-4">0.53</td>
+<td class="gt_row gt_right" headers="Lag-5">0.50</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">1999</td>
-<td style="text-align: right;">0.57</td>
-<td style="text-align: right;">0.59</td>
-<td style="text-align: right;">0.53</td>
-<td style="text-align: right;">0.52</td>
-<td style="text-align: right;">0.40</td>
+<td class="gt_row gt_left" headers="Year">1999</td>
+<td class="gt_row gt_right" headers="Lag-1">0.57</td>
+<td class="gt_row gt_right" headers="Lag-2">0.59</td>
+<td class="gt_row gt_right" headers="Lag-3">0.53</td>
+<td class="gt_row gt_right" headers="Lag-4">0.52</td>
+<td class="gt_row gt_right" headers="Lag-5">0.40</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">2000</td>
-<td style="text-align: right;">0.79</td>
-<td style="text-align: right;">0.58</td>
-<td style="text-align: right;">0.56</td>
-<td style="text-align: right;">0.58</td>
-<td style="text-align: right;">0.25</td>
+<td class="gt_row gt_left" headers="Year">2000</td>
+<td class="gt_row gt_right" headers="Lag-1">0.79</td>
+<td class="gt_row gt_right" headers="Lag-2">0.58</td>
+<td class="gt_row gt_right" headers="Lag-3">0.56</td>
+<td class="gt_row gt_right" headers="Lag-4">0.58</td>
+<td class="gt_row gt_right" headers="Lag-5">0.25</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">2001</td>
-<td style="text-align: right;">0.70</td>
-<td style="text-align: right;">0.66</td>
-<td style="text-align: right;">0.62</td>
-<td style="text-align: right;">0.35</td>
-<td style="text-align: right;">0.41</td>
+<td class="gt_row gt_left" headers="Year">2001</td>
+<td class="gt_row gt_right" headers="Lag-1">0.70</td>
+<td class="gt_row gt_right" headers="Lag-2">0.66</td>
+<td class="gt_row gt_right" headers="Lag-3">0.62</td>
+<td class="gt_row gt_right" headers="Lag-4">0.35</td>
+<td class="gt_row gt_right" headers="Lag-5">0.41</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">2002</td>
-<td style="text-align: right;">0.79</td>
-<td style="text-align: right;">0.64</td>
-<td style="text-align: right;">0.49</td>
-<td style="text-align: right;">0.50</td>
-<td style="text-align: right;">0.38</td>
+<td class="gt_row gt_left" headers="Year">2002</td>
+<td class="gt_row gt_right" headers="Lag-1">0.79</td>
+<td class="gt_row gt_right" headers="Lag-2">0.64</td>
+<td class="gt_row gt_right" headers="Lag-3">0.49</td>
+<td class="gt_row gt_right" headers="Lag-4">0.50</td>
+<td class="gt_row gt_right" headers="Lag-5">0.38</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">2003</td>
-<td style="text-align: right;">0.70</td>
-<td style="text-align: right;">0.54</td>
-<td style="text-align: right;">0.51</td>
-<td style="text-align: right;">0.42</td>
-<td style="text-align: right;">0.39</td>
+<td class="gt_row gt_left" headers="Year">2003</td>
+<td class="gt_row gt_right" headers="Lag-1">0.70</td>
+<td class="gt_row gt_right" headers="Lag-2">0.54</td>
+<td class="gt_row gt_right" headers="Lag-3">0.51</td>
+<td class="gt_row gt_right" headers="Lag-4">0.42</td>
+<td class="gt_row gt_right" headers="Lag-5">0.39</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">2004</td>
-<td style="text-align: right;">0.62</td>
-<td style="text-align: right;">0.60</td>
-<td style="text-align: right;">0.45</td>
-<td style="text-align: right;">0.38</td>
-<td style="text-align: right;">0.34</td>
+<td class="gt_row gt_left" headers="Year">2004</td>
+<td class="gt_row gt_right" headers="Lag-1">0.62</td>
+<td class="gt_row gt_right" headers="Lag-2">0.60</td>
+<td class="gt_row gt_right" headers="Lag-3">0.45</td>
+<td class="gt_row gt_right" headers="Lag-4">0.38</td>
+<td class="gt_row gt_right" headers="Lag-5">0.34</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">2005</td>
-<td style="text-align: right;">0.73</td>
-<td style="text-align: right;">0.60</td>
-<td style="text-align: right;">0.55</td>
-<td style="text-align: right;">0.48</td>
-<td style="text-align: right;">0.53</td>
+<td class="gt_row gt_left" headers="Year">2005</td>
+<td class="gt_row gt_right" headers="Lag-1">0.73</td>
+<td class="gt_row gt_right" headers="Lag-2">0.60</td>
+<td class="gt_row gt_right" headers="Lag-3">0.55</td>
+<td class="gt_row gt_right" headers="Lag-4">0.48</td>
+<td class="gt_row gt_right" headers="Lag-5">0.53</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">2006</td>
-<td style="text-align: right;">0.67</td>
-<td style="text-align: right;">0.56</td>
-<td style="text-align: right;">0.50</td>
-<td style="text-align: right;">0.56</td>
-<td style="text-align: right;">0.56</td>
+<td class="gt_row gt_left" headers="Year">2006</td>
+<td class="gt_row gt_right" headers="Lag-1">0.67</td>
+<td class="gt_row gt_right" headers="Lag-2">0.56</td>
+<td class="gt_row gt_right" headers="Lag-3">0.50</td>
+<td class="gt_row gt_right" headers="Lag-4">0.56</td>
+<td class="gt_row gt_right" headers="Lag-5">0.56</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">2007</td>
-<td style="text-align: right;">0.69</td>
-<td style="text-align: right;">0.60</td>
-<td style="text-align: right;">0.60</td>
-<td style="text-align: right;">0.59</td>
-<td style="text-align: right;">0.51</td>
+<td class="gt_row gt_left" headers="Year">2007</td>
+<td class="gt_row gt_right" headers="Lag-1">0.69</td>
+<td class="gt_row gt_right" headers="Lag-2">0.60</td>
+<td class="gt_row gt_right" headers="Lag-3">0.60</td>
+<td class="gt_row gt_right" headers="Lag-4">0.59</td>
+<td class="gt_row gt_right" headers="Lag-5">0.51</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">2008</td>
-<td style="text-align: right;">0.80</td>
-<td style="text-align: right;">0.69</td>
-<td style="text-align: right;">0.64</td>
-<td style="text-align: right;">0.60</td>
-<td style="text-align: right;"></td>
+<td class="gt_row gt_left" headers="Year">2008</td>
+<td class="gt_row gt_right" headers="Lag-1">0.80</td>
+<td class="gt_row gt_right" headers="Lag-2">0.69</td>
+<td class="gt_row gt_right" headers="Lag-3">0.64</td>
+<td class="gt_row gt_right" headers="Lag-4">0.60</td>
+<td class="gt_row gt_right" headers="Lag-5"></td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">2009</td>
-<td style="text-align: right;">0.73</td>
-<td style="text-align: right;">0.65</td>
-<td style="text-align: right;">0.60</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;"></td>
+<td class="gt_row gt_left" headers="Year">2009</td>
+<td class="gt_row gt_right" headers="Lag-1">0.73</td>
+<td class="gt_row gt_right" headers="Lag-2">0.65</td>
+<td class="gt_row gt_right" headers="Lag-3">0.60</td>
+<td class="gt_row gt_right" headers="Lag-4"></td>
+<td class="gt_row gt_right" headers="Lag-5"></td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">2010</td>
-<td style="text-align: right;">0.76</td>
-<td style="text-align: right;">0.70</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;"></td>
+<td class="gt_row gt_left" headers="Year">2010</td>
+<td class="gt_row gt_right" headers="Lag-1">0.76</td>
+<td class="gt_row gt_right" headers="Lag-2">0.70</td>
+<td class="gt_row gt_right" headers="Lag-3"></td>
+<td class="gt_row gt_right" headers="Lag-4"></td>
+<td class="gt_row gt_right" headers="Lag-5"></td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">2011</td>
-<td style="text-align: right;">0.79</td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;"></td>
-<td style="text-align: right;"></td>
+<td class="gt_row gt_left" headers="Year">2011</td>
+<td class="gt_row gt_right" headers="Lag-1">0.79</td>
+<td class="gt_row gt_right" headers="Lag-2"></td>
+<td class="gt_row gt_right" headers="Lag-3"></td>
+<td class="gt_row gt_right" headers="Lag-4"></td>
+<td class="gt_row gt_right" headers="Lag-5"></td>
 </tr>
 </tbody>
 </table>
+
+
+</div>
 </div>
 </div>
 </figure>
 </div>
 </div>
 <p>The lags are in years. The blank cells in <a href="#tbl-bem4-annual" class="quarto-xref">Table&nbsp;<span>4.1</span></a> require a comparison year beyond 2012. The companion plot in <a href="#fig-bem4-annual" class="quarto-xref">Figure&nbsp;<span>4.1</span></a> shows how much beta persistence varies across formation years, even at the same lag.</p>
-<div id="cell-fig-bem4-annual" class="cell" data-execution_count="5">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> plotnine_polars <span class="im">import</span> aes</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>(</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    annual.with_columns(lag<span class="op">=</span>pl.col(<span class="st">"Lag"</span>).cast(pl.String))</span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    .ggplot(aes(x<span class="op">=</span><span class="st">"year"</span>, y<span class="op">=</span><span class="st">"Beta"</span>, color<span class="op">=</span><span class="st">"lag"</span>, linetype<span class="op">=</span><span class="st">"lag"</span>))</span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    .geom_line()</span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    .scale_x_continuous(breaks<span class="op">=</span><span class="bu">range</span>(<span class="dv">1988</span>, <span class="dv">2013</span>, <span class="dv">4</span>))</span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    .scale_y_continuous(expand<span class="op">=</span>(<span class="dv">0</span>, <span class="dv">0</span>))</span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    .coord_cartesian(ylim<span class="op">=</span>(<span class="dv">0</span>, <span class="dv">1</span>))</span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    .scale_color_brewer(<span class="bu">type</span><span class="op">=</span><span class="st">"qual"</span>, palette<span class="op">=</span><span class="st">"Dark2"</span>)</span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    .scale_linetype_manual(values<span class="op">=</span>[<span class="st">"solid"</span>, <span class="st">"dashed"</span>, <span class="st">"dashdot"</span>, <span class="st">"dotted"</span>, (<span class="dv">0</span>, (<span class="dv">5</span>, <span class="dv">2</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">1</span>, <span class="dv">2</span>))])</span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>    .labs(x<span class="op">=</span><span class="st">"Formation year"</span>, y<span class="op">=</span><span class="st">"Pearson correlation"</span>, color<span class="op">=</span><span class="st">"Lag (years)"</span>, linetype<span class="op">=</span><span class="st">"Lag (years)"</span>)</span>
-<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    .theme_minimal()</span>
-<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>    .add_theme(figure_size<span class="op">=</span>(<span class="dv">8</span>, <span class="dv">4</span>), legend_position<span class="op">=</span><span class="st">"top"</span>)</span>
-<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-display" data-execution_count="5">
+<div id="cell-fig-bem4-annual" class="cell" data-execution_count="4">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> plotnine_polars <span class="im">import</span> aes</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>(</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    annual.with_columns(lag<span class="op">=</span>pl.col(<span class="st">"Lag"</span>).cast(pl.String))</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    .ggplot(aes(x<span class="op">=</span><span class="st">"year"</span>, y<span class="op">=</span><span class="st">"Beta"</span>, color<span class="op">=</span><span class="st">"lag"</span>, linetype<span class="op">=</span><span class="st">"lag"</span>))</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    .geom_line()</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    .scale_x_continuous(breaks<span class="op">=</span><span class="bu">range</span>(<span class="dv">1988</span>, <span class="dv">2013</span>, <span class="dv">4</span>))</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    .scale_y_continuous(expand<span class="op">=</span>(<span class="dv">0</span>, <span class="dv">0</span>))</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    .coord_cartesian(ylim<span class="op">=</span>(<span class="dv">0</span>, <span class="dv">1</span>))</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>    .scale_color_brewer(<span class="bu">type</span><span class="op">=</span><span class="st">"qual"</span>, palette<span class="op">=</span><span class="st">"Dark2"</span>)</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    .scale_linetype_manual(values<span class="op">=</span>[<span class="st">"solid"</span>, <span class="st">"dashed"</span>, <span class="st">"dashdot"</span>, <span class="st">"dotted"</span>, (<span class="dv">0</span>, (<span class="dv">5</span>, <span class="dv">2</span>, <span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">1</span>, <span class="dv">2</span>))])</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>    .labs(x<span class="op">=</span><span class="st">"Formation year"</span>, y<span class="op">=</span><span class="st">"Pearson correlation"</span>, color<span class="op">=</span><span class="st">"Lag (years)"</span>, linetype<span class="op">=</span><span class="st">"Lag (years)"</span>)</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>    .theme_minimal()</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>    .add_theme(figure_size<span class="op">=</span>(<span class="dv">8</span>, <span class="dv">4</span>), legend_position<span class="op">=</span><span class="st">"top"</span>)</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="4">
 <div id="fig-bem4-annual" class="quarto-float quarto-figure quarto-figure-center anchored" alt="Five lines show beta correlations by formation year. One-year correlations generally exceed the longer-lag correlations and are higher in the 2000s than in the early 1990s. Lines for longer lags end earlier.">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-bem4-annual-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
@@ -855,37 +941,110 @@ Figure&nbsp;4.1: Annual persistence of beta by lag
 \rho_\tau(X)=\frac{1}{N-\tau}\sum_{t=1}^{N-\tau}\rho_{t,t+\tau}(X).
 \tag{4.2}\]</span></span></p>
 <p>Here <span class="math inline">\(N=25\)</span>, so the one-year estimate averages 24 correlations and the five-year estimate averages 20. <a href="#tbl-bem4-beta" class="quarto-xref">Table&nbsp;<span>4.2</span></a> reports the averages for beta and <a href="#tbl-bem4-characteristics" class="quarto-xref">Table&nbsp;<span>4.3</span></a> puts all three characteristics side by side.</p>
-<div id="f55032cc" class="cell" data-execution_count="6">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>average <span class="op">=</span> annual.group_by(<span class="st">"Lag"</span>).agg(pl.col(measures).mean()).sort(<span class="st">"Lag"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="7461f6ea" class="cell" data-execution_count="5">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>average <span class="op">=</span> annual.group_by(<span class="st">"Lag"</span>).agg(pl.col(measures).mean()).sort(<span class="st">"Lag"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div class="cell" data-execution_count="7">
-<div id="tbl-bem4-beta" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="7">
+<div class="cell" data-execution_count="6">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>pl.DataFrame({</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    <span class="ss">f"Lag </span><span class="sc">{</span>lag<span class="sc">}</span><span class="ss">"</span>: [beta] <span class="cf">for</span> lag, beta <span class="kw">in</span> average.select(<span class="st">"Lag"</span>, <span class="st">"Beta"</span>).iter_rows()</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>}).eap.show_table()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div id="tbl-bem4-beta" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="6">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bem4-beta-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table&nbsp;4.2: Average annual persistence of beta (BEM Table 4.2)
 </figcaption>
 <div aria-describedby="tbl-bem4-beta-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<div class="cell-output cell-output-display cell-output-markdown">
-<table class="cell caption-top table table-sm table-striped small">
+<div class="cell-output cell-output-display">
+<div id="tpauzuxjoz" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>
+#tpauzuxjoz table {
+          font-family: inherit;
+          -webkit-font-smoothing: antialiased;
+          -moz-osx-font-smoothing: grayscale;
+        }
+
+#tpauzuxjoz thead, tbody, tfoot, tr, td, th { border-style: none; }
+ tr { background-color: transparent; }
+#tpauzuxjoz p { margin: 0; padding: 0; }
+ #tpauzuxjoz .gt_table { display: table; border-collapse: collapse; line-height: normal; margin-left: auto; margin-right: auto; color: #333333; font-size: 0.875rem; font-weight: normal; font-style: normal; background-color: #FFFFFF; width: 100%; border-top-style: solid; border-top-width: 2px; border-top-color: #A8A8A8; border-right-style: none; border-right-width: 2px; border-right-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #A8A8A8; border-left-style: none; border-left-width: 2px; border-left-color: #D3D3D3; }
+ #tpauzuxjoz .gt_caption { padding-top: 4px; padding-bottom: 4px; }
+ #tpauzuxjoz .gt_title { color: #333333; font-size: 125%; font-weight: initial; padding-top: 4px; padding-bottom: 4px; padding-left: 5px; padding-right: 5px; border-bottom-color: #FFFFFF; border-bottom-width: 0; }
+ #tpauzuxjoz .gt_subtitle { color: #333333; font-size: 85%; font-weight: initial; padding-top: 3px; padding-bottom: 5px; padding-left: 5px; padding-right: 5px; border-top-color: #FFFFFF; border-top-width: 0; }
+ #tpauzuxjoz .gt_heading { background-color: #FFFFFF; text-align: center; border-bottom-color: #FFFFFF; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; }
+ #tpauzuxjoz .gt_bottom_border { border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; }
+ #tpauzuxjoz .gt_col_headings { border-top-style: solid; border-top-width: 2px; border-top-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; }
+ #tpauzuxjoz .gt_col_heading { color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: bold; text-transform: inherit; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: bottom; padding-top: 5px; padding-bottom: 5px; padding-left: 0.45rem; padding-right: 0.45rem; overflow-x: hidden; }
+ #tpauzuxjoz .gt_column_spanner_outer { color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: bold; text-transform: inherit; padding-top: 0; padding-bottom: 0; padding-left: 4px; padding-right: 4px; }
+ #tpauzuxjoz .gt_column_spanner_outer:first-child { padding-left: 0; }
+ #tpauzuxjoz .gt_column_spanner_outer:last-child { padding-right: 0; }
+ #tpauzuxjoz .gt_column_spanner { border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; vertical-align: bottom; padding-top: 5px; padding-bottom: 5px; overflow-x: hidden; display: inline-block; width: 100%; }
+ #tpauzuxjoz .gt_spanner_row { border-bottom-style: hidden; }
+ #tpauzuxjoz .gt_group_heading { padding-top: 8px; padding-bottom: 8px; padding-left: 5px; padding-right: 5px; color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: initial; text-transform: inherit; border-top-style: solid; border-top-width: 2px; border-top-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; text-align: left; }
+ #tpauzuxjoz .gt_empty_group_heading { padding: 0.5px; color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: initial; border-top-style: solid; border-top-width: 2px; border-top-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; vertical-align: middle; }
+ #tpauzuxjoz .gt_from_md> :first-child { margin-top: 0; }
+ #tpauzuxjoz .gt_from_md> :last-child { margin-bottom: 0; }
+ #tpauzuxjoz .gt_row { padding-top: 0.25rem; padding-bottom: 0.25rem; padding-left: 0.45rem; padding-right: 0.45rem; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; }
+ #tpauzuxjoz .gt_stub { color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: initial; text-transform: inherit; border-right-style: solid; border-right-width: 2px; border-right-color: #D3D3D3; padding-left: 0.45rem; padding-right: 0.45rem; }
+ #tpauzuxjoz .gt_indent_1 { text-indent: 5px; }
+ #tpauzuxjoz .gt_indent_2 { text-indent: calc(5px * 2); }
+ #tpauzuxjoz .gt_indent_3 { text-indent: calc(5px * 3); }
+ #tpauzuxjoz .gt_indent_4 { text-indent: calc(5px * 4); }
+ #tpauzuxjoz .gt_indent_5 { text-indent: calc(5px * 5); }
+ #tpauzuxjoz .gt_stub_row_group { color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: initial; text-transform: inherit; border-right-style: solid; border-right-width: 2px; border-right-color: #D3D3D3; padding-left: 5px; padding-right: 5px; vertical-align: top; }
+ #tpauzuxjoz .gt_row_group_first td { border-top-width: 2px; }
+ #tpauzuxjoz .gt_row_group_first th { border-top-width: 2px; }
+ #tpauzuxjoz .gt_striped { color: #333333; background-color: #F4F4F4; }
+ #tpauzuxjoz .gt_table_body { border-top-style: solid; border-top-width: 2px; border-top-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; }
+ #tpauzuxjoz .gt_summary_row { color: #333333; background-color: #FFFFFF; text-transform: inherit; padding-top: 8px; padding-bottom: 8px; padding-left: 5px; padding-right: 5px; }
+ #tpauzuxjoz .gt_first_summary_row { border-top-style: solid; border-top-width: 2px; border-top-color: #D3D3D3; }
+ #tpauzuxjoz .gt_last_summary_row_top { border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; }
+ #tpauzuxjoz .gt_grand_summary_row { color: #333333; background-color: #FFFFFF; text-transform: inherit; padding-top: 8px; padding-bottom: 8px; padding-left: 5px; padding-right: 5px; }
+ #tpauzuxjoz .gt_first_grand_summary_row_bottom { border-top-style: double; border-top-width: 6px; border-top-color: #D3D3D3; }
+ #tpauzuxjoz .gt_last_grand_summary_row_top { border-bottom-style: double; border-bottom-width: 6px; border-bottom-color: #D3D3D3; }
+ #tpauzuxjoz .gt_sourcenotes { color: #333333; background-color: #FFFFFF; border-bottom-style: none; border-bottom-width: 2px; border-bottom-color: #D3D3D3; border-left-style: none; border-left-width: 2px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 2px; border-right-color: #D3D3D3; }
+ #tpauzuxjoz .gt_sourcenote { font-size: 90%; padding-top: 4px; padding-bottom: 4px; padding-left: 5px; padding-right: 5px; text-align: left; }
+ #tpauzuxjoz .gt_left { text-align: left; }
+ #tpauzuxjoz .gt_center { text-align: center; }
+ #tpauzuxjoz .gt_right { text-align: right; font-variant-numeric: tabular-nums; }
+ #tpauzuxjoz .gt_font_normal { font-weight: normal; }
+ #tpauzuxjoz .gt_font_bold { font-weight: bold; }
+ #tpauzuxjoz .gt_font_italic { font-style: italic; }
+ #tpauzuxjoz .gt_super { font-size: 65%; }
+ #tpauzuxjoz .gt_footnotes { color: font-color(#FFFFFF); background-color: #FFFFFF; border-bottom-style: none; border-bottom-width: 2px; border-bottom-color: #D3D3D3; border-left-style: none; border-left-width: 2px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 2px; border-right-color: #D3D3D3; }
+ #tpauzuxjoz .gt_footnote { margin: 0px; font-size: 90%; padding-top: 4px; padding-bottom: 4px; padding-left: 5px; padding-right: 5px; }
+ #tpauzuxjoz .gt_sourcenotes { color: #333333; background-color: #FFFFFF; border-bottom-style: none; border-bottom-width: 2px; border-bottom-color: #D3D3D3; border-left-style: none; border-left-width: 2px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 2px; border-right-color: #D3D3D3; }
+ #tpauzuxjoz .gt_sourcenote { font-size: 90%; padding-top: 4px; padding-bottom: 4px; padding-left: 5px; padding-right: 5px; text-align: left; }
+ #tpauzuxjoz .gt_footnote_marks { font-size: 75%; vertical-align: 0.4em; position: initial; }
+ #tpauzuxjoz .gt_asterisk { font-size: 100%; vertical-align: 0; }
+ 
+</style>
+
+<table class="gt_table cell caption-top table table-sm table-striped small" data-quarto-bootstrap="false">
 <thead>
-<tr class="header">
-<th style="text-align: left;">Lag 1</th>
-<th style="text-align: right;">Lag 2</th>
-<th style="text-align: right;">Lag 3</th>
-<th style="text-align: right;">Lag 4</th>
-<th style="text-align: right;">Lag 5</th>
+<tr class="gt_col_headings header">
+<th id="Lag-1" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" scope="col">Lag 1</th>
+<th id="Lag-2" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Lag 2</th>
+<th id="Lag-3" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Lag 3</th>
+<th id="Lag-4" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Lag 4</th>
+<th id="Lag-5" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Lag 5</th>
 </tr>
 </thead>
-<tbody>
+<tbody class="gt_table_body">
 <tr class="odd">
-<td style="text-align: left;">0.61</td>
-<td style="text-align: right;">0.53</td>
-<td style="text-align: right;">0.49</td>
-<td style="text-align: right;">0.46</td>
-<td style="text-align: right;">0.42</td>
+<td class="gt_row gt_left" headers="Lag-1">0.61</td>
+<td class="gt_row gt_right" headers="Lag-2">0.53</td>
+<td class="gt_row gt_right" headers="Lag-3">0.49</td>
+<td class="gt_row gt_right" headers="Lag-4">0.46</td>
+<td class="gt_row gt_right" headers="Lag-5">0.42</td>
 </tr>
 </tbody>
 </table>
+
+
+</div>
 </div>
 </div>
 </figure>
@@ -899,80 +1058,154 @@ Table&nbsp;4.2: Average annual persistence of beta (BEM Table 4.2)
 </section>
 <section id="presenting-persistence" class="level2" data-number="4.3">
 <h2 data-number="4.3" class="anchored" data-anchor-id="presenting-persistence"><span class="header-section-number">4.3</span> Presenting Persistence</h2>
-<div class="cell" data-execution_count="8">
-<div id="tbl-bem4-characteristics" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="8">
+<div class="cell" data-execution_count="7">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>average.rename({<span class="st">"Lag"</span>: <span class="st">"Lag (years)"</span>, <span class="st">"BM"</span>: <span class="st">"Book-to-market"</span>}).eap.show_table()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div id="tbl-bem4-characteristics" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="7">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bem4-characteristics-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Table&nbsp;4.3: Average persistence of beta, size, and book-to-market (BEM Table 4.3)
 </figcaption>
 <div aria-describedby="tbl-bem4-characteristics-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<div class="cell-output cell-output-display cell-output-markdown">
-<table class="cell caption-top table table-sm table-striped small">
+<div class="cell-output cell-output-display">
+<div id="elrorjhlxw" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>
+#elrorjhlxw table {
+          font-family: inherit;
+          -webkit-font-smoothing: antialiased;
+          -moz-osx-font-smoothing: grayscale;
+        }
+
+#elrorjhlxw thead, tbody, tfoot, tr, td, th { border-style: none; }
+ tr { background-color: transparent; }
+#elrorjhlxw p { margin: 0; padding: 0; }
+ #elrorjhlxw .gt_table { display: table; border-collapse: collapse; line-height: normal; margin-left: auto; margin-right: auto; color: #333333; font-size: 0.875rem; font-weight: normal; font-style: normal; background-color: #FFFFFF; width: 100%; border-top-style: solid; border-top-width: 2px; border-top-color: #A8A8A8; border-right-style: none; border-right-width: 2px; border-right-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #A8A8A8; border-left-style: none; border-left-width: 2px; border-left-color: #D3D3D3; }
+ #elrorjhlxw .gt_caption { padding-top: 4px; padding-bottom: 4px; }
+ #elrorjhlxw .gt_title { color: #333333; font-size: 125%; font-weight: initial; padding-top: 4px; padding-bottom: 4px; padding-left: 5px; padding-right: 5px; border-bottom-color: #FFFFFF; border-bottom-width: 0; }
+ #elrorjhlxw .gt_subtitle { color: #333333; font-size: 85%; font-weight: initial; padding-top: 3px; padding-bottom: 5px; padding-left: 5px; padding-right: 5px; border-top-color: #FFFFFF; border-top-width: 0; }
+ #elrorjhlxw .gt_heading { background-color: #FFFFFF; text-align: center; border-bottom-color: #FFFFFF; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; }
+ #elrorjhlxw .gt_bottom_border { border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; }
+ #elrorjhlxw .gt_col_headings { border-top-style: solid; border-top-width: 2px; border-top-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; }
+ #elrorjhlxw .gt_col_heading { color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: bold; text-transform: inherit; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: bottom; padding-top: 5px; padding-bottom: 5px; padding-left: 0.45rem; padding-right: 0.45rem; overflow-x: hidden; }
+ #elrorjhlxw .gt_column_spanner_outer { color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: bold; text-transform: inherit; padding-top: 0; padding-bottom: 0; padding-left: 4px; padding-right: 4px; }
+ #elrorjhlxw .gt_column_spanner_outer:first-child { padding-left: 0; }
+ #elrorjhlxw .gt_column_spanner_outer:last-child { padding-right: 0; }
+ #elrorjhlxw .gt_column_spanner { border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; vertical-align: bottom; padding-top: 5px; padding-bottom: 5px; overflow-x: hidden; display: inline-block; width: 100%; }
+ #elrorjhlxw .gt_spanner_row { border-bottom-style: hidden; }
+ #elrorjhlxw .gt_group_heading { padding-top: 8px; padding-bottom: 8px; padding-left: 5px; padding-right: 5px; color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: initial; text-transform: inherit; border-top-style: solid; border-top-width: 2px; border-top-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; text-align: left; }
+ #elrorjhlxw .gt_empty_group_heading { padding: 0.5px; color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: initial; border-top-style: solid; border-top-width: 2px; border-top-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; vertical-align: middle; }
+ #elrorjhlxw .gt_from_md> :first-child { margin-top: 0; }
+ #elrorjhlxw .gt_from_md> :last-child { margin-bottom: 0; }
+ #elrorjhlxw .gt_row { padding-top: 0.25rem; padding-bottom: 0.25rem; padding-left: 0.45rem; padding-right: 0.45rem; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; }
+ #elrorjhlxw .gt_stub { color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: initial; text-transform: inherit; border-right-style: solid; border-right-width: 2px; border-right-color: #D3D3D3; padding-left: 0.45rem; padding-right: 0.45rem; }
+ #elrorjhlxw .gt_indent_1 { text-indent: 5px; }
+ #elrorjhlxw .gt_indent_2 { text-indent: calc(5px * 2); }
+ #elrorjhlxw .gt_indent_3 { text-indent: calc(5px * 3); }
+ #elrorjhlxw .gt_indent_4 { text-indent: calc(5px * 4); }
+ #elrorjhlxw .gt_indent_5 { text-indent: calc(5px * 5); }
+ #elrorjhlxw .gt_stub_row_group { color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: initial; text-transform: inherit; border-right-style: solid; border-right-width: 2px; border-right-color: #D3D3D3; padding-left: 5px; padding-right: 5px; vertical-align: top; }
+ #elrorjhlxw .gt_row_group_first td { border-top-width: 2px; }
+ #elrorjhlxw .gt_row_group_first th { border-top-width: 2px; }
+ #elrorjhlxw .gt_striped { color: #333333; background-color: #F4F4F4; }
+ #elrorjhlxw .gt_table_body { border-top-style: solid; border-top-width: 2px; border-top-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; }
+ #elrorjhlxw .gt_summary_row { color: #333333; background-color: #FFFFFF; text-transform: inherit; padding-top: 8px; padding-bottom: 8px; padding-left: 5px; padding-right: 5px; }
+ #elrorjhlxw .gt_first_summary_row { border-top-style: solid; border-top-width: 2px; border-top-color: #D3D3D3; }
+ #elrorjhlxw .gt_last_summary_row_top { border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; }
+ #elrorjhlxw .gt_grand_summary_row { color: #333333; background-color: #FFFFFF; text-transform: inherit; padding-top: 8px; padding-bottom: 8px; padding-left: 5px; padding-right: 5px; }
+ #elrorjhlxw .gt_first_grand_summary_row_bottom { border-top-style: double; border-top-width: 6px; border-top-color: #D3D3D3; }
+ #elrorjhlxw .gt_last_grand_summary_row_top { border-bottom-style: double; border-bottom-width: 6px; border-bottom-color: #D3D3D3; }
+ #elrorjhlxw .gt_sourcenotes { color: #333333; background-color: #FFFFFF; border-bottom-style: none; border-bottom-width: 2px; border-bottom-color: #D3D3D3; border-left-style: none; border-left-width: 2px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 2px; border-right-color: #D3D3D3; }
+ #elrorjhlxw .gt_sourcenote { font-size: 90%; padding-top: 4px; padding-bottom: 4px; padding-left: 5px; padding-right: 5px; text-align: left; }
+ #elrorjhlxw .gt_left { text-align: left; }
+ #elrorjhlxw .gt_center { text-align: center; }
+ #elrorjhlxw .gt_right { text-align: right; font-variant-numeric: tabular-nums; }
+ #elrorjhlxw .gt_font_normal { font-weight: normal; }
+ #elrorjhlxw .gt_font_bold { font-weight: bold; }
+ #elrorjhlxw .gt_font_italic { font-style: italic; }
+ #elrorjhlxw .gt_super { font-size: 65%; }
+ #elrorjhlxw .gt_footnotes { color: font-color(#FFFFFF); background-color: #FFFFFF; border-bottom-style: none; border-bottom-width: 2px; border-bottom-color: #D3D3D3; border-left-style: none; border-left-width: 2px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 2px; border-right-color: #D3D3D3; }
+ #elrorjhlxw .gt_footnote { margin: 0px; font-size: 90%; padding-top: 4px; padding-bottom: 4px; padding-left: 5px; padding-right: 5px; }
+ #elrorjhlxw .gt_sourcenotes { color: #333333; background-color: #FFFFFF; border-bottom-style: none; border-bottom-width: 2px; border-bottom-color: #D3D3D3; border-left-style: none; border-left-width: 2px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 2px; border-right-color: #D3D3D3; }
+ #elrorjhlxw .gt_sourcenote { font-size: 90%; padding-top: 4px; padding-bottom: 4px; padding-left: 5px; padding-right: 5px; text-align: left; }
+ #elrorjhlxw .gt_footnote_marks { font-size: 75%; vertical-align: 0.4em; position: initial; }
+ #elrorjhlxw .gt_asterisk { font-size: 100%; vertical-align: 0; }
+ 
+</style>
+
+<table class="gt_table cell caption-top table table-sm table-striped small" data-quarto-bootstrap="false">
 <thead>
-<tr class="header">
-<th style="text-align: left;">Lag (years)</th>
-<th style="text-align: right;">Beta</th>
-<th style="text-align: right;">Size</th>
-<th style="text-align: right;">Book-to-market</th>
+<tr class="gt_col_headings header">
+<th id="Lag-years" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" scope="col">Lag (years)</th>
+<th id="Beta" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Beta</th>
+<th id="Size" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Size</th>
+<th id="Book-to-market" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Book-to-market</th>
 </tr>
 </thead>
-<tbody>
+<tbody class="gt_table_body">
 <tr class="odd">
-<td style="text-align: left;">1</td>
-<td style="text-align: right;">0.61</td>
-<td style="text-align: right;">0.96</td>
-<td style="text-align: right;">0.76</td>
+<td class="gt_row gt_left" headers="Lag-years">1</td>
+<td class="gt_row gt_right" headers="Beta">0.61</td>
+<td class="gt_row gt_right" headers="Size">0.96</td>
+<td class="gt_row gt_right" headers="Book-to-market">0.76</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">2</td>
-<td style="text-align: right;">0.53</td>
-<td style="text-align: right;">0.92</td>
-<td style="text-align: right;">0.63</td>
+<td class="gt_row gt_left" headers="Lag-years">2</td>
+<td class="gt_row gt_right" headers="Beta">0.53</td>
+<td class="gt_row gt_right" headers="Size">0.92</td>
+<td class="gt_row gt_right" headers="Book-to-market">0.63</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">3</td>
-<td style="text-align: right;">0.49</td>
-<td style="text-align: right;">0.90</td>
-<td style="text-align: right;">0.55</td>
+<td class="gt_row gt_left" headers="Lag-years">3</td>
+<td class="gt_row gt_right" headers="Beta">0.49</td>
+<td class="gt_row gt_right" headers="Size">0.90</td>
+<td class="gt_row gt_right" headers="Book-to-market">0.55</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">4</td>
-<td style="text-align: right;">0.46</td>
-<td style="text-align: right;">0.89</td>
-<td style="text-align: right;">0.51</td>
+<td class="gt_row gt_left" headers="Lag-years">4</td>
+<td class="gt_row gt_right" headers="Beta">0.46</td>
+<td class="gt_row gt_right" headers="Size">0.89</td>
+<td class="gt_row gt_right" headers="Book-to-market">0.51</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">5</td>
-<td style="text-align: right;">0.42</td>
-<td style="text-align: right;">0.88</td>
-<td style="text-align: right;">0.47</td>
+<td class="gt_row gt_left" headers="Lag-years">5</td>
+<td class="gt_row gt_right" headers="Beta">0.42</td>
+<td class="gt_row gt_right" headers="Size">0.88</td>
+<td class="gt_row gt_right" headers="Book-to-market">0.47</td>
 </tr>
 </tbody>
 </table>
+
+
+</div>
 </div>
 </div>
 </figure>
 </div>
 </div>
 <p><a href="#fig-bem4-averages" class="quarto-xref">Figure&nbsp;<span>4.2</span></a> plots the averages from <a href="#tbl-bem4-characteristics" class="quarto-xref">Table&nbsp;<span>4.3</span></a>. Size is the most persistent characteristic at every lag. Its average correlation falls from 0.96 at one year to 0.88 at five years. At five years, beta and book-to-market are at 0.42 and 0.47.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
-<div id="cell-fig-bem4-averages" class="cell" data-execution_count="9">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>(</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    average.rename({<span class="st">"BM"</span>: <span class="st">"Book-to-market"</span>})</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    .unpivot(index<span class="op">=</span><span class="st">"Lag"</span>, variable_name<span class="op">=</span><span class="st">"characteristic"</span>, value_name<span class="op">=</span><span class="st">"correlation"</span>)</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    .with_columns(pl.col(<span class="st">"characteristic"</span>).cast(pl.Enum([<span class="st">"Beta"</span>, <span class="st">"Size"</span>, <span class="st">"Book-to-market"</span>])))</span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    .ggplot(aes(x<span class="op">=</span><span class="st">"Lag"</span>, y<span class="op">=</span><span class="st">"correlation"</span>, color<span class="op">=</span><span class="st">"characteristic"</span>))</span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    .geom_line()</span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    .geom_point(aes(shape<span class="op">=</span><span class="st">"characteristic"</span>))</span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>    .scale_x_continuous(breaks<span class="op">=</span>lags)</span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>    .scale_y_continuous(expand<span class="op">=</span>(<span class="dv">0</span>, <span class="dv">0</span>))</span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>    .coord_cartesian(ylim<span class="op">=</span>(<span class="dv">0</span>, <span class="dv">1</span>))</span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>    .scale_color_brewer(<span class="bu">type</span><span class="op">=</span><span class="st">"qual"</span>, palette<span class="op">=</span><span class="st">"Dark2"</span>)</span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>    .scale_shape_manual(values<span class="op">=</span>[<span class="st">"o"</span>, <span class="st">"s"</span>, <span class="st">"^"</span>])</span>
-<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>    .labs(x<span class="op">=</span><span class="st">"Lag (years)"</span>, y<span class="op">=</span><span class="st">"Average Pearson correlation"</span>, color<span class="op">=</span><span class="st">""</span>, shape<span class="op">=</span><span class="st">""</span>)</span>
-<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>    .theme_minimal()</span>
-<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>    .add_theme(figure_size<span class="op">=</span>(<span class="dv">8</span>, <span class="dv">4</span>), legend_position<span class="op">=</span><span class="st">"top"</span>)</span>
-<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-display" data-execution_count="9">
+<div id="cell-fig-bem4-averages" class="cell" data-execution_count="8">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>(</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    average.rename({<span class="st">"BM"</span>: <span class="st">"Book-to-market"</span>})</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    .unpivot(index<span class="op">=</span><span class="st">"Lag"</span>, variable_name<span class="op">=</span><span class="st">"characteristic"</span>, value_name<span class="op">=</span><span class="st">"correlation"</span>)</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    .with_columns(pl.col(<span class="st">"characteristic"</span>).cast(pl.Enum([<span class="st">"Beta"</span>, <span class="st">"Size"</span>, <span class="st">"Book-to-market"</span>])))</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    .ggplot(aes(x<span class="op">=</span><span class="st">"Lag"</span>, y<span class="op">=</span><span class="st">"correlation"</span>, color<span class="op">=</span><span class="st">"characteristic"</span>))</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>    .geom_line()</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>    .geom_point(aes(shape<span class="op">=</span><span class="st">"characteristic"</span>))</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    .scale_x_continuous(breaks<span class="op">=</span>lags)</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>    .scale_y_continuous(expand<span class="op">=</span>(<span class="dv">0</span>, <span class="dv">0</span>))</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>    .coord_cartesian(ylim<span class="op">=</span>(<span class="dv">0</span>, <span class="dv">1</span>))</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>    .scale_color_brewer(<span class="bu">type</span><span class="op">=</span><span class="st">"qual"</span>, palette<span class="op">=</span><span class="st">"Dark2"</span>)</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>    .scale_shape_manual(values<span class="op">=</span>[<span class="st">"o"</span>, <span class="st">"s"</span>, <span class="st">"^"</span>])</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>    .labs(x<span class="op">=</span><span class="st">"Lag (years)"</span>, y<span class="op">=</span><span class="st">"Average Pearson correlation"</span>, color<span class="op">=</span><span class="st">""</span>, shape<span class="op">=</span><span class="st">""</span>)</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>    .theme_minimal()</span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>    .add_theme(figure_size<span class="op">=</span>(<span class="dv">8</span>, <span class="dv">4</span>), legend_position<span class="op">=</span><span class="st">"top"</span>)</span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="8">
 <div id="fig-bem4-averages" class="quarto-float quarto-figure quarto-figure-center anchored" alt="Average size persistence stays near 0.9. Book-to-market falls from 0.76 to 0.47 and beta from 0.61 to 0.42 between the one- and five-year lags.">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-bem4-averages-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">

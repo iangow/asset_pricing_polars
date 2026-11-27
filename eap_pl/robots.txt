@@ -1,1 +1,1 @@
-Sitemap: https://iangow.github.io/asset_pricing_polars/eap_pl/sitemap.xml
+Sitemap: https://iangow.github.io/eap_py/eap_pl/sitemap.xml

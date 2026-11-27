@@ -1,111 +1,151 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://iangow.github.io/asset_pricing_polars/eap_pl/reference/write_eap_table.html</loc>
-    <lastmod>2026-11-27T00:56:51.356Z</lastmod>
+    <loc>https://iangow.github.io/eap_py/eap_pl/reference/write_eap_table.html</loc>
+    <lastmod>2026-11-27T19:46:30.085Z</lastmod>
   </url>
   <url>
-    <loc>https://iangow.github.io/asset_pricing_polars/eap_pl/reference/univariate_panel.html</loc>
-    <lastmod>2026-11-27T00:56:51.362Z</lastmod>
+    <loc>https://iangow.github.io/eap_py/eap_pl/reference/univariate_panel.html</loc>
+    <lastmod>2026-11-27T19:46:30.090Z</lastmod>
   </url>
   <url>
-    <loc>https://iangow.github.io/asset_pricing_polars/eap_pl/reference/plot_factor.html</loc>
-    <lastmod>2026-11-27T00:56:51.367Z</lastmod>
+    <loc>https://iangow.github.io/eap_py/eap_pl/reference/ptime.html</loc>
+    <lastmod>2026-11-27T19:46:30.085Z</lastmod>
   </url>
   <url>
-    <loc>https://iangow.github.io/asset_pricing_polars/eap_pl/reference/persistence.html</loc>
-    <lastmod>2026-11-27T00:56:51.360Z</lastmod>
+    <loc>https://iangow.github.io/eap_py/eap_pl/reference/plot_cumulative_returns.html</loc>
+    <lastmod>2026-11-27T19:46:30.095Z</lastmod>
   </url>
   <url>
-    <loc>https://iangow.github.io/asset_pricing_polars/eap_pl/reference/monthly_panel.html</loc>
-    <lastmod>2026-11-27T00:56:51.356Z</lastmod>
+    <loc>https://iangow.github.io/eap_py/eap_pl/reference/period_correlations.html</loc>
+    <lastmod>2026-11-27T19:46:30.086Z</lastmod>
   </url>
   <url>
-    <loc>https://iangow.github.io/asset_pricing_polars/eap_pl/reference/load_pastor_stambaugh_2013.html</loc>
-    <lastmod>2026-11-27T00:56:51.354Z</lastmod>
+    <loc>https://iangow.github.io/eap_py/eap_pl/reference/mean_cross_sections.html</loc>
+    <lastmod>2026-11-27T19:46:30.086Z</lastmod>
   </url>
   <url>
-    <loc>https://iangow.github.io/asset_pricing_polars/eap_pl/reference/load_beta_universe.html</loc>
-    <lastmod>2026-11-27T00:56:51.352Z</lastmod>
+    <loc>https://iangow.github.io/eap_py/eap_pl/reference/load_parquet.html</loc>
+    <lastmod>2026-11-27T19:46:30.075Z</lastmod>
   </url>
   <url>
-    <loc>https://iangow.github.io/asset_pricing_polars/eap_pl/reference/index.html</loc>
-    <lastmod>2026-11-27T00:58:02.004Z</lastmod>
+    <loc>https://iangow.github.io/eap_py/eap_pl/reference/load_daily_beta_inputs.html</loc>
+    <lastmod>2026-11-27T19:46:30.083Z</lastmod>
   </url>
   <url>
-    <loc>https://iangow.github.io/asset_pricing_polars/eap_pl/reference/get_ff_factors.html</loc>
-    <lastmod>2026-11-27T00:56:51.353Z</lastmod>
+    <loc>https://iangow.github.io/eap_py/eap_pl/reference/load_annual_betas.html</loc>
+    <lastmod>2026-11-27T19:46:30.077Z</lastmod>
   </url>
   <url>
-    <loc>https://iangow.github.io/asset_pricing_polars/eap_pl/reference/fama_macbeth_table.html</loc>
-    <lastmod>2026-11-27T00:56:51.365Z</lastmod>
+    <loc>https://iangow.github.io/eap_py/eap_pl/reference/hac.html</loc>
+    <lastmod>2026-11-27T19:46:30.094Z</lastmod>
   </url>
   <url>
-    <loc>https://iangow.github.io/asset_pricing_polars/eap_pl/reference/build_sizes.html</loc>
-    <lastmod>2026-11-27T00:56:51.350Z</lastmod>
+    <loc>https://iangow.github.io/eap_py/eap_pl/reference/format_fit.html</loc>
+    <lastmod>2026-11-27T19:46:30.094Z</lastmod>
   </url>
   <url>
-    <loc>https://iangow.github.io/asset_pricing_polars/eap_pl/reference/build_book_to_market.html</loc>
-    <lastmod>2026-11-27T00:56:51.351Z</lastmod>
+    <loc>https://iangow.github.io/eap_py/eap_pl/reference/correlation_matrix.html</loc>
+    <lastmod>2026-11-27T19:46:30.087Z</lastmod>
   </url>
   <url>
-    <loc>https://iangow.github.io/asset_pricing_polars/eap_pl/reference/bivariate_panel.html</loc>
-    <lastmod>2026-11-27T00:56:51.364Z</lastmod>
+    <loc>https://iangow.github.io/eap_py/eap_pl/reference/build_momentum.html</loc>
+    <lastmod>2026-11-27T19:46:30.081Z</lastmod>
   </url>
   <url>
-    <loc>https://iangow.github.io/asset_pricing_polars/eap_pl/index.html</loc>
-    <lastmod>2026-11-27T00:19:15.000Z</lastmod>
+    <loc>https://iangow.github.io/eap_py/eap_pl/reference/build_annual_panel.html</loc>
+    <lastmod>2026-11-27T19:46:30.078Z</lastmod>
   </url>
   <url>
-    <loc>https://iangow.github.io/asset_pricing_polars/eap_pl/reference/bivariate_months.html</loc>
-    <lastmod>2026-11-27T00:56:51.363Z</lastmod>
+    <loc>https://iangow.github.io/eap_py/eap_pl/reference/bivariate_months.html</loc>
+    <lastmod>2026-11-27T19:46:30.091Z</lastmod>
   </url>
   <url>
-    <loc>https://iangow.github.io/asset_pricing_polars/eap_pl/reference/build_annual_panel.html</loc>
-    <lastmod>2026-11-27T00:56:51.350Z</lastmod>
+    <loc>https://iangow.github.io/eap_py/eap_pl/reference/EAPExprNamespace.truncate.html</loc>
+    <lastmod>2026-11-27T19:46:30.097Z</lastmod>
   </url>
   <url>
-    <loc>https://iangow.github.io/asset_pricing_polars/eap_pl/reference/build_momentum.html</loc>
-    <lastmod>2026-11-27T00:56:51.352Z</lastmod>
+    <loc>https://iangow.github.io/eap_py/eap_pl/reference/EAPExprNamespace.div_if_pos.html</loc>
+    <lastmod>2026-11-27T19:46:30.097Z</lastmod>
   </url>
   <url>
-    <loc>https://iangow.github.io/asset_pricing_polars/eap_pl/reference/correlation_matrix.html</loc>
-    <lastmod>2026-11-27T00:56:51.358Z</lastmod>
+    <loc>https://iangow.github.io/eap_py/eap_pl/reference/EAPDataFrameNamespace.show_grid.html</loc>
+    <lastmod>2026-11-27T19:46:30.098Z</lastmod>
   </url>
   <url>
-    <loc>https://iangow.github.io/asset_pricing_polars/eap_pl/reference/format_fit.html</loc>
-    <lastmod>2026-11-27T00:56:51.366Z</lastmod>
+    <loc>https://iangow.github.io/eap_py/eap_pl/index.html</loc>
+    <lastmod>2026-11-27T19:46:21.000Z</lastmod>
   </url>
   <url>
-    <loc>https://iangow.github.io/asset_pricing_polars/eap_pl/reference/hac.html</loc>
-    <lastmod>2026-11-27T00:56:51.365Z</lastmod>
+    <loc>https://iangow.github.io/eap_py/eap_pl/reference/EAPDataFrameNamespace.map_by.html</loc>
+    <lastmod>2026-11-27T19:46:30.098Z</lastmod>
   </url>
   <url>
-    <loc>https://iangow.github.io/asset_pricing_polars/eap_pl/reference/load_annual_betas.html</loc>
-    <lastmod>2026-11-27T00:56:51.349Z</lastmod>
+    <loc>https://iangow.github.io/eap_py/eap_pl/reference/EAPDataFrameNamespace.show_table.html</loc>
+    <lastmod>2026-11-27T19:46:30.097Z</lastmod>
   </url>
   <url>
-    <loc>https://iangow.github.io/asset_pricing_polars/eap_pl/reference/load_daily_beta_inputs.html</loc>
-    <lastmod>2026-11-27T00:56:51.355Z</lastmod>
+    <loc>https://iangow.github.io/eap_py/eap_pl/reference/EAPExprNamespace.ntile.html</loc>
+    <lastmod>2026-11-27T19:46:30.096Z</lastmod>
   </url>
   <url>
-    <loc>https://iangow.github.io/asset_pricing_polars/eap_pl/reference/mean_cross_sections.html</loc>
-    <lastmod>2026-11-27T00:56:51.357Z</lastmod>
+    <loc>https://iangow.github.io/eap_py/eap_pl/reference/EAPExprNamespace.winsorize.html</loc>
+    <lastmod>2026-11-27T19:46:30.096Z</lastmod>
   </url>
   <url>
-    <loc>https://iangow.github.io/asset_pricing_polars/eap_pl/reference/period_correlations.html</loc>
-    <lastmod>2026-11-27T00:56:51.358Z</lastmod>
+    <loc>https://iangow.github.io/eap_py/eap_pl/reference/bivariate_panel.html</loc>
+    <lastmod>2026-11-27T19:46:30.092Z</lastmod>
   </url>
   <url>
-    <loc>https://iangow.github.io/asset_pricing_polars/eap_pl/reference/plot_cumulative_returns.html</loc>
-    <lastmod>2026-11-27T00:56:51.367Z</lastmod>
+    <loc>https://iangow.github.io/eap_py/eap_pl/reference/build_book_to_market.html</loc>
+    <lastmod>2026-11-27T19:46:30.080Z</lastmod>
   </url>
   <url>
-    <loc>https://iangow.github.io/asset_pricing_polars/eap_pl/reference/rolling_ols.html</loc>
-    <lastmod>2026-11-27T00:58:02.023Z</lastmod>
+    <loc>https://iangow.github.io/eap_py/eap_pl/reference/build_sizes.html</loc>
+    <lastmod>2026-11-27T19:46:30.079Z</lastmod>
   </url>
   <url>
-    <loc>https://iangow.github.io/asset_pricing_polars/eap_pl/reference/winsorized_corr.html</loc>
-    <lastmod>2026-11-27T00:56:51.359Z</lastmod>
+    <loc>https://iangow.github.io/eap_py/eap_pl/reference/fama_macbeth_table.html</loc>
+    <lastmod>2026-11-27T19:46:30.093Z</lastmod>
+  </url>
+  <url>
+    <loc>https://iangow.github.io/eap_py/eap_pl/reference/get_ff_factors.html</loc>
+    <lastmod>2026-11-27T19:46:30.082Z</lastmod>
+  </url>
+  <url>
+    <loc>https://iangow.github.io/eap_py/eap_pl/reference/index.html</loc>
+    <lastmod>2026-11-27T19:46:30.070Z</lastmod>
+  </url>
+  <url>
+    <loc>https://iangow.github.io/eap_py/eap_pl/reference/load_beta_universe.html</loc>
+    <lastmod>2026-11-27T19:46:30.081Z</lastmod>
+  </url>
+  <url>
+    <loc>https://iangow.github.io/eap_py/eap_pl/reference/load_monthly_betas.html</loc>
+    <lastmod>2026-11-27T19:46:30.078Z</lastmod>
+  </url>
+  <url>
+    <loc>https://iangow.github.io/eap_py/eap_pl/reference/load_pastor_stambaugh_2013.html</loc>
+    <lastmod>2026-11-27T19:46:30.083Z</lastmod>
+  </url>
+  <url>
+    <loc>https://iangow.github.io/eap_py/eap_pl/reference/monthly_panel.html</loc>
+    <lastmod>2026-11-27T19:46:30.084Z</lastmod>
+  </url>
+  <url>
+    <loc>https://iangow.github.io/eap_py/eap_pl/reference/persistence.html</loc>
+    <lastmod>2026-11-27T19:46:30.088Z</lastmod>
+  </url>
+  <url>
+    <loc>https://iangow.github.io/eap_py/eap_pl/reference/plot_factor.html</loc>
+    <lastmod>2026-11-27T19:46:30.096Z</lastmod>
+  </url>
+  <url>
+    <loc>https://iangow.github.io/eap_py/eap_pl/reference/rolling_ols.html</loc>
+    <lastmod>2026-11-27T19:46:30.090Z</lastmod>
+  </url>
+  <url>
+    <loc>https://iangow.github.io/eap_py/eap_pl/reference/winsorized_corr.html</loc>
+    <lastmod>2026-11-27T19:46:30.088Z</lastmod>
   </url>
 </urlset>

@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>7&nbsp; The CRSP Sample and Market Factor – Empirical Asset Pricing with Polars</title>
+<title>7&nbsp; The CRSP Sample and Market Factor – Empirical Asset Pricing: A Python Reader’s Companion</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -362,7 +362,7 @@ window.Quarto = {
   <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
     <div class="pt-lg-2 mt-2 text-left sidebar-header">
     <div class="sidebar-title mb-0 py-0">
-      <a href="./">Empirical Asset Pricing with Polars</a> 
+      <a href="./">Empirical Asset Pricing: A Python Reader’s Companion</a> 
         <div class="sidebar-tools-main">
   <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
 </div>
@@ -515,9 +515,9 @@ window.Quarto = {
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#the-u.s.-stock-market" id="toc-the-u.s.-stock-market" class="nav-link active" data-scroll-target="#the-u.s.-stock-market"><span class="header-section-number">7.1</span> The U.S. Stock Market</a>
+  <li><a href="#the-us-stock-market" id="toc-the-us-stock-market" class="nav-link active" data-scroll-target="#the-us-stock-market"><span class="header-section-number">7.1</span> The US Stock Market</a>
   <ul class="collapse">
-  <li><a href="#build-the-monthly-common-stock-sample" id="toc-build-the-monthly-common-stock-sample" class="nav-link" data-scroll-target="#build-the-monthly-common-stock-sample"><span class="header-section-number">7.1.1</span> The CRSP U.S.-Based Common Stock Sample</a></li>
+  <li><a href="#build-the-monthly-common-stock-sample" id="toc-build-the-monthly-common-stock-sample" class="nav-link" data-scroll-target="#build-the-monthly-common-stock-sample"><span class="header-section-number">7.1.1</span> The CRSP US-Based Common Stock Sample</a></li>
   <li><a href="#sec-bem7-composition" id="toc-sec-bem7-composition" class="nav-link" data-scroll-target="#sec-bem7-composition"><span class="header-section-number">7.1.2</span> Composition of the CRSP Sample</a></li>
   </ul></li>
   <li><a href="#sec-bem-returns" id="toc-sec-bem-returns" class="nav-link" data-scroll-target="#sec-bem-returns"><span class="header-section-number">7.2</span> Stock Returns and Excess Returns</a>
@@ -554,16 +554,29 @@ window.Quarto = {
 </header>
 
 
-<p>This chapter reconstructs the figures and tables in Chapter 7 of <span class="citation" data-cites="bali2016">Bali et al. (<a href="references.html#ref-bali2016" role="doc-biblioref">2016</a>)</span>. We use a later snapshot of legacy CRSP (SIZ), the same data format used by the authors. See <a href="data.html#sec-data-vintages" class="quarto-xref"><span>Section 1.1.1</span></a> for source update dates.</p>
-<section id="the-u.s.-stock-market" class="level2" data-number="7.1">
-<h2 data-number="7.1" class="anchored" data-anchor-id="the-u.s.-stock-market"><span class="header-section-number">7.1</span> The U.S. Stock Market</h2>
+<div class="callout callout-style-default callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Warning</span>Early draft
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>This chapter is an early draft and still needs a thorough review. The APIs used in the examples may change as I continue working on the book.</p>
+</div>
+</div>
+<p>This chapter reconstructs the figures and tables in Chapter 7 of <span class="citation" data-cites="bali2016">Bali et al. (<a href="references.html#ref-bali2016" role="doc-biblioref">2016</a>)</span>. I use a later snapshot of legacy CRSP (SIZ), the same data format used by the authors. See <a href="data.html#tbl-data-vintages" class="quarto-xref">Table&nbsp;<span>1.1</span></a> for source update dates.</p>
+<section id="the-us-stock-market" class="level2" data-number="7.1">
+<h2 data-number="7.1" class="anchored" data-anchor-id="the-us-stock-market"><span class="header-section-number">7.1</span> The US Stock Market</h2>
 <section id="build-the-monthly-common-stock-sample" class="level3" data-number="7.1.1">
-<h3 data-number="7.1.1" class="anchored" data-anchor-id="build-the-monthly-common-stock-sample"><span class="header-section-number">7.1.1</span> The CRSP U.S.-Based Common Stock Sample</h3>
-<p>At each calendar month-end, keep securities with a historical share code of 10 or 11. We do not restrict the exchange or require a price to count a stock. For market capitalization, use the absolute alternate price times shares outstanding. Dividing by 1,000 gives millions of dollars because CRSP reports shares in thousands.</p>
-<div id="2ae17572" class="cell" data-execution_count="1">
+<h3 data-number="7.1.1" class="anchored" data-anchor-id="build-the-monthly-common-stock-sample"><span class="header-section-number">7.1.1</span> The CRSP US-Based Common Stock Sample</h3>
+<p>At each calendar month-end, keep securities with a historical share code of 10 or 11. I do not restrict the exchange or require a price to count a stock. For market capitalization, use the absolute alternate price times shares outstanding. Dividing by 1,000 gives millions of dollars because CRSP reports shares in thousands.</p>
+<div id="b4957525" class="cell" data-execution_count="1">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> polars <span class="im">as</span> pl</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> era_pl <span class="im">import</span> load_parquet</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> eap_pl <span class="im">import</span> load_parquet</span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>first <span class="op">=</span> pl.date(<span class="dv">1925</span>, <span class="dv">12</span>, <span class="dv">1</span>)</span>
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>last <span class="op">=</span> pl.date(<span class="dv">2012</span>, <span class="dv">12</span>, <span class="dv">1</span>)</span>
@@ -620,7 +633,7 @@ window.Quarto = {
 <section id="exchanges" class="level4 unnumbered unlisted">
 <h4 class="unnumbered unlisted anchored" data-anchor-id="exchanges">Stock Exchange Composition of CRSP Sample</h4>
 <p>The book groups exchange codes 1 and 31 as NYSE, 2 and 32 as AMEX, and 3 and 33 as Nasdaq. All remaining codes go into <em>Other</em>.</p>
-<div id="705502d6" class="cell" data-execution_count="2">
+<div id="53b97e01" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> plotnine_polars <span class="im">import</span> aes, guide_legend</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>exchange <span class="op">=</span> (</span>
@@ -689,8 +702,11 @@ window.Quarto = {
 <span id="cb2-66"><a href="#cb2-66" aria-hidden="true" tabindex="-1"></a>    )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="cell-fig-bem7-exchange-count" class="cell" data-execution_count="3">
+<details class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>plot_composition(by_exchange, <span class="st">"exchange"</span>, [<span class="st">"Total"</span>, <span class="op">*</span>exchange_labels],</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"stocks"</span>, <span class="st">"Number of stocks"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
 <div class="cell-output cell-output-display" data-execution_count="3">
 <div id="fig-bem7-exchange-count" class="quarto-float quarto-figure quarto-figure-center anchored" alt="Stock counts jump when AMEX and Nasdaq stocks enter the sample. Total count peaks in the late 1990s.">
 <figure class="quarto-float quarto-float-fig figure">
@@ -705,8 +721,11 @@ Figure&nbsp;7.1: Number of stocks by exchange, recreating the series in BEM Figu
 </div>
 </div>
 <div id="cell-fig-bem7-exchange-value" class="cell" data-execution_count="4">
+<details class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>plot_composition(by_exchange, <span class="st">"exchange"</span>, [<span class="st">"Total"</span>, <span class="op">*</span>exchange_labels],</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"value"</span>, <span class="st">"Market value ($ billions, December 2012)"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
 <div class="cell-output cell-output-display" data-execution_count="4">
 <div id="fig-bem7-exchange-value" class="quarto-float quarto-figure quarto-figure-center anchored" alt="The NYSE accounts for most of the sample market value. Nasdaq grows considerably in the late 1990s.">
 <figure class="quarto-float quarto-float-fig figure">
@@ -725,8 +744,10 @@ Figure&nbsp;7.2: Market value by exchange, recreating the series in BEM Figure 7
 </section>
 <section id="industries" class="level4 unnumbered unlisted">
 <h4 class="unnumbered unlisted anchored" data-anchor-id="industries">Industry Composition of CRSP Sample</h4>
-<p>We use the security’s current SIC code rather than a code carried back from a later date. <a href="https://www.osha.gov/data/sic-manual">OSHA’s SIC manual</a> describes the divisions. The table uses the intervals in BEM Table 7.1, with shortened labels. Keep zero and null codes separate from nonmissing codes that do not fall in a listed interval.</p>
+<p>I use the security’s current SIC code rather than a code carried back from a later date. <a href="https://www.osha.gov/data/sic-manual">OSHA’s SIC manual</a> describes the divisions. The table uses the intervals in BEM Table 7.1, with shortened labels. Keep zero and null codes separate from nonmissing codes that do not fall in a listed interval.</p>
 <div class="cell" data-execution_count="5">
+<details class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>sic_divisions <span class="op">=</span> pl.DataFrame({</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">"first_sic"</span>: [<span class="dv">1</span>, <span class="dv">1000</span>, <span class="dv">1500</span>, <span class="dv">2000</span>, <span class="dv">4000</span>, <span class="dv">5000</span>, <span class="dv">5200</span>, <span class="dv">6000</span>, <span class="dv">7000</span>, <span class="dv">9000</span>],</span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"last_sic"</span>: [<span class="dv">999</span>, <span class="dv">1499</span>, <span class="dv">1799</span>, <span class="dv">3999</span>, <span class="dv">4999</span>, <span class="dv">5199</span>, <span class="dv">5999</span>, <span class="dv">6799</span>, <span class="dv">8999</span>, <span class="dv">9999</span>],</span>
@@ -736,6 +757,7 @@ Figure&nbsp;7.2: Market value by exchange, recreating the series in BEM Figure 7
 <span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>})</span>
 <span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> pl.Config(tbl_rows<span class="op">=</span><span class="dv">12</span>):</span>
 <span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>    display(sic_divisions)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
 <div id="tbl-bem7-sic" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="5">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bem7-sic-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
@@ -823,7 +845,7 @@ Table&nbsp;7.1: SIC code ranges used in the industry breakdown (BEM Table 7.1).
 </figure>
 </div>
 </div>
-<div id="c4f5bd90" class="cell" data-execution_count="6">
+<div id="5aca2f8b" class="cell" data-execution_count="6">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>industry <span class="op">=</span> pl.coalesce([</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    pl.when(pl.col(<span class="st">"siccd"</span>).is_between(lo, hi)).then(pl.lit(name))</span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> lo, hi, name <span class="kw">in</span> sic_divisions.iter_rows()</span>
@@ -838,8 +860,11 @@ Table&nbsp;7.1: SIC code ranges used in the industry breakdown (BEM Table 7.1).
 <span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>by_industry <span class="op">=</span> summarize_composition(classified, <span class="st">"industry"</span>, industry_labels)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div id="cell-fig-bem7-industry-count" class="cell" data-execution_count="7">
+<details class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>plot_composition(by_industry, <span class="st">"industry"</span>, industry_labels,</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"stocks"</span>, <span class="st">"Number of stocks"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
 <div class="cell-output cell-output-display" data-execution_count="7">
 <div id="fig-bem7-industry-count" class="quarto-float quarto-figure quarto-figure-center anchored" alt="Manufacturing is the largest industry by stock count, with sharp changes in several industries when Nasdaq enters.">
 <figure class="quarto-float quarto-float-fig figure">
@@ -854,8 +879,11 @@ Figure&nbsp;7.3: Number of stocks by SIC division, recreating the series in BEM 
 </div>
 </div>
 <div id="cell-fig-bem7-industry-value" class="cell" data-execution_count="8">
+<details class="code-fold">
+<summary>Code</summary>
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>plot_composition(by_industry, <span class="st">"industry"</span>, industry_labels,</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"value"</span>, <span class="st">"Market value ($ billions, December 2012)"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
 <div class="cell-output cell-output-display" data-execution_count="8">
 <div id="fig-bem7-industry-value" class="quarto-float quarto-figure quarto-figure-center anchored" alt="Manufacturing has the largest market value. Communications, grouped with transport and utilities, and services grow during the dot-com boom.">
 <figure class="quarto-float quarto-float-fig figure">
@@ -876,7 +904,7 @@ Figure&nbsp;7.4: Market value by SIC division, recreating the series in BEM Figu
 <h2 data-number="7.2" class="anchored" data-anchor-id="sec-bem-returns"><span class="header-section-number">7.2</span> Stock Returns and Excess Returns</h2>
 <p>Start with eligible common stocks at the end of month <span class="math inline">\(t\)</span> and look up the return for the same security in month <span class="math inline">\(t+1\)</span>. Do not require it to remain in the common-stock universe in the holding month: that would screen out delistings.</p>
 <p>Chapter 7 uses the legacy CRSP delisting return in place of the regular monthly return if the stock delists. If no delisting return is recorded, it imputes a loss of 30% for the codes listed below and a loss of 100% for other delistings. This is the book’s convention for legacy data, not a reason to adjust the reported returns from CRSP CIZ a second time.</p>
-<div id="857f7186" class="cell" data-execution_count="9">
+<div id="f4da2f8f" class="cell" data-execution_count="9">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>first_return <span class="op">=</span> pl.date(<span class="dv">1926</span>, <span class="dv">7</span>, <span class="dv">1</span>)</span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>first_return_late <span class="op">=</span> pl.date(<span class="dv">1963</span>, <span class="dv">7</span>, <span class="dv">1</span>)</span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>hold_month <span class="op">=</span> pl.col(<span class="st">"month"</span>).dt.offset_by(<span class="st">"1mo"</span>)</span>
@@ -916,8 +944,8 @@ Figure&nbsp;7.4: Market value by SIC division, recreating the series in BEM Figu
 <span id="cb9-37"><a href="#cb9-37" aria-hidden="true" tabindex="-1"></a>    )</span>
 <span id="cb9-38"><a href="#cb9-38" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<p>The Fama–French risk-free return applies to the holding month, not the formation month. We first calculate the statistics across stocks for each return month, then average those monthly statistics. In particular, the means give each month equal weight, irrespective of the number of stocks in that month. We use sample standard deviations, bias-adjusted skewness and excess kurtosis, and linearly interpolated quantiles.</p>
-<div id="07b50e01" class="cell" data-execution_count="10">
+<p>The Fama–French risk-free return applies to the holding month, not the formation month. I first calculate the statistics across stocks for each return month, then average those monthly statistics. In particular, the means give each month equal weight, irrespective of the number of stocks in that month. I use sample standard deviations, bias-adjusted skewness and excess kurtosis, and linearly interpolated quantiles.</p>
+<div id="ea4bf7bf" class="cell" data-execution_count="10">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> summarize_returns(start):</span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> pl.col(<span class="st">"return_pct"</span>)</span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> (</span>
@@ -966,7 +994,12 @@ Figure&nbsp;7.4: Market value by SIC division, recreating the series in BEM Figu
 <span id="cb10-46"><a href="#cb10-46" aria-hidden="true" tabindex="-1"></a>table_7_3 <span class="op">=</span> summarize_returns(first_return_late)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p><strong><span id="july-1926december-2012-table-7.2">July 1926–December 2012 (Table 7.2)</span></strong></p>
-<div id="016db592" class="cell" data-execution_count="11">
+<div id="ec6e4722" class="cell" data-execution_count="11">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> pl.Config(tbl_rows<span class="op">=</span><span class="dv">12</span>):</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>    display(display_returns(table_7_2))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
 <div class="cell-output cell-output-display">
 <div><style>
 .dataframe > thead > tr,
@@ -1085,7 +1118,12 @@ Figure&nbsp;7.4: Market value by SIC division, recreating the series in BEM Figu
 </div>
 <section id="july-1963december-2012-table-7.3" class="level3" data-number="7.2.1">
 <h3 data-number="7.2.1" class="anchored" data-anchor-id="july-1963december-2012-table-7.3"><span class="header-section-number">7.2.1</span> CRSP Sample (1963–2012)</h3>
-<div id="140992ea" class="cell" data-execution_count="12">
+<div id="922531e7" class="cell" data-execution_count="12">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> pl.Config(tbl_rows<span class="op">=</span><span class="dv">12</span>):</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>    display(display_returns(table_7_3))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
 <div class="cell-output cell-output-display">
 <div><style>
 .dataframe > thead > tr,
@@ -1207,99 +1245,168 @@ Figure&nbsp;7.4: Market value by SIC division, recreating the series in BEM Figu
 </section>
 <section id="sec-bem7-market" class="level2" data-number="7.3">
 <h2 data-number="7.3" class="anchored" data-anchor-id="sec-bem7-market"><span class="header-section-number">7.3</span> The Market Factor</h2>
-<p>The Fama–French market factor (<code>mkt</code>) is the excess return on a broad value-weighted portfolio of U.S. common stocks. CRSP’s value-weighted market index (<code>vwretd</code>) has a broader set of eligible securities. We put both measures on an excess-return basis by subtracting the risk-free rate (<code>rf</code>) from <code>vwretd</code>. <code>mkt</code> already has the risk-free rate subtracted.</p>
-<div id="9cef7175" class="cell" data-execution_count="14">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>market <span class="op">=</span> (</span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>    factors</span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>    .rename({<span class="st">"mktrf"</span>: <span class="st">"mkt"</span>})</span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    .<span class="bu">filter</span>(pl.col(<span class="st">"month"</span>).is_between(pl.date(<span class="dv">1926</span>, <span class="dv">7</span>, <span class="dv">1</span>), pl.date(<span class="dv">2012</span>, <span class="dv">12</span>, <span class="dv">1</span>)))</span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>    .join(</span>
-<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>        load_parquet(<span class="st">"msi"</span>, <span class="st">"crsp"</span>)</span>
-<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>        .select(month<span class="op">=</span>pl.col(<span class="st">"date"</span>).dt.month_start(), vwretd<span class="op">=</span>pl.col(<span class="st">"vwretd"</span>)),</span>
-<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>        on<span class="op">=</span><span class="st">"month"</span>, how<span class="op">=</span><span class="st">"left"</span>, validate<span class="op">=</span><span class="st">"1:1"</span>,</span>
-<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>    .with_columns(</span>
-<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>        vw_excess<span class="op">=</span>pl.col(<span class="st">"vwretd"</span>) <span class="op">-</span> pl.col(<span class="st">"rf"</span>),</span>
-<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>        log_excess<span class="op">=</span>pl.col(<span class="st">"mkt"</span>).log1p(),</span>
-<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>    .sort(<span class="st">"month"</span>)</span>
-<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>    .collect()</span>
-<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The Fama–French market factor (<code>mkt</code>) is the excess return on a broad value-weighted portfolio of US common stocks. CRSP’s value-weighted market index (<code>vwretd</code>) has a broader set of eligible securities. I put both measures on an excess-return basis by subtracting the risk-free rate (<code>rf</code>) from <code>vwretd</code>. <code>mkt</code> already has the risk-free rate subtracted.</p>
+<div id="55ba2166" class="cell" data-execution_count="14">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>market <span class="op">=</span> (</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>    factors</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>    .rename({<span class="st">"mktrf"</span>: <span class="st">"mkt"</span>})</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>    .<span class="bu">filter</span>(pl.col(<span class="st">"month"</span>).is_between(pl.date(<span class="dv">1926</span>, <span class="dv">7</span>, <span class="dv">1</span>), pl.date(<span class="dv">2012</span>, <span class="dv">12</span>, <span class="dv">1</span>)))</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>    .join(</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>        load_parquet(<span class="st">"msi"</span>, <span class="st">"crsp"</span>)</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>        .select(month<span class="op">=</span>pl.col(<span class="st">"date"</span>).dt.month_start(), vwretd<span class="op">=</span>pl.col(<span class="st">"vwretd"</span>)),</span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>        on<span class="op">=</span><span class="st">"month"</span>, how<span class="op">=</span><span class="st">"left"</span>, validate<span class="op">=</span><span class="st">"1:1"</span>,</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>    .with_columns(</span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>        vw_excess<span class="op">=</span>pl.col(<span class="st">"vwretd"</span>) <span class="op">-</span> pl.col(<span class="st">"rf"</span>),</span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>        log_excess<span class="op">=</span>pl.col(<span class="st">"mkt"</span>).log1p(),</span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>    .sort(<span class="st">"month"</span>)</span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a>    .collect()</span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<p>The monthly correlation between <code>mkt</code> and the adjusted CRSP return (<code>vw_excess</code>) is 0.9995 in this data vintage. Following <span class="citation" data-cites="bali2016">Bali et al. (<a href="references.html#ref-bali2016" role="doc-biblioref">2016, sec. 7.3</a>)</span>, we summarize the monthly returns from July 1926 through December 2012. The annualized Sharpe ratio uses <span class="math inline">\(\sqrt{12}\)</span> times the ratio of the monthly mean to the monthly standard deviation, as in the book.</p>
+<p>The monthly correlation between <code>mkt</code> and the adjusted CRSP return (<code>vw_excess</code>) is 0.9995 in this data vintage. Following <span class="citation" data-cites="bali2016">Bali et al. (<a href="references.html#ref-bali2016" role="doc-biblioref">2016, sec. 7.3</a>)</span>, I summarize the monthly returns from July 1926 through December 2012. The annualized Sharpe ratio uses <span class="math inline">\(\sqrt{12}\)</span> times the ratio of the monthly mean to the monthly standard deviation, as in the book.</p>
+<div id="f3414afd" class="cell" data-execution_count="15">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> eap_pl</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>series_labels <span class="op">=</span> {</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">"mkt"</span>: <span class="st">"`mkt`"</span>,</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">"vw_excess"</span>: <span class="st">"`vwretd` less `rf`"</span>,</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">"log_excess"</span>: <span class="st">"Log `mkt`"</span>,</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>returns <span class="op">=</span> pl.col(<span class="op">*</span>series_labels)</span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>market_summary <span class="op">=</span> (</span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>    market.select(</span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>        pl.lit(<span class="bu">list</span>(series_labels.values())).alias(<span class="st">"Series"</span>),</span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>        pl.concat_list(returns.mean() <span class="op">*</span> <span class="dv">100</span>).alias(<span class="st">"Monthly mean (%)"</span>),</span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>        pl.concat_list(returns.std() <span class="op">*</span> <span class="dv">100</span>).alias(<span class="st">"Monthly SD (%)"</span>),</span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>        pl.concat_list(returns.mean() <span class="op">*</span> <span class="dv">12</span><span class="op">**</span><span class="fl">0.5</span> <span class="op">/</span> returns.std())</span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>        .alias(<span class="st">"Annualized Sharpe"</span>),</span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a>    .explode(pl.<span class="bu">all</span>())</span>
+<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a>    .with_columns(pl.col(pl.Float64).<span class="bu">round</span>(<span class="dv">3</span>))</span>
+<span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb14-20"><a href="#cb14-20" aria-hidden="true" tabindex="-1"></a>market_summary.with_columns(pl.col(pl.Float64).cast(pl.String)).eap.show_table()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display">
+<div id="wvqkwrgfzj" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>
-.cell-output-markdown:has(> table) {
-  max-width: 100%;
-  overflow-x: auto;
-}
-.cell-output-markdown > table {
-  white-space: nowrap;
-}
+#wvqkwrgfzj table {
+          font-family: inherit;
+          -webkit-font-smoothing: antialiased;
+          -moz-osx-font-smoothing: grayscale;
+        }
+
+#wvqkwrgfzj thead, tbody, tfoot, tr, td, th { border-style: none; }
+ tr { background-color: transparent; }
+#wvqkwrgfzj p { margin: 0; padding: 0; }
+ #wvqkwrgfzj .gt_table { display: table; border-collapse: collapse; line-height: normal; margin-left: auto; margin-right: auto; color: #333333; font-size: 0.875rem; font-weight: normal; font-style: normal; background-color: #FFFFFF; width: 100%; border-top-style: solid; border-top-width: 2px; border-top-color: #A8A8A8; border-right-style: none; border-right-width: 2px; border-right-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #A8A8A8; border-left-style: none; border-left-width: 2px; border-left-color: #D3D3D3; }
+ #wvqkwrgfzj .gt_caption { padding-top: 4px; padding-bottom: 4px; }
+ #wvqkwrgfzj .gt_title { color: #333333; font-size: 125%; font-weight: initial; padding-top: 4px; padding-bottom: 4px; padding-left: 5px; padding-right: 5px; border-bottom-color: #FFFFFF; border-bottom-width: 0; }
+ #wvqkwrgfzj .gt_subtitle { color: #333333; font-size: 85%; font-weight: initial; padding-top: 3px; padding-bottom: 5px; padding-left: 5px; padding-right: 5px; border-top-color: #FFFFFF; border-top-width: 0; }
+ #wvqkwrgfzj .gt_heading { background-color: #FFFFFF; text-align: center; border-bottom-color: #FFFFFF; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; }
+ #wvqkwrgfzj .gt_bottom_border { border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; }
+ #wvqkwrgfzj .gt_col_headings { border-top-style: solid; border-top-width: 2px; border-top-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; }
+ #wvqkwrgfzj .gt_col_heading { color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: bold; text-transform: inherit; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: bottom; padding-top: 5px; padding-bottom: 5px; padding-left: 0.45rem; padding-right: 0.45rem; overflow-x: hidden; }
+ #wvqkwrgfzj .gt_column_spanner_outer { color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: bold; text-transform: inherit; padding-top: 0; padding-bottom: 0; padding-left: 4px; padding-right: 4px; }
+ #wvqkwrgfzj .gt_column_spanner_outer:first-child { padding-left: 0; }
+ #wvqkwrgfzj .gt_column_spanner_outer:last-child { padding-right: 0; }
+ #wvqkwrgfzj .gt_column_spanner { border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; vertical-align: bottom; padding-top: 5px; padding-bottom: 5px; overflow-x: hidden; display: inline-block; width: 100%; }
+ #wvqkwrgfzj .gt_spanner_row { border-bottom-style: hidden; }
+ #wvqkwrgfzj .gt_group_heading { padding-top: 8px; padding-bottom: 8px; padding-left: 5px; padding-right: 5px; color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: initial; text-transform: inherit; border-top-style: solid; border-top-width: 2px; border-top-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; text-align: left; }
+ #wvqkwrgfzj .gt_empty_group_heading { padding: 0.5px; color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: initial; border-top-style: solid; border-top-width: 2px; border-top-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; vertical-align: middle; }
+ #wvqkwrgfzj .gt_from_md> :first-child { margin-top: 0; }
+ #wvqkwrgfzj .gt_from_md> :last-child { margin-bottom: 0; }
+ #wvqkwrgfzj .gt_row { padding-top: 0.25rem; padding-bottom: 0.25rem; padding-left: 0.45rem; padding-right: 0.45rem; margin: 10px; border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3; border-left-style: none; border-left-width: 1px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 1px; border-right-color: #D3D3D3; vertical-align: middle; overflow-x: hidden; }
+ #wvqkwrgfzj .gt_stub { color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: initial; text-transform: inherit; border-right-style: solid; border-right-width: 2px; border-right-color: #D3D3D3; padding-left: 0.45rem; padding-right: 0.45rem; }
+ #wvqkwrgfzj .gt_indent_1 { text-indent: 5px; }
+ #wvqkwrgfzj .gt_indent_2 { text-indent: calc(5px * 2); }
+ #wvqkwrgfzj .gt_indent_3 { text-indent: calc(5px * 3); }
+ #wvqkwrgfzj .gt_indent_4 { text-indent: calc(5px * 4); }
+ #wvqkwrgfzj .gt_indent_5 { text-indent: calc(5px * 5); }
+ #wvqkwrgfzj .gt_stub_row_group { color: #333333; background-color: #FFFFFF; font-size: 100%; font-weight: initial; text-transform: inherit; border-right-style: solid; border-right-width: 2px; border-right-color: #D3D3D3; padding-left: 5px; padding-right: 5px; vertical-align: top; }
+ #wvqkwrgfzj .gt_row_group_first td { border-top-width: 2px; }
+ #wvqkwrgfzj .gt_row_group_first th { border-top-width: 2px; }
+ #wvqkwrgfzj .gt_striped { color: #333333; background-color: #F4F4F4; }
+ #wvqkwrgfzj .gt_table_body { border-top-style: solid; border-top-width: 2px; border-top-color: #D3D3D3; border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; }
+ #wvqkwrgfzj .gt_summary_row { color: #333333; background-color: #FFFFFF; text-transform: inherit; padding-top: 8px; padding-bottom: 8px; padding-left: 5px; padding-right: 5px; }
+ #wvqkwrgfzj .gt_first_summary_row { border-top-style: solid; border-top-width: 2px; border-top-color: #D3D3D3; }
+ #wvqkwrgfzj .gt_last_summary_row_top { border-bottom-style: solid; border-bottom-width: 2px; border-bottom-color: #D3D3D3; }
+ #wvqkwrgfzj .gt_grand_summary_row { color: #333333; background-color: #FFFFFF; text-transform: inherit; padding-top: 8px; padding-bottom: 8px; padding-left: 5px; padding-right: 5px; }
+ #wvqkwrgfzj .gt_first_grand_summary_row_bottom { border-top-style: double; border-top-width: 6px; border-top-color: #D3D3D3; }
+ #wvqkwrgfzj .gt_last_grand_summary_row_top { border-bottom-style: double; border-bottom-width: 6px; border-bottom-color: #D3D3D3; }
+ #wvqkwrgfzj .gt_sourcenotes { color: #333333; background-color: #FFFFFF; border-bottom-style: none; border-bottom-width: 2px; border-bottom-color: #D3D3D3; border-left-style: none; border-left-width: 2px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 2px; border-right-color: #D3D3D3; }
+ #wvqkwrgfzj .gt_sourcenote { font-size: 90%; padding-top: 4px; padding-bottom: 4px; padding-left: 5px; padding-right: 5px; text-align: left; }
+ #wvqkwrgfzj .gt_left { text-align: left; }
+ #wvqkwrgfzj .gt_center { text-align: center; }
+ #wvqkwrgfzj .gt_right { text-align: right; font-variant-numeric: tabular-nums; }
+ #wvqkwrgfzj .gt_font_normal { font-weight: normal; }
+ #wvqkwrgfzj .gt_font_bold { font-weight: bold; }
+ #wvqkwrgfzj .gt_font_italic { font-style: italic; }
+ #wvqkwrgfzj .gt_super { font-size: 65%; }
+ #wvqkwrgfzj .gt_footnotes { color: font-color(#FFFFFF); background-color: #FFFFFF; border-bottom-style: none; border-bottom-width: 2px; border-bottom-color: #D3D3D3; border-left-style: none; border-left-width: 2px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 2px; border-right-color: #D3D3D3; }
+ #wvqkwrgfzj .gt_footnote { margin: 0px; font-size: 90%; padding-top: 4px; padding-bottom: 4px; padding-left: 5px; padding-right: 5px; }
+ #wvqkwrgfzj .gt_sourcenotes { color: #333333; background-color: #FFFFFF; border-bottom-style: none; border-bottom-width: 2px; border-bottom-color: #D3D3D3; border-left-style: none; border-left-width: 2px; border-left-color: #D3D3D3; border-right-style: none; border-right-width: 2px; border-right-color: #D3D3D3; }
+ #wvqkwrgfzj .gt_sourcenote { font-size: 90%; padding-top: 4px; padding-bottom: 4px; padding-left: 5px; padding-right: 5px; text-align: left; }
+ #wvqkwrgfzj .gt_footnote_marks { font-size: 75%; vertical-align: 0.4em; position: initial; }
+ #wvqkwrgfzj .gt_asterisk { font-size: 100%; vertical-align: 0; }
+ 
 </style>
-<div id="039142af" class="cell" data-execution_count="16">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>series_labels <span class="op">=</span> {</span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">"mkt"</span>: <span class="st">"`mkt`"</span>,</span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"vw_excess"</span>: <span class="st">"`vwretd` less `rf`"</span>,</span>
-<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">"log_excess"</span>: <span class="st">"Log `mkt`"</span>,</span>
-<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>returns <span class="op">=</span> pl.col(<span class="op">*</span>series_labels)</span>
-<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>market_summary <span class="op">=</span> (</span>
-<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>    market.select(</span>
-<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>        pl.lit(<span class="bu">list</span>(series_labels.values())).alias(<span class="st">"Series"</span>),</span>
-<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>        pl.concat_list(returns.mean() <span class="op">*</span> <span class="dv">100</span>).alias(<span class="st">"Monthly mean (%)"</span>),</span>
-<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>        pl.concat_list(returns.std() <span class="op">*</span> <span class="dv">100</span>).alias(<span class="st">"Monthly SD (%)"</span>),</span>
-<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>        pl.concat_list(returns.mean() <span class="op">*</span> <span class="dv">12</span><span class="op">**</span><span class="fl">0.5</span> <span class="op">/</span> returns.std())</span>
-<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>        .alias(<span class="st">"Annualized Sharpe"</span>),</span>
-<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>    .explode(pl.<span class="bu">all</span>())</span>
-<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>    .with_columns(pl.col(pl.Float64).<span class="bu">round</span>(<span class="dv">3</span>))</span>
-<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a>show_table(market_summary.with_columns(pl.col(pl.Float64).cast(pl.String)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-display cell-output-markdown">
-<table class="caption-top table table-sm table-striped small">
+
+<table class="gt_table caption-top table table-sm table-striped small" data-quarto-bootstrap="false">
 <thead>
-<tr class="header">
-<th style="text-align: left;">Series</th>
-<th style="text-align: right;">Monthly mean (%)</th>
-<th style="text-align: right;">Monthly SD (%)</th>
-<th style="text-align: right;">Annualized Sharpe</th>
+<tr class="gt_col_headings header">
+<th id="Series" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" scope="col">Series</th>
+<th id="Monthly-mean" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Monthly mean (%)</th>
+<th id="Monthly-SD" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Monthly SD (%)</th>
+<th id="Annualized-Sharpe" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Annualized Sharpe</th>
 </tr>
 </thead>
-<tbody>
+<tbody class="gt_table_body">
 <tr class="odd">
-<td style="text-align: left;"><code>mkt</code></td>
-<td style="text-align: right;">0.629</td>
-<td style="text-align: right;">5.447</td>
-<td style="text-align: right;">0.4</td>
+<td class="gt_row gt_left" headers="Series"><code>mkt</code></td>
+<td class="gt_row gt_right" headers="Monthly-mean">0.629</td>
+<td class="gt_row gt_right" headers="Monthly-SD">5.447</td>
+<td class="gt_row gt_right" headers="Annualized-Sharpe">0.4</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;"><code>vwretd</code> less <code>rf</code></td>
-<td style="text-align: right;">0.626</td>
-<td style="text-align: right;">5.46</td>
-<td style="text-align: right;">0.397</td>
+<td class="gt_row gt_left" headers="Series"><code>vwretd</code> less <code>rf</code></td>
+<td class="gt_row gt_right" headers="Monthly-mean">0.626</td>
+<td class="gt_row gt_right" headers="Monthly-SD">5.46</td>
+<td class="gt_row gt_right" headers="Annualized-Sharpe">0.397</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">Log <code>mkt</code></td>
-<td style="text-align: right;">0.48</td>
-<td style="text-align: right;">5.453</td>
-<td style="text-align: right;">0.305</td>
+<td class="gt_row gt_left" headers="Series">Log <code>mkt</code></td>
+<td class="gt_row gt_right" headers="Monthly-mean">0.48</td>
+<td class="gt_row gt_right" headers="Monthly-SD">5.453</td>
+<td class="gt_row gt_right" headers="Annualized-Sharpe">0.305</td>
 </tr>
 </tbody>
 </table>
+
+
+</div>
 </div>
 </div>
 <p><strong><span id="cumulative-market-excess-returns">Cumulative market excess returns</span></strong></p>
-<p>For comparison with BEM Figure 7.5, we compound the monthly market factor, <span class="math inline">\(\prod_{s\leq t}(1+\mathrm{MKT}_s)-1\)</span>, and sum its log transformation, <span class="math inline">\(\sum_{s\leq t}\log(1+\mathrm{MKT}_s)\)</span>. Both are transformations of the same underlying series. The panels share a month-end date axis and use separate percentage scales.</p>
-<p>Compounding the market factor is <strong>not</strong> the same as subtracting the compounded risk-free return from the compounded market return. Here we follow the book’s definition.</p>
-<div id="794be600" class="cell" data-execution_count="17">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>market_path <span class="op">=</span> market.with_columns(</span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>    date<span class="op">=</span>pl.col(<span class="st">"month"</span>).dt.month_end(),</span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>    compounded<span class="op">=</span>(<span class="dv">1</span> <span class="op">+</span> pl.col(<span class="st">"mkt"</span>)).cum_prod() <span class="op">-</span> <span class="dv">1</span>,</span>
-<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>    cumulative_log<span class="op">=</span>pl.col(<span class="st">"log_excess"</span>).cum_sum(),</span>
-<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>For comparison with BEM Figure 7.5, I compound the monthly market factor, <span class="math inline">\(\prod_{s\leq t}(1+\mathrm{MKT}_s)-1\)</span>, and sum its log transformation, <span class="math inline">\(\sum_{s\leq t}\log(1+\mathrm{MKT}_s)\)</span>. Both are transformations of the same underlying series. The panels share a month-end date axis and use separate percentage scales.</p>
+<p>Compounding the market factor is <strong>not</strong> the same as subtracting the compounded risk-free return from the compounded market return. Here I follow the book’s definition.</p>
+<div id="871d08aa" class="cell" data-execution_count="16">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>market_path <span class="op">=</span> market.with_columns(</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>    date<span class="op">=</span>pl.col(<span class="st">"month"</span>).dt.month_end(),</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>    compounded<span class="op">=</span>(<span class="dv">1</span> <span class="op">+</span> pl.col(<span class="st">"mkt"</span>)).cum_prod() <span class="op">-</span> <span class="dv">1</span>,</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>    cumulative_log<span class="op">=</span>pl.col(<span class="st">"log_excess"</span>).cum_sum(),</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div id="cell-fig-bem7-market-path" class="cell" data-execution_count="18">
-<div class="cell-output cell-output-display" data-execution_count="18">
+<div id="cell-fig-bem7-market-path" class="cell" data-execution_count="17">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> eap_pl <span class="im">import</span> plot_cumulative_returns</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>plot_cumulative_returns(market_path, y_label<span class="op">=</span><span class="st">"Cumulative market excess return"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="17">
 <div id="fig-bem7-market-path" class="quarto-float quarto-figure quarto-figure-center anchored" alt="Two panels show compounded and cumulative log market excess returns. The 1929–1932 drawdown is clearer in the cumulative log panel.">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-bem7-market-path-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
@@ -1314,34 +1421,37 @@ Figure&nbsp;7.5: Cumulative market excess returns, July 1926–December 2012 (co
 </div>
 <p><strong><span id="drawdowns">Drawdowns</span></strong></p>
 <p>The compounded line makes early losses look small compared with later ones. To measure a drawdown, divide the value at the trough by the value at the preceding peak, then subtract one. Use the peak and trough months described in BEM; the recovery month is the first later month back at or above the old peak. Month names here refer to end-of-month values, so an episode that begins in September uses the August close as its reference.</p>
-<div id="6df4a54b" class="cell" data-execution_count="19">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> datetime <span class="im">import</span> date</span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>episodes <span class="op">=</span> [</span>
-<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"1929 crash"</span>, date(<span class="dv">1929</span>, <span class="dv">8</span>, <span class="dv">1</span>), date(<span class="dv">1932</span>, <span class="dv">6</span>, <span class="dv">1</span>)),</span>
-<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"1968–1974 decline"</span>, date(<span class="dv">1968</span>, <span class="dv">11</span>, <span class="dv">1</span>), date(<span class="dv">1974</span>, <span class="dv">9</span>, <span class="dv">1</span>)),</span>
-<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"Dot-com bust and financial crisis"</span>, date(<span class="dv">2000</span>, <span class="dv">3</span>, <span class="dv">1</span>), date(<span class="dv">2009</span>, <span class="dv">2</span>, <span class="dv">1</span>)),</span>
-<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"1987 crash"</span>, date(<span class="dv">1987</span>, <span class="dv">8</span>, <span class="dv">1</span>), date(<span class="dv">1987</span>, <span class="dv">11</span>, <span class="dv">1</span>)),</span>
-<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>]</span>
-<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>wealth <span class="op">=</span> market_path.select(<span class="st">"month"</span>, wealth<span class="op">=</span><span class="dv">1</span> <span class="op">+</span> pl.col(<span class="st">"compounded"</span>))</span>
-<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> measure_drawdown(episode, peak, trough):</span>
-<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>    peak_value <span class="op">=</span> wealth.<span class="bu">filter</span>(pl.col(<span class="st">"month"</span>) <span class="op">==</span> peak)[<span class="st">"wealth"</span>].item()</span>
-<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>    trough_value <span class="op">=</span> wealth.<span class="bu">filter</span>(pl.col(<span class="st">"month"</span>) <span class="op">==</span> trough)[<span class="st">"wealth"</span>].item()</span>
-<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>    recovery <span class="op">=</span> wealth.<span class="bu">filter</span>(</span>
-<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a>        (pl.col(<span class="st">"month"</span>) <span class="op">&gt;</span> trough) <span class="op">&amp;</span> (pl.col(<span class="st">"wealth"</span>) <span class="op">&gt;=</span> peak_value)</span>
-<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a>    )[<span class="st">"month"</span>].first()</span>
-<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> {</span>
-<span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a>        <span class="st">"Episode"</span>: episode,</span>
-<span id="cb14-20"><a href="#cb14-20" aria-hidden="true" tabindex="-1"></a>        <span class="st">"Peak"</span>: peak.strftime(<span class="st">"%Y-%m"</span>),</span>
-<span id="cb14-21"><a href="#cb14-21" aria-hidden="true" tabindex="-1"></a>        <span class="st">"Trough"</span>: trough.strftime(<span class="st">"%Y-%m"</span>),</span>
-<span id="cb14-22"><a href="#cb14-22" aria-hidden="true" tabindex="-1"></a>        <span class="st">"Drawdown (%)"</span>: <span class="bu">round</span>(<span class="dv">100</span> <span class="op">*</span> (trough_value <span class="op">/</span> peak_value <span class="op">-</span> <span class="dv">1</span>), <span class="dv">1</span>),</span>
-<span id="cb14-23"><a href="#cb14-23" aria-hidden="true" tabindex="-1"></a>        <span class="st">"Recovery"</span>: recovery.strftime(<span class="st">"%Y-%m"</span>) <span class="cf">if</span> recovery <span class="cf">else</span> <span class="st">"Not by 2012-12"</span>,</span>
-<span id="cb14-24"><a href="#cb14-24" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb14-25"><a href="#cb14-25" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb14-26"><a href="#cb14-26" aria-hidden="true" tabindex="-1"></a>pl.DataFrame([measure_drawdown(<span class="op">*</span>episode) <span class="cf">for</span> episode <span class="kw">in</span> episodes])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-display" data-execution_count="19">
+<div id="957ed81c" class="cell" data-execution_count="18">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> datetime <span class="im">import</span> date</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>episodes <span class="op">=</span> [</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"1929 crash"</span>, date(<span class="dv">1929</span>, <span class="dv">8</span>, <span class="dv">1</span>), date(<span class="dv">1932</span>, <span class="dv">6</span>, <span class="dv">1</span>)),</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"1968–1974 decline"</span>, date(<span class="dv">1968</span>, <span class="dv">11</span>, <span class="dv">1</span>), date(<span class="dv">1974</span>, <span class="dv">9</span>, <span class="dv">1</span>)),</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"Dot-com bust and financial crisis"</span>, date(<span class="dv">2000</span>, <span class="dv">3</span>, <span class="dv">1</span>), date(<span class="dv">2009</span>, <span class="dv">2</span>, <span class="dv">1</span>)),</span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"1987 crash"</span>, date(<span class="dv">1987</span>, <span class="dv">8</span>, <span class="dv">1</span>), date(<span class="dv">1987</span>, <span class="dv">11</span>, <span class="dv">1</span>)),</span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>wealth <span class="op">=</span> market_path.select(<span class="st">"month"</span>, wealth<span class="op">=</span><span class="dv">1</span> <span class="op">+</span> pl.col(<span class="st">"compounded"</span>))</span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> measure_drawdown(episode, peak, trough):</span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>    peak_value <span class="op">=</span> wealth.<span class="bu">filter</span>(pl.col(<span class="st">"month"</span>) <span class="op">==</span> peak)[<span class="st">"wealth"</span>].item()</span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a>    trough_value <span class="op">=</span> wealth.<span class="bu">filter</span>(pl.col(<span class="st">"month"</span>) <span class="op">==</span> trough)[<span class="st">"wealth"</span>].item()</span>
+<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a>    recovery <span class="op">=</span> wealth.<span class="bu">filter</span>(</span>
+<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a>        (pl.col(<span class="st">"month"</span>) <span class="op">&gt;</span> trough) <span class="op">&amp;</span> (pl.col(<span class="st">"wealth"</span>) <span class="op">&gt;=</span> peak_value)</span>
+<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a>    )[<span class="st">"month"</span>].first()</span>
+<span id="cb17-18"><a href="#cb17-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> {</span>
+<span id="cb17-19"><a href="#cb17-19" aria-hidden="true" tabindex="-1"></a>        <span class="st">"Episode"</span>: episode,</span>
+<span id="cb17-20"><a href="#cb17-20" aria-hidden="true" tabindex="-1"></a>        <span class="st">"Peak"</span>: peak.strftime(<span class="st">"%Y-%m"</span>),</span>
+<span id="cb17-21"><a href="#cb17-21" aria-hidden="true" tabindex="-1"></a>        <span class="st">"Trough"</span>: trough.strftime(<span class="st">"%Y-%m"</span>),</span>
+<span id="cb17-22"><a href="#cb17-22" aria-hidden="true" tabindex="-1"></a>        <span class="st">"Drawdown (%)"</span>: <span class="bu">round</span>(<span class="dv">100</span> <span class="op">*</span> (trough_value <span class="op">/</span> peak_value <span class="op">-</span> <span class="dv">1</span>), <span class="dv">1</span>),</span>
+<span id="cb17-23"><a href="#cb17-23" aria-hidden="true" tabindex="-1"></a>        <span class="st">"Recovery"</span>: recovery.strftime(<span class="st">"%Y-%m"</span>) <span class="cf">if</span> recovery <span class="cf">else</span> <span class="st">"Not by 2012-12"</span>,</span>
+<span id="cb17-24"><a href="#cb17-24" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb17-25"><a href="#cb17-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-26"><a href="#cb17-26" aria-hidden="true" tabindex="-1"></a>pl.DataFrame([measure_drawdown(<span class="op">*</span>episode) <span class="cf">for</span> episode <span class="kw">in</span> episodes])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="18">
 <div><style>
 .dataframe > thead > tr,
 .dataframe > tbody > tr {
@@ -1402,12 +1512,15 @@ Figure&nbsp;7.5: Cumulative market excess returns, July 1926–December 2012 (co
 </div>
 </div>
 <p>The daily Fama–French file shows the individual crash-day returns in October 1929 and October 1987.<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a></p>
-<div id="6a46af85" class="cell" data-execution_count="20">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>daily_market <span class="op">=</span> load_parquet(<span class="st">"factors_daily"</span>, <span class="st">"ff"</span>)</span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>daily_market.<span class="bu">filter</span>(</span>
-<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>    pl.col(<span class="st">"date"</span>).is_in([date(<span class="dv">1929</span>, <span class="dv">10</span>, <span class="dv">28</span>), date(<span class="dv">1929</span>, <span class="dv">10</span>, <span class="dv">29</span>), date(<span class="dv">1987</span>, <span class="dv">10</span>, <span class="dv">19</span>)])</span>
-<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>).select(<span class="st">"date"</span>, market_excess_pct<span class="op">=</span>(<span class="dv">100</span> <span class="op">*</span> pl.col(<span class="st">"mktrf"</span>)).<span class="bu">round</span>(<span class="dv">2</span>)).sort(<span class="st">"date"</span>).collect()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-display" data-execution_count="20">
+<div id="34146781" class="cell" data-execution_count="19">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>daily_market <span class="op">=</span> load_parquet(<span class="st">"factors_daily"</span>, <span class="st">"ff"</span>)</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>daily_market.<span class="bu">filter</span>(</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>    pl.col(<span class="st">"date"</span>).is_in([date(<span class="dv">1929</span>, <span class="dv">10</span>, <span class="dv">28</span>), date(<span class="dv">1929</span>, <span class="dv">10</span>, <span class="dv">29</span>), date(<span class="dv">1987</span>, <span class="dv">10</span>, <span class="dv">19</span>)])</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>).select(<span class="st">"date"</span>, market_excess_pct<span class="op">=</span>(<span class="dv">100</span> <span class="op">*</span> pl.col(<span class="st">"mktrf"</span>)).<span class="bu">round</span>(<span class="dv">2</span>)).sort(<span class="st">"date"</span>).collect()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<div class="cell-output cell-output-display" data-execution_count="19">
 <div><style>
 .dataframe > thead > tr,
 .dataframe > tbody > tr {
