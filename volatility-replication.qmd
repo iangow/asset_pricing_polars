@@ -59,7 +59,7 @@ Formation months run from June 1963 through November 2012. Each window ends in t
 ```{python}
 import polars as pl
 
-from era_pl import load_parquet
+from era_pl import load_parquet, ptime
 from eap_pl import get_ff_factors, load_beta_universe
 from eap_pl._volatility import rolling_volatility
 
@@ -90,8 +90,14 @@ monthly_factors = get_ff_factors("monthly", vintage=vintage).join(
     get_ff_factors("momentum", vintage=vintage), on="date", how="left", validate="1:1"
 )
 
-daily_vol = rolling_volatility(anchors, daily, daily_factors, daily_windows, 252)
-monthly_vol = rolling_volatility(anchors, monthly, monthly_factors, monthly_windows, 12)
+with ptime():
+    daily_vol = rolling_volatility(anchors, daily, daily_factors, daily_windows, 252)
+```
+
+```{python}
+with ptime():
+    monthly_vol = rolling_volatility(anchors, monthly, monthly_factors, monthly_windows, 12)
+
 volatility = daily_vol.join(monthly_vol, on=keys, validate="1:1")
 ```
 
@@ -102,49 +108,51 @@ from eap_pl import build_book_to_market, build_momentum, build_sizes
 from eap_pl._data import monthly_stock_returns
 from eap_pl._skewness import rolling_skewness
 
-usable_days = daily.filter(
-    pl.all_horizontal(pl.col("ret", "prc", "vol").is_finite()),
-    pl.col("prc") > 0,
-    pl.col("vol") > 0,
-).with_columns(month=pl.col("date").dt.month_start())
+with ptime():
+    usable_days = daily.filter(
+        pl.all_horizontal(pl.col("ret", "prc", "vol").is_finite()),
+        pl.col("prc") > 0,
+        pl.col("vol") > 0,
+    ).with_columns(month=pl.col("date").dt.month_start())
 
-illiquidity = (
-    usable_days.filter(pl.col("month") >= first)
-    .group_by(keys)
-    .agg(illiq=(1e6 * pl.col("ret").abs() / (pl.col("prc") * pl.col("vol"))).mean(),
-         days=pl.len())
-    .filter(pl.col("days") >= 15)
-    .select(*keys, "illiq")
-    .collect()
-)
+    illiquidity = (
+        usable_days.filter(pl.col("month") >= first)
+        .group_by(keys)
+        .agg(illiq=(1e6 * pl.col("ret").abs() / (pl.col("prc") * pl.col("vol"))).mean(),
+             days=pl.len())
+        .filter(pl.col("days") >= 15)
+        .select(*keys, "illiq")
+        .collect()
+    )
 
-skewness = rolling_skewness(anchors, monthly, monthly_factors, {"5y": monthly_windows["5y"]})
-sizes = build_sizes()
-betas = load_parquet("betas", "eap").select(*keys, beta="12M")
-adjusted = monthly_stock_returns(first.dt.offset_by("1mo"), last_holding).rename({"ret": "adjusted"})
-holding_returns = (
-    monthly.select("permno", month="date", unadjusted="ret")
-    .filter(pl.col("month").is_between(first.dt.offset_by("1mo"), last_holding))
-    .join(adjusted, on=keys, how="full", coalesce=True, validate="1:1")
-    .join(monthly_factors.lazy().select("rf", month="date", market=100 * pl.col("mktrf")),
-          on="month", validate="m:1")
-    .select("permno", pl.col("month").dt.offset_by("-1mo"), "market",
-            excess=100 * (pl.col("adjusted") - pl.col("rf")),
-            raw_excess=100 * (pl.col("unadjusted") - pl.col("rf")))
-    .collect()
-)
+    skewness = rolling_skewness(anchors, monthly, monthly_factors, {"5y": monthly_windows["5y"]})
+    sizes = build_sizes()
+    betas = load_parquet("betas", "eap").select(*keys, beta="12M")
+    adjusted = monthly_stock_returns(first.dt.offset_by("1mo"), last_holding).rename({"ret": "adjusted"})
+    holding_returns = (
+        monthly.select("permno", month="date", unadjusted="ret")
+        .filter(pl.col("month").is_between(first.dt.offset_by("1mo"), last_holding))
+        .join(adjusted, on=keys, how="full", coalesce=True, validate="1:1")
+        .join(monthly_factors.lazy().select("rf", month="date", market=100 * pl.col("mktrf")),
+              on="month", validate="m:1")
+        .select("permno", pl.col("month").dt.offset_by("-1mo"), "market",
+                excess=100 * (pl.col("adjusted") - pl.col("rf")),
+                raw_excess=100 * (pl.col("unadjusted") - pl.col("rf")))
+        .collect()
+    )
 
-panel = (
-    volatility.join(skewness.select(*keys, "coskew_5y", "idioskew_5y"), on=keys, validate="1:1")
-    .join(betas.collect(), on=keys, how="left", validate="1:1")
-    .join(sizes.select(*keys, "cap", "log_cap"), on=keys, how="left", validate="1:1")
-    .join(build_book_to_market(sizes).select(*keys, "bm"), on=keys, how="left", validate="1:1")
-    .join(build_momentum(first, last).select(*keys, "mom"), on=keys, how="left", validate="1:1")
-    .join(monthly.select("permno", month="date", rev=100 * pl.col("ret")).collect(),
-          on=keys, how="left", validate="1:1")
-    .join(illiquidity, on=keys, how="left", validate="1:1")
-    .join(holding_returns, on=keys, how="left", validate="1:1")
-)
+    panel = (
+        volatility.join(skewness.select(*keys, "coskew_5y", "idioskew_5y"), on=keys, validate="1:1")
+        .join(betas.collect(), on=keys, how="left", validate="1:1")
+        .join(sizes.select(*keys, "cap", "log_cap"), on=keys, how="left", validate="1:1")
+        .join(build_book_to_market(sizes).select(*keys, "bm"), on=keys, how="left", validate="1:1")
+        .join(build_momentum(first, last).select(*keys, "mom"), on=keys, how="left", validate="1:1")
+        .join(monthly.select("permno", month="date", rev=100 * pl.col("ret")).collect(),
+              on=keys, how="left", validate="1:1")
+        .join(illiquidity, on=keys, how="left", validate="1:1")
+        .join(holding_returns, on=keys, how="left", validate="1:1")
+    )
+
 controls = {
     "beta": "Beta", "log_cap": "Size", "bm": "BM", "mom": "Momentum",
     "rev": "Reversal", "illiq": "Illiquidity",
