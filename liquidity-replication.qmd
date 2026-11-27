@@ -4,8 +4,8 @@ jupyter: python3
 
 # Liquidity {#sec-liquidity-replication}
 
-Following Chapter 13 of @bali2016, we ask whether less liquid stocks earn higher subsequent returns.
-We estimate Amihud illiquidity from legacy CRSP daily data and examine the Pástor–Stambaugh liquidity factors separately. The former measures how much an individual stock's price moves for a given trading volume. The latter measure marketwide liquidity and exposure to changes in it.
+Following Chapter 13 of @bali2016, I ask whether less liquid stocks earn higher subsequent returns.
+I estimate Amihud illiquidity from legacy CRSP daily data and examine the Pástor–Stambaugh liquidity factors separately. The former measures how much an individual stock's price moves for a given trading volume. The latter measure marketwide liquidity and exposure to changes in it.
 
 ## Measuring Illiquidity
 
@@ -18,8 +18,8 @@ $$
 \frac{|R_{i,d}|}{P_{i,d}Q_{i,d}/10^6}.
 $$ {#eq-bem13-amihud}
 
-$R_{i,d}$ is the decimal CRSP return, $P_{i,d}$ is the closing trade price, and $Q_{i,d}$ is the number of shares traded. We require a finite return and strictly positive price and volume. A negative CRSP price denotes a bid–ask average, which BEM exclude for this measure.
-The minimum counts for the one-, three-, six-, and twelve-month windows are 15, 50, 100, and 200 usable days. We also use $\log(1+\operatorname{Illiq}_{i,t}^{(k)})$, which reduces the influence of large values without changing their ranks.
+$R_{i,d}$ is the decimal CRSP return, $P_{i,d}$ is the closing trade price, and $Q_{i,d}$ is the number of shares traded. I require a finite return and strictly positive price and volume. A negative CRSP price denotes a bid–ask average, which BEM exclude for this measure.
+The minimum counts for the one-, three-, six-, and twelve-month windows are 15, 50, 100, and 200 usable days. I also use $\log(1+\operatorname{Illiq}_{i,t}^{(k)})$, which reduces the influence of large values without changing their ranks.
 
 ```{python}
 import polars as pl
@@ -104,23 +104,23 @@ panel = panel.with_columns(pl.col(*raw).log1p().name.prefix("log_"))
 
 ## Summary Statistics, Correlations, and Persistence
 
-The sample comprises the June 1963 through November 2012 formation months. We compute each descriptive statistic within month and then average over months.
-
-{{< include _show-table.qmd >}}
+The sample comprises the June 1963 through November 2012 formation months. I compute each descriptive statistic within month and then average over months.
 
 ```{python}
+#| code-fold: true
 #| label: tbl-bem13-summary
 #| tbl-cap: Cross-sectional summary statistics for the illiquidity measures (BEM Table 13.1)
 
 from eap_pl import mean_cross_sections
 
 summary = mean_cross_sections(panel, measures)
-show_table(summary)
+summary.eap.show_table()
 ```
 
-For Pearson correlations we winsorize each variable at the 0.5th and 99.5th percentiles of the paired monthly sample. Spearman correlations use the original ranks.
+For Pearson correlations I winsorize each variable at the 0.5th and 99.5th percentiles of the paired monthly sample. Spearman correlations use the original ranks.
 
 ```{python}
+#| code-fold: true
 #| label: tbl-bem13-correlations
 #| tbl-cap: Average monthly Pearson correlations below the diagonal and Spearman correlations above it (BEM Table 13.2)
 
@@ -129,12 +129,13 @@ from eap_pl import correlation_matrix, period_correlations
 controls = {"beta": "Beta", "log_cap": "Size", "bm": "`bm`", "mom": "`mom`", "rev": "`rev`"}
 variables = measures | controls
 correlations = period_correlations(panel, list(variables), "month")
-show_table(correlation_matrix(correlations.select(pl.exclude("month").mean()).row(0, named=True), variables))
+correlation_matrix(correlations.select(pl.exclude("month").mean()).row(0, named=True), variables).eap.show_table()
 ```
 
-For persistence, we match the same stock across an exact calendar-month lag and average the cross-sectional correlations. We omit lags shorter than the estimation window to avoid overlap in the daily observations used to measure illiquidity.
+For persistence, I match the same stock across an exact calendar-month lag and average the cross-sectional correlations. I omit lags shorter than the estimation window to avoid overlap in the daily observations used to measure illiquidity.
 
 ```{python}
+#| code-fold: true
 #| label: tbl-bem13-persistence
 #| tbl-cap: Average monthly cross-sectional illiquidity correlations at nonoverlapping lags (BEM Table 13.3)
 
@@ -142,15 +143,15 @@ from eap_pl import persistence
 
 lags = [1, 3, 6, 12, 24, 36, 48, 60, 120]
 persistence_table = persistence(panel, measures, lags)
-show_table(persistence_table.with_columns(
+persistence_table.with_columns(
     pl.when(pl.col("Lag (months)") >= k).then(pl.col(label)).alias(label)
     for k in minimum_days for label in (raw[f"illiq{k}"], logged[f"log_illiq{k}"])
-))
+).eap.show_table()
 ```
 
 ## Illiquidity and Stock Returns
 
-We use next-month excess returns, including the delisting treatment in @sec-bem-returns. One panel of @tbl-bem13-univariate uses unadjusted CRSP returns to show the effect of including delistings. The risk models are the four-factor model in @eq-bem11-ffc and that model augmented by the short-term reversal factor in @eq-bem12-str.
+I use next-month excess returns, including the delisting treatment in @sec-bem-returns. One panel of @tbl-bem13-univariate uses unadjusted CRSP returns to show the effect of including delistings. The risk models are the four-factor model in @eq-bem11-ffc and that model augmented by the short-term reversal factor in @eq-bem12-str.
 
 ```{python}
 from io import StringIO
@@ -201,7 +202,7 @@ def spread_statistics(series, weight, specifications):
 
 ### Univariate Portfolio Analysis
 
-We form monthly deciles using all eligible stocks with each measure, then compute equal- and value-weighted returns. Value weights use formation-month capitalization. The 10–1 portfolio buys the least liquid decile and sells the most liquid decile.
+I form monthly deciles using all eligible stocks with each measure, then compute equal- and value-weighted returns. Value weights use formation-month capitalization. The 10–1 portfolio buys the least liquid decile and sells the most liquid decile.
 
 ```{python}
 deciles = [str(i) for i in range(1, 11)]
@@ -218,6 +219,7 @@ for term in raw:
 ```
 
 ```{python}
+#| code-fold: true
 #| label: tbl-bem13-univariate
 #| tbl-cap: Characteristics, returns, and alphas of illiquidity deciles (BEM Table 13.4)
 #| tbl-subcap:
@@ -231,10 +233,10 @@ means = (
     decile_results["illiq12"].group_by("portfolio")
     .agg(pl.col(*characteristics.values()).mean()).sort("portfolio")
 )
-show_table(pl.DataFrame([
+pl.DataFrame([
     {"Characteristic": label, **dict(zip(deciles, means[label]))}
     for label in characteristics.values()
-]))
+]).eap.show_table()
 
 for weight in ("EW", "EW unadjusted", "VW"):
     rows = []
@@ -245,7 +247,7 @@ for weight in ("EW", "EW unadjusted", "VW"):
         statistics = spread_statistics(long_short, "outcome", models)
         rows.append({"Sort variable": label, **dict(zip(deciles, means["outcome"])),
                      "10–1": statistics.pop("Return"), **statistics})
-    show_table(pl.DataFrame(rows))
+    pl.DataFrame(rows).eap.show_table()
 
 monthly = decile_results["illiq1"]
 groups = monthly.partition_by("portfolio", as_dict=True)
@@ -253,10 +255,10 @@ fits = {str(i): factor_fit(groups[i,], "VW", ffcstr) for i in range(1, 11)}
 fits["10–1"] = factor_fit(spread(monthly, 10, 1, "portfolio", "VW"), "VW", ffcstr)
 terms = {"Intercept": "FFCSTR α", "mkt": "`mkt`", "smb": "`smb`", "hml": "`hml`",
          "mom_factor": "`mom_factor`", "str_factor": "`str_factor`"}
-show_table(pl.DataFrame([
+pl.DataFrame([
     {"Statistic": label, **{decile: format_fit(fit, term) for decile, fit in fits.items()}}
     for term, label in terms.items()
-]))
+]).eap.show_table()
 ```
 
 
@@ -265,7 +267,7 @@ Using the unadjusted stock returns raises the equal-weighted spread to 1.01%.
 
 ### Bivariate Portfolio Analysis
 
-Each two-way sort uses stocks with both characteristics available. We form quintiles first on a control variable, then on twelve-month illiquidity. In dependent sorts, we calculate the second set of cutoffs within each control quintile. In independent sorts, we calculate both sets of cutoffs from the monthly cross-section and intersect the groups. The average column weights the available control cells equally within each month and illiquidity quintile.
+Each two-way sort uses stocks with both characteristics available. I form quintiles first on a control variable, then on twelve-month illiquidity. In dependent sorts, I calculate the second set of cutoffs within each control quintile. In independent sorts, I calculate both sets of cutoffs from the monthly cross-section and intersect the groups. The average column weights the available control cells equally within each month and illiquidity quintile.
 
 ```{python}
 from eap_pl import bivariate_months
@@ -302,6 +304,7 @@ def two_way_spreads(pairs, dependent, model_overrides=None):
 ```
 
 ```{python}
+#| code-fold: true
 #| label: tbl-bem13-size
 #| tbl-cap: Illiquidity portfolios within size quintiles (BEM Table 13.5)
 #| tbl-subcap:
@@ -344,30 +347,33 @@ return_rows.extend(
     {"Portfolio": f"5–1 {statistic}", **{group: result[statistic] for group, result in size_spreads.items()}}
     for statistic in models
 )
-show_table(pl.DataFrame(return_rows))
-show_table(size_grid("size").with_columns(pl.col(group_labels).round().cast(pl.Int64)))
+pl.DataFrame(return_rows).eap.show_table()
+size_grid("size").with_columns(pl.col(group_labels).round().cast(pl.Int64)).eap.show_table()
 ```
 
 ```{python}
+#| code-fold: true
 #| label: tbl-bem13-dependent
 #| tbl-cap: Illiquidity spreads from dependent sorts (BEM Table 13.6)
 
 sort_controls = {term: controls[term] for term in ("beta", "bm", "mom", "rev")}
 illiq_spreads = [(term, "illiq12", label) for term, label in sort_controls.items()]
-show_table(two_way_spreads(illiq_spreads, dependent=True))
+two_way_spreads(illiq_spreads, dependent=True).eap.show_table()
 ```
 
 ```{python}
+#| code-fold: true
 #| label: tbl-bem13-independent
 #| tbl-cap: Illiquidity spreads from independent sorts (BEM Table 13.7)
 
-show_table(two_way_spreads(illiq_spreads, dependent=False))
+two_way_spreads(illiq_spreads, dependent=False).eap.show_table()
 ```
 
 Reversing the roles of the sort variables shows whether the other characteristics predict returns within illiquidity quintiles. The independent sorts use the same intersections as @tbl-bem13-independent and take the spread along the other dimension.
-The benchmark omits `hml` for the book-to-market spread and the momentum factor for the momentum spread. For the reversal spread we report the four-factor alpha.
+The benchmark omits `hml` for the book-to-market spread and the momentum factor for the momentum spread. For the reversal spread I report the four-factor alpha.
 
 ```{python}
+#| code-fold: true
 #| label: tbl-bem13-control-dependent
 #| tbl-cap: Characteristic spreads within illiquidity quintiles using dependent sorts (BEM Table 13.8)
 
@@ -378,21 +384,23 @@ reverse_models = {
     "mom": {"Return": "1", "FF α": ff, "FFSTR α": f"{ff} + str_factor"},
     "rev": {"Return": "1", "FFC α": ffc},
 }
-show_table(two_way_spreads(control_spreads, dependent=True, model_overrides=reverse_models))
+two_way_spreads(control_spreads, dependent=True, model_overrides=reverse_models).eap.show_table()
 ```
 
 ```{python}
+#| code-fold: true
 #| label: tbl-bem13-control-independent
 #| tbl-cap: Characteristic spreads within illiquidity quintiles using independent sorts (BEM Table 13.9)
 
-show_table(two_way_spreads(control_spreads, dependent=False, model_overrides=reverse_models))
+two_way_spreads(control_spreads, dependent=False, model_overrides=reverse_models).eap.show_table()
 ```
 
 ### Fama–MacBeth Regressions
 
-We regress subsequent excess returns on the formation-month characteristics separately each month. For each specification we keep complete cases before winsorizing the regressors at the 0.5th and 99.5th percentiles within month. We use six-lag Newey–West standard errors for the average coefficients. The raw and log illiquidity measures produce the same ranks but need not produce the same regression results.
+I regress subsequent excess returns on the formation-month characteristics separately each month. For each specification I keep complete cases before winsorizing the regressors at the 0.5th and 99.5th percentiles within month. I use six-lag Newey–West standard errors for the average coefficients. The raw and log illiquidity measures produce the same ranks but need not produce the same regression results.
 
 ```{python}
+#| code-fold: true
 #| label: tbl-bem13-fm-controls
 #| tbl-cap: Twelve-month illiquidity with each control and with all controls (BEM Table 13.10)
 #| tbl-subcap:
@@ -415,10 +423,11 @@ def illiquidity_regressions(specifications, labels):
 control_sets = [[], *([term] for term in controls), list(controls)]
 for term in ("illiq12", "log_illiq12"):
     specifications = [[term, *terms] for terms in control_sets]
-    show_table(illiquidity_regressions(specifications, {term: measures[term]} | controls))
+    illiquidity_regressions(specifications, {term: measures[term]} | controls).eap.show_table()
 ```
 
 ```{python}
+#| code-fold: true
 #| label: tbl-bem13-fm-windows
 #| tbl-cap: Fama–MacBeth regressions by illiquidity window (BEM Table 13.11)
 #| tbl-subcap:
@@ -427,7 +436,7 @@ for term in ("illiq12", "log_illiq12"):
 
 for terms in (raw, logged):
     specifications = [[term, *extra] for term in terms for extra in ([], list(controls))]
-    show_table(illiquidity_regressions(specifications, terms | controls))
+    illiquidity_regressions(specifications, terms | controls).eap.show_table()
 ```
 
 ## Liquidity Factors
@@ -449,7 +458,7 @@ $$
 \widehat{\gamma}_m=\frac{1}{N_m}\sum_{i=1}^{N_m}\widehat{\gamma}_{i,m}.
 $$ {#eq-bem13-aggregate-liquidity}
 
-The aggregation uses stocks with a price of $5 to $1,000 at the prior month-end. The plotted level scales the average by $V_m/V_1$, using the total prior month-end capitalization of the eligible stocks and August 1962 as the base month. We use the authors' [December 2013 release](https://web.archive.org/web/20141121162425id_/http://faculty.chicagobooth.edu:80/lubos.pastor/research/liq_data_1962_2013.txt), the same vintage used by BEM. The file comes with `eap_pl` and includes the aggregate level, innovations, and traded factor.
+The aggregation uses stocks with a price of $5 to $1,000 at the prior month-end. The plotted level scales the average by $V_m/V_1$, using the total prior month-end capitalization of the eligible stocks and August 1962 as the base month. I use the authors' [December 2013 release](https://web.archive.org/web/20141121162425id_/http://faculty.chicagobooth.edu:80/lubos.pastor/research/liq_data_1962_2013.txt), the same vintage used by BEM. The file comes with `eap_pl` and includes the aggregate level, innovations, and traded factor.
 
 ```{python}
 from plotnine_polars import aes
@@ -475,6 +484,7 @@ def plot_liquidity(series, label):
 ```
 
 ```{python}
+#| code-fold: true
 #| label: fig-bem13-level
 #| fig-cap: Scaled aggregate market liquidity, August 1962 to December 2012 (BEM Figure 13.1)
 #| fig-alt: A monthly line fluctuates around zero with large negative spikes, including a sharp drop in October 1987.
@@ -501,6 +511,7 @@ L_m=\frac{\widehat u_m}{100}.
 $$ {#eq-bem13-innovation}
 
 ```{python}
+#| code-fold: true
 #| label: fig-bem13-innovations
 #| fig-cap: Innovations in aggregate market liquidity, August 1962 to December 2012 (BEM Figure 13.2)
 #| fig-alt: Monthly innovations fluctuate around zero with abrupt negative shocks in several crisis months.
@@ -516,9 +527,10 @@ r_{i,m}^{e}=\alpha_i+\beta_{i,M}\mathrm{MKT}_m+
 \beta_{i,L}L_m+\varepsilon_{i,m}.
 $$ {#eq-bem13-liquidity-beta}
 
-At portfolio formation, the innovations used in this regression are estimated with data available at that date. The liquidity betas are updated at year-end and used during the following calendar year. The factor is the value-weighted return on the highest liquidity-beta decile minus the return on the lowest. We compound the published monthly factor returns beginning in January 1968 and also sum their log returns as in @eq-bem12-cumulative.
+At portfolio formation, the innovations used in this regression are estimated with data available at that date. The liquidity betas are updated at year-end and used during the following calendar year. The factor is the value-weighted return on the highest liquidity-beta decile minus the return on the lowest. I compound the published monthly factor returns beginning in January 1968 and also sum their log returns as in @eq-bem12-cumulative.
 
 ```{python}
+#| code-fold: true
 #| label: fig-bem13-traded
 #| fig-cap: Compounded and cumulative log returns for the traded liquidity factor, January 1968 to December 2012 (BEM Figure 13.3)
 #| fig-alt: Separate panels show positive long-run cumulative returns, a sustained drawdown from the late 1980s and sharp fluctuations around 2008–2009.
@@ -539,14 +551,15 @@ plot_cumulative_returns(traded, y_label="Cumulative liquidity factor return")
 The series ends December 2012 at `{python} f'{traded["compounded"][-1]:.2%}'` compounded and `{python} f'{traded["cumulative_log"][-1]:.2%}'` in cumulative log returns.
 
 ```{python}
+#| code-fold: true
 psl_sample = (
     traded.select(month="date", psl_pct=100 * pl.col("psl"))
     .join(factors, on="month", validate="1:1")
     .sort("month")
 )
 psl_models = {"FF": ff, "FFC": ffc, "FFCSTR": ffcstr}
-show_table(pl.DataFrame([
+pl.DataFrame([
     {"Model": label, "Alpha": format_fit(hac(f"psl_pct ~ {rhs}", psl_sample), "Intercept")}
     for label, rhs in psl_models.items()
-]))
+]).eap.show_table()
 ```

@@ -11,7 +11,7 @@ metadata-files:
 website:
   title: eap_pl
   site-url: https://iangow.github.io/asset_pricing_polars/eap_pl/
-  description: Function reference for Empirical Asset Pricing with Polars
+  description: "Function reference for Empirical Asset Pricing: A Python Reader’s Companion"
   navbar:
     left:
       - href: index.qmd
@@ -79,3 +79,7 @@ quartodoc:
       contents:
         - plot_cumulative_returns
         - plot_factor
+    - title: Table display
+      contents:
+        - EAPDataFrameNamespace.show_table
+        - EAPDataFrameNamespace.show_grid

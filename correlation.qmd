@@ -5,9 +5,7 @@ jupyter: python3
 # Correlation {#sec-bem-correlation}
 
 In Chapter 3, @bali2016 compare the cross-sectional associations among beta, size, book-to-market, and next-year excess return.
-We use the 1988–2012 annual panel from @sec-summary-statistics.
-
-{{< include _show-table.qmd >}}
+I use the 1988–2012 annual panel from @sec-summary-statistics.
 
 ```{python}
 import polars as pl
@@ -55,12 +53,12 @@ annual = period_correlations(annual_panel, variables, "year").sort("year")
 ```{python}
 #| label: tbl-bem3-annual
 #| tbl-cap: Annual Pearson and Spearman correlations (BEM Table 3.1)
-#| echo: false
+#| code-fold: true
 pair_labels = {
     c: c.replace("excess", "Return").replace("BM", "Book-to-market")
     for c in annual.columns if "excess" in c or "BM" in c
 }
-show_table(annual.rename(pair_labels).rename({"year": "Year"}))
+annual.rename(pair_labels).rename({"year": "Year"}).eap.show_table()
 ```
 
 ### Average Cross-Sectional Correlations {#average-across-years}
@@ -89,8 +87,8 @@ average = annual.select(pl.exclude("year").mean())
 ```{python}
 #| label: tbl-bem3-average
 #| tbl-cap: Average annual correlations by pair (BEM Table 3.2)
-#| echo: false
-show_table(average.rename(pair_labels))
+#| code-fold: true
+average.rename(pair_labels).eap.show_table()
 ```
 
 ## Interpreting Correlations {#interpret-the-correlations}
@@ -100,6 +98,7 @@ Each panel uses formation years on the horizontal axis.
 In the second figure, the return paired with year $t$ comes from year $t+1$.
 
 ```{python}
+#| code-fold: true
 #| label: fig-bem3-characteristics
 #| fig-cap: Annual correlations among beta, size, and book-to-market
 #| fig-alt: Three line plots compare Pearson and Spearman correlations by formation year. Beta and size move together, while their correlations with book-to-market are usually negative.
@@ -136,6 +135,7 @@ Both measures of correlation also show that larger stocks tend to have lower boo
 Market capitalization enters the denominator of book-to-market, which helps explain part of the association.
 
 ```{python}
+#| code-fold: true
 #| label: fig-bem3-returns
 #| fig-cap: Annual correlations of stock characteristics with next-year excess returns
 #| fig-alt: Three line plots show Pearson and Spearman return correlations varying over formation years. The beta and return correlations turn sharply negative in 2001. The series end in 2011.
@@ -154,8 +154,8 @@ Read Pearson correlations below the diagonal and Spearman correlations above it.
 ```{python}
 #| label: tbl-bem3-matrix
 #| tbl-cap: Average Pearson (below diagonal) and Spearman (above diagonal) correlations (BEM Table 3.3)
-#| echo: false
-show_table(correlation_matrix(average.row(0, named=True), variables))
+#| code-fold: true
+correlation_matrix(average.row(0, named=True), variables).eap.show_table()
 ```
 
 ## Summary

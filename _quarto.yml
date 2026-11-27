@@ -4,7 +4,7 @@ project:
   execute-dir: project
 
 book:
-  title: "Empirical Asset Pricing with Polars"
+  title: "Empirical Asset Pricing: A Python Reader’s Companion"
   chapters:
     - index.qmd
     - part: "Part I. Statistical Methodologies"

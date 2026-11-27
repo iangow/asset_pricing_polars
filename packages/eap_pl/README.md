@@ -1,6 +1,6 @@
 # eap_pl
 
-`eap_pl` provides Polars helpers for [Empirical Asset Pricing with Polars](https://iangow.github.io/asset_pricing_polars/).
+`eap_pl` provides Polars helpers for [Empirical Asset Pricing: A Python Reader’s Companion](https://iangow.github.io/asset_pricing_polars/).
 It supports descriptive statistics, portfolio sorts, inference, and plots for the book's legacy CRSP replications.
 
 From the book checkout, run `uv sync` to install the package into the book environment.

@@ -8,15 +8,15 @@ aliases:
 
 []{#sec-size}
 
-We follow Chapter 9 of @bali2016.
-We compare monthly and June-based size, then examine how each relates to subsequent stock returns.
+I follow Chapter 9 of @bali2016.
+I compare monthly and June-based size, then examine how each relates to subsequent stock returns.
 Formation months run from June 1963 through November 2012.
 
 ## Calculating Market Capitalization {#reconstruct-the-published-sample}
 
 The book was published in 2016, well before CRSP's CIZ format.
 This replication uses the legacy (SIZ) monthly stock and names files, not the CIZ files used in the earlier chapters.
-Our legacy snapshot is newer than the authors' original data, even though we use the same sample dates.
+I use a newer legacy snapshot than the authors, with the same sample dates.
 See @sec-data-vintages for the embedded update dates.
 
 Use the share code in force at the end of each month.
@@ -42,7 +42,7 @@ show_code(build_sizes, "prices", "names", "classified_months")
 
 For the annual measure, join each stock to its capitalization at the most recent June.
 A stock without a record for that particular June has no annual value.
-We do not carry forward an older June observation.
+I do not carry forward an older June observation.
 
 ```{python}
 #| echo: false
@@ -109,14 +109,12 @@ stats = mean_cross_sections(sizes, {
 })
 ```
 
-{{< include _show-table.qmd >}}
-
 ```{python}
 #| label: tbl-bem9-summary
 #| tbl-cap: Monthly summary statistics for size (BEM Table 9.1)
-#| echo: false
+#| code-fold: true
 
-show_table(stats)
+stats.eap.show_table()
 ```
 
 The average monthly mean market capitalization is much larger than the average monthly median, reflecting the concentration of market capitalization in a few stocks.
@@ -124,7 +122,7 @@ The average monthly mean market capitalization is much larger than the average m
 ```{python}
 #| label: fig-bem9-concentration
 #| fig-cap: Share of market capitalization held by the largest stocks (BEM Figure 9.1)
-#| echo: false
+#| code-fold: true
 
 from plotnine_polars import aes
 
@@ -158,7 +156,7 @@ shares = (
 ## Correlations {#correlation-and-persistence}
 
 Join the size measures to the twelve-month daily beta from @sec-bem-beta.
-We take the mean of the monthly cross-sectional correlations.
+I take the mean of the monthly cross-sectional correlations.
 Below the diagonal are Pearson correlations on winsorized observations, and above it are Spearman correlations on the original ranks.
 
 ```{python}
@@ -173,8 +171,8 @@ corr = period_correlations(panel, measures, "month").select(pl.exclude("month").
 ```{python}
 #| label: tbl-bem9-correlations
 #| tbl-cap: Cross-sectional correlations for size and beta (BEM Table 9.2)
-#| echo: false
-show_table(correlation_matrix(corr.row(0, named=True), measures))
+#| code-fold: true
+correlation_matrix(corr.row(0, named=True), measures).eap.show_table()
 ```
 
 ## Persistence
@@ -184,9 +182,9 @@ For persistence, match the same stock at a fixed calendar lag, then winsorize bo
 ```{python}
 #| label: tbl-bem9-persistence
 #| tbl-cap: Persistence of nominal size measures (BEM Table 9.3)
-#| echo: false
+#| code-fold: true
 size_measures = {k: v for k, v in measures.items() if k != "beta"}
-show_table(persistence(panel, size_measures, [1, 3, 6, 12, 24, 36, 48, 60, 120]))
+persistence(panel, size_measures, [1, 3, 6, 12, 24, 36, 48, 60, 120]).eap.show_table()
 ```
 
 ## Size and Stock Returns {#size-and-future-returns}
@@ -225,15 +223,15 @@ def size_deciles(nyse):
 ```{python}
 #| label: tbl-bem9-nyse-deciles
 #| tbl-cap: Size deciles using NYSE breakpoints (BEM Table 9.4)
-#| echo: false
-show_table(size_deciles(nyse=True))
+#| code-fold: true
+size_deciles(nyse=True).eap.show_table()
 ```
 
 ```{python}
 #| label: tbl-bem9-all-deciles
 #| tbl-cap: Size deciles using all-stock breakpoints (BEM Table 9.5)
-#| echo: false
-show_table(size_deciles(nyse=False))
+#| code-fold: true
+size_deciles(nyse=False).eap.show_table()
 ```
 
 The equal-weighted large-minus-small spread for monthly size is −0.49% per month with NYSE breakpoints and −1.54% with all-stock breakpoints.
@@ -259,29 +257,29 @@ def size_quintiles(nyse, dependent):
 ```{python}
 #| label: tbl-bem9-nyse-dependent
 #| tbl-cap: Dependent beta and size sorts using NYSE breakpoints (BEM Table 9.6)
-#| echo: false
-show_table(size_quintiles(nyse=True, dependent=True))
+#| code-fold: true
+size_quintiles(nyse=True, dependent=True).eap.show_table()
 ```
 
 ```{python}
 #| label: tbl-bem9-all-dependent
 #| tbl-cap: Dependent beta and size sorts using all-stock breakpoints (BEM Table 9.7)
-#| echo: false
-show_table(size_quintiles(nyse=False, dependent=True))
+#| code-fold: true
+size_quintiles(nyse=False, dependent=True).eap.show_table()
 ```
 
 ```{python}
 #| label: tbl-bem9-nyse-independent
 #| tbl-cap: Independent beta and size sorts using NYSE breakpoints (BEM Table 9.8)
-#| echo: false
-show_table(size_quintiles(nyse=True, dependent=False))
+#| code-fold: true
+size_quintiles(nyse=True, dependent=False).eap.show_table()
 ```
 
 ```{python}
 #| label: tbl-bem9-all-independent
 #| tbl-cap: Independent beta and size sorts using all-stock breakpoints (BEM Table 9.9)
-#| echo: false
-show_table(size_quintiles(nyse=False, dependent=False))
+#| code-fold: true
+size_quintiles(nyse=False, dependent=False).eap.show_table()
 ```
 
 ### Fama–MacBeth Regression Analysis {#famamacbeth-regressions}
@@ -293,13 +291,13 @@ Apply six Newey–West lags to the time series of monthly coefficient estimates.
 ```{python}
 #| label: tbl-bem9-fm
 #| tbl-cap: Fama–MacBeth regressions of returns on size (BEM Table 9.10)
-#| echo: false
+#| code-fold: true
 
 specifications = [
     ["log_cap"], ["log_cap", "beta"], ["log_cap_june"], ["log_cap_june", "beta"],
 ]
-show_table(fama_macbeth_table(panel, specifications,
-                             {"log_cap": "Size", "log_cap_june": "Size FF", "beta": "Beta"}))
+fama_macbeth_table(panel, specifications,
+                             {"log_cap": "Size", "log_cap_june": "Size FF", "beta": "Beta"}).eap.show_table()
 ```
 
 ## The Size Factor
@@ -308,12 +306,12 @@ show_table(fama_macbeth_table(panel, specifications,
 The three portfolios in each size group cover low, middle, and high book-to-market.
 Using the same book-to-market groups on both sides reduces the factor's exposure to the value spread.
 
-For the historical factor series we use the monthly Fama–French `smb` from July 1926 through December 2012.
+For the historical factor series I use the monthly Fama–French `smb` from July 1926 through December 2012.
 
 ```{python}
 #| label: fig-bem9-smb
 #| fig-cap: Cumulative returns on the Fama–French `smb` factor (BEM Figure 9.2)
-#| echo: false
+#| code-fold: true
 from eap_pl import plot_factor
 
 plot_factor("smb")

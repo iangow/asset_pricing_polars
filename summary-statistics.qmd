@@ -16,8 +16,6 @@ jupyter: python3
 </style>
 ```
 
-{{< include _show-table.qmd >}}
-
 In Chapter 2, @bali2016 summarize the distribution of stock characteristics within each year, then average those statistics across years.
 This gives each year's cross-section equal weight.
 
@@ -26,7 +24,7 @@ This gives each year's cross-section equal weight.
 ### Periodic Cross-Sectional Summary Statistics {#annual-cross-sections}
 
 The sample covers U.S. common stocks at each December 31 from 1988 through 2012.
-We take the December value of the 12-month daily beta from @sec-bem-beta.
+I take the December value of the 12-month daily beta from @sec-bem-beta.
 It uses all available daily excess returns in the calendar year and requires at least 200 matched observations.
 
 ```{python}
@@ -38,7 +36,7 @@ annual_beta = load_annual_betas().collect()
 ```
 
 For each year, compute the statistics across the stocks with a beta.
-We use the sample standard deviation, bias-adjusted skewness and excess kurtosis, and linearly interpolated percentiles.
+I use the sample standard deviation, bias-adjusted skewness and excess kurtosis, and linearly interpolated percentiles.
 The count is the number of available values in that cross-section.
 
 ```{python}
@@ -69,9 +67,9 @@ annual_stats = (
 ```{python}
 #| label: tbl-bem2-annual
 #| tbl-cap: Annual summary statistics for market beta (BEM Table 2.1)
-#| echo: false
+#| code-fold: true
 
-show_table(annual_stats.rename({"year": "Year"}))
+annual_stats.rename({"year": "Year"}).eap.show_table()
 ```
 
 ### Average Cross-Sectional Summary Statistics {#average-across-years}
@@ -89,9 +87,9 @@ average_stats = annual_stats.select(pl.exclude("year").mean())
 ```{python}
 #| label: tbl-bem2-average
 #| tbl-cap: Average cross-sectional summary statistics for market beta (BEM Table 2.2)
-#| echo: false
+#| code-fold: true
 
-show_table(average_stats.with_columns(pl.col("n").round().cast(pl.Int64)))
+average_stats.with_columns(pl.col("n").round().cast(pl.Int64)).eap.show_table()
 ```
 
 The annual table also shows that mean beta increased from 0.46 in 1988 to 1.04 in 2012.
@@ -99,7 +97,7 @@ The time-series average hides that change.
 
 ## Presentation and Interpretation {#sec-summary-characteristics}
 
-[]{#summarize-several-characteristics}We also summarize year-end market capitalization in millions of dollars, its natural logarithm (size), book-to-market, and the following calendar year's excess return.
+[]{#summarize-several-characteristics}I also summarize year-end market capitalization in millions of dollars, its natural logarithm (size), book-to-market, and the following calendar year's excess return.
 `build_annual_panel()` assembles these observations using `start_year` and `end_year`, which default to 1988 and 2012.
 
 {{< include _show-code.qmd >}}
@@ -108,7 +106,7 @@ The December beta observations already calculated for @tbl-bem2-annual define th
 The helper uses `permno` and formation year as the join keys.
 `build_sizes()` provides December market capitalization and its log, as described in @sec-size-replication.
 `build_book_to_market()` supplies the ratio of prior-year fiscal book equity to prior December market capitalization, as described in @sec-value-replication.
-We use its signed ratio, consistent with the negative observations in BEM Table 2.3.
+I use its signed ratio, consistent with the negative observations in BEM Table 2.3.
 
 ```{python}
 #| echo: false
@@ -173,7 +171,7 @@ all_stats = (
 ```{python}
 #| label: tbl-bem2-characteristics
 #| tbl-cap: Average annual summary statistics for stock characteristics and next-year returns (BEM Table 2.3)
-#| echo: false
+#| code-fold: true
 
 table_2_3 = (
     pl.DataFrame({"Measure": variables}).join(all_stats, on="Measure", maintain_order="left")
@@ -184,7 +182,7 @@ table_2_3 = (
         }),
     )
 )
-show_table(table_2_3)
+table_2_3.eap.show_table()
 ```
 
 Market capitalization has a long right tail.

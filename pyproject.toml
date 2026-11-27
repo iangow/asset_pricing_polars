@@ -6,6 +6,7 @@ dependencies = [
   "db2pq==0.2.8",
   "eap-pl",
   "era-py[polars]==0.0.38",
+  "great-tables==1.1.0",
   "jupyter",
   "plotnine-polars>=0.2.1",
   "polars>=1.30",

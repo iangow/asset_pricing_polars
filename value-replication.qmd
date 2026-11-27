@@ -4,17 +4,17 @@ jupyter: python3
 
 # The Value Premium {#sec-value-replication}
 
-We follow Chapter 10 of @bali2016.
+I follow Chapter 10 of @bali2016.
 Book-to-market compares an accounting measure of equity with what investors pay for the shares.
-We ask how this ratio varies across stocks and whether it predicts the following month's excess return.
+I ask how this ratio varies across stocks and whether it predicts the following month's excess return.
 
 ## Calculating Book-to-Market Ratio {#calculate-book-to-market}
 
 Book equity in millions is stockholders' equity plus deferred taxes and the investment tax credit, less preferred stock.
-We use preferred stock redemption value, liquidation value, or par value, in that order.
+I use preferred stock redemption value, liquidation value, or par value, in that order.
 BEM require stockholders' equity and deferred taxes.
 They use zero for a missing tax credit or when all three preferred stock fields are missing.
-We take the last fiscal year-end within the calendar year.
+I take the last fiscal year-end within the calendar year.
 
 {{< include _show-code.qmd >}}
 
@@ -33,7 +33,7 @@ show_code(build_book_to_market, "funda")
 
 Use CRSP–Compustat links valid on the fiscal year-end.
 When a direct link is unavailable, try an unambiguous historical CUSIP match.
-We use the legacy monthly names file for this fallback.
+I use the legacy monthly names file for this fallback.
 
 ```{python}
 #| echo: false
@@ -91,8 +91,6 @@ The numerator and denominator come from the same annual vintage.
 For the dollar amounts in the table, express both in December 2012 dollars using the CPI for the observation month.
 The common deflator leaves the book-to-market ratio unchanged.
 
-{{< include _show-table.qmd >}}
-
 ```{python}
 from eap_pl import mean_cross_sections, monthly_panel
 
@@ -114,12 +112,12 @@ value_panel = (
 ```{python}
 #| label: tbl-bem10-summary
 #| tbl-cap: Monthly summary statistics for book-to-market (BEM Table 10.1)
-#| echo: false
+#| code-fold: true
 
-show_table(mean_cross_sections(value_panel, {
+mean_cross_sections(value_panel, {
     "bm": "`bm`", "log_bm": "`log_bm`", "be_real": "Book equity",
     "me_real": "December market equity", "cap": "Current market cap",
-}))
+}).eap.show_table()
 ```
 
 Availability depends on finding both a fiscal book value and a prior December capitalization.
@@ -140,21 +138,21 @@ corr = period_correlations(value_panel, measures, "month").select(pl.exclude("mo
 ```{python}
 #| label: tbl-bem10-correlations
 #| tbl-cap: Monthly cross-sectional correlations with book-to-market (BEM Table 10.2)
-#| echo: false
-show_table(correlation_matrix(corr.row(0, named=True), measures))
+#| code-fold: true
+correlation_matrix(corr.row(0, named=True), measures).eap.show_table()
 ```
 
 ## Persistence
 
-Book-to-market updates once a year, so we start the persistence analysis at a lag of twelve months.
+Book-to-market updates once a year, so I start the persistence analysis at a lag of twelve months.
 Shorter lags would often compare the same book-to-market observation with itself.
 As in the annual persistence analysis, winsorize each side after matching the sample by date and stock.
 
 ```{python}
 #| label: tbl-bem10-persistence
 #| tbl-cap: Persistence of book-to-market (BEM Table 10.3)
-#| echo: false
-show_table(persistence(value_panel, {"bm": "`bm`", "log_bm": "`log_bm`"}, [12, 24, 36, 48, 60, 120]))
+#| code-fold: true
+persistence(value_panel, {"bm": "`bm`", "log_bm": "`log_bm`"}, [12, 24, 36, 48, 60, 120]).eap.show_table()
 ```
 
 ## Book-to-Market Ratio and Stock Returns {#book-to-market-and-future-returns}
@@ -181,12 +179,12 @@ characteristics = [
 ```{python}
 #| label: tbl-bem10-deciles
 #| tbl-cap: Book-to-market deciles with all-stock and NYSE breakpoints (BEM Table 10.4)
-#| echo: false
-show_table(pl.concat([
+#| code-fold: true
+pl.concat([
     univariate_panel(value_panel, "bm", nyse, characteristics)
     .with_columns(pl.lit(label).alias("Breakpoints"))
     for nyse, label in [(False, "All stocks"), (True, "NYSE")]
-]).select("Breakpoints", pl.exclude("Breakpoints")))
+]).select("Breakpoints", pl.exclude("Breakpoints")).eap.show_table()
 ```
 
 With all-stock breakpoints, the high-minus-low spread is 1.33% per month with equal weights and 0.57% with value weights.
@@ -199,7 +197,7 @@ This asks whether the return difference between high and low book-to-market stoc
 ```{python}
 #| label: tbl-bem10-dependent
 #| tbl-cap: Dependent book-to-market sorts controlling for beta or size (BEM Table 10.5)
-#| echo: false
+#| code-fold: true
 
 average_portfolios, differences = [], []
 for control, label in [("beta", "Beta"), ("cap", "Market cap")]:
@@ -216,9 +214,9 @@ for control, label in [("beta", "Beta"), ("cap", "Market cap")]:
             pl.lit("`bm` 5–1 within control quintile").alias("Panel"),
             pl.lit(label).alias("Sort"), pl.lit(weight).alias("Weights"),
         ))
-show_table(pl.concat(differences + average_portfolios).select(
+pl.concat(differences + average_portfolios).select(
     "Panel", "Sort", "Weights", "Portfolio", "Excess return", "CAPM alpha",
-))
+).eap.show_table()
 ```
 
 With independent sorts, the book-to-market cutoffs are the same in each control quintile.
@@ -238,15 +236,15 @@ def value_quintiles(control):
 ```{python}
 #| label: tbl-bem10-independent-beta
 #| tbl-cap: Independent book-to-market and beta sorts (BEM Table 10.6)
-#| echo: false
-show_table(value_quintiles("beta"))
+#| code-fold: true
+value_quintiles("beta").eap.show_table()
 ```
 
 ```{python}
 #| label: tbl-bem10-independent-size
 #| tbl-cap: Independent book-to-market and size sorts (BEM Table 10.7)
-#| echo: false
-show_table(value_quintiles("cap"))
+#| code-fold: true
+value_quintiles("cap").eap.show_table()
 ```
 
 ### Fama–MacBeth Regression Analysis {#famamacbeth-regressions}
@@ -257,26 +255,26 @@ The explanatory variables are winsorized within month at the 0.5th and 99.5th pe
 ```{python}
 #| label: tbl-bem10-fm
 #| tbl-cap: Fama–MacBeth regressions of returns on book-to-market (BEM Table 10.8)
-#| echo: false
+#| code-fold: true
 
 specifications = [
     [measure, *controls]
     for measure in ["bm", "log_bm"]
     for controls in [[], ["beta"], ["log_cap"], ["beta", "log_cap"]]
 ]
-show_table(fama_macbeth_table(panel, specifications, measures))
+fama_macbeth_table(panel, specifications, measures).eap.show_table()
 ```
 
 ## The Value Factor
 
 `hml` averages the high-book-to-market portfolios across the two size groups and subtracts the average of their low-book-to-market counterparts.
 Using small and big stocks on both sides reduces the weight of the size effect in the comparison.
-We use the published monthly Fama–French `hml` series from July 1926 through December 2012.
+I use the published monthly Fama–French `hml` series from July 1926 through December 2012.
 
 ```{python}
 #| label: fig-bem10-hml
 #| fig-cap: Cumulative returns on the Fama–French `hml` factor (BEM Figure 10.1)
-#| echo: false
+#| code-fold: true
 from eap_pl import plot_factor
 
 plot_factor("hml")

@@ -5,7 +5,7 @@ jupyter: python3
 # Short-Term Reversal {#sec-reversal-replication}
 
 Do stocks that rose last month continue to outperform, or do they give back some of their gains?
-Following Chapter 12 of @bali2016, we sort on the most recent monthly return and compare its predictive power with that of earlier returns.
+Following Chapter 12 of @bali2016, I sort on the most recent monthly return and compare its predictive power with that of earlier returns.
 This complements @sec-momentum-replication, where the main momentum signal skips the formation month.
 
 ## Measuring Short-Term Reversal
@@ -59,22 +59,22 @@ panel = panel.collect()
 
 ## Summary Statistics and Correlations
 
-We compute the cross-sectional statistics each month and average them over time.
-For Pearson correlations, we winsorize the paired observations at 0.5% in each tail.
+I compute the cross-sectional statistics each month and average them over time.
+For Pearson correlations, I winsorize the paired observations at 0.5% in each tail.
 Spearman correlations use the original ranks.
 
-{{< include _show-table.qmd >}}
-
 ```{python}
+#| code-fold: true
 #| label: tbl-bem12-summary
 #| tbl-cap: Monthly cross-sectional summary statistics for reversal (BEM Table 12.1)
 
 from eap_pl import mean_cross_sections
 
-show_table(mean_cross_sections(panel, {"rev": "`rev`"}))
+mean_cross_sections(panel, {"rev": "`rev`"}).eap.show_table()
 ```
 
 ```{python}
+#| code-fold: true
 #| label: tbl-bem12-correlations
 #| tbl-cap: Monthly cross-sectional correlations of reversal with other characteristics (BEM Table 12.2)
 
@@ -86,11 +86,11 @@ correlations = (
     .select(pl.exclude("month").mean())
     .row(0, named=True)
 )
-show_table(pl.DataFrame([
+pl.DataFrame([
     {"Method": method, **{label: correlations[f"{method} rev–{term}"]
                          for term, label in controls.items()}}
     for method in ("Pearson", "Spearman")
-]))
+]).eap.show_table()
 ```
 
 ## Reversal and Stock Returns
@@ -101,7 +101,7 @@ Sort stocks into deciles using breakpoints from all eligible stocks with the sig
 The value-weighted portfolios use formation-month capitalization.
 Returns and alphas are in percentage points per month.
 The high-minus-low spread buys last month's winners and sells last month's losers, so a negative spread indicates reversal.
-We align the factors with the holding month and use the CAPM, the Fama–French three-factor model, and the four-factor model in @eq-bem11-ffc.
+I align the factors with the holding month and use the CAPM, the Fama–French three-factor model, and the four-factor model in @eq-bem11-ffc.
 Parentheses show six-lag Newey–West $t$-statistics [@neweywest1987].
 
 ```{python}
@@ -177,24 +177,24 @@ for term in lag_labels:
 #|   - Formation-month characteristics
 #|   - Equal-weighted portfolio returns
 #|   - Value-weighted portfolio returns
-#| echo: false
+#| code-fold: true
 
 monthly = decile_returns["rev"]
 means = monthly.group_by("portfolio").agg(pl.col(*characteristics.values()).mean()).sort("portfolio")
-show_table(pl.DataFrame([
+pl.DataFrame([
     {"Characteristic": label, **dict(zip(deciles, means[label]))}
     for label in characteristics.values()
-]))
+]).eap.show_table()
 
 for weight in weights:
     groups = monthly.partition_by("portfolio", as_dict=True)
     series = {str(i): groups[i,] for i in range(1, 11)}
     series["10–1"] = spread(monthly, 10, 1, "portfolio", weight)
     stats = {label: portfolio_statistics(data, weight, models) for label, data in series.items()}
-    show_table(pl.DataFrame([
+    pl.DataFrame([
         {"Statistic": name, **{label: values[name] for label, values in stats.items()}}
         for name in models
-    ]))
+    ]).eap.show_table()
 ```
 
 The winner-minus-loser spread is −2.68% per month with equal weights and −0.60% with value weights.
@@ -203,7 +203,7 @@ The value-weighted spread has a four-factor alpha of −0.78% per month.
 ### Sorting on Earlier Returns
 
 Each row uses a different past month to sort stocks, but every portfolio earns its return in month $t+1$.
-This tests how the signal changes as we move it further back from formation.
+This tests how the signal changes as I move it further back from formation.
 
 ```{python}
 #| label: tbl-bem12-lagged-deciles
@@ -211,7 +211,7 @@ This tests how the signal changes as we move it further back from formation.
 #| tbl-subcap:
 #|   - Equal-weighted portfolio returns
 #|   - Value-weighted portfolio returns
-#| echo: false
+#| code-fold: true
 
 lag_models = {name: models[name] for name in ("Return", "FF α", "FFC α")}
 for weight in weights:
@@ -224,10 +224,10 @@ for weight in weights:
             "Sort variable": label, **dict(zip(deciles, means[weight])),
             "10–1": stats["Return"], "FF α": stats["FF α"], "FFC α": stats["FFC α"],
         })
-    show_table(pl.DataFrame(rows))
+    pl.DataFrame(rows).eap.show_table()
 ```
 
-The equal-weighted spread is close to zero when we sort on month $t-1$ and is positive at every earlier lag in the table.
+The equal-weighted spread is close to zero when I sort on month $t-1$ and is positive at every earlier lag in the table.
 
 ### Controlling for Size, Beta, Book-to-Market, and Momentum
 
@@ -284,37 +284,37 @@ independent_sorts = {
 #| tbl-subcap:
 #|   - Equal-weighted portfolios
 #|   - Value-weighted portfolios
-#| echo: false
+#| code-fold: true
 
 for weight in weights:
-    show_table(two_way_results(dependent_sorts["cap"], weight, models, show_cells=True))
+    two_way_results(dependent_sorts["cap"], weight, models, show_cells=True).eap.show_table()
 ```
 
 ```{python}
 #| label: tbl-bem12-dependent
 #| tbl-cap: Reversal spreads after dependent sorts on beta, book-to-market, or momentum (BEM Table 12.6)
-#| echo: false
+#| code-fold: true
 
-show_table(pl.concat([
+pl.concat([
     two_way_results(dependent_sorts[variable], weight, lag_models)
     .select(pl.lit(sort_variables[variable]).alias("Control"), pl.lit(weight).alias("Weights"), pl.all())
     for variable in ("beta", "bm", "mom")
     for weight in weights
-]))
+]).eap.show_table()
 ```
 
 ```{python}
 #| label: tbl-bem12-independent
 #| tbl-cap: Reversal spreads after independent sorts on reversal and each control (BEM Table 12.7)
-#| echo: false
+#| code-fold: true
 
 spread_models = {name: models[name] for name in ("Return", "FFC α")}
-show_table(pl.concat([
+pl.concat([
     two_way_results(monthly, weight, spread_models)
     .select(pl.lit(sort_variables[variable]).alias("Control"), pl.lit(weight).alias("Weights"), pl.all())
     for variable, monthly in independent_sorts.items()
     for weight in weights
-]))
+]).eap.show_table()
 ```
 
 ### Controlling for Reversal
@@ -347,28 +347,28 @@ def spreads_within_reversal(sorts):
 ```{python}
 #| label: tbl-bem12-reverse-dependent
 #| tbl-cap: Dependent characteristic spreads within reversal quintiles (BEM Table 12.8)
-#| echo: false
+#| code-fold: true
 
-show_table(spreads_within_reversal({
+spreads_within_reversal({
     term: bivariate_months(panel, "rev", term, nyse=False, dependent=True)
     for term in sort_variables
-}))
+}).eap.show_table()
 ```
 
 ```{python}
 #| label: tbl-bem12-reverse-independent
 #| tbl-cap: Independent characteristic spreads within reversal quintiles (BEM Table 12.9)
-#| echo: false
+#| code-fold: true
 
-show_table(spreads_within_reversal({
+spreads_within_reversal({
     term: monthly.rename({"control": "target", "target": "control"})
     for term, monthly in independent_sorts.items()
-}))
+}).eap.show_table()
 ```
 
 The dependent size sorts show the strongest reversal in the smallest capitalization quintile for both weighting methods.
 The spread remains negative on average when controlling for beta, book-to-market, or momentum.
-When we reverse the sorts and control for reversal, the average book-to-market and momentum spreads remain positive.
+When I reverse the sorts and control for reversal, the average book-to-market and momentum spreads remain positive.
 
 ## Fama–MacBeth Regressions
 
@@ -376,6 +376,7 @@ Regress next month's excess return on the formation-month characteristics.
 Winsorize the regressors at 0.5% in each tail within each formation month and use six Newey–West lags for inference on their average coefficients.
 
 ```{python}
+#| code-fold: true
 #| label: tbl-bem12-fama-macbeth
 #| tbl-cap: Reversal and next-month excess returns with controls (BEM Table 12.10)
 
@@ -383,27 +384,29 @@ from eap_pl import fama_macbeth_table
 
 terms = {"rev": "`rev`", **controls}
 specifications = [["rev"], *[["rev", term] for term in controls], list(terms)]
-show_table(fama_macbeth_table(panel, specifications, terms, digits=3))
+fama_macbeth_table(panel, specifications, terms, digits=3).eap.show_table()
 ```
 
 The reversal slope is −0.048 without controls and −0.062 with all four controls.
 
 ```{python}
+#| code-fold: true
 #| label: tbl-bem12-lagged-fama-macbeth
 #| tbl-cap: Fama–MacBeth regressions with individual past monthly returns (BEM Table 12.11)
 
 lag_terms = list(lag_labels)
 specifications = [[term] for term in lag_terms] + [lag_terms]
-show_table(fama_macbeth_table(panel, specifications, lag_labels, digits=3))
+fama_macbeth_table(panel, specifications, lag_labels, digits=3).eap.show_table()
 ```
 
 ```{python}
+#| code-fold: true
 #| label: tbl-bem12-controlled-lags
 #| tbl-cap: Fama–MacBeth regressions with past monthly returns and controls (BEM Table 12.12)
 
 terms = {**lag_labels, **controls}
 specifications = [[*lag_terms, term] for term in controls] + [list(terms)]
-show_table(fama_macbeth_table(panel, specifications, terms, digits=3))
+fama_macbeth_table(panel, specifications, terms, digits=3).eap.show_table()
 ```
 
 In the joint regression with all twelve returns and no other controls, the return from exactly one year before the outcome month has a coefficient of 0.019.
@@ -421,7 +424,7 @@ $$
 -\frac{R_{\mathrm{Small,High},t+1}+R_{\mathrm{Big,High},t+1}}{2}.
 $$ {#eq-bem12-str}
 
-We use the French library's December 2024 archive and plot the same July 1926–December 2012 window as BEM.
+I use the French library's December 2024 archive and plot the same July 1926–December 2012 window as BEM.
 With $\mathrm{STR}_m$ in decimal units, the two panels use the following scales.
 
 $$
@@ -431,6 +434,7 @@ L_t=\sum_{m\le t}\log(1+\mathrm{STR}_m).
 $$ {#eq-bem12-cumulative}
 
 ```{python}
+#| code-fold: true
 #| label: fig-bem12-str
 #| fig-cap: Compounded and cumulative log returns of the short-term reversal factor (BEM Figure 12.1)
 #| fig-alt: Two time-series panels from July 1926 to December 2012. Compounded returns rise most steeply late in the sample, while cumulative log returns rise more steadily.

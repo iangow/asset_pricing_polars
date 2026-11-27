@@ -1,4 +1,4 @@
-"""Polars helpers for Empirical Asset Pricing with Polars."""
+"""Polars helpers for Empirical Asset Pricing: A Python Reader’s Companion."""
 
 from ._beta import load_annual_betas, load_beta_universe, load_daily_beta_inputs
 from ._characteristics import build_book_to_market, build_sizes
@@ -27,8 +27,10 @@ from ._statistics import (
     persistence,
     winsorized_corr,
 )
+from ._tables import EAPDataFrameNamespace
 
 __all__ = [
+    "EAPDataFrameNamespace",
     "bivariate_months",
     "bivariate_panel",
     "build_annual_panel",

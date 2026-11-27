@@ -5,7 +5,7 @@ jupyter: python3
 # The CRSP Sample and Market Factor {#sec-bem-crsp}
 
 This chapter reconstructs the figures and tables in Chapter 7 of @bali2016.
-We use a later snapshot of legacy CRSP (SIZ), the same data format used by the authors.
+I use a later snapshot of legacy CRSP (SIZ), the same data format used by the authors.
 See @sec-data-vintages for source update dates.
 
 ## The U.S. Stock Market
@@ -13,7 +13,7 @@ See @sec-data-vintages for source update dates.
 ### The CRSP U.S.-Based Common Stock Sample {#build-the-monthly-common-stock-sample}
 
 At each calendar month-end, keep securities with a historical share code of 10 or 11.
-We do not restrict the exchange or require a price to count a stock.
+I do not restrict the exchange or require a price to count a stock.
 For market capitalization, use the absolute alternate price times shares outstanding.
 Dividing by 1,000 gives millions of dollars because CRSP reports shares in thousands.
 
@@ -153,6 +153,7 @@ def plot_composition(data, group, labels, measure, y_label):
 ```
 
 ```{python}
+#| code-fold: true
 #| label: fig-bem7-exchange-count
 #| fig-cap: "Number of stocks by exchange, recreating the series in BEM Figure 7.1."
 #| fig-alt: "Stock counts jump when AMEX and Nasdaq stocks enter the sample. Total count peaks in the late 1990s."
@@ -162,6 +163,7 @@ plot_composition(by_exchange, "exchange", ["Total", *exchange_labels],
 ```
 
 ```{python}
+#| code-fold: true
 #| label: fig-bem7-exchange-value
 #| fig-cap: "Market value by exchange, recreating the series in BEM Figure 7.2."
 #| fig-alt: "The NYSE accounts for most of the sample market value. Nasdaq grows considerably in the late 1990s."
@@ -181,12 +183,13 @@ The December 2012 stock count includes 86 stocks in the Other category, of which
 
 #### Industry Composition of CRSP Sample {#industries .unnumbered .unlisted}
 
-We use the security's current SIC code rather than a code carried back from a later date.
+I use the security's current SIC code rather than a code carried back from a later date.
 [OSHA's SIC manual](https://www.osha.gov/data/sic-manual) describes the divisions.
 The table uses the intervals in BEM Table 7.1, with shortened labels.
 Keep zero and null codes separate from nonmissing codes that do not fall in a listed interval.
 
 ```{python}
+#| code-fold: true
 #| label: tbl-bem7-sic
 #| tbl-cap: "SIC code ranges used in the industry breakdown (BEM Table 7.1)."
 
@@ -217,6 +220,7 @@ by_industry = summarize_composition(classified, "industry", industry_labels)
 ```
 
 ```{python}
+#| code-fold: true
 #| label: fig-bem7-industry-count
 #| fig-cap: "Number of stocks by SIC division, recreating the series in BEM Figure 7.3."
 #| fig-alt: "Manufacturing is the largest industry by stock count, with sharp changes in several industries when Nasdaq enters."
@@ -226,6 +230,7 @@ plot_composition(by_industry, "industry", industry_labels,
 ```
 
 ```{python}
+#| code-fold: true
 #| label: fig-bem7-industry-value
 #| fig-cap: "Market value by SIC division, recreating the series in BEM Figure 7.4."
 #| fig-alt: "Manufacturing has the largest market value. Communications, grouped with transport and utilities, and services grow during the dot-com boom."
@@ -285,9 +290,9 @@ return_panel = (
 ```
 
 The Fama–French risk-free return applies to the holding month, not the formation month.
-We first calculate the statistics across stocks for each return month, then average those monthly statistics.
+I first calculate the statistics across stocks for each return month, then average those monthly statistics.
 In particular, the means give each month equal weight, irrespective of the number of stocks in that month.
-We use sample standard deviations, bias-adjusted skewness and excess kurtosis, and linearly interpolated quantiles.
+I use sample standard deviations, bias-adjusted skewness and excess kurtosis, and linearly interpolated quantiles.
 
 ```{python}
 def summarize_returns(start):
@@ -341,7 +346,7 @@ table_7_3 = summarize_returns(first_return_late)
 **[July 1926–December 2012 (Table 7.2)]{#july-1926december-2012-table-7.2}**
 
 ```{python}
-#| echo: false
+#| code-fold: true
 
 with pl.Config(tbl_rows=12):
     display(display_returns(table_7_2))
@@ -350,7 +355,7 @@ with pl.Config(tbl_rows=12):
 ### CRSP Sample (1963–2012) {#july-1963december-2012-table-7.3}
 
 ```{python}
-#| echo: false
+#| code-fold: true
 
 with pl.Config(tbl_rows=12):
     display(display_returns(table_7_3))
@@ -381,7 +386,7 @@ assert (return_months["adjusted"] > 0).all()
 
 The Fama–French market factor (`mkt`) is the excess return on a broad value-weighted portfolio of U.S. common stocks.
 CRSP's value-weighted market index (`vwretd`) has a broader set of eligible securities.
-We put both measures on an excess-return basis by subtracting the risk-free rate (`rf`) from `vwretd`.
+I put both measures on an excess-return basis by subtracting the risk-free rate (`rf`) from `vwretd`.
 `mkt` already has the risk-free rate subtracted.
 
 ```{python}
@@ -404,12 +409,13 @@ market = (
 ```
 
 The monthly correlation between `mkt` and the adjusted CRSP return (`vw_excess`) is 0.9995 in this data vintage.
-Following @bali2016 [sec. 7.3], we summarize the monthly returns from July 1926 through December 2012.
+Following @bali2016 [sec. 7.3], I summarize the monthly returns from July 1926 through December 2012.
 The annualized Sharpe ratio uses $\sqrt{12}$ times the ratio of the monthly mean to the monthly standard deviation, as in the book.
 
-{{< include _show-table.qmd >}}
-
 ```{python}
+#| code-fold: true
+import eap_pl
+
 series_labels = {
     "mkt": "`mkt`",
     "vw_excess": "`vwretd` less `rf`",
@@ -427,17 +433,17 @@ market_summary = (
     .explode(pl.all())
     .with_columns(pl.col(pl.Float64).round(3))
 )
-show_table(market_summary.with_columns(pl.col(pl.Float64).cast(pl.String)))
+market_summary.with_columns(pl.col(pl.Float64).cast(pl.String)).eap.show_table()
 ```
 
 **[Cumulative market excess returns]{#cumulative-market-excess-returns}**
 
-For comparison with BEM Figure 7.5, we compound the monthly market factor, $\prod_{s\leq t}(1+\mathrm{MKT}_s)-1$, and sum its log transformation, $\sum_{s\leq t}\log(1+\mathrm{MKT}_s)$.
+For comparison with BEM Figure 7.5, I compound the monthly market factor, $\prod_{s\leq t}(1+\mathrm{MKT}_s)-1$, and sum its log transformation, $\sum_{s\leq t}\log(1+\mathrm{MKT}_s)$.
 Both are transformations of the same underlying series.
 The panels share a month-end date axis and use separate percentage scales.
 
 Compounding the market factor is **not** the same as subtracting the compounded risk-free return from the compounded market return.
-Here we follow the book's definition.
+Here I follow the book's definition.
 
 ```{python}
 market_path = market.with_columns(
@@ -451,7 +457,7 @@ market_path = market.with_columns(
 #| label: fig-bem7-market-path
 #| fig-cap: "Cumulative market excess returns, July 1926–December 2012 (compare BEM Figure 7.5)."
 #| fig-alt: "Two panels show compounded and cumulative log market excess returns. The 1929–1932 drawdown is clearer in the cumulative log panel."
-#| echo: false
+#| code-fold: true
 
 from eap_pl import plot_cumulative_returns
 
@@ -467,6 +473,7 @@ Use the peak and trough months described in BEM; the recovery month is the first
 Month names here refer to end-of-month values, so an episode that begins in September uses the August close as its reference.
 
 ```{python}
+#| code-fold: true
 from datetime import date
 
 episodes = [
@@ -500,6 +507,7 @@ The daily Fama–French file shows the individual crash-day returns in October 1
 [^crash-1929]: Compounding the October 28 and 29, 1929 returns gives a loss of 21.5%. BEM §7.3 reports a loss of more than 23% for those two days.
 
 ```{python}
+#| code-fold: true
 daily_market = load_parquet("factors_daily", "ff")
 daily_market.filter(
     pl.col("date").is_in([date(1929, 10, 28), date(1929, 10, 29), date(1987, 10, 19)])

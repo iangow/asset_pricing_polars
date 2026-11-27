@@ -1,4 +1,4 @@
-# Empirical Asset Pricing with Polars
+# Empirical Asset Pricing: A Python Reader’s Companion
 
 A Quarto book following Bali, Engle, and Murray's *Empirical Asset Pricing*.
 The rendered chapters use Python Polars, legacy CRSP, Compustat, and

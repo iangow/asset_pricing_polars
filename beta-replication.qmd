@@ -16,9 +16,9 @@ jupyter: python3
 </style>
 ```
 
-We reconstruct Tables 8.1–8.6 of @bali2016.
+I reconstruct Tables 8.1–8.6 of @bali2016.
 The sample consists of CRSP common stocks at the end of each month from June 1963 through November 2012.
-We use legacy CRSP daily and monthly stock returns and the corresponding Fama–French factors.
+I use legacy CRSP daily and monthly stock returns and the corresponding Fama–French factors.
 See @sec-data-vintages for the source vintages.
 
 ## Estimating Beta {#estimate-market-beta}
@@ -58,9 +58,9 @@ $$
 $$
 
 where $\widehat\rho_M$ is the market return's first-order autocorrelation over the estimation window.
-We shift the market series on the trading calendar before joining it to stock returns.
+I shift the market series on the trading calendar before joining it to stock returns.
 A lag can precede the first stock-return date in the window.
-We omit response dates whose market lead falls after formation and apply the minimum to the remaining complete observations.
+I omit response dates whose market lead falls after formation and apply the minimum to the remaining complete observations.
 This keeps all beta inputs observable at formation.
 
 {{< include _show-code.qmd >}}
@@ -86,9 +86,9 @@ universe = load_beta_universe(first, last_estimate).collect()
 show_code(load_beta_universe, "names", "return")
 ```
 
-We screen for common shares at formation using historical share codes 10 and 11.
+I screen for common shares at formation using historical share codes 10 and 11.
 A stock can contribute its earlier returns to the estimation window even if its historical share code changed.
-We use CRSP's reported returns for estimation and apply the delisting convention in @sec-bem-returns to the next-month returns used to evaluate the beta estimates.
+I use CRSP's reported returns for estimation and apply the delisting convention in @sec-bem-returns to the next-month returns used to evaluate the beta estimates.
 
 ```{python}
 monthly_stock = (
@@ -117,8 +117,8 @@ def beta_slope(stock, market):
     return pl.cov(stock, market) / pl.col(market).var()
 ```
 
-For monthly returns, we can apply the covariance-over-variance formula directly.
-We include the formation dates in the rolling index so a window is evaluated even if the current month's return is missing.
+The covariance-over-variance formula applies directly to monthly returns.
+I include the formation dates in the rolling index so a window is evaluated even if the current month's return is missing.
 The window is open at its left endpoint and includes the formation month.
 
 ```{python}
@@ -150,7 +150,7 @@ def monthly_beta(label, months, minimum):
 ```
 
 For daily returns, each trading day enters many windows.
-We sum the regression inputs once per stock and month, then roll those sums across months.
+I sum the regression inputs once per stock and month, then roll those sums across months.
 For example, the slope uses $\sum xy-(\sum x)(\sum y)/n$ divided by $\sum x^2-(\sum x)^2/n$.
 The adjusted regressions use the same idea with cross-products between market returns at different offsets.
 
@@ -306,7 +306,7 @@ window_months.update(SW=12, D=12)
 ```
 
 The tables in this chapter end with November 2012 formation, followed by December 2012 holding returns.
-We also estimate betas as of December 2012.
+I also estimate betas as of December 2012.
 The export saves all eleven estimates per stock-month to `DATA_DIR/eap/betas.parquet`.
 Chapters [-@sec-size-replication] and [-@sec-value-replication] read its 12-month daily beta for their monthly analyses.
 The annual methods chapters estimate their December betas when needed.
@@ -325,8 +325,6 @@ betas = betas.filter(pl.col("month") <= last)
 universe = universe.filter(pl.col("month") <= last)
 ```
 
-{{< include _show-table.qmd >}}
-
 ```{python}
 #| include: false
 
@@ -340,7 +338,7 @@ assert all(betas.select(pl.col(beta_labels).is_finite().drop_nulls().all()).row(
 @tbl-bem8-summary averages monthly cross-sectional statistics.
 The count is the average number of stocks with an available estimate in a month.
 For example, the dispersion of the one-month daily beta reflects both differences in stocks' exposures and estimation noise from short return histories.
-We use sample standard deviations, bias-adjusted skewness and excess kurtosis, and linearly interpolated quantiles.
+I use sample standard deviations, bias-adjusted skewness and excess kurtosis, and linearly interpolated quantiles.
 
 ```{python}
 beta_long = betas.unpivot(
@@ -365,24 +363,25 @@ summary = (
 ```{python}
 #| label: tbl-bem8-summary
 #| tbl-cap: Cross-sectional summary statistics for market beta (BEM Table 8.1)
-#| echo: false
+#| code-fold: true
 
 beta_order = pl.DataFrame({"measure": beta_labels})
-show_table(
+(
     beta_order.join(summary, on="measure", maintain_order="left")
     .with_columns(pl.col("n").round().cast(pl.Int64))
     .rename({"measure": "Beta", "mean": "Mean", "sd": "SD", "skew": "Skew",
              "kurt": "Kurt.", "min": "Min", "p05": "5%", "p25": "25%",
              "median": "Median", "p75": "75%", "p95": "95%", "max": "Max"})
+    .eap.show_table()
 )
 ```
 
-In our data the five-day lead cutoff reduces coverage by eight stocks per month relative to the 12-month daily beta.
+In my data the five-day lead cutoff reduces coverage by eight stocks per month relative to the 12-month daily beta.
 
 ## Correlations
 
 @tbl-bem8-correlations reports the mean of the monthly correlations.
-For each pair, we use stocks for which both estimates are available.
+For each pair, I use stocks for which both estimates are available.
 Winsorize each beta within month at the 0.5th and 99.5th percentiles for Pearson correlations below the diagonal.
 Use the original values for Spearman rank correlations above the diagonal.
 
@@ -409,7 +408,7 @@ spearman = mean_correlations(betas, "spearman")
 ```{python}
 #| label: tbl-bem8-correlations
 #| tbl-cap: Monthly Pearson (below diagonal) and Spearman (above diagonal) correlations (BEM Table 8.2)
-#| echo: false
+#| code-fold: true
 
 correlations = [
     [a, *[
@@ -418,18 +417,18 @@ correlations = [
     ]]
     for i, a in enumerate(beta_labels)
 ]
-show_table(pl.DataFrame(correlations, schema=["Beta", *beta_labels], orient="row"))
+pl.DataFrame(correlations, schema=["Beta", *beta_labels], orient="row").eap.show_table()
 ```
 
 BEM describe Table 8.2 as monthly in §8.3 and annual in its caption.
-We use monthly cross-sections, consistent with the discussion and sample construction.
+I use monthly cross-sections, consistent with the discussion and sample construction.
 Correlations between similar lookbacks can partly reflect the observations shared by the estimation windows.
 
 ## Persistence {#measure-persistence}
 
 @tbl-bem8-persistence compares a stock's winsorized beta with its beta exactly $\tau$ calendar months later.
-We calculate a Pearson correlation across stocks in each month and average over months.
-We leave cells blank when the stock-return windows overlap.
+I calculate a Pearson correlation across stocks in each month and average over months.
+I leave cells blank when the stock-return windows overlap.
 This helps distinguish persistence from the effect of using some of the same returns twice.
 
 ```{python}
@@ -453,11 +452,11 @@ persistence_table = pl.concat(
 ```{python}
 #| label: tbl-bem8-persistence
 #| tbl-cap: Persistence of beta across nonoverlapping stock-return windows (BEM Table 8.3)
-#| echo: false
+#| code-fold: true
 
-show_table(persistence_table.select(
+persistence_table.select(
     "Lag (months)", *daily_windows, "SW", "D", *monthly_windows,
-))
+).eap.show_table()
 ```
 
 The 12-month daily beta has a correlation of 0.63 with its value one year later.
@@ -468,10 +467,10 @@ This difference suggests that, over the same one-year lookback, the daily estima
 
 ### Portfolio Analysis {#sort-stocks-into-beta-deciles}
 
-We form deciles using all eligible stocks with an estimate of the given beta in month $t$.
+I form deciles using all eligible stocks with an estimate of the given beta in month $t$.
 A stock's decile is one plus the number of breakpoints its beta exceeds.
-After forming the groups, we join the next month's excess return.
-We keep a holding-period return even if a stock leaves the common-share universe during that month.
+After forming the groups, I join the next month's excess return.
+I keep a holding-period return even if a stock leaves the common-share universe during that month.
 The value weights use market capitalization measured at formation.
 
 ```{python}
@@ -538,9 +537,9 @@ portfolios = (
 )
 ```
 
-We compute the high-minus-low return each month.
+I compute the high-minus-low return each month.
 Its CAPM alpha is the intercept when that return is regressed on the holding month's market excess return.
-For each portfolio, we report returns and alphas in percent per month and use six Newey–West lags for their $t$-statistics.
+For each portfolio, I report returns and alphas in percent per month and use six Newey–West lags for their $t$-statistics.
 
 ```{python}
 import statspai as sp
@@ -569,7 +568,7 @@ def portfolio_fit(series, outcome):
 ```
 
 ```{python}
-#| echo: false
+#| code-fold: true
 
 def portfolio_table(outcome, include_beta):
     rows = []
@@ -596,19 +595,19 @@ def portfolio_table(outcome, include_beta):
 ```{python}
 #| label: tbl-bem8-equal
 #| tbl-cap: Equal-weighted returns to beta deciles (BEM Table 8.4)
-#| echo: false
+#| code-fold: true
 
 table_8_4 = portfolio_table("equal", include_beta=True)
-show_table(table_8_4)
+table_8_4.eap.show_table()
 ```
 
 ```{python}
 #| label: tbl-bem8-value
 #| tbl-cap: Value-weighted returns to beta deciles (BEM Table 8.5)
-#| echo: false
+#| code-fold: true
 
 table_8_5 = portfolio_table("value", include_beta=False)
-show_table(table_8_5)
+table_8_5.eap.show_table()
 ```
 
 Using 12-month daily betas, the high-minus-low excess return is $-0.55\%$ per month with equal weights (@tbl-bem8-equal) and $-0.05\%$ with value weights (@tbl-bem8-value).
@@ -616,13 +615,13 @@ The direction of the equal-weighted spread runs against the CAPM prediction, and
 
 ### Fama–MacBeth Regression Analysis {#run-famamacbeth-regressions}
 
-For each measure of beta, we regress next month's excess return on beta in each monthly cross-section,
+For each measure of beta, I regress next month's excess return on beta in each monthly cross-section,
 
 $$
 r_{i,t+1}=a_{t+1}+b_{t+1}\widehat\beta_{i,t}+u_{i,t+1}.
 $$
 
-We use the same winsorization as for the Pearson correlations and apply six Newey–West lags to the monthly coefficient series.
+I use the same winsorization as for the Pearson correlations and apply six Newey–West lags to the monthly coefficient series.
 The CAPM predicts that the mean slope estimates the market risk premium and the mean intercept is zero.
 
 ```{python}
@@ -643,7 +642,7 @@ fm = {
 ```{python}
 #| label: tbl-bem8-fm
 #| tbl-cap: Fama–MacBeth regressions of next-month excess returns on beta (BEM Table 8.6)
-#| echo: false
+#| code-fold: true
 
 def fm_column(fit):
     months = fit.model_info["period_coefs"]
@@ -660,7 +659,7 @@ table_8_6 = pl.DataFrame({
     "Statistic": ["Slope", "Intercept", "Adjusted R²", "n"],
     **{b: fm_column(fm[b]) for b in beta_labels},
 })
-show_table(table_8_6)
+table_8_6.eap.show_table()
 ```
 
 In @tbl-bem8-fm an increase of one in 12-month daily beta is associated with about 0.27 percentage points lower excess return per month.

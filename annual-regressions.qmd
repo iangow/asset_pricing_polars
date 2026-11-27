@@ -8,8 +8,6 @@ This chapter uses BEM's methodologies sample from @sec-summary-statistics to ill
 The first step fits a cross-sectional regression in each formation year.
 The second averages the coefficients across years and estimates their standard errors from the time series of annual coefficients.
 
-{{< include _show-table.qmd >}}
-
 ```{python}
 import polars as pl
 
@@ -47,7 +45,7 @@ for terms in specifications:
 ```{python}
 #| label: tbl-bem6-periodic
 #| tbl-cap: Annual cross-sectional regressions (BEM Table 6.1)
-#| echo: false
+#| code-fold: true
 
 def periodic_results(fit, terms):
     result = pl.from_pandas(fit.model_info["period_coefs"].reset_index())
@@ -56,10 +54,10 @@ def periodic_results(fit, terms):
     )
 
 periodic = [periodic_results(fit, terms) for fit, terms in zip(fits, specifications)]
-show_table(pl.concat([
+pl.concat([
     frame.with_columns(pl.lit(str(i)).alias("Model"))
     for i, frame in enumerate(periodic, 1)
-], how="diagonal").select("Model", pl.exclude("Model")).rename(term_labels))
+], how="diagonal").select("Model", pl.exclude("Model")).rename(term_labels).eap.show_table()
 ```
 
 ### Average Cross-Sectional Regression Results
@@ -67,14 +65,14 @@ show_table(pl.concat([
 ```{python}
 #| label: tbl-bem6-summary
 #| tbl-cap: Average coefficients and Newey–West inference (BEM Table 6.2)
-#| echo: false
+#| code-fold: true
 
 rows = [
     [i, term_labels.get(term, term), fit.params[term], fit.std_errors[term],
      fit.tvalues[term], f"{fit.pvalues[term]:.3f}"]
     for i, fit in enumerate(fits, 1) for term in fit.params.index
 ]
-show_table(pl.DataFrame(rows, schema=["Model", "Term", "Average", "SE", "t", "p"], orient="row"))
+pl.DataFrame(rows, schema=["Model", "Term", "Average", "SE", "t", "p"], orient="row").eap.show_table()
 ```
 
 ## Interpreting FM Regressions {#sec-annual-fm-inference}
@@ -83,6 +81,7 @@ The ordinary Fama–MacBeth standard error is the standard deviation of the annu
 For the size slope in the regression with all three characteristics, compare the ordinary $t$-statistic with the six-lag Newey–West $t$-statistic.
 
 ```{python}
+#| code-fold: true
 size_slopes = periodic[-1]["Size"]
 ordinary_se = size_slopes.std() / len(size_slopes)**0.5
 pl.DataFrame({
@@ -98,7 +97,7 @@ The six-lag adjustment changes the significance decision at the 5% level in this
 ```{python}
 #| label: tbl-bem6-compact
 #| tbl-cap: Compact Fama–MacBeth regression table (BEM Table 6.3)
-#| echo: false
+#| code-fold: true
 
 from eap_pl import format_fit
 
@@ -109,7 +108,7 @@ for i, (fit, frame) in enumerate(zip(fits, periodic), 1):
     columns[f"({i})"] = [
         format_fit(fit, term) if term in fit.params else "" for term in terms
     ] + [f"{frame['r2'].mean():.3f}", f"{frame['adj_r2'].mean():.3f}", f"{frame['nobs'].mean():.0f}"]
-show_table(pl.DataFrame(columns))
+pl.DataFrame(columns).eap.show_table()
 ```
 
 ## Summary

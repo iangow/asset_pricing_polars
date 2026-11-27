@@ -5,9 +5,7 @@ jupyter: python3
 # Persistence Analysis {#sec-bem-persistence}
 
 In Chapter 4, @bali2016 measure persistence by correlating a stock characteristic with its own future value across stocks.
-We use the December 1988–2012 panel from @sec-summary-statistics, including its signed book-to-market ratio.
-
-{{< include _show-table.qmd >}}
+I use the December 1988–2012 panel from @sec-summary-statistics, including its signed book-to-market ratio.
 
 ```{python}
 import polars as pl
@@ -62,14 +60,14 @@ annual = pl.concat([annual_persistence(lag) for lag in lags]).sort("Lag", "year"
 ```{python}
 #| label: tbl-bem4-annual
 #| tbl-cap: Annual cross-sectional persistence of beta (BEM Table 4.1)
-#| echo: false
+#| code-fold: true
 
 beta_by_year = (
     annual.pivot(on="Lag", index="year", values="Beta", sort_columns=True)
     .sort("year")
     .rename({"year": "Year", **{str(lag): f"Lag {lag}" for lag in lags}})
 )
-show_table(beta_by_year)
+beta_by_year.eap.show_table()
 ```
 
 The lags are in years.
@@ -77,6 +75,7 @@ The blank cells in @tbl-bem4-annual require a comparison year beyond 2012.
 The companion plot in @fig-bem4-annual shows how much beta persistence varies across formation years, even at the same lag.
 
 ```{python}
+#| code-fold: true
 #| label: fig-bem4-annual
 #| fig-cap: Annual persistence of beta by lag
 #| fig-alt: Five lines show beta correlations by formation year. One-year correlations generally exceed the longer-lag correlations and are higher in the 2000s than in the early 1990s. Lines for longer lags end earlier.
@@ -117,11 +116,11 @@ average = annual.group_by("Lag").agg(pl.col(measures).mean()).sort("Lag")
 ```{python}
 #| label: tbl-bem4-beta
 #| tbl-cap: Average annual persistence of beta (BEM Table 4.2)
-#| echo: false
+#| code-fold: true
 
-show_table(pl.DataFrame({
+pl.DataFrame({
     f"Lag {lag}": [beta] for lag, beta in average.select("Lag", "Beta").iter_rows()
-}))
+}).eap.show_table()
 ```
 
 ## Interpreting Persistence {#interpret-persistence}
@@ -136,9 +135,9 @@ The set of stocks with valid measurements at both dates can also change with the
 ```{python}
 #| label: tbl-bem4-characteristics
 #| tbl-cap: Average persistence of beta, size, and book-to-market (BEM Table 4.3)
-#| echo: false
+#| code-fold: true
 
-show_table(average.rename({"Lag": "Lag (years)", "BM": "Book-to-market"}))
+average.rename({"Lag": "Lag (years)", "BM": "Book-to-market"}).eap.show_table()
 ```
 
 @fig-bem4-averages plots the averages from @tbl-bem4-characteristics.
@@ -149,6 +148,7 @@ At five years, beta and book-to-market are at 0.42 and 0.47.[^bm-persistence]
 [^bm-persistence]: The book-to-market correlations are 0.02 to 0.05 higher across the five lags than in BEM Table 4.3. At five years the correlation is 0.47 here and 0.43 in BEM.
 
 ```{python}
+#| code-fold: true
 #| label: fig-bem4-averages
 #| fig-cap: Average persistence of beta, size, and book-to-market by lag
 #| fig-alt: Average size persistence stays near 0.9. Book-to-market falls from 0.76 to 0.47 and beta from 0.61 to 0.42 between the one- and five-year lags.

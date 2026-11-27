@@ -5,7 +5,7 @@ jupyter: python3
 # The Momentum Effect {#sec-momentum-replication}
 
 Do stocks that recently outperformed continue to outperform?
-Following Chapter 11 of @bali2016, we compare seven measures of prior returns and examine how their predictive power changes with the return horizon.
+Following Chapter 11 of @bali2016, I compare seven measures of prior returns and examine how their predictive power changes with the return horizon.
 @jegadeeshTitman1993 document that portfolios buying recent winners and selling recent losers earn positive returns over several months.
 
 ## Measuring Momentum
@@ -19,7 +19,7 @@ $$
 $$ {#eq-bem11-momentum}
 
 In BEM's Equation (11.1), $R_{i,m}$ is the stock's monthly return in decimal form and $\operatorname{Mom}_{i,t}$ is measured in percentage points.
-We compound the available returns and require at least nine observations.
+I compound the available returns and require at least nine observations.
 For the lagged 12- and six-month alternatives, the minimum counts are ten and five.
 For the 12-, nine-, six-, and three-month windows that include month $t$, the minimum counts are ten, seven, five, and three, respectively.
 
@@ -82,16 +82,14 @@ Holding-month excess returns use the delisting treatment in @sec-bem-returns.
 Compute the statistics separately each month and then average them across months.
 The final column gives the average number of available observations for the signal.
 
-{{< include _show-table.qmd >}}
-
 ```{python}
 #| label: tbl-bem11-summary
 #| tbl-cap: Monthly summary statistics for momentum measures (BEM Table 11.1)
-#| echo: false
+#| code-fold: true
 
 from eap_pl import mean_cross_sections
 
-show_table(mean_cross_sections(panel, signals))
+mean_cross_sections(panel, signals).eap.show_table()
 ```
 
 ## Correlations
@@ -101,6 +99,7 @@ The Pearson correlations use 0.5% winsorization in each tail of the paired obser
 The Spearman correlations use the original ranks.
 
 ```{python}
+#| code-fold: true
 #| label: tbl-bem11-correlations
 #| tbl-cap: Correlations of momentum with beta, size, and book-to-market (BEM Table 11.2)
 
@@ -113,7 +112,7 @@ correlations = (
     .row(0, named=True)
 )
 
-show_table(pl.DataFrame([
+pl.DataFrame([
     {
         "Method": method, "Characteristic": label,
         **{name: correlations[f"{method} {control}–{signal}"]
@@ -121,7 +120,7 @@ show_table(pl.DataFrame([
     }
     for method in ("Pearson", "Spearman")
     for control, label in controls.items()
-]))
+]).eap.show_table()
 ```
 
 `mom` is more strongly correlated with size than with beta or book-to-market.
@@ -197,7 +196,7 @@ decile_returns = {
 #| tbl-subcap:
 #|   - Momentum-sorted portfolio characteristics
 #|   - Portfolio returns and winner-minus-loser spreads
-#| echo: false
+#| code-fold: true
 
 characteristics = {"mom": "`mom`", "beta": "Beta", "cap": "Market cap (millions)", "bm": "`bm`"}
 mom_groups = (
@@ -207,10 +206,10 @@ mom_groups = (
     .group_by("portfolio").agg(pl.col(*characteristics).mean())
     .sort("portfolio")
 )
-show_table(pl.DataFrame([
+pl.DataFrame([
     {"Characteristic": label, **dict(zip(deciles, mom_groups[column]))}
     for column, label in characteristics.items()
-]))
+]).eap.show_table()
 
 decile_rows = []
 for weight, label in weights.items():
@@ -222,7 +221,7 @@ for weight, label in weights.items():
             "Weights": label, "Signal": name, **dict(zip(deciles, means[weight])),
             "10–1": stats["Return"], "CAPM α": stats["CAPM α"], "FF α": stats["FF α"],
         })
-show_table(pl.DataFrame(decile_rows))
+pl.DataFrame(decile_rows).eap.show_table()
 ```
 
 The `mom` winner-minus-loser spread averages 1.94% per month with value weights and 1.14% with equal weights.
@@ -232,7 +231,7 @@ The `mom` winner-minus-loser spread averages 1.94% per month with value weights 
 Keep the formation-month decile assignments and capitalization weights.
 For each $k$, attach the return in month $t+k$ and compute the spread across stocks with a return in that month.
 A delisting contributes its adjusted return in the month it occurs.
-We use realized returns through December 2012 and match the factors to the month in which each return is realized.
+I use realized returns through December 2012 and match the factors to the month in which each return is realized.
 
 ```{python}
 from eap_pl._data import monthly_stock_returns
@@ -258,7 +257,7 @@ def returns_at_horizon(stocks, k):
 ```{python}
 #| label: tbl-bem11-horizons
 #| tbl-cap: Winner-minus-loser returns and FF alphas by horizon (BEM Table 11.4)
-#| echo: false
+#| code-fold: true
 
 horizon_results = {}
 for signal, stocks in members.items():
@@ -271,7 +270,7 @@ for signal, stocks in members.items():
                 high_minus_low, weight, capm=False,
             )
 
-show_table(pl.DataFrame([
+pl.DataFrame([
     {
         "Weights": label, "Signal": name, "Statistic": metric,
         **{f"t+{k}": horizon_results[signal, weight, k][metric] for k in range(1, 13)},
@@ -279,7 +278,7 @@ show_table(pl.DataFrame([
     for weight, label in weights.items()
     for signal, name in signals.items()
     for metric in ("Return", "FF α")
-]))
+]).eap.show_table()
 ```
 
 The value-weighted `mom` spread turns negative at the longer horizons, reaching −0.63% in month $t+12$.
@@ -339,12 +338,12 @@ size_momentum = bivariate_months(sort_panel, "cap", "mom", nyse=False, dependent
 ```{python}
 #| label: tbl-bem11-size
 #| tbl-cap: Dependent sorts on capitalization and momentum (BEM Table 11.5)
-#| echo: false
+#| code-fold: true
 
-show_table(pl.DataFrame([
+pl.DataFrame([
     row for weight in weights
     for row in two_way_results(size_momentum, weight, quintiles, show_cells=True)
-]))
+]).eap.show_table()
 ```
 
 ### Momentum Among Small Stocks
@@ -353,6 +352,7 @@ Restrict the first sort to the bottom fifth of the capitalization distribution.
 Split that group into four portfolios and sort each portfolio into `mom` quintiles.
 
 ```{python}
+#| code-fold: true
 #| label: tbl-bem11-small
 #| tbl-cap: Dependent momentum sorts within the smallest capitalization quintile (BEM Table 11.6)
 
@@ -361,13 +361,13 @@ small = assign_portfolio(small, "cap", 4, "month", label="control")
 small = assign_portfolio(small, "mom", 5, ["month", "control"], label="target")
 small_momentum = portfolio_months(small.drop_nulls("target"), ["control", "target"])
 
-show_table(pl.DataFrame([
+pl.DataFrame([
     row for weight in weights
     for row in two_way_results(
         small_momentum, weight, ["0–5%", "5–10%", "10–15%", "15–20%"],
         show_cells=True, show_average=False,
     )
-]))
+]).eap.show_table()
 ```
 
 ### Controlling for Beta and Book-to-Market
@@ -398,41 +398,41 @@ def two_way_spreads(pairs, *, dependent, momentum_first=False):
 ```{python}
 #| label: tbl-bem11-dependent
 #| tbl-cap: Momentum spreads from dependent sorts controlling for beta or book-to-market (BEM Table 11.7)
-#| echo: false
+#| code-fold: true
 
-show_table(two_way_spreads([("beta", "mom"), ("bm", "mom")], dependent=True))
+two_way_spreads([("beta", "mom"), ("bm", "mom")], dependent=True).eap.show_table()
 ```
 
 ```{python}
 #| label: tbl-bem11-independent
 #| tbl-cap: Momentum spreads from independent sorts controlling for beta, capitalization, or book-to-market (BEM Table 11.8)
-#| echo: false
+#| code-fold: true
 
-show_table(two_way_spreads([(control, "mom") for control in sort_variables], dependent=False))
+two_way_spreads([(control, "mom") for control in sort_variables], dependent=False).eap.show_table()
 ```
 
 ### Controlling for Momentum
 
 Reverse the sort order to ask whether differences associated with beta, capitalization, or `bm` remain within `mom` quintiles.
-For Table 11.9, we follow BEM's discussion and calculate the second set of breakpoints within each `mom` quintile.
+For Table 11.9, I follow BEM's discussion and calculate the second set of breakpoints within each `mom` quintile.
 For capitalization spreads, omit `smb` from the FF regression.
 For `bm` spreads, omit `hml`.
 
 ```{python}
 #| label: tbl-bem11-reverse-dependent
 #| tbl-cap: Characteristic spreads from dependent sorts controlling for momentum (BEM Table 11.9)
-#| echo: false
+#| code-fold: true
 
 reverse_pairs = [("mom", target) for target in sort_variables]
-show_table(two_way_spreads(reverse_pairs, dependent=True, momentum_first=True))
+two_way_spreads(reverse_pairs, dependent=True, momentum_first=True).eap.show_table()
 ```
 
 ```{python}
 #| label: tbl-bem11-reverse-independent
 #| tbl-cap: Characteristic spreads from independent sorts controlling for momentum (BEM Table 11.10)
-#| echo: false
+#| code-fold: true
 
-show_table(two_way_spreads(reverse_pairs, dependent=False, momentum_first=True))
+two_way_spreads(reverse_pairs, dependent=False, momentum_first=True).eap.show_table()
 ```
 
 ### Fama–MacBeth Regressions
@@ -442,6 +442,7 @@ Winsorize the regressors at 0.5% in each tail within each month.
 Report the average monthly coefficients and estimate their standard errors using six Newey–West lags.
 
 ```{python}
+#| code-fold: true
 #| label: tbl-bem11-fama-macbeth
 #| tbl-cap: Monthly Fama–MacBeth regressions of next-month excess returns (BEM Table 11.11)
 
@@ -455,7 +456,7 @@ specifications = [
     for n in range(len(controls) + 1)
     for subset in combinations(controls, n)
 ]
-show_table(fama_macbeth_table(panel, specifications, terms, digits=3))
+fama_macbeth_table(panel, specifications, terms, digits=3).eap.show_table()
 ```
 
 In the full specification, a 100-percentage-point difference in `mom` corresponds to about 0.70 percentage points in next month's fitted excess return.
@@ -465,9 +466,10 @@ In the full specification, a 100-percentage-point difference in `mom` correspond
 The [Kenneth French Data Library](https://mba.tuck.dartmouth.edu/pages/faculty/Ken.French/Data_Library/det_mom_factor.html) constructs its momentum factor using six value-weighted portfolios formed on size and prior return.
 The sorts use an NYSE median for size and NYSE 30th and 70th percentiles for prior return.
 The factor averages the returns of the small- and large-stock winner portfolios and subtracts the average return of the corresponding loser portfolios.
-We use the December 2024 release listed in the book's setup instructions and plot January 1927 through December 2012, the period in BEM.
+I use the December 2024 release listed in the book's setup instructions and plot January 1927 through December 2012, the period in BEM.
 
 ```{python}
+#| code-fold: true
 #| label: fig-bem11-mom
 #| fig-cap: Compounded and cumulative log returns of the momentum factor, January 1927–December 2012 (BEM Figure 11.1)
 
