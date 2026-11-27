@@ -40,3 +40,8 @@ format:
     respect-user-color-scheme: true
     css: style.css
     code-copy: true
+    include-in-header:
+      text: |
+        <script defer src="https://cloud.umami.is/script.js"
+          data-website-id="72b4b582-835c-422f-a4f8-e78414b3f680"
+          data-domains="iangow.github.io"></script>

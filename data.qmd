@@ -288,9 +288,17 @@ See the [Great Tables documentation](https://posit-dev.github.io/great-tables/).
 ### `plotnine_polars`
 
 I use `plotnine_polars` for all figures in the book.
-It adds `.ggplot()` to Polars DataFrames and lets me build figures by adding layers, scales, and labels using plotnine's grammar of graphics.
+The figures build on the grammar of graphics popularized in R by Hadley Wickham’s [`ggplot2`](https://ggplot2.tidyverse.org/).
+Hassan Kibirige and the other contributors have done an excellent job bringing that approach to Python with [`plotnine`](https://plotnine.org/).
+
+I wrote `plotnine_polars` to give `plotnine` a more fluent interface for use with Polars.
+It adds `.ggplot()` to Polars DataFrames so I can build a figure by chaining methods for aesthetics, layers, scales, and labels.
 The figures on the [composition of the CRSP sample](crsp-replication.qmd#sec-bem7-composition) show how this works with time series grouped by exchange or industry.
+I first explored this style in my note [*Making `plotnine` more ‘Pythonic’*](https://iangow.github.io/notes/plotnine_test/plotnine_testone.html).
 See the [`plotnine_polars` documentation](https://iangow.github.io/plotnine_polars/).
+
+For a broader introduction to data visualization, I recommend Kieran Healy’s [*Data Visualization: A Practical Introduction*](https://socviz.co/).
+I translated his examples using `plotnine_polars` in [*Data Visualization: A Python/Polars Companion*](https://iangow.github.io/socviz-polars/).
 
 ### StatsPAI
 
