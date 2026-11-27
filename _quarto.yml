@@ -34,4 +34,9 @@ link-citations: true
 
 format:
   html:
+    theme:
+      light: cosmo
+      dark: darkly
+    respect-user-color-scheme: true
+    css: style.css
     code-copy: true
