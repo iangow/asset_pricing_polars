@@ -4,7 +4,7 @@ import numpy as np
 import polars as pl
 
 from ._data import KEYS
-from ._return_windows import _demean, _regress, window_batches
+from ._rolling_ols import _month_grid, _monthly_moments, _roll_moments, _solve_moments
 
 
 def rolling_volatility(anchors, returns, factors, windows, periods_per_year):
@@ -14,38 +14,32 @@ def rolling_volatility(anchors, returns, factors, windows, periods_per_year):
     returns and raw stock returns are in decimals. Each model applies its
     minimum observation count to the dates on which its inputs are finite.
     """
-    batches = window_batches(anchors, returns, factors, ["mktrf", "smb", "hml", "rf", "mom"])
-    annualize = 100 * np.sqrt(periods_per_year)
-    estimates = {}
-    measures = ("vol", "vol_ss", "iv_capm", "iv_ff", "iv_ffc")
-    for label, (months, minimum) in windows.items():
-        values = {name: np.full(len(anchors), np.nan) for name in measures}
-        for rows, raw, within, count, (market, smb, hml, rf, mom) in batches(months, minimum):
-            centered = _demean(raw, within, count)
-            values["vol"][rows] = annualize * np.sqrt((centered ** 2).sum(axis=1) / (count - 1))
-            values["vol_ss"][rows] = annualize * np.sqrt(
-                (np.where(within, raw, 0) ** 2).sum(axis=1) / count
-            )
-
-            excess = raw - rf
-            capm = within & np.isfinite(excess) & np.isfinite(market)
-            ff = capm & np.isfinite(smb) & np.isfinite(hml)
-            ffc = ff & np.isfinite(mom)
-            models = [
-                ("iv_capm", (market,), capm),
-                ("iv_ff", (market, smb, hml), ff),
-                ("iv_ffc", (market, smb, hml, mom), ffc),
-            ]
-            for name, regressors, valid in models:
-                matched = valid.sum(axis=1)
-                parameters = len(regressors) + 1
-                _, residuals = _regress(excess, regressors, valid, matched,
-                                        max(minimum, parameters + 1))
-                rss = (np.where(valid, residuals, 0) ** 2).sum(axis=1)
-                rse = np.sqrt(rss / np.maximum(matched - parameters, 1))
-                values[name][rows] = np.where(matched >= max(minimum, parameters + 1),
-                                              annualize * rse, np.nan)
-        estimates.update({f"{name}_{label}": values[name] for name in measures})
-    return anchors.select(*KEYS).with_columns(
-        pl.Series(name, values, nan_to_null=True) for name, values in estimates.items()
+    requested = anchors.select(KEYS)
+    models = {
+        "iv_capm": ("mktrf", "excess"),
+        "iv_ff": ("mktrf", "smb", "hml", "excess"),
+        "iv_ffc": ("mktrf", "smb", "hml", "mom", "excess"),
+    }
+    panel = (
+        returns.lazy().select("permno", "date", "ret")
+        .join(factors.lazy().select("date", "rf", "mktrf", "smb", "hml", "mom"),
+              on="date", how="left", validate="m:1")
+        .with_columns(excess=pl.col("ret") - pl.col("rf"))
     )
+    monthly = _monthly_moments(panel, KEYS, "date", {"raw": ("ret",), **models})
+    grid = _month_grid(monthly, requested)
+    annualize = 100 * np.sqrt(periods_per_year)
+    estimates = []
+    for label, (months, minimum) in windows.items():
+        rolled = _roll_moments(grid, requested, months)
+        n = pl.col("raw_n")
+        sum_ret = pl.col("raw_sum_0")
+        sum_squares = pl.col("raw_cross_0_0")
+        centered_squares = (sum_squares - sum_ret.pow(2) / n).clip(lower_bound=0)
+        total = pl.when(n >= max(minimum, 2)).then(annualize * (centered_squares / (n - 1)).sqrt())
+        squared = pl.when(n >= max(minimum, 1)).then(annualize * (sum_squares / n).sqrt())
+        estimates.extend(rolled.select(total.alias(f"vol_{label}"), squared.alias(f"vol_ss_{label}")).get_columns())
+        for name, terms in models.items():
+            rmse = _solve_moments(rolled, name, len(terms) - 1, minimum)[:, -1]
+            estimates.append(pl.Series(f"{name}_{label}", annualize * rmse, nan_to_null=True))
+    return requested.with_columns(estimates)

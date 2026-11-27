@@ -64,6 +64,9 @@ quartodoc:
         - correlation_matrix
         - winsorized_corr
         - persistence
+    - title: Time-series regressions
+      contents:
+        - rolling_ols
     - title: Portfolios and inference
       contents:
         - univariate_panel

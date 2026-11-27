@@ -19,6 +19,7 @@ from ._portfolios import (
     hac,
     univariate_panel,
 )
+from ._rolling_ols import rolling_ols
 from ._statistics import (
     correlation_matrix,
     mean_cross_sections,
@@ -49,6 +50,7 @@ __all__ = [
     "persistence",
     "plot_cumulative_returns",
     "plot_factor",
+    "rolling_ols",
     "univariate_panel",
     "winsorized_corr",
     "write_eap_table",
