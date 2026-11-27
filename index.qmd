@@ -17,12 +17,11 @@ Part II provides the core empirical analyses of @bali2016 starting with the cons
 ## Why Python Polars?
 
 My goal here is to allow readers to open the code behind a table, rerun it in a notebook, and change a breakpoint, a sample screen, or a factor model.
-My hope is that you can carry the workflow I use here into your own research.
-The software is freely available.^[
+My hope is that you can carry the workflow I use here into your own research using software that is freely available.^[
     @bali2016 do not specify what software they use in writing their book.
     However, they do mention obtaining SAS data files using SSH [@bali2016, p. 104], and it is plausible that they used SAS as the statistical programming language for their book.
 ]
-Reproducing the results requires access to the relevant data from Wharton Research Data Services (WRDS, pronounced "words").
+To reproduce the results, you'll also need an internet connection and access to the relevant data from Wharton Research Data Services (WRDS, pronounced "words").
 
 Having chosen Python, one also needs to choose a data frame library.
 While pandas has been the default data frame library for Python users since about 2012, when it was really the only such library, Python Polars seems to be the better choice in 2026.
