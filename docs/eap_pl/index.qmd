@@ -2,7 +2,7 @@
 title: eap_pl
 ---
 
-`eap_pl` provides the shared Polars calculations used in [*Empirical Asset Pricing: A Python Reader’s Companion*](https://iangow.github.io/asset_pricing_polars/).
+`eap_pl` provides the shared Polars calculations used in [*Empirical Asset Pricing: A Python Reader’s Companion*](https://iangow.github.io/eap_py/).
 The [function reference](reference/index.qmd) lists the expected columns, return units, and output for each helper.
 
 ## Installation
@@ -38,4 +38,4 @@ Importing `eap_pl` registers `.eap` on Polars expressions and DataFrames.
 For example, `pl.col("beta").eap.winsorize()` clips an expression at its quantile cutoffs, and `.eap.show_table()` displays a DataFrame with Great Tables.
 
 `eap_pl.load_parquet()` reads the local Parquet repository configured in `DATA_DIR`, and `eap_pl.ptime()` times a block of code.
-See [Preliminaries in the book](https://iangow.github.io/asset_pricing_polars/data.html) for the required WRDS tables.
+See [Preliminaries in the book](https://iangow.github.io/eap_py/data.html) for the required WRDS tables.

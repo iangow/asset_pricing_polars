@@ -10,7 +10,7 @@ metadata-files:
 
 website:
   title: eap_pl
-  site-url: https://iangow.github.io/asset_pricing_polars/eap_pl/
+  site-url: https://iangow.github.io/eap_py/eap_pl/
   description: "Function reference for Empirical Asset Pricing: A Python Reader’s Companion"
   navbar:
     left:
@@ -20,9 +20,9 @@ website:
         text: Reference
     right:
       - text: Book
-        href: https://iangow.github.io/asset_pricing_polars/
+        href: https://iangow.github.io/eap_py/
       - icon: github
-        href: https://github.com/iangow/asset_pricing_polars/tree/main/packages/eap_pl
+        href: https://github.com/iangow/eap_py/tree/main/packages/eap_pl
 
 format:
   html:

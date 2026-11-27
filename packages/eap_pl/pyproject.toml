@@ -19,5 +19,5 @@ dependencies = [
 ]
 
 [project.urls]
-Repository = "https://github.com/iangow/asset_pricing_polars"
-Documentation = "https://iangow.github.io/asset_pricing_polars/eap_pl/"
+Repository = "https://github.com/iangow/eap_py"
+Documentation = "https://iangow.github.io/eap_py/eap_pl/"

@@ -1,6 +1,6 @@
 # eap_pl
 
-`eap_pl` provides Polars helpers for [Empirical Asset Pricing: A Python Reader’s Companion](https://iangow.github.io/asset_pricing_polars/).
+`eap_pl` provides Polars helpers for [Empirical Asset Pricing: A Python Reader’s Companion](https://iangow.github.io/eap_py/).
 It supports descriptive statistics, portfolio sorts, inference, and plots for the book's legacy CRSP replications.
 
 From the book checkout, run `uv sync` to install the package into the book environment.
@@ -11,4 +11,4 @@ The package includes the December 2013 Pástor–Stambaugh liquidity series used
 Use `eap_pl.get_ff_factors("daily", vintage="201406")` to download daily Fama–French factors for a pinned vintage.
 The loader also supports monthly three-factor data and momentum at both frequencies.
 
-The [function reference](https://iangow.github.io/asset_pricing_polars/eap_pl/reference/) describes each function's inputs and outputs.
+The [function reference](https://iangow.github.io/eap_py/eap_pl/reference/) describes each function's inputs and outputs.
