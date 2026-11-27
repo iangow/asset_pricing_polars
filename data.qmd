@@ -110,6 +110,7 @@ This file does not come from WRDS.
 
 For comparisons across Fama–French vintages, see [eap_pl.get_ff_factors()](eap_pl/reference/get_ff_factors.html).
 The loader checks the archive's checksum and keeps a local copy for later renders.
+@sec-skewness-replication and @sec-volatility-replication use the June 2014 archive. The four-factor volatility model also uses its daily momentum factor.
 
 ## Winsorization and Truncation
 

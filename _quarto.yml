@@ -21,9 +21,11 @@ book:
         - beta-replication.qmd
         - size-replication.qmd
         - value-replication.qmd
-        - momentum-replication.qmd
+        - momentum.qmd
         - reversal-replication.qmd
         - liquidity-replication.qmd
+        - skewness-replication.qmd
+        - volatility-replication.qmd
     - references.qmd
 
 bibliography: book.bib

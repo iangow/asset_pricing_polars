@@ -1,0 +1,550 @@
+---
+jupyter: python3
+---
+
+# Idiosyncratic Volatility {#sec-volatility-replication}
+
+We follow Chapter 15 of @bali2016. We examine whether stocks with more volatile factor-model residuals earn lower returns in the next month, and how the relation changes with portfolio weighting, delisting adjustments, and controls.
+
+## Measuring Total Volatility
+
+Let $R_{i,s}$ be a decimal stock return, $n$ the number of observations in the estimation window, and $m$ the number of periods per year. We use $m=252$ for daily returns and $m=12$ for monthly returns. Total volatility is the annualized sample standard deviation, in percent.
+
+$$
+\operatorname{Vol}_i = 100\sqrt{m}\,\sqrt{\frac{\sum_{s=1}^{n}(R_{i,s}-\bar R_i)^2}{n-1}}.
+$$ {#eq-bem15-vol}
+
+We also calculate an annualized root mean square using zero in place of the sample mean.
+
+$$
+\operatorname{Vol}^{SS}_i = 100\sqrt{m}\,\sqrt{\frac{\sum_{s=1}^{n}R_{i,s}^2}{n}}.
+$$ {#eq-bem15-vol-ss}
+
+## Measuring Idiosyncratic Volatility
+
+We regress the stock return in excess of the risk-free rate, $r_{i,s}$, on factor returns at the same frequency. The Fama–French three-factor model uses market, size, and value returns.
+
+$$
+r_{i,s}=\alpha_i+\beta_{i,M}\mathrm{MKT}_s+\beta_{i,S}\mathrm{SMB}_s
++\beta_{i,H}\mathrm{HML}_s+\varepsilon_{i,s}.
+$$ {#eq-bem15-ff}
+
+The CAPM uses the market factor.
+
+$$
+r_{i,s}=\alpha_i+\beta_{i,M}\mathrm{MKT}_s+\varepsilon_{i,s}.
+$$ {#eq-bem15-capm}
+
+The four-factor model (FFC) adds momentum.
+
+$$
+r_{i,s}=\alpha_i+\beta_{i,M}\mathrm{MKT}_s+\beta_{i,S}\mathrm{SMB}_s
++\beta_{i,H}\mathrm{HML}_s+\beta_{i,U}\mathrm{MOM}_s+\varepsilon_{i,s}.
+$$ {#eq-bem15-ffc}
+
+Let $k$ denote the number of estimated coefficients, including the intercept. Here $k$ equals 4 for FF, 2 for CAPM, and 5 for FFC.
+
+$$
+\operatorname{RSE}_i=\sqrt{\frac{\sum_{s=1}^{n}\widehat\varepsilon_{i,s}^{2}}{n-k}}.
+$$ {#eq-bem15-rse}
+
+Idiosyncratic volatility annualizes the residual standard error and expresses it in percent.
+
+$$
+\operatorname{IdioVol}_i=100\sqrt{m}\,\operatorname{RSE}_i.
+$$ {#eq-bem15-idiovol}
+
+Formation months run from June 1963 through November 2012. Each window ends in the formation month. The daily windows of 1, 3, 6, and 12 months require 15, 50, 100, and 200 observations. The monthly windows of 1, 2, 3, and 5 years require 10, 20, 24, and 24 observations. For factor models, the minimum applies to matched observations. We use CRSP's reported stock returns to estimate volatility and download the June 2014 vintage of the factors, including daily momentum, with [`get_ff_factors()`](eap_pl/reference/get_ff_factors.html).
+
+```{python}
+import polars as pl
+
+from era_pl import load_parquet
+from eap_pl import get_ff_factors, load_beta_universe
+from eap_pl._volatility import rolling_volatility
+
+first = pl.date(1963, 6, 1)
+last = pl.date(2012, 11, 1)
+last_holding = last.dt.offset_by("1mo")
+keys = ["permno", "month"]
+daily_windows = {"1m": (1, 15), "3m": (3, 50), "6m": (6, 100), "12m": (12, 200)}
+monthly_windows = {"1y": (12, 10), "2y": (24, 20), "3y": (36, 24), "5y": (60, 24)}
+windows = daily_windows | monthly_windows
+
+anchors = load_beta_universe(first, last).sort(keys).collect()
+daily = load_parquet("dsf", "crsp").filter(
+    pl.col("date").is_between(first.dt.offset_by("-11mo"), last.dt.month_end())
+)
+monthly = (
+    load_parquet("msf", "crsp")
+    .filter(pl.col("date").is_between(first.dt.offset_by("-59mo"), last_holding.dt.month_end()))
+    .select("permno", "ret", date=pl.col("date").dt.month_start())
+    .with_columns(pl.when(pl.col("ret").is_finite()).then("ret").alias("ret"))
+)
+
+vintage = "201406"
+daily_factors = get_ff_factors("daily", vintage=vintage).join(
+    get_ff_factors("momentum_daily", vintage=vintage), on="date", how="left", validate="1:1"
+)
+monthly_factors = get_ff_factors("monthly", vintage=vintage).join(
+    get_ff_factors("momentum", vintage=vintage), on="date", how="left", validate="1:1"
+)
+
+daily_vol = rolling_volatility(anchors, daily, daily_factors, daily_windows, 252)
+monthly_vol = rolling_volatility(anchors, monthly, monthly_factors, monthly_windows, 12)
+volatility = daily_vol.join(monthly_vol, on=keys, validate="1:1")
+```
+
+We use the 12-month daily market beta, one-month Amihud illiquidity from @sec-liquidity-replication, and the five-year monthly co-skewness and idiosyncratic skewness measures from @sec-skewness-replication. We use log market capitalization (`log_cap`), the cumulative return over the preceding 11 months (`mom`), and the formation-month return (`rev`) as controls.
+
+```{python}
+from eap_pl import build_book_to_market, build_momentum, build_sizes
+from eap_pl._data import monthly_stock_returns
+from eap_pl._skewness import rolling_skewness
+
+usable_days = daily.filter(
+    pl.all_horizontal(pl.col("ret", "prc", "vol").is_finite()),
+    pl.col("prc") > 0,
+    pl.col("vol") > 0,
+).with_columns(month=pl.col("date").dt.month_start())
+
+illiquidity = (
+    usable_days.filter(pl.col("month") >= first)
+    .group_by(keys)
+    .agg(illiq=(1e6 * pl.col("ret").abs() / (pl.col("prc") * pl.col("vol"))).mean(),
+         days=pl.len())
+    .filter(pl.col("days") >= 15)
+    .select(*keys, "illiq")
+    .collect()
+)
+
+skewness = rolling_skewness(anchors, monthly, monthly_factors, {"5y": monthly_windows["5y"]})
+sizes = build_sizes()
+betas = load_parquet("betas", "eap").select(*keys, beta="12M")
+adjusted = monthly_stock_returns(first.dt.offset_by("1mo"), last_holding).rename({"ret": "adjusted"})
+holding_returns = (
+    monthly.select("permno", month="date", unadjusted="ret")
+    .filter(pl.col("month").is_between(first.dt.offset_by("1mo"), last_holding))
+    .join(adjusted, on=keys, how="full", coalesce=True, validate="1:1")
+    .join(monthly_factors.lazy().select("rf", month="date", market=100 * pl.col("mktrf")),
+          on="month", validate="m:1")
+    .select("permno", pl.col("month").dt.offset_by("-1mo"), "market",
+            excess=100 * (pl.col("adjusted") - pl.col("rf")),
+            raw_excess=100 * (pl.col("unadjusted") - pl.col("rf")))
+    .collect()
+)
+
+panel = (
+    volatility.join(skewness.select(*keys, "coskew_5y", "idioskew_5y"), on=keys, validate="1:1")
+    .join(betas.collect(), on=keys, how="left", validate="1:1")
+    .join(sizes.select(*keys, "cap", "log_cap"), on=keys, how="left", validate="1:1")
+    .join(build_book_to_market(sizes).select(*keys, "bm"), on=keys, how="left", validate="1:1")
+    .join(build_momentum(first, last).select(*keys, "mom"), on=keys, how="left", validate="1:1")
+    .join(monthly.select("permno", month="date", rev=100 * pl.col("ret")).collect(),
+          on=keys, how="left", validate="1:1")
+    .join(illiquidity, on=keys, how="left", validate="1:1")
+    .join(holding_returns, on=keys, how="left", validate="1:1")
+)
+controls = {
+    "beta": "Beta", "log_cap": "Size", "bm": "BM", "mom": "Momentum",
+    "rev": "Reversal", "illiq": "Illiquidity",
+    "coskew_5y": "Co-skewness", "idioskew_5y": "Idiosyncratic skewness",
+}
+families = {"vol": "`vol`", "vol_ss": "`vol_ss`", "iv_capm": "`iv_capm`",
+            "iv_ff": "`iv_ff`", "iv_ffc": "`iv_ffc`"}
+labels = {
+    family: {f"{family}_{window}": window.upper() for window in windows}
+    for family in families
+}
+```
+
+## Summary Statistics
+
+We compute each statistic across stocks in a formation month and average each statistic over months. Missing factor returns or insufficient observations can change the number of usable stocks across measures.
+
+{{< include _show-table.qmd >}}
+
+```{python}
+#| label: tbl-bem15-summary
+#| tbl-cap: Cross-sectional volatility summary statistics (BEM Table 15.1)
+#| tbl-subcap:
+#|   - Total volatility
+#|   - Total volatility from squared returns
+#|   - CAPM idiosyncratic volatility
+#|   - Three-factor idiosyncratic volatility
+#|   - Four-factor idiosyncratic volatility
+
+from eap_pl import mean_cross_sections
+
+for terms in labels.values():
+    show_table(mean_cross_sections(panel, terms))
+```
+
+## Correlations
+
+Within each formation month, we use stocks with both measures available and winsorize each variable at the 0.5th and 99.5th percentiles. Each table averages the resulting correlations across months. The square tables put Pearson coefficients below the diagonal and Spearman coefficients above it.
+
+```{python}
+from itertools import combinations
+
+from eap_pl import correlation_matrix
+
+
+def average_pairs(pairs):
+    expressions = []
+    for left, right in pairs:
+        a, b = pl.col(left), pl.col(right)
+        valid = pl.all_horizontal(a.is_finite(), b.is_finite())
+        a, b = (x.filter(valid).era.winsorize(prob=0.005, quantile_method="linear")
+                for x in (a, b))
+        expressions.extend([
+            pl.corr(a, b).alias(f"Pearson {left}–{right}"),
+            pl.corr(a, b, method="spearman").alias(f"Spearman {left}–{right}"),
+        ])
+    return (
+        panel.group_by("month").agg(expressions)
+        .select(pl.exclude("month").fill_nan(None).mean()).row(0, named=True)
+    )
+
+
+def within_family(family):
+    terms = labels[family]
+    return correlation_matrix(average_pairs(combinations(terms, 2)), terms)
+```
+
+```{python}
+#| label: tbl-bem15-total-correlations
+#| tbl-cap: Correlations among total volatility measures (BEM Table 15.2)
+#| tbl-subcap:
+#|   - Sample standard deviation
+#|   - Root mean square
+
+for family in ("vol", "vol_ss"):
+    show_table(within_family(family))
+```
+
+```{python}
+#| label: tbl-bem15-idio-correlations
+#| tbl-cap: Correlations among idiosyncratic volatility measures (BEM Table 15.3)
+#| tbl-subcap:
+#|   - CAPM
+#|   - Fama–French three-factor model
+#|   - Fama–French–Carhart four-factor model
+
+for family in ("iv_capm", "iv_ff", "iv_ffc"):
+    show_table(within_family(family))
+```
+
+```{python}
+#| label: tbl-bem15-cross-correlations
+#| tbl-cap: Correlations between measures with the same estimation window (BEM Table 15.4)
+#| tbl-subcap:
+#|   - Pearson
+#|   - Spearman
+
+family_pairs = list(combinations(families, 2))
+matched_pairs = [(f"{a}_{w}", f"{b}_{w}") for a, b in family_pairs for w in windows]
+cross = average_pairs(matched_pairs)
+for method in ("Pearson", "Spearman"):
+    show_table(pl.DataFrame([
+        {"Pair": f"{families[a]} and {families[b]}",
+         **{w.upper(): f"{cross[f'{method} {a}_{w}–{b}_{w}']:.3f}" for w in windows}}
+        for a, b in family_pairs
+    ]))
+```
+
+```{python}
+#| label: tbl-bem15-controls-correlations
+#| tbl-cap: Idiosyncratic volatility and other characteristics (BEM Table 15.5)
+#| tbl-subcap:
+#|   - Pearson
+#|   - Spearman
+
+iv_labels = labels["iv_ff"]
+with_controls = average_pairs([(term, control) for term in iv_labels for control in controls])
+for method in ("Pearson", "Spearman"):
+    show_table(pl.DataFrame([
+        {"Window": window,
+         **{name: with_controls[f"{method} {term}–{control}"]
+            for control, name in controls.items()}}
+        for term, window in iv_labels.items()
+    ]))
+```
+
+## Persistence
+
+We match each stock's volatility to its value an exact number of months later and average the monthly winsorized Pearson correlations. We omit lags shorter than the volatility window so the two estimates use disjoint sets of returns.
+
+```{python}
+#| label: tbl-bem15-persistence
+#| tbl-cap: Persistence of three-factor idiosyncratic volatility (BEM Table 15.6)
+
+from eap_pl import persistence
+
+lags = [1, 3, 6, 12, 24, 36, 48, 60, 120]
+show_table(persistence(panel, iv_labels, lags).with_columns(
+    pl.when(pl.col("Lag (months)") >= months).then(pl.col(w.upper())).alias(w.upper())
+    for w, (months, _) in windows.items()
+))
+```
+
+## Idiosyncratic Volatility and Stock Returns
+
+### Univariate Portfolio Analysis
+
+We sort each formation month's eligible stocks into deciles and calculate equal- and value-weighted next-month excess returns. Value weights use formation-month market capitalization. The spread buys the highest-volatility decile and sells the lowest. We compare returns with the delisting adjustments in @sec-bem-returns to returns from CRSP's unadjusted monthly stock file.
+
+We run the spread regressions on July 1963 through December 2012 holding returns. The FFCPS model augments the four-factor model with the Pástor–Stambaugh traded liquidity factor bundled with the package. For FFCPS the sample starts in January 1968, when that factor first becomes available. Inference uses six-lag Newey–West standard errors [@neweywest1987].
+
+```{python}
+from eap_pl import format_fit, hac, load_pastor_stambaugh_2013
+from eap_pl._portfolios import assign_portfolio, portfolio_months, spread
+
+factor_returns = (
+    monthly_factors.select(month="date", mkt=100 * pl.col("mktrf"),
+                           smb=100 * pl.col("smb"), hml=100 * pl.col("hml"),
+                           mom_factor=100 * pl.col("mom"))
+    .join(load_pastor_stambaugh_2013().select(month="date", ps=100 * pl.col("psl")),
+          on="month", how="left", validate="1:1")
+)
+
+models = {"Return": [], "FFC α": ["mkt", "smb", "hml", "mom_factor"]}
+models["FFCPS α"] = [*models["FFC α"], "ps"]
+
+
+def spread_statistics(series, weight):
+    sample = (
+        series.select(pl.col("month").dt.offset_by("1mo"), weight)
+        .join(factor_returns, on="month", how="left", validate="1:1")
+        .sort("month")
+    )
+    return {
+        name: format_fit(hac(f"{weight} ~ " + (" + ".join(terms) or "1"),
+                             sample.drop_nulls([weight, *terms])), "Intercept")
+        for name, terms in models.items()
+    }
+
+
+def decile_returns(return_column):
+    sample = panel.with_columns(excess=pl.col(return_column))
+    return {
+        term: portfolio_months(
+            assign_portfolio(sample.filter(pl.col(term).is_finite()), term, 10, "month"),
+            ["portfolio"],
+        )
+        for term in iv_labels
+    }
+
+
+def univariate_table(monthly_returns, weight):
+    rows = []
+    for term, monthly_return in monthly_returns.items():
+        means = monthly_return.group_by("portfolio").agg(pl.col(weight).mean()).sort("portfolio")
+        estimates = spread_statistics(spread(monthly_return, 10, 1, "portfolio", weight), weight)
+        rows.append({
+            "Window": iv_labels[term],
+            **{str(decile): value for decile, value in means.iter_rows()},
+            "10–1": estimates.pop("Return"),
+            **estimates,
+        })
+    return pl.DataFrame(rows)
+
+
+adjusted_deciles = decile_returns("excess")
+unadjusted_deciles = decile_returns("raw_excess")
+```
+
+```{python}
+#| label: tbl-bem15-adjusted
+#| tbl-cap: Idiosyncratic volatility decile returns using delisting adjustments (BEM Table 15.7)
+#| tbl-subcap:
+#|   - Value-weighted returns
+#|   - Equal-weighted returns
+
+for weight in ("VW", "EW"):
+    show_table(univariate_table(adjusted_deciles, weight))
+```
+
+```{python}
+#| label: tbl-bem15-unadjusted
+#| tbl-cap: Idiosyncratic volatility decile returns without delisting adjustments (BEM Table 15.8)
+#| tbl-subcap:
+#|   - Value-weighted returns
+#|   - Equal-weighted returns
+
+for weight in ("VW", "EW"):
+    show_table(univariate_table(unadjusted_deciles, weight))
+```
+
+```{python}
+#| label: tbl-bem15-decile-characteristics
+#| tbl-cap: Mean formation-month characteristics of one-month idiosyncratic volatility deciles (BEM Table 15.9)
+
+target = "iv_ff_1m"
+characteristics = {target: "`iv_ff_1m`",
+                   **{("cap" if term == "log_cap" else term):
+                      ("Market cap ($ millions)" if term == "log_cap" else name)
+                      for term, name in controls.items()}}
+members = assign_portfolio(panel.filter(pl.col(target).is_finite()), target, 10, "month")
+trait_means = (
+    members.group_by("month", "portfolio").agg(pl.col(list(characteristics)).mean())
+    .group_by("portfolio").agg(pl.col(list(characteristics)).mean()).sort("portfolio")
+)
+show_table(pl.DataFrame({
+    "Characteristic": list(characteristics.values()),
+    **{str(row[0]): list(row[1:]) for row in trait_means.iter_rows()},
+}))
+```
+
+### Bivariate Portfolio Analysis
+
+We sort on a control and one-month FF idiosyncratic volatility, using stocks with both variables available. In the dependent sort, we form control quintiles and then sort on volatility within each control quintile. In the independent sort, we form both sets of quintiles from the same monthly sample and intersect them. We report the volatility 5–1 spread within each control quintile and the 5–1 spread after averaging returns across control quintiles.
+
+```{python}
+from eap_pl import bivariate_months
+
+
+def two_way_table(dependent, weight):
+    rows = []
+    sort_controls = {("cap" if term == "log_cap" else term):
+                     ("Market cap" if term == "log_cap" else name)
+                     for term, name in controls.items()}
+    for control, name in sort_controls.items():
+        sample = panel.filter(pl.all_horizontal(pl.col(control, target).is_finite()))
+        cells = bivariate_months(sample, control, target, nyse=False, dependent=dependent)
+        groups = cells.partition_by("control", as_dict=True)
+        groups_by_name = {f"Control {i}": groups[i,] for i in range(1, 6)}
+        groups_by_name["Control avg."] = cells.group_by("month", "target").agg(
+            pl.col(weight).mean(), pl.col("market").first(),
+        )
+        estimates = {label: spread_statistics(spread(group, 5, 1, "target", weight), weight)
+                     for label, group in groups_by_name.items()}
+        rows.extend({
+            "Characteristic": name, "Estimate": statistic,
+            **{label: results[statistic] for label, results in estimates.items()},
+        } for statistic in models)
+    return pl.DataFrame(rows)
+```
+
+```{python}
+#| label: tbl-bem15-dependent-vw
+#| tbl-cap: Value-weighted dependent-sort portfolios (BEM Table 15.10)
+
+show_table(two_way_table(dependent=True, weight="VW"))
+```
+
+```{python}
+#| label: tbl-bem15-dependent-ew
+#| tbl-cap: Equal-weighted dependent-sort portfolios (BEM Table 15.11)
+
+show_table(two_way_table(dependent=True, weight="EW"))
+```
+
+```{python}
+#| label: tbl-bem15-independent-vw
+#| tbl-cap: Value-weighted independent-sort portfolios (BEM Table 15.12)
+
+show_table(two_way_table(dependent=False, weight="VW"))
+```
+
+```{python}
+#| label: tbl-bem15-independent-ew
+#| tbl-cap: Equal-weighted independent-sort portfolios (BEM Table 15.13)
+
+show_table(two_way_table(dependent=False, weight="EW"))
+```
+
+### Fama–MacBeth Regressions
+
+We regress next-month excess returns on volatility and the available controls, using a separate cross-section each month. The full specification is
+
+$$
+\begin{aligned}
+r_{i,t+1} ={}& a_t + b_t X_{i,t} + c_{1,t}\beta_{i,t} + c_{2,t}\mathrm{Size}_{i,t}
+ + c_{3,t}\mathrm{BM}_{i,t} + c_{4,t}\mathrm{Mom}_{i,t} \\
+ &+ c_{5,t}\mathrm{Rev}_{i,t} + c_{6,t}\mathrm{Illiq}_{i,t}
+ + c_{7,t}\mathrm{CoSkew}_{i,t} + c_{8,t}\mathrm{IdioSkew}_{i,t} + u_{i,t+1},
+\end{aligned}
+$$ {#eq-bem15-fm}
+
+where $X_{i,t}$ is either idiosyncratic or total volatility. We winsorize regressors within each month's complete cases at the 0.5th and 99.5th percentiles. The tables report time-series means of monthly coefficients with six-lag Newey–West $t$-statistics.
+
+```{python}
+#| label: tbl-bem15-fm-controls
+#| tbl-cap: One-month FF idiosyncratic volatility without controls, with each control, and with all controls (BEM Table 15.14)
+
+from eap_pl import fama_macbeth_table
+
+short_label = {target: "`iv_ff_1m`"} | controls
+specifications = [[target], *([target, term] for term in controls), [target, *controls]]
+
+fits = [
+    fama_macbeth_table(panel.drop_nulls(["excess", *terms]), [terms], short_label, digits=3)
+    for terms in specifications
+]
+show_table(fits[0].select("Term").with_columns(
+    fit["(1)"].alias(f"({i})") for i, fit in enumerate(fits, 1)
+))
+```
+
+```{python}
+def horizon_regressions(family):
+    table = {"Term": [families[family], *controls.values(), "Intercept", "Adjusted R²", "n"]}
+    for term, window in labels[family].items():
+        terms = [term, *controls]
+        fit = fama_macbeth_table(panel.drop_nulls(["excess", *terms]), [terms],
+                                 {term: families[family]} | controls, digits=3)
+        table[window] = fit["(1)"]
+    return pl.DataFrame(table)
+```
+
+```{python}
+#| label: tbl-bem15-fm-idio
+#| tbl-cap: Full Fama–MacBeth regressions by idiosyncratic volatility window (BEM Table 15.15)
+
+show_table(horizon_regressions("iv_ff"))
+```
+
+```{python}
+#| label: tbl-bem15-fm-total
+#| tbl-cap: Full Fama–MacBeth regressions by total volatility window (BEM Table 15.16)
+
+show_table(horizon_regressions("vol"))
+```
+
+### Cumulative Returns
+
+The low-minus-high portfolio buys the lowest and sells the highest one-month idiosyncratic volatility decile, with value weights in each leg. If $r_s$ is its decimal return for holding month $s$, its cumulative simple and log returns, both expressed in percent, are
+
+$$
+C_t = 100\left[\prod_{s\le t}(1+r_s)-1\right],
+\qquad L_t = 100\sum_{s\le t}\log(1+r_s).
+$$ {#eq-bem15-compounding}
+
+```{python}
+#| label: fig-bem15-low-high
+#| fig-cap: "Cumulative returns of the value-weighted low-minus-high idiosyncratic volatility portfolio (BEM Figure 15.1)"
+#| fig-alt: "Two panels show the cumulative compounded and log returns from July 1963 to December 2012. Both rise over the long term and fall sharply in the early 2000s."
+
+import matplotlib.pyplot as plt
+from matplotlib.ticker import FuncFormatter
+
+low_high = (
+    spread(adjusted_deciles[target], 1, 10, "portfolio", "VW")
+    .select(date=pl.col("month").dt.offset_by("1mo").dt.month_end(), ret=pl.col("VW") / 100)
+    .sort("date")
+    .with_columns(compounded=100 * ((1 + pl.col("ret")).cum_prod() - 1),
+                  cumulative_log=100 * pl.col("ret").log1p().cum_sum())
+)
+
+fig, axes = plt.subplots(2, 1, sharex=True, figsize=(8, 5), layout="constrained")
+for ax, column, label in zip(axes, ("compounded", "cumulative_log"),
+                             ("Compounded return", "Cumulative log return")):
+    ax.plot(low_high["date"], low_high[column], color="#285b7a", linewidth=1.2)
+    ax.set_ylabel(label)
+    ax.yaxis.set_major_formatter(FuncFormatter(lambda value, _: f"{value:,.0f}%"))
+    ax.axhline(0, color="#777777", linewidth=0.7)
+    ax.grid(axis="y", alpha=0.25)
+axes[-1].set_xlabel("Holding month")
+plt.show()
+```

@@ -1,0 +1,460 @@
+---
+jupyter: python3
+---
+
+# Skewness {#sec-skewness-replication}
+
+Following Chapter 14 of @bali2016, we measure the asymmetry of past stock returns and ask whether it predicts next month's return. We examine total skewness, exposure to large market moves, and skewness in the residuals from a factor model.
+
+## Measuring Skewness
+
+Total skewness is the third central moment of raw stock returns divided by the second central moment raised to the power $3/2$. If $R_{i,s}$ is a return for stock $i$ and $\bar R_i$ is its mean in the estimation window, then
+
+$$
+\operatorname{Skew}_i=
+\frac{n^{-1}\sum_{s=1}^{n}(R_{i,s}-\bar R_i)^3}
+{\left[n^{-1}\sum_{s=1}^{n}(R_{i,s}-\bar R_i)^2\right]^{3/2}}.
+$$ {#eq-bem14-skew}
+
+We use the moment formula as written. A constant return series has no defined total skewness.
+
+Co-skewness is the coefficient on the squared market excess return in a regression of stock excess returns.
+
+$$
+r_{i,s}=\alpha_i+\beta_i\mathrm{MKT}_s+
+\operatorname{CoSkew}_i\mathrm{MKT}_s^2+\varepsilon_{i,s}.
+$$ {#eq-bem14-coskew}
+
+The coefficient depends on the units of return. We fit the regression with decimal returns throughout.
+
+Idiosyncratic skewness applies the same moment ratio to mean-zero residuals.
+
+$$
+\operatorname{IdioSkew}_i=
+\frac{n^{-1}\sum_{s=1}^{n}\hat\varepsilon_{i,s}^{\,3}}
+{\left[n^{-1}\sum_{s=1}^{n}\hat\varepsilon_{i,s}^{\,2}\right]^{3/2}}.
+$$ {#eq-bem14-idioskew}
+
+The residuals come from the Fama–French three-factor regression.
+
+$$
+r_{i,s}=\alpha_i+\beta_{i,M}\mathrm{MKT}_s+
+\beta_{i,S}\mathrm{SMB}_s+\beta_{i,H}\mathrm{HML}_s+\varepsilon_{i,s}.
+$$ {#eq-bem14-three-factor}
+
+The formation months are June 1963 through November 2012. The daily windows cover 1, 3, 6, or 12 calendar months and require 15, 50, 100, or 200 observations, respectively. The monthly windows cover 1, 2, 3, or 5 years and require 10, 20, 24, or 24 observations. All windows end in the formation month. The factor regressions match returns to factors at the same frequency and use observations with all the inputs required for that regression. We use the June 2014 archive for the daily and monthly Fama–French factors and the monthly momentum factor.
+
+```{python}
+import polars as pl
+
+from era_pl import load_parquet
+from eap_pl import build_book_to_market, build_momentum, build_sizes, get_ff_factors, monthly_panel
+from eap_pl._skewness import rolling_skewness
+
+first = pl.date(1963, 6, 1)
+last = pl.date(2012, 11, 1)
+keys = ["permno", "month"]
+daily_windows = {"1m": (1, 15), "3m": (3, 50), "6m": (6, 100), "12m": (12, 200)}
+monthly_windows = {"1y": (12, 10), "2y": (24, 20), "3y": (36, 24), "5y": (60, 24)}
+windows = daily_windows | monthly_windows
+
+vintage = "201406"
+daily_factors = get_ff_factors("daily", vintage=vintage)
+monthly_factors = get_ff_factors("monthly", vintage=vintage)
+
+sizes = build_sizes()
+monthly_stocks = (
+    load_parquet("msf", "crsp")
+    .filter(pl.col("date").is_between(first.dt.offset_by("-59mo"), last.dt.month_end()))
+    .select("permno", "ret", date=pl.col("date").dt.month_start())
+)
+formation = (
+    monthly_panel(sizes, first, last, monthly_factors=monthly_factors)
+    .join(build_book_to_market(sizes).select(*keys, "bm"), on=keys, how="left", validate="1:1")
+    .join(build_momentum(first, last).select(*keys, "mom"), on=keys, how="left", validate="1:1")
+    .join(monthly_stocks.select(
+        "permno", month="date", rev=pl.when(pl.col("ret").is_finite()).then(100 * pl.col("ret")),
+    ).collect(), on=keys, how="left", validate="1:1")
+)
+anchors = formation.select(keys)
+daily_stocks = load_parquet("dsf", "crsp").filter(
+    pl.col("date").is_between(first.dt.offset_by("-11mo"), last.dt.month_end()),
+)
+
+daily_measures = rolling_skewness(anchors, daily_stocks, daily_factors, daily_windows)
+monthly_measures = rolling_skewness(anchors, monthly_stocks, monthly_factors, monthly_windows)
+```
+
+We also need the one-month Amihud illiquidity control from @sec-liquidity-replication. It averages absolute returns per million dollars traded across at least 15 valid days.
+
+```{python}
+illiq = (
+    daily_stocks.filter(
+        pl.col("date") >= first,
+        pl.all_horizontal(pl.col("ret", "prc", "vol").is_finite()),
+        pl.col("prc") > 0,
+        pl.col("vol") > 0,
+    )
+    .with_columns(month=pl.col("date").dt.month_start())
+    .group_by(keys)
+    .agg(illiq=(1e6 * pl.col("ret").abs() / (pl.col("prc") * pl.col("vol"))).mean(),
+         days=pl.len())
+    .filter(pl.col("days") >= 15)
+    .select(*keys, "illiq")
+    .collect()
+)
+panel = (
+    formation.join(daily_measures, on=keys, validate="1:1")
+    .join(monthly_measures, on=keys, validate="1:1")
+    .join(illiq, on=keys, how="left", validate="1:1")
+)
+families = {"skew": "Total skewness", "coskew": "Co-skewness", "idioskew": "Idiosyncratic skewness"}
+labels = {
+    family: {f"{family}_{horizon}": f"`{family}_{horizon}`" for horizon in windows}
+    for family in families
+}
+controls = {"beta": "Beta", "log_cap": "Size", "bm": "`bm`",
+            "mom": "`mom`", "rev": "`rev`", "illiq": "`illiq`"}
+```
+
+## Summary Statistics
+
+We calculate the distribution across stocks in each formation month, then average each statistic over months. The observation count can differ across measures because total skewness requires variation in raw returns and the other measures require an identified regression.
+
+{{< include _show-table.qmd >}}
+
+```{python}
+#| label: tbl-bem14-summary
+#| tbl-cap: Cross-sectional summary statistics for the skewness measures (BEM Table 14.1)
+#| tbl-subcap:
+#|   - Total skewness
+#|   - Co-skewness
+#|   - Idiosyncratic skewness
+
+from eap_pl import mean_cross_sections
+
+summaries = {family: mean_cross_sections(panel, terms) for family, terms in labels.items()}
+for summary in summaries.values():
+    show_table(summary)
+```
+
+
+## Correlations
+
+We calculate Pearson and Spearman correlations within each month on observations where both measures are available. For Pearson correlations we winsorize each variable at the 0.5th and 99.5th percentiles. Spearman correlations use the original ranks.
+
+```{python}
+from itertools import combinations
+
+from eap_pl import correlation_matrix, period_correlations, winsorized_corr
+
+
+def within_family(family):
+    terms = labels[family]
+    means = (
+        period_correlations(panel, terms, "month")
+        .select(pl.exclude("month").mean())
+        .row(0, named=True)
+    )
+    return correlation_matrix(means, terms)
+```
+
+```{python}
+#| label: tbl-bem14-skew-correlations
+#| tbl-cap: Correlations among total skewness measures (BEM Table 14.2)
+
+show_table(within_family("skew"))
+```
+
+```{python}
+#| label: tbl-bem14-coskew-correlations
+#| tbl-cap: Correlations among co-skewness measures (BEM Table 14.3)
+
+show_table(within_family("coskew"))
+```
+
+```{python}
+#| label: tbl-bem14-idioskew-correlations
+#| tbl-cap: Correlations among idiosyncratic skewness measures (BEM Table 14.4)
+
+show_table(within_family("idioskew"))
+```
+
+The next two tables compare different types of skewness over the same window, then relate each measure to beta, size, book-to-market, momentum, reversal, and illiquidity.
+
+```{python}
+def average_pairs(pairs):
+    expressions = []
+    for left, right in pairs:
+        a, b = pl.col(left), pl.col(right)
+        valid = pl.all_horizontal(a.is_finite(), b.is_finite())
+        expressions.extend([
+            winsorized_corr(a, b).alias(f"Pearson {left} {right}"),
+            pl.corr(a.filter(valid), b.filter(valid), method="spearman").alias(f"Spearman {left} {right}"),
+        ])
+    return (
+        panel.group_by("month").agg(expressions)
+        .select(pl.exclude("month").fill_nan(None).mean())
+        .row(0, named=True)
+    )
+```
+
+```{python}
+#| label: tbl-bem14-cross-correlations
+#| tbl-cap: Correlations between the three types of skewness (BEM Table 14.5)
+#| tbl-subcap:
+#|   - Pearson
+#|   - Spearman
+
+family_pairs = list(combinations(families, 2))
+matched = [(f"{a}_{window}", f"{b}_{window}") for a, b in family_pairs for window in windows]
+averages = average_pairs(matched)
+for method in ("Pearson", "Spearman"):
+    show_table(pl.DataFrame([
+        {"Pair": f"{families[a]} and {families[b]}",
+         **{window: averages[f"{method} {a}_{window} {b}_{window}"] for window in windows}}
+        for a, b in family_pairs
+    ]))
+```
+
+```{python}
+#| label: tbl-bem14-controls-correlations
+#| tbl-cap: Skewness and other stock characteristics (BEM Table 14.6)
+#| tbl-subcap:
+#|   - Total skewness
+#|   - Co-skewness
+#|   - Idiosyncratic skewness
+
+for terms in labels.values():
+    averages = average_pairs([(term, control) for term in terms for control in controls])
+    show_table(pl.DataFrame([
+        {"Measure": label,
+         **{f"{method} {name}": averages[f"{method} {term} {control}"]
+            for method in ("Pearson", "Spearman") for control, name in controls.items()}}
+        for term, label in terms.items()
+    ]))
+```
+
+## Persistence
+
+We pair a stock's current measure with its value an exact number of months later. We compute the winsorized Pearson correlation across those paired stocks each month, then average across months. We omit lags shorter than the estimation window because the two measures would share returns.
+
+```{python}
+from eap_pl import persistence
+
+lags = [1, 3, 6, 12, 24, 36, 48, 60, 120]
+
+
+def nonoverlapping_persistence(family):
+    terms = labels[family]
+    return persistence(panel, terms, lags).with_columns(
+        pl.when(pl.col("Lag (months)") >= months)
+        .then(pl.col(terms[f"{family}_{window}"])).alias(terms[f"{family}_{window}"])
+        for window, (months, _) in windows.items()
+    )
+```
+
+```{python}
+#| label: tbl-bem14-coskew-persistence
+#| tbl-cap: Persistence of co-skewness (BEM Table 14.7)
+
+show_table(nonoverlapping_persistence("coskew"))
+```
+
+```{python}
+#| label: tbl-bem14-idioskew-persistence
+#| tbl-cap: Persistence of idiosyncratic skewness (BEM Table 14.8)
+
+show_table(nonoverlapping_persistence("idioskew"))
+```
+
+```{python}
+#| label: tbl-bem14-skew-persistence
+#| tbl-cap: Persistence of total skewness (BEM Table 14.9)
+
+show_table(nonoverlapping_persistence("skew"))
+```
+
+## Skewness and Stock Returns
+
+### Univariate Portfolio Analysis
+
+For each measure we form deciles using all eligible stocks with that measure. We compute next-month excess returns, including the delisting adjustments in @sec-bem-returns. Value weights use formation-month market capitalization.
+
+The high-minus-low spread buys the highest-skewness decile and sells the lowest. The four-factor model in @eq-bem11-ffc adds momentum to the three Fama–French factors. FFCPS also includes the traded liquidity factor from @sec-liquidity-replication. It uses January 1968 through December 2012 because the liquidity factor starts in January 1968. The other models use July 1963 through December 2012. Parentheses show six-lag Newey–West $t$-statistics [@neweywest1987].
+
+```{python}
+from eap_pl import format_fit, hac, load_pastor_stambaugh_2013
+from eap_pl._portfolios import assign_portfolio, portfolio_months, spread
+
+momentum_factor = get_ff_factors("momentum", vintage=vintage).select(
+    month="date", mom_factor=100 * pl.col("mom"),
+)
+factors = (
+    monthly_factors.select(month="date", mkt=100 * pl.col("mktrf"),
+                           smb=100 * pl.col("smb"), hml=100 * pl.col("hml"))
+    .join(momentum_factor, on="month", validate="1:1")
+    .join(load_pastor_stambaugh_2013().select(month="date", ps=100 * pl.col("psl")),
+          on="month", how="left", validate="1:1")
+)
+specifications = {
+    "10–1": "1",
+    "FFC α": "mkt + smb + hml + mom_factor",
+    "FFCPS α": "mkt + smb + hml + mom_factor + ps",
+}
+portfolio_tables = {}
+spread_estimates = []
+for family, terms in labels.items():
+    rows = {"EW": [], "VW": []}
+    for (term, label), window in zip(terms.items(), windows):
+        members = assign_portfolio(panel.filter(pl.col(term).is_finite()), term, 10, "month")
+        monthly = portfolio_months(members, ["portfolio"])
+        for weight in rows:
+            means = monthly.group_by("portfolio").agg(pl.col(weight).mean()).sort("portfolio")
+            sample = (
+                spread(monthly, 10, 1, "portfolio", weight)
+                .select(pl.col("month").dt.offset_by("1mo"), weight)
+                .join(factors, on="month", validate="1:1").sort("month")
+            )
+            fits = {
+                name: hac(f"{weight} ~ {rhs}", sample.drop_nulls("ps") if name == "FFCPS α" else sample)
+                for name, rhs in specifications.items()
+            }
+            rows[weight].append({
+                "Sort variable": label,
+                **{str(decile): value for decile, value in means.iter_rows()},
+                **{name: format_fit(fit, "Intercept") for name, fit in fits.items()},
+            })
+            fit = fits["10–1"]
+            spread_estimates.append({
+                "measure": families[family], "window": window, "weight": weight,
+                "estimate": fit.params["Intercept"], "se": fit.std_errors["Intercept"],
+            })
+    portfolio_tables[family] = {weight: pl.DataFrame(values) for weight, values in rows.items()}
+```
+
+```{python}
+#| label: tbl-bem14-skew-portfolio
+#| tbl-cap: Portfolios sorted on total skewness (BEM Table 14.10)
+#| tbl-subcap:
+#|   - Equal-weighted portfolios
+#|   - Value-weighted portfolios
+
+for table in portfolio_tables["skew"].values():
+    show_table(table)
+```
+
+```{python}
+#| label: tbl-bem14-coskew-portfolio
+#| tbl-cap: Portfolios sorted on co-skewness (BEM Table 14.11)
+#| tbl-subcap:
+#|   - Equal-weighted portfolios
+#|   - Value-weighted portfolios
+
+for table in portfolio_tables["coskew"].values():
+    show_table(table)
+```
+
+```{python}
+#| label: tbl-bem14-idioskew-portfolio
+#| tbl-cap: Portfolios sorted on idiosyncratic skewness (BEM Table 14.12)
+#| tbl-subcap:
+#|   - Equal-weighted portfolios
+#|   - Value-weighted portfolios
+
+for table in portfolio_tables["idioskew"].values():
+    show_table(table)
+```
+
+```{python}
+#| label: fig-bem14-spreads
+#| fig-cap: High-minus-low monthly excess returns by skewness measure and window, with 95% normal-approximation intervals using six-lag Newey–West standard errors
+#| fig-alt: Three panels compare equal- and value-weighted skewness spreads. The one-month total and idiosyncratic skewness spreads differ substantially by weighting.
+
+from matplotlib import pyplot as plt
+
+spreads = pl.DataFrame(spread_estimates)
+fig, axes = plt.subplots(3, 1, figsize=(8.2, 7.0), sharex=True, sharey=True, layout="constrained")
+x = list(range(len(windows)))
+for axis, measure in zip(axes, families.values()):
+    axis.axhline(0, color="#777777", lw=0.8)
+    for weight, description, offset, color, marker in (
+        ("EW", "Equal weighted", -0.12, "#15627c", "o"),
+        ("VW", "Value weighted", 0.12, "#9b552a", "s"),
+    ):
+        sample = spreads.filter(pl.col("measure") == measure, pl.col("weight") == weight)
+        axis.errorbar([tick + offset for tick in x], sample["estimate"].to_numpy(),
+                      yerr=1.96 * sample["se"].to_numpy(), fmt=marker, color=color,
+                      capsize=2, markersize=4, label=description)
+    axis.set_title(measure, loc="left")
+    axis.spines[["top", "right"]].set_visible(False)
+axes[0].legend(loc="best", frameon=False)
+axes[-1].set_xticks(x, list(windows))
+axes[-1].set_xlabel("Estimation window")
+fig.supylabel("High-minus-low excess return (% per month)")
+plt.show()
+```
+
+### Fama–MacBeth Regressions
+
+For each measure $X_{i,t}$, we estimate a monthly cross-sectional regression of next-month excess returns. The univariate specification includes only skewness. The full specification is
+
+$$
+\begin{aligned}
+r_{i,t+1}={}&\delta_{0,t}+\delta_{1,t}X_{i,t}+\delta_{2,t}\beta_{i,t}
+ +\delta_{3,t}\mathrm{Size}_{i,t}+\delta_{4,t}\mathrm{BM}_{i,t}\\
+ &+\delta_{5,t}\mathrm{Mom}_{i,t}+\delta_{6,t}\mathrm{Rev}_{i,t}
+ +\delta_{7,t}\mathrm{Illiq}_{i,t}+\varepsilon_{i,t+1}.
+\end{aligned}
+$$ {#eq-bem14-fama-macbeth}
+
+As in @sec-liquidity-replication, we take the complete cases for each specification, winsorize the regressors by month at the 0.5th and 99.5th percentiles, and apply six-lag Newey–West inference to the time series of coefficients.
+
+```{python}
+from eap_pl import fama_macbeth_table
+
+
+def fm_panel(family, controls):
+    terms = labels[family]
+    result = {"Term": [*terms.values(), *controls.values(), "Intercept", "Adjusted R²", "n"]}
+    for index, (term, label) in enumerate(terms.items(), 1):
+        regressors = [term, *controls]
+        sample = panel.select("month", "excess", *regressors).drop_nulls()
+        fit = fama_macbeth_table(sample, [regressors], {term: label} | controls, digits=3)
+        values = dict(fit.iter_rows())
+        result[f"({index})"] = [values.get(name, "") for name in result["Term"]]
+    return pl.DataFrame(result)
+```
+
+```{python}
+#| label: tbl-bem14-skew-fm
+#| tbl-cap: Fama–MacBeth regressions of returns on total skewness (BEM Table 14.13)
+#| tbl-subcap:
+#|   - Univariate regressions
+#|   - Regressions with controls
+
+show_table(fm_panel("skew", {}))
+show_table(fm_panel("skew", controls))
+```
+
+```{python}
+#| label: tbl-bem14-coskew-fm
+#| tbl-cap: Fama–MacBeth regressions of returns on co-skewness (BEM Table 14.14)
+#| tbl-subcap:
+#|   - Univariate regressions
+#|   - Regressions with controls
+
+show_table(fm_panel("coskew", {}))
+show_table(fm_panel("coskew", controls))
+```
+
+```{python}
+#| label: tbl-bem14-idioskew-fm
+#| tbl-cap: Fama–MacBeth regressions of returns on idiosyncratic skewness (BEM Table 14.15)
+#| tbl-subcap:
+#|   - Univariate regressions
+#|   - Regressions with controls
+
+show_table(fm_panel("idioskew", {}))
+show_table(fm_panel("idioskew", controls))
+```

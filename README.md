@@ -47,14 +47,16 @@ from eap_pl import get_ff_factors
 daily = get_ff_factors("daily", vintage="201406")
 monthly = get_ff_factors("monthly", vintage="201406")
 momentum = get_ff_factors("momentum", vintage="201406")
+daily_momentum = get_ff_factors("momentum_daily", vintage="201406")
 ```
 
-June 2014, September 2015, and December 2024 cover all three datasets.
+June 2014, September 2015, and December 2024 cover all four datasets.
 July 2016 covers the monthly three-factor data.
 
 Render the full book and open `_book/index.html`. The annual methods chapters
 build their inputs on demand. Set `EAP_WRITE_BETAS=1` so the Beta chapter
-writes `DATA_DIR/eap/betas.parquet` for the monthly analyses in Size, Value, Momentum, Short-Term Reversal, and Liquidity.
+writes `DATA_DIR/eap/betas.parquet` for the monthly analyses in Size, Value,
+Momentum, Short-Term Reversal, Liquidity, Skewness, and Idiosyncratic Volatility.
 
 ```sh
 EAP_WRITE_BETAS=1 QUARTO_PYTHON="$PWD/.venv/bin/python" \
@@ -68,7 +70,7 @@ for use outside the book.
 
 ## CIZ examples
 
-The original CIZ examples remain in `size.qmd`, `momentum.qmd`,
+The original CIZ examples remain in `size.qmd`, `momentum-ciz.qmd`,
 `fama-macbeth.qmd`, and `illiquidity.qmd` outside the active book
 configuration. They use AnomalyLab as an optional numerical reference.
 The original comparisons used [commit ab045b8](https://github.com/FinPhD/AnomalyLab/commit/ab045b8e1aa4de8d4c2c854538013f00f420f2de).

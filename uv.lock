@@ -998,6 +998,8 @@ version = "0.1.0"
 source = { editable = "packages/eap_pl" }
 dependencies = [
     { name = "era-py", extra = ["polars"] },
+    { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
+    { name = "numpy", version = "2.5.5", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
     { name = "plotnine-polars" },
     { name = "polars" },
     { name = "statspai" },
@@ -1006,6 +1008,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "era-py", extras = ["polars"], specifier = "==0.0.38" },
+    { name = "numpy", specifier = ">=1.26" },
     { name = "plotnine-polars", specifier = ">=0.2.1" },
     { name = "polars", specifier = ">=2.0" },
     { name = "statspai", specifier = "==1.46.3" },

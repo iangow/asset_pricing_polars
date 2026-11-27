@@ -141,19 +141,22 @@ def monthly_stock_returns(first, last):
     )
 
 
-def monthly_panel(sizes, first, last):
+def monthly_panel(sizes, first, last, *, monthly_factors=None):
     """Join formation-month characteristics to next-month excess returns.
 
-    Reads `eap/betas`, `crsp/msf`, `crsp/msedelist`, and
-    `ff/factors_monthly` from the local Parquet repository. On a delisting,
-    the recorded delisting return replaces the usual stock return. Missing
-    delisting returns use −30% for poor performance and −100% otherwise.
+    Reads `eap/betas`, `crsp/msf`, and `crsp/msedelist` from the local
+    Parquet repository. By default, it also reads `ff/factors_monthly`.
+    On a delisting, the recorded delisting return replaces the usual stock
+    return. Missing delisting returns use −30% for poor performance and
+    −100% otherwise.
 
     Args:
         sizes (polars.DataFrame or polars.LazyFrame): Characteristics keyed
             by `permno` and the first day of the formation `month`.
         first (polars.Expr): First formation month, such as `pl.date(1963, 6, 1)`.
         last (polars.Expr): Last formation month, inclusive.
+        monthly_factors (polars.DataFrame or polars.LazyFrame, optional):
+            Monthly factor table with date, mktrf, and rf in decimal units.
 
     Returns:
         (polars.DataFrame): One row per beta observation, including the
@@ -164,12 +167,11 @@ def monthly_panel(sizes, first, last):
     returns = monthly_stock_returns(first.dt.offset_by("1mo"), last.dt.offset_by("1mo")).rename(
         {"month": "holding"},
     )
-    market = (
-        load_parquet("factors_monthly", "ff")
-        .select(
-            holding=pl.col("date").dt.month_start(),
-            market=100 * pl.col("mktrf"), rf=pl.col("rf"),
-        )
+    if monthly_factors is None:
+        monthly_factors = load_parquet("factors_monthly", "ff")
+    market = monthly_factors.lazy().select(
+        holding=pl.col("date").dt.month_start(),
+        market=100 * pl.col("mktrf"), rf=pl.col("rf"),
     )
     return (
         betas.filter(pl.col("month").is_between(first, last))

@@ -13,7 +13,7 @@ import polars as pl
 
 _FRENCH = "mba.tuck.dartmouth.edu/pages/faculty/ken.french"
 _FF3 = ("mktrf", "smb", "hml", "rf")
-_COLUMNS = {"daily": _FF3, "monthly": _FF3, "momentum": ("mom",)}
+_COLUMNS = {"daily": _FF3, "monthly": _FF3, "momentum": ("mom",), "momentum_daily": ("mom",)}
 
 
 def _wayback(timestamp: str, filename: str) -> str:
@@ -34,6 +34,10 @@ _ARCHIVES = {
         _wayback("20140908110708", "F-F_Momentum_Factor.zip"),
         "e34ede45fa759bc8b7c6c78921c6a4501158ecc8b18791073ee4b8673fb44fde",
     ),
+    ("momentum_daily", "201406"): (
+        _wayback("20140908112823", "F-F_Momentum_Factor_daily.zip"),
+        "ca91ddd027296c5616813824b94b9d863258b455557f9a25e922afe7668fcb00",
+    ),
     ("daily", "201509"): (
         _wayback("20151120080654", "F-F_Research_Data_Factors_daily_CSV.zip"),
         "bd272e7d362ad6782bc8b4d480a7e0db585ca0c462034f7596d4f96ad252d645",
@@ -45,6 +49,10 @@ _ARCHIVES = {
     ("momentum", "201509"): (
         _wayback("20151117213821", "F-F_Momentum_Factor_CSV.zip"),
         "be34c1ff965adf806c241ed9e9f303ea21bffb4a10acaad75ef18907eab5a5bf",
+    ),
+    ("momentum_daily", "201509"): (
+        _wayback("20151117165912", "F-F_Momentum_Factor_daily_CSV.zip"),
+        "d2445bd8993974ccd815c036227282a4aefc148b6ef6c8783d0e45f8763c6598",
     ),
     ("monthly", "201607"): (
         f"https://{_FRENCH}/Data_Library/Historical_Archives/08%202016%20Update/"
@@ -62,6 +70,10 @@ _ARCHIVES = {
     ("momentum", "202412"): (
         f"https://{_FRENCH}/ftp_202412/F-F_Momentum_Factor_CSV.zip",
         "2f83217efe88c4bfa496b707216c184290e85ffe00b85c7903d30fa444e507c3",
+    ),
+    ("momentum_daily", "202412"): (
+        f"https://{_FRENCH}/ftp_202412/F-F_Momentum_Factor_daily_CSV.zip",
+        "758deb481131aeebd33468504be92eefe4beba9b573cebc1d72abc2c32ce2b86",
     ),
 }
 
@@ -109,9 +121,10 @@ def get_ff_factors(
 
     Args:
         dataset: "daily" or "monthly" for the three Fama–French factors
-            and the risk-free rate, or "momentum" for monthly momentum.
+            and the risk-free rate, "momentum" for monthly momentum, or
+            "momentum_daily" for daily momentum.
         vintage: CRSP vintage in YYYYMM format. June 2014, September 2015,
-            and December 2024 cover all three datasets. July 2016 covers
+            and December 2024 cover all four datasets. July 2016 covers
             monthly three-factor data.
         cache_dir: Directory for the original text from the ZIP file. A
             cached file is reused when it matches the source checksum.
@@ -133,14 +146,15 @@ def get_ff_factors(
     target = Path(cache_dir).expanduser() / f"{dataset}-{vintage}.txt"
     contents = _archive_text(target, url, expected_hash, timeout)
     columns = _COLUMNS[dataset]
-    date_digits = 8 if dataset == "daily" else 6
+    daily = dataset in ("daily", "momentum_daily")
+    date_digits = 8 if daily else 6
     date_pattern = re.compile(rf"^\s*\d{{{date_digits}}}[\s,]")
     rows = (
         re.sub(r"[\s,]+", ",", line.strip())
         for line in contents.decode("latin-1").splitlines()
         if date_pattern.match(line)
     )
-    date = pl.col("date") if dataset == "daily" else pl.col("date") + "01"
+    date = pl.col("date") if daily else pl.col("date") + "01"
     return (
         pl.read_csv(
             StringIO("\n".join(rows)),
