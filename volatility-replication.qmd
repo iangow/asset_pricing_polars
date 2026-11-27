@@ -534,25 +534,19 @@ $$ {#eq-bem15-compounding}
 #| fig-cap: "Cumulative returns of the value-weighted low-minus-high idiosyncratic volatility portfolio (BEM Figure 15.1)"
 #| fig-alt: "Two panels show the cumulative compounded and log returns from July 1963 to December 2012. Both rise over the long term and fall sharply in the early 2000s."
 
-import matplotlib.pyplot as plt
-from matplotlib.ticker import FuncFormatter
+from eap_pl import plot_cumulative_returns
 
 low_high = (
     spread(adjusted_deciles[target], 1, 10, "portfolio", "VW")
     .select(date=pl.col("month").dt.offset_by("1mo").dt.month_end(), ret=pl.col("VW") / 100)
     .sort("date")
-    .with_columns(compounded=100 * ((1 + pl.col("ret")).cum_prod() - 1),
-                  cumulative_log=100 * pl.col("ret").log1p().cum_sum())
+    .with_columns(compounded=(1 + pl.col("ret")).cum_prod() - 1,
+                  cumulative_log=pl.col("ret").log1p().cum_sum())
 )
 
-fig, axes = plt.subplots(2, 1, sharex=True, figsize=(8, 5), layout="constrained")
-for ax, column, label in zip(axes, ("compounded", "cumulative_log"),
-                             ("Compounded return", "Cumulative log return")):
-    ax.plot(low_high["date"], low_high[column], color="#285b7a", linewidth=1.2)
-    ax.set_ylabel(label)
-    ax.yaxis.set_major_formatter(FuncFormatter(lambda value, _: f"{value:,.0f}%"))
-    ax.axhline(0, color="#777777", linewidth=0.7)
-    ax.grid(axis="y", alpha=0.25)
-axes[-1].set_xlabel("Holding month")
-plt.show()
+(
+    plot_cumulative_returns(low_high)
+    .labs(x="Holding month")
+    .geom_hline(yintercept=0, color="#777777", size=0.4)
+)
 ```
