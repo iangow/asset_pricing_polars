@@ -4,6 +4,8 @@ jupyter: python3
 
 # Portfolio Analysis {#sec-bem-portfolio-analysis}
 
+{{< include _draft-warning.qmd >}}
+
 In Chapter 5, @bali2016 use portfolio sorts to study how next year's excess return varies with beta, market capitalization, and book-to-market.
 I form portfolios at each December year-end from 1988 to 2012 using the panel from @sec-summary-statistics.
 Holding returns run from 1989 to 2012.

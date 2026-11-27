@@ -5,6 +5,7 @@ from html import escape
 
 import polars as pl
 import polars.selectors as cs
+from era_pl.namespaces import EraDataFrame
 
 
 def _book_style(table):
@@ -18,11 +19,8 @@ def _book_style(table):
 
 
 @pl.api.register_dataframe_namespace("eap")
-class EAPDataFrameNamespace:
-    """Book presentation methods available through ``DataFrame.eap``."""
-
-    def __init__(self, frame: pl.DataFrame) -> None:
-        self._frame = frame
+class EAPDataFrameNamespace(EraDataFrame):
+    """Table display and grouped operations available on ``DataFrame.eap``."""
 
     def show_table(self) -> None:
         """Display the DataFrame with Great Tables in a notebook or Quarto.
@@ -49,7 +47,7 @@ class EAPDataFrameNamespace:
                 return rf'<span class="math inline">\({escape(math[1])}\)</span>'
             return md(value).to_html()
 
-        frame = self._frame
+        frame = self._df
         if not frame.width:
             display(frame)
             return
@@ -87,7 +85,7 @@ class EAPDataFrameNamespace:
         """
         from IPython.display import display
 
-        frame = self._frame.with_columns(
+        frame = self._df.with_columns(
             pl.col("target").replace_strict({
                 group: f"{target} {suffix}"
                 for group, suffix in enumerate(("1", "2", "3", "4", "4–1", "average"), 1)

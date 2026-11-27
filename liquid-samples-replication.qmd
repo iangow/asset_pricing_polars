@@ -4,11 +4,13 @@ jupyter: python3
 
 # Liquid Samples {#sec-liquid-samples-replication}
 
+{{< include _draft-warning.qmd >}}
+
 Following Chapter 16 of @bali2016, I examine how price and size screens change the distribution of stock characteristics and their relation to future returns. I use June 1963 through November 2012 as formation months and July 1963 through December 2012 as holding months.
 
 ## Screens
 
-The CRSP sample consists of U.S. common stocks. Let $P_{i,t}$ be the absolute value of the month-end alternate price (`altprc`), $C_{i,t}$ the month-end market capitalization, and $q_{0.10,t}^{\mathrm{NYSE}}$ the 10th percentile of capitalization among NYSE common stocks in the full CRSP sample. The screens are
+The CRSP sample consists of US common stocks. Let $P_{i,t}$ be the absolute value of the month-end alternate price (`altprc`), $C_{i,t}$ the month-end market capitalization, and $q_{0.10,t}^{\mathrm{NYSE}}$ the 10th percentile of capitalization among NYSE common stocks in the full CRSP sample. The screens are
 
 $$
 \begin{aligned}
@@ -22,10 +24,9 @@ where $\mathcal U_t$ is the CRSP sample in month $t$. The price screen uses nomi
 ```{python}
 import polars as pl
 
-from era_pl import load_parquet, ptime
 from eap_pl import (
     build_book_to_market, build_momentum, build_sizes, get_ff_factors,
-    monthly_panel, rolling_ols,
+    load_parquet, monthly_panel, ptime, rolling_ols,
 )
 from eap_pl._skewness import rolling_skewness
 

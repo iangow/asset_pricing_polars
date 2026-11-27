@@ -1,6 +1,8 @@
 """Polars helpers for Empirical Asset Pricing: A Python Reader’s Companion."""
 
-from ._beta import load_annual_betas, load_beta_universe, load_daily_beta_inputs
+from era_pl import load_parquet, ptime
+
+from ._beta import load_annual_betas, load_beta_universe, load_daily_beta_inputs, load_monthly_betas
 from ._characteristics import build_book_to_market, build_sizes
 from ._data import (
     build_annual_panel,
@@ -10,6 +12,7 @@ from ._data import (
 )
 from ._french import get_ff_factors
 from ._momentum import build_momentum
+from ._namespaces import EAPExprNamespace
 from ._plots import plot_cumulative_returns, plot_factor
 from ._portfolios import (
     bivariate_months,
@@ -31,6 +34,7 @@ from ._tables import EAPDataFrameNamespace
 
 __all__ = [
     "EAPDataFrameNamespace",
+    "EAPExprNamespace",
     "bivariate_months",
     "bivariate_panel",
     "build_annual_panel",
@@ -45,6 +49,8 @@ __all__ = [
     "load_annual_betas",
     "load_beta_universe",
     "load_daily_beta_inputs",
+    "load_monthly_betas",
+    "load_parquet",
     "load_pastor_stambaugh_2013",
     "mean_cross_sections",
     "monthly_panel",
@@ -52,6 +58,7 @@ __all__ = [
     "persistence",
     "plot_cumulative_returns",
     "plot_factor",
+    "ptime",
     "rolling_ols",
     "univariate_panel",
     "winsorized_corr",

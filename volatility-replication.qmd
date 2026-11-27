@@ -4,6 +4,8 @@ jupyter: python3
 
 # Idiosyncratic Volatility {#sec-volatility-replication}
 
+{{< include _draft-warning.qmd >}}
+
 I follow Chapter 15 of @bali2016. I examine whether stocks with more volatile factor-model residuals earn lower returns in the next month, and how the relation changes with portfolio weighting, delisting adjustments, and controls.
 
 ## Measuring Total Volatility
@@ -59,8 +61,7 @@ Formation months run from June 1963 through November 2012. Each window ends in t
 ```{python}
 import polars as pl
 
-from era_pl import load_parquet, ptime
-from eap_pl import get_ff_factors, load_beta_universe
+from eap_pl import get_ff_factors, load_beta_universe, load_monthly_betas, load_parquet, ptime
 from eap_pl._volatility import rolling_volatility
 
 first = pl.date(1963, 6, 1)
@@ -127,7 +128,7 @@ with ptime():
 
     skewness = rolling_skewness(anchors, monthly, monthly_factors, {"5y": monthly_windows["5y"]})
     sizes = build_sizes()
-    betas = load_parquet("betas", "eap").select(*keys, beta="12M")
+    betas = load_monthly_betas(first, last)
     adjusted = monthly_stock_returns(first.dt.offset_by("1mo"), last_holding).rename({"ret": "adjusted"})
     holding_returns = (
         monthly.select("permno", month="date", unadjusted="ret")
@@ -143,7 +144,7 @@ with ptime():
 
     panel = (
         volatility.join(skewness.select(*keys, "coskew_5y", "idioskew_5y"), on=keys, validate="1:1")
-        .join(betas.collect(), on=keys, how="left", validate="1:1")
+        .join(betas, on=keys, how="left", validate="1:1")
         .join(sizes.select(*keys, "cap", "log_cap"), on=keys, how="left", validate="1:1")
         .join(build_book_to_market(sizes).select(*keys, "bm"), on=keys, how="left", validate="1:1")
         .join(build_momentum(first, last).select(*keys, "mom"), on=keys, how="left", validate="1:1")
@@ -202,7 +203,7 @@ def average_pairs(pairs):
     for left, right in pairs:
         a, b = pl.col(left), pl.col(right)
         valid = pl.all_horizontal(a.is_finite(), b.is_finite())
-        a, b = (x.filter(valid).era.winsorize(prob=0.005, quantile_method="linear")
+        a, b = (x.filter(valid).eap.winsorize(prob=0.005, quantile_method="linear")
                 for x in (a, b))
         expressions.extend([
             pl.corr(a, b).alias(f"Pearson {left}–{right}"),

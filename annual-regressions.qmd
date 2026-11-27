@@ -4,6 +4,8 @@ jupyter: python3
 
 # Fama and Macbeth Regression Analysis {#sec-bem-annual-fm}
 
+{{< include _draft-warning.qmd >}}
+
 This chapter uses BEM's methodologies sample from @sec-summary-statistics to illustrate the two steps of a Fama–MacBeth regression.
 The first step fits a cross-sectional regression in each formation year.
 The second averages the coefficients across years and estimates their standard errors from the time series of annual coefficients.
@@ -35,7 +37,7 @@ for terms in specifications:
     sample = (
         annual_panel.select("year", "excess", *terms).drop_nulls()
         .with_columns(
-            pl.col(terms).era.winsorize(prob=0.005, quantile_method="linear").over("year")
+            pl.col(terms).eap.winsorize(prob=0.005, quantile_method="linear").over("year")
         )
     )
     fits.append(sp.fama_macbeth("excess ~ " + " + ".join(terms),

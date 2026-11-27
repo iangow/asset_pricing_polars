@@ -54,8 +54,8 @@ def winsorized_corr(a, b):
     """
     both = pl.all_horizontal(a.is_finite(), b.is_finite())
     return pl.corr(
-        a.filter(both).era.winsorize(prob=0.005, quantile_method="linear"),
-        b.filter(both).era.winsorize(prob=0.005, quantile_method="linear"),
+        a.filter(both).eap.winsorize(prob=0.005, quantile_method="linear"),
+        b.filter(both).eap.winsorize(prob=0.005, quantile_method="linear"),
     )
 
 

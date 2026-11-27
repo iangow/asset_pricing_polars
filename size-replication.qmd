@@ -6,6 +6,8 @@ aliases:
 
 # The Size Effect {#sec-size-replication}
 
+{{< include _draft-warning.qmd >}}
+
 []{#sec-size}
 
 I follow Chapter 9 of @bali2016.
@@ -17,7 +19,7 @@ Formation months run from June 1963 through November 2012.
 The book was published in 2016, well before CRSP's CIZ format.
 This replication uses the legacy (SIZ) monthly stock and names files, not the CIZ files used in the earlier chapters.
 I use a newer legacy snapshot than the authors, with the same sample dates.
-See @sec-data-vintages for the embedded update dates.
+See @tbl-data-vintages for the embedded update dates.
 
 Use the share code in force at the end of each month.
 Keep share codes 10 and 11, without adding an exchange screen.

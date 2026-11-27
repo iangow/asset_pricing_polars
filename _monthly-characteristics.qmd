@@ -5,7 +5,7 @@ from $t-12$ through $t-2$, skipping $t-1$. The calendar window must have all
 
 ```{python}
 import polars as pl
-from era_pl import load_parquet
+from eap_pl import load_parquet
 
 first = pl.date(2000, 1, 1)
 last = pl.date(2002, 12, 1)

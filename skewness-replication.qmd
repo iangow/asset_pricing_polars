@@ -4,6 +4,8 @@ jupyter: python3
 
 # Skewness {#sec-skewness-replication}
 
+{{< include _draft-warning.qmd >}}
+
 Following Chapter 14 of @bali2016, I measure the asymmetry of past stock returns and ask whether it predicts next month's return. I examine total skewness, exposure to large market moves, and skewness in the residuals from a factor model.
 
 ## Measuring Skewness
@@ -47,8 +49,9 @@ The formation months are June 1963 through November 2012. The daily windows cove
 ```{python}
 import polars as pl
 
-from era_pl import load_parquet
-from eap_pl import build_book_to_market, build_momentum, build_sizes, get_ff_factors, monthly_panel
+from eap_pl import (
+    build_book_to_market, build_momentum, build_sizes, get_ff_factors, load_parquet, monthly_panel,
+)
 from eap_pl._skewness import rolling_skewness
 
 first = pl.date(1963, 6, 1)

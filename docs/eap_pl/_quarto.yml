@@ -46,7 +46,10 @@ quartodoc:
   sections:
     - title: Data and Parquet
       contents:
+        - name: load_parquet
+          dynamic: true
         - load_annual_betas
+        - load_monthly_betas
         - build_annual_panel
         - build_sizes
         - build_book_to_market
@@ -57,6 +60,8 @@ quartodoc:
         - load_daily_beta_inputs
         - monthly_panel
         - write_eap_table
+        - name: ptime
+          dynamic: true
     - title: Cross-sectional statistics
       contents:
         - mean_cross_sections
@@ -79,7 +84,19 @@ quartodoc:
       contents:
         - plot_cumulative_returns
         - plot_factor
-    - title: Table display
+    - title: Polars expression methods
+      contents:
+        - name: EAPExprNamespace.ntile
+          dynamic: true
+        - name: EAPExprNamespace.winsorize
+          dynamic: true
+        - name: EAPExprNamespace.truncate
+          dynamic: true
+        - name: EAPExprNamespace.div_if_pos
+          dynamic: true
+    - title: DataFrame methods
       contents:
         - EAPDataFrameNamespace.show_table
         - EAPDataFrameNamespace.show_grid
+        - name: EAPDataFrameNamespace.map_by
+          dynamic: true

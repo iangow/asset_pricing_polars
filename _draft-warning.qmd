@@ -1,0 +1,6 @@
+::: {.callout-warning}
+## Early draft
+
+This chapter is an early draft and still needs a thorough review.
+The APIs used in the examples may change as I continue working on the book.
+:::

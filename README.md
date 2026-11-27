@@ -53,19 +53,14 @@ daily_momentum = get_ff_factors("momentum_daily", vintage="201406")
 June 2014, September 2015, and December 2024 cover all four datasets.
 July 2016 covers the monthly three-factor data.
 
-Render the full book and open `_book/index.html`. The annual methods chapters
-build their inputs on demand. Set `EAP_WRITE_BETAS=1` so the Beta chapter
-writes `DATA_DIR/eap/betas.parquet` for the monthly analyses in Size, Value,
-Momentum, Short-Term Reversal, Liquidity, Skewness, Idiosyncratic Volatility, and
-Liquid Samples.
+Render the full book and open `_book/index.html`. The chapters calculate
+betas, size, and book-to-market from the local source files as needed.
 
 ```sh
-EAP_WRITE_BETAS=1 QUARTO_PYTHON="$PWD/.venv/bin/python" \
+QUARTO_PYTHON="$PWD/.venv/bin/python" \
   quarto render --to html
 ```
 
-For a standalone render of one of these chapters, use an existing `eap/betas.parquet`
-or render `beta-replication.qmd` with `EAP_WRITE_BETAS=1` first.
 Set `EAP_WRITE_SIZES=1` or `EAP_WRITE_BOOK_TO_MARKET=1` to save those tables
 for use outside the book.
 

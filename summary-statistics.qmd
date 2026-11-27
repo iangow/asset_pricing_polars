@@ -4,6 +4,8 @@ jupyter: python3
 
 # Summary Statistics {#sec-summary-statistics}
 
+{{< include _draft-warning.qmd >}}
+
 ```{=html}
 <style>
 [id^="tbl-bem2-"] .cell-output-markdown {
@@ -23,7 +25,7 @@ This gives each year's cross-section equal weight.
 
 ### Periodic Cross-Sectional Summary Statistics {#annual-cross-sections}
 
-The sample covers U.S. common stocks at each December 31 from 1988 through 2012.
+The *methodologies sample* [@bali2016, sec. 1.1] covers US common stocks at each December 31 from 1988 through 2012.
 I take the December value of the 12-month daily beta from @sec-bem-beta.
 It uses all available daily excess returns in the calendar year and requires at least 200 matched observations.
 

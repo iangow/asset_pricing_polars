@@ -34,7 +34,8 @@ stocks = pl.DataFrame({
 period_correlations(stocks, ["beta", "size"], "month").sort("month")
 ```
 
-Importing `eap_pl` also registers `.eap` on Polars DataFrames. In a notebook or Quarto document, use `.eap.show_table()` to format and display a DataFrame with Great Tables.
+Importing `eap_pl` registers `.eap` on Polars expressions and DataFrames.
+For example, `pl.col("beta").eap.winsorize()` clips an expression at its quantile cutoffs, and `.eap.show_table()` displays a DataFrame with Great Tables.
 
-The data-loading helpers read the local Parquet repository configured in `DATA_DIR`.
-See [Preliminaries in the book](https://iangow.github.io/asset_pricing_polars/data.html) for the required WRDS tables and derived files.
+`eap_pl.load_parquet()` reads the local Parquet repository configured in `DATA_DIR`, and `eap_pl.ptime()` times a block of code.
+See [Preliminaries in the book](https://iangow.github.io/asset_pricing_polars/data.html) for the required WRDS tables.

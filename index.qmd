@@ -1,12 +1,36 @@
 # Preface {#about .unnumbered}
 
-A reader's companion in Python Polars to *Empirical Asset Pricing: The Cross Section of Stock Returns* by Bali, Engle, and Murray [-@bali2016].
-We refer to the authors as BEM.
-Part I uses their 1988–2012 methodologies sample.
-The empirical chapters reconstruct the CRSP sample, estimate market beta, and examine the size effect and value premium using legacy CRSP.
-See the [`eap_pl` function reference](eap_pl/reference/index.html) for the shared Polars helpers.
-Render with your own copies of the WRDS data.
+This book aims to provide a reader's companion to *Empirical Asset Pricing: The Cross Section of Stock Returns* by Bali, Engle, and Murray [-@bali2016] ("BEM").
+While I purchased a copy of BEM in 2021, I have never managed to read it in much depth.
+I think one reason for this is that there is such a tight connection between what is presented in the book and the detailed data analysis underlying it.
+This means one is inevitably thinking about the details of analysis as one is reading the book and, for me at least, wishing that one could run the code while reading the book.
+Unfortunately, the authors do not provide the source code they used to generate the tables and charts in the book.
 
-See @sec-data for the inputs and @sec-data-vintages for their source update dates.
+With this book, I aim to fill the gap left by BEM by providing code to reproduce every analysis contained in BEM.^[The current version of this book omits Chapter 17 of BEM because this requires the OptionMetrics database.]
+This book largely follows @bali2016.
 
-[]{#data-vintages}
+Part I introduces the core ideas using the 1988–2012 "methodologies sample" of @bali2016.
+@sec-preliminaries also discusses the software packages used to run the analysis included herein, including the production of tables and charts.
+
+Part II provides the core empirical analyses of @bali2016 starting with the construction of the CRSP sample and estimation of market betas before moving on to examine various dimensions studied in prior research on the cross-section of stock returns.
+
+## Why Python Polars?
+
+My goal here is to allow readers to open the code behind a table, rerun it in a notebook, and change a breakpoint, a sample screen, or a factor model.
+My hope is that you can carry the workflow I use here into your own research.
+The software is freely available.^[
+    @bali2016 do not specify what software they use in writing their book.
+    However, they do mention obtaining SAS data files using SSH [@bali2016, p. 104], and it is plausible that they used SAS as the statistical programming language for their book.
+]
+Reproducing the results requires access to the relevant data from Wharton Research Data Services (WRDS, pronounced "words").
+
+Having chosen Python, one also needs to choose a data frame library.
+While pandas has been the default data frame library for Python users since about 2012, when it was really the only such library, Python Polars seems to be the better choice in 2026.
+With ideas such as lazy data frames and expressions, Polars can process large amounts of data more quickly and with fewer computing resources than pandas can.
+Python Polars has syntax that is often more intuitive for humans than pandas.
+If you are new to Polars, or even new to Python, [Chapter 2](https://iangow.github.io/era_pl_book/py-intro.html) of the Python Polars edition of *Empirical Research in Accounting: Tools and Methods* provides a fast-paced introduction to the basic ideas.
+
+With Python Polars, pretty much every analysis in the book can be run in seconds.
+Even if you are using AI agents to run your analysis, you will appreciate the performance offered by Python Polars, as you will spend less time waiting for output and have less concern that your AI is going to use up all the RAM on your computer.
+
+More information about how to set up your computer to run the analyses in this book is provided in @sec-data.

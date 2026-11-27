@@ -4,6 +4,8 @@ jupyter: python3
 
 # Beta {#sec-bem-beta}
 
+{{< include _draft-warning.qmd >}}
+
 ```{=html}
 <style>
 [id^="tbl-bem8-"] .cell-output-markdown {
@@ -19,7 +21,7 @@ jupyter: python3
 I reconstruct Tables 8.1–8.6 of @bali2016.
 The sample consists of CRSP common stocks at the end of each month from June 1963 through November 2012.
 I use legacy CRSP daily and monthly stock returns and the corresponding Fama–French factors.
-See @sec-data-vintages for the source vintages.
+See @tbl-data-vintages for the source vintages.
 
 ## Estimating Beta {#estimate-market-beta}
 
@@ -68,15 +70,14 @@ This keeps all beta inputs observable at formation.
 ```{python}
 import polars as pl
 
-from era_pl import load_parquet
-from eap_pl import load_beta_universe, load_daily_beta_inputs
+from eap_pl import load_beta_universe, load_daily_beta_inputs, load_parquet
 
 first = pl.date(1963, 6, 1)
 last = pl.date(2012, 11, 1)
-last_estimate = last.dt.offset_by("1mo")
+last_holding = last.dt.offset_by("1mo")
 keys = ["permno", "month"]
 
-universe = load_beta_universe(first, last_estimate).collect()
+universe = load_beta_universe(first, last).collect()
 ```
 
 ```{python}
@@ -94,7 +95,7 @@ I use CRSP's reported returns for estimation and apply the delisting convention 
 monthly_stock = (
     load_parquet("msf", "crsp")
     .filter(pl.col("date").is_between(
-        first.dt.offset_by("-59mo"), last_estimate.dt.month_end()
+        first.dt.offset_by("-59mo"), last_holding.dt.month_end()
     ))
     .select(
         "permno",
@@ -156,7 +157,7 @@ The adjusted regressions use the same idea with cross-products between market re
 
 ```{python}
 daily_factors, daily_excess = load_daily_beta_inputs(
-    first.dt.offset_by("-23mo"), last_estimate.dt.month_end(),
+    first.dt.offset_by("-23mo"), last.dt.month_end(),
 )
 ```
 
@@ -174,40 +175,18 @@ from itertools import combinations_with_replacement
 
 import numpy as np
 
+from eap_pl._beta import (
+    add_anchors,
+    daily_slope,
+    monthly_moments,
+    product_name,
+    roll_moments,
+    rolling_daily_beta,
+)
+
 market_offsets = {k: f"mkt_{k + 5}" for k in range(-5, 6)}
 dimson_predictors = list(market_offsets.values())
 sw_predictors = [market_offsets[k] for k in [-1, 0, 1]]
-
-def product_name(left, right):
-    return f"{left}_x_{right}"
-
-def monthly_moments(returns, predictors, *, joint=False):
-    pairs = [(x, "retrf") for x in predictors]
-    pairs += list(combinations_with_replacement(predictors, 2)) if joint else [(x, x) for x in predictors]
-    return returns.group_by(keys).agg(
-        pl.len().cast(pl.Int64).alias("n"),
-        pl.col("retrf", *predictors).sum(),
-        *((pl.col(a) * pl.col(b)).sum().alias(product_name(a, b)) for a, b in pairs),
-    )
-
-def roll_moments(monthly, months):
-    return (
-        monthly.rolling("month", period=f"{months}mo", group_by="permno")
-        .agg(pl.exclude(keys).sum())
-    )
-
-def add_anchors(monthly, anchors):
-    return (
-        monthly.join(anchors, on=keys, how="full", coalesce=True, validate="1:1")
-        .sort(keys)
-    )
-
-def daily_slope(market):
-    n = pl.col("n")
-    x = pl.col(market)
-    numerator = pl.col(product_name(market, "retrf")) - x * pl.col("retrf") / n
-    denominator = pl.col(product_name(market, market)) - x.pow(2) / n
-    return pl.when(denominator > 0).then(numerator / denominator)
 
 def adjusted_window(returns, anchors, predictors, lead, *, joint=False):
     monthly = monthly_moments(returns, predictors, joint=joint)
@@ -266,10 +245,7 @@ def daily_betas(anchors):
     monthly = add_anchors(monthly_moments(returns, [market_offsets[0]]), anchors)
     result = anchors
     for label, (months, minimum) in daily_windows.items():
-        estimates = roll_moments(monthly, months).select(
-            *keys, pl.when(pl.col("n") >= minimum)
-            .then(daily_slope(market_offsets[0])).alias(label),
-        )
+        estimates = rolling_daily_beta(monthly, months, minimum, label)
         result = result.join(estimates, on=keys, how="left", validate="1:1")
 
     sw = (
@@ -306,24 +282,9 @@ window_months.update(SW=12, D=12)
 ```
 
 The tables in this chapter end with November 2012 formation, followed by December 2012 holding returns.
-I also estimate betas as of December 2012.
-The export saves all eleven estimates per stock-month to `DATA_DIR/eap/betas.parquet`.
-Chapters [-@sec-size-replication] and [-@sec-value-replication] read its 12-month daily beta for their monthly analyses.
-The annual methods chapters estimate their December betas when needed.
-
-```{python}
-#| include: false
-
-import os
-
-from eap_pl import write_eap_table
-
-if os.environ.get("EAP_WRITE_BETAS") == "1":
-    write_eap_table(betas.select(*keys, *beta_labels), "betas")
-
-betas = betas.filter(pl.col("month") <= last)
-universe = universe.filter(pl.col("month") <= last)
-```
+Several later chapters also use the 12-month daily beta.
+I could save those estimates to a Parquet file for reuse across chapters.
+On my machine, [`eap_pl.load_monthly_betas()`](eap_pl/reference/load_monthly_betas.html) takes about 1.2 seconds to calculate this beta for the full sample, so I calculate it on demand.
 
 ```{python}
 #| include: false
@@ -387,7 +348,7 @@ Use the original values for Spearman rank correlations above the diagonal.
 
 ```{python}
 clipped = betas.with_columns(
-    pl.col(beta_labels).era.winsorize(prob=0.005, quantile_method="linear").over("month")
+    pl.col(beta_labels).eap.winsorize(prob=0.005, quantile_method="linear").over("month")
 )
 
 def mean_correlations(panel, method):
@@ -479,7 +440,7 @@ The value weights use market capitalization measured at formation.
 delist = (
     load_parquet("msedelist", "crsp")
     .filter(pl.col("dlstdt").is_between(
-        first.dt.offset_by("1mo"), last.dt.offset_by("1mo").dt.month_end()
+        first.dt.offset_by("1mo"), last_holding.dt.month_end()
     ))
     .select("permno", month=pl.col("dlstdt").dt.month_start(), dlret="dlret", dlstcd="dlstcd")
 )

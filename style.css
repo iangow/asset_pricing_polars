@@ -3,6 +3,11 @@
   height: auto;
 }
 
+.quarto-dark main :is(h1, h2, h3, h4, h5, h6) code {
+  color: inherit;
+  background-color: transparent;
+}
+
 main .gt_table {
   --table-rule-color: color-mix(in srgb, var(--bs-body-color) 30%, var(--bs-body-bg));
   color: var(--bs-body-color) !important;

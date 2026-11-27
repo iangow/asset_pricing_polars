@@ -4,6 +4,8 @@ jupyter: python3
 
 # The Momentum Effect {#sec-momentum-replication}
 
+{{< include _draft-warning.qmd >}}
+
 Do stocks that recently outperformed continue to outperform?
 Following Chapter 11 of @bali2016, I compare seven measures of prior returns and examine how their predictive power changes with the return horizon.
 @jegadeeshTitman1993 document that portfolios buying recent winners and selling recent losers earn positive returns over several months.
@@ -136,8 +138,7 @@ For each winner-minus-loser spread, regress the monthly return series on an inte
 Parentheses report six-lag Newey–West $t$-statistics [@neweywest1987].
 
 ```{python}
-from era_pl import load_parquet
-from eap_pl import format_fit, hac
+from eap_pl import format_fit, hac, load_parquet
 from eap_pl._portfolios import assign_portfolio, portfolio_months, spread
 
 factors = (

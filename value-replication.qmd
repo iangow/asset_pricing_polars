@@ -4,17 +4,24 @@ jupyter: python3
 
 # The Value Premium {#sec-value-replication}
 
+{{< include _draft-warning.qmd >}}
+
 I follow Chapter 10 of @bali2016.
 Book-to-market compares an accounting measure of equity with what investors pay for the shares.
 I ask how this ratio varies across stocks and whether it predicts the following month's excess return.
 
 ## Calculating Book-to-Market Ratio {#calculate-book-to-market}
 
-Book equity in millions is stockholders' equity plus deferred taxes and the investment tax credit, less preferred stock.
-I use preferred stock redemption value, liquidation value, or par value, in that order.
-BEM require stockholders' equity and deferred taxes.
-They use zero for a missing tax credit or when all three preferred stock fields are missing.
-I take the last fiscal year-end within the calendar year.
+BEM calculate the book value of common equity from Compustat's North America Fundamentals Annual file (`comp.funda`) [-@bali2016, sec. 10.1].
+They start with stockholders' equity (`seq`), add deferred taxes (`txdb`) and the investment tax credit (`itcb`), and subtract the book value of preferred stock.
+All amounts are in millions of dollars.
+
+For preferred stock, BEM use redemption value (`pstkrv`) if available, then liquidation value (`pstkl`), then par value (`pstk`).
+They use zero if all three preferred stock fields are missing, and likewise set a missing investment tax credit to zero.
+Book equity is missing if either `seq` or `txdb` is missing.
+
+BEM use industrial-format records (`indfmt = "INDL"`) with standard data format (`datafmt = "STD"`).
+If a firm reports more than one fiscal year-end in a calendar year, I follow BEM in taking the record with the latest fiscal year-end (`datadate`).
 
 {{< include _show-code.qmd >}}
 

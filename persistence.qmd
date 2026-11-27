@@ -4,6 +4,8 @@ jupyter: python3
 
 # Persistence Analysis {#sec-bem-persistence}
 
+{{< include _draft-warning.qmd >}}
+
 In Chapter 4, @bali2016 measure persistence by correlating a stock characteristic with its own future value across stocks.
 I use the December 1988–2012 panel from @sec-summary-statistics, including its signed book-to-market ratio.
 

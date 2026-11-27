@@ -117,7 +117,7 @@ def get_ff_factors(
     cache_dir: str | Path = "data/french-factors",
     timeout: float = 30.0,
 ) -> pl.DataFrame:
-    """Download and cache a vintage of Kenneth French's U.S. factors.
+    """Download and cache a vintage of Kenneth French's US factors.
 
     Args:
         dataset: "daily" or "monthly" for the three Fama–French factors

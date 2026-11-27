@@ -9,7 +9,7 @@ import polars as pl
 
 from era_pl import load_parquet
 
-from ._beta import load_annual_betas
+from ._beta import load_annual_betas, load_monthly_betas
 from ._characteristics import build_book_to_market, build_sizes
 
 KEYS = ["permno", "month"]
@@ -144,8 +144,8 @@ def monthly_stock_returns(first, last):
 def monthly_panel(sizes, first, last, *, monthly_factors=None):
     """Join formation-month characteristics to next-month excess returns.
 
-    Reads `eap/betas`, `crsp/msf`, and `crsp/msedelist` from the local
-    Parquet repository. By default, it also reads `ff/factors_monthly`.
+    Estimates beta on demand and reads `crsp/msf` and `crsp/msedelist` from
+    the local Parquet repository. By default, it also reads `ff/factors_monthly`.
     On a delisting, the recorded delisting return replaces the usual stock
     return. Missing delisting returns use −30% for poor performance and
     −100% otherwise.
@@ -163,7 +163,7 @@ def monthly_panel(sizes, first, last, *, monthly_factors=None):
             12-month daily `beta`, the supplied characteristics, and
             next-month `excess` and `market` in percentage points.
     """
-    betas = load_parquet("betas", "eap").select(*KEYS, beta="12M")
+    betas = load_monthly_betas(first, last)
     returns = monthly_stock_returns(first.dt.offset_by("1mo"), last.dt.offset_by("1mo")).rename(
         {"month": "holding"},
     )
@@ -174,7 +174,7 @@ def monthly_panel(sizes, first, last, *, monthly_factors=None):
         market=100 * pl.col("mktrf"), rf=pl.col("rf"),
     )
     return (
-        betas.filter(pl.col("month").is_between(first, last))
+        betas.lazy()
         .join(sizes.lazy(), on=KEYS, how="left", validate="1:1")
         .with_columns(holding=pl.col("month").dt.offset_by("1mo"))
         .join(returns, on=["permno", "holding"], how="left", validate="1:1")

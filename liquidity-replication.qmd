@@ -4,6 +4,8 @@ jupyter: python3
 
 # Liquidity {#sec-liquidity-replication}
 
+{{< include _draft-warning.qmd >}}
+
 Following Chapter 13 of @bali2016, I ask whether less liquid stocks earn higher subsequent returns.
 I estimate Amihud illiquidity from legacy CRSP daily data and examine the Pástor–Stambaugh liquidity factors separately. The former measures how much an individual stock's price moves for a given trading volume. The latter measure marketwide liquidity and exposure to changes in it.
 
@@ -24,8 +26,7 @@ The minimum counts for the one-, three-, six-, and twelve-month windows are 15, 
 ```{python}
 import polars as pl
 
-from era_pl import load_parquet
-from eap_pl import build_book_to_market, build_momentum, build_sizes, monthly_panel
+from eap_pl import build_book_to_market, build_momentum, build_sizes, load_parquet, monthly_panel
 
 keys = ["permno", "month"]
 first = pl.date(1963, 6, 1)

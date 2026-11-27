@@ -12,7 +12,7 @@ not to match the textbook's tables.
 
 ## Read the stock-month panel
 
-Use ordinary U.S.-incorporated common shares of corporations on the NYSE,
+Use ordinary US-incorporated common shares of corporations on the NYSE,
 AMEX, and Nasdaq at **formation**. Use positive market capitalization for
 both the sort and the portfolio weights. Don't require a stock to meet the same
 screen in the holding month: keep its reported CIZ return if present, including
@@ -20,7 +20,7 @@ a return for a delisting month when available.
 
 ```{python}
 import polars as pl
-from era_pl import load_parquet
+from eap_pl import load_parquet
 
 first = pl.date(2000, 1, 1)
 last = pl.date(2002, 12, 1)

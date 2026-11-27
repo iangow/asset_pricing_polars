@@ -4,6 +4,8 @@ jupyter: python3
 
 # Short-Term Reversal {#sec-reversal-replication}
 
+{{< include _draft-warning.qmd >}}
+
 Do stocks that rose last month continue to outperform, or do they give back some of their gains?
 Following Chapter 12 of @bali2016, I sort on the most recent monthly return and compare its predictive power with that of earlier returns.
 This complements @sec-momentum-replication, where the main momentum signal skips the formation month.
@@ -23,8 +25,7 @@ The formation sample runs from June 1963 through November 2012, and the outcome 
 ```{python}
 import polars as pl
 
-from era_pl import load_parquet
-from eap_pl import build_book_to_market, build_momentum, build_sizes, monthly_panel
+from eap_pl import build_book_to_market, build_momentum, build_sizes, load_parquet, monthly_panel
 
 first = pl.date(1963, 6, 1)
 last = pl.date(2012, 11, 1)

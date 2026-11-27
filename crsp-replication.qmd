@@ -4,13 +4,15 @@ jupyter: python3
 
 # The CRSP Sample and Market Factor {#sec-bem-crsp}
 
+{{< include _draft-warning.qmd >}}
+
 This chapter reconstructs the figures and tables in Chapter 7 of @bali2016.
 I use a later snapshot of legacy CRSP (SIZ), the same data format used by the authors.
-See @sec-data-vintages for source update dates.
+See @tbl-data-vintages for source update dates.
 
-## The U.S. Stock Market
+## The US Stock Market
 
-### The CRSP U.S.-Based Common Stock Sample {#build-the-monthly-common-stock-sample}
+### The CRSP US-Based Common Stock Sample {#build-the-monthly-common-stock-sample}
 
 At each calendar month-end, keep securities with a historical share code of 10 or 11.
 I do not restrict the exchange or require a price to count a stock.
@@ -20,7 +22,7 @@ Dividing by 1,000 gives millions of dollars because CRSP reports shares in thous
 ```{python}
 import polars as pl
 
-from era_pl import load_parquet
+from eap_pl import load_parquet
 
 first = pl.date(1925, 12, 1)
 last = pl.date(2012, 12, 1)
@@ -384,7 +386,7 @@ assert (return_months["adjusted"] > 0).all()
 
 ## The Market Factor {#sec-bem7-market}
 
-The Fama–French market factor (`mkt`) is the excess return on a broad value-weighted portfolio of U.S. common stocks.
+The Fama–French market factor (`mkt`) is the excess return on a broad value-weighted portfolio of US common stocks.
 CRSP's value-weighted market index (`vwretd`) has a broader set of eligible securities.
 I put both measures on an excess-return basis by subtracting the risk-free rate (`rf`) from `vwretd`.
 `mkt` already has the risk-free rate subtracted.
