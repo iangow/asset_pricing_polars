@@ -56,7 +56,8 @@ July 2016 covers the monthly three-factor data.
 Render the full book and open `_book/index.html`. The annual methods chapters
 build their inputs on demand. Set `EAP_WRITE_BETAS=1` so the Beta chapter
 writes `DATA_DIR/eap/betas.parquet` for the monthly analyses in Size, Value,
-Momentum, Short-Term Reversal, Liquidity, Skewness, and Idiosyncratic Volatility.
+Momentum, Short-Term Reversal, Liquidity, Skewness, Idiosyncratic Volatility, and
+Liquid Samples.
 
 ```sh
 EAP_WRITE_BETAS=1 QUARTO_PYTHON="$PWD/.venv/bin/python" \

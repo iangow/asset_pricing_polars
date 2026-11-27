@@ -1,0 +1,351 @@
+---
+jupyter: python3
+---
+
+# Liquid Samples {#sec-liquid-samples-replication}
+
+Following Chapter 16 of @bali2016, we examine how price and size screens change the distribution of stock characteristics and their relation to future returns. We use June 1963 through November 2012 as formation months and July 1963 through December 2012 as holding months.
+
+## Screens
+
+The CRSP sample consists of U.S. common stocks. Let $P_{i,t}$ be the absolute value of the month-end alternate price (`altprc`), $C_{i,t}$ the month-end market capitalization, and $q_{0.10,t}^{\mathrm{NYSE}}$ the 10th percentile of capitalization among NYSE common stocks in the full CRSP sample. The screens are
+
+$$
+\begin{aligned}
+\mathcal P_t &= \{i\in\mathcal U_t : 5 \le P_{i,t} \le 1000\},\\
+\mathcal S_t &= \{i\in\mathcal P_t : C_{i,t} \ge q_{0.10,t}^{\mathrm{NYSE}}\},
+\end{aligned}
+$$ {#eq-bem16-screens}
+
+where $\mathcal U_t$ is the CRSP sample in month $t$. The price screen uses nominal dollars. Compute the NYSE breakpoint before applying the price screen.
+
+```{python}
+import polars as pl
+
+from era_pl import load_parquet, ptime
+from eap_pl import (
+    build_book_to_market, build_momentum, build_sizes, get_ff_factors,
+    monthly_panel, rolling_ols,
+)
+from eap_pl._skewness import rolling_skewness
+
+first = pl.date(1963, 6, 1)
+last = pl.date(2012, 11, 1)
+keys = ["permno", "month"]
+vintage = "201406"
+daily_factors = get_ff_factors("daily", vintage=vintage)
+monthly_factors = get_ff_factors("monthly", vintage=vintage)
+monthly = (
+    load_parquet("msf", "crsp")
+    .filter(pl.col("date").is_between(first.dt.offset_by("-59mo"), last.dt.month_end()))
+    .select("permno", "ret", date=pl.col("date").dt.month_start(), price=pl.col("altprc").abs())
+)
+daily = (
+    load_parquet("dsf", "crsp")
+    .filter(pl.col("date").is_between(first, last.dt.month_end()))
+    .select("permno", "date", "ret", "prc", "vol")
+)
+```
+
+The characteristic definitions follow the preceding chapters. We use the 12-month daily beta, one-month Amihud illiquidity, five-year monthly co-skewness and idiosyncratic skewness, and one-month daily Fama–French idiosyncratic volatility. Size is the natural logarithm of nominal market capitalization in millions of dollars. Next-month excess returns include the delisting adjustments described in @sec-bem-returns.
+
+```{python}
+with ptime():
+    sizes = build_sizes()
+    formation = (
+        monthly_panel(sizes.select(*keys, "cap", "log_cap", "exchcd"), first, last,
+                      monthly_factors=monthly_factors)
+        .join(build_book_to_market(sizes).select(*keys, "bm"), on=keys, how="left", validate="1:1")
+        .join(build_momentum(first, last).select(*keys, "mom"), on=keys, how="left", validate="1:1")
+        .join(monthly.select(
+            "permno", "price", month="date",
+            rev=pl.when(pl.col("ret").is_finite()).then(100 * pl.col("ret")),
+        ).collect(), on=keys, how="left", validate="1:1")
+    )
+    anchors = formation.select(keys)
+    illiquidity = (
+        daily.filter(
+            pl.all_horizontal(pl.col("ret", "prc", "vol").is_finite()),
+            pl.col("prc") > 0,
+            pl.col("vol") > 0,
+        )
+        .with_columns(month=pl.col("date").dt.month_start())
+        .group_by(keys)
+        .agg(illiq=(1e6 * pl.col("ret").abs() / (pl.col("prc") * pl.col("vol"))).mean(),
+             days=pl.len())
+        .filter(pl.col("days") >= 15)
+        .select(*keys, "illiq")
+        .collect()
+    )
+    skew = rolling_skewness(anchors, monthly, monthly_factors, {"5y": (60, 24)})
+    daily_excess = (
+        daily.join(daily_factors.lazy(), on="date", how="left", validate="m:1")
+        .with_columns(excess=pl.col("ret") - pl.col("rf"))
+    )
+    idio = rolling_ols(daily_excess, y="excess", x=["mktrf", "smb", "hml"],
+                       group_by="permno", date_col="date", anchors=anchors,
+                       months=1, min_obs=15).select(
+        *keys, idio_vol=pl.col("rmse") * (100 * 252**0.5),
+    )
+    panel = (
+        formation.join(illiquidity, on=keys, how="left", validate="1:1")
+        .join(skew.select(*keys, "coskew_5y", "idioskew_5y"), on=keys, validate="1:1")
+        .join(idio, on=keys, validate="1:1")
+    )
+
+nyse_cutoff = (
+    panel.filter((pl.col("exchcd") == 1) & pl.col("cap").is_finite())
+    .group_by("month").agg(cutoff=pl.col("cap").quantile(0.1, interpolation="linear"))
+)
+price_sample = panel.filter(pl.col("price").is_finite() & pl.col("price").is_between(5, 1000))
+size_sample = (
+    price_sample.join(nyse_cutoff, on="month", validate="m:1")
+    .filter(pl.col("cap").is_finite() & (pl.col("cap") >= pl.col("cutoff")))
+)
+samples = {"CRSP": panel, "Price": price_sample, "Size": size_sample}
+```
+
+```{python}
+#| label: fig-bem16-coverage
+#| fig-cap: Share of the full CRSP sample retained by the price and size screens
+#| fig-alt: Two time-series panels compare the fractions of stocks and market capitalization retained by the price screen and the additional size screen.
+
+from plotnine_polars import aes
+
+def coverage_totals(sample):
+    return sample.group_by("month").agg(stocks=pl.len(), capitalization=pl.col("cap").sum())
+
+full_totals = coverage_totals(panel)
+coverage = pl.concat([
+    coverage_totals(sample).join(full_totals, on="month", validate="1:1", suffix="_full")
+    .select(
+        "month", sample=pl.lit(name),
+        Stocks=pl.col("stocks") / pl.col("stocks_full"),
+        Capitalization=pl.col("capitalization") / pl.col("capitalization_full"),
+    )
+    for name, sample in samples.items() if name != "CRSP"
+]).unpivot(
+    index=["month", "sample"], variable_name="measure", value_name="share",
+).with_columns(
+    pl.col("measure").cast(pl.Enum(["Stocks", "Capitalization"])),
+).sort("month")
+
+(
+    coverage.ggplot(aes(x="month", y="share", color="sample"))
+    .geom_line()
+    .facet_wrap("measure", ncol=1)
+    .scale_y_continuous(limits=(0, 1), labels=lambda values: [f"{value:.0%}" for value in values])
+    .scale_x_date(date_breaks="10 years", date_labels="%Y")
+    .labs(x="Formation month", y="Share of CRSP sample", color="Sample")
+    .theme_minimal()
+    .add_theme(figure_size=(8.2, 5))
+)
+```
+
+## Summary Statistics
+
+We compute descriptive statistics within each formation month, then average across months. Each row uses all available observations of that characteristic within the stated sample.
+
+{{< include _show-table.qmd >}}
+
+```{python}
+#| label: tbl-bem16-summary
+#| tbl-cap: Cross-sectional summary statistics by sample (BEM Table 16.1)
+#| tbl-subcap:
+#|   - CRSP sample
+#|   - Price sample
+#|   - Size sample
+
+from eap_pl import mean_cross_sections
+
+variables = {
+    "beta": "Beta", "cap": "Market cap ($ millions)", "log_cap": "Size",
+    "bm": "Book-to-market", "mom": "Momentum", "rev": "Reversal",
+    "illiq": "Illiquidity", "coskew_5y": "Co-skewness",
+    "idioskew_5y": "Idiosyncratic skewness", "idio_vol": "Idiosyncratic volatility",
+}
+regressors = {term: label for term, label in variables.items() if term != "cap"}
+
+for sample in samples.values():
+    show_table(mean_cross_sections(sample, variables))
+```
+
+## Correlations and Persistence
+
+For each sample we average cross-sectional correlations across formation months. Pearson correlations are based on pairwise complete cases and winsorize each characteristic at the 0.5th and 99.5th percentiles. Spearman correlations use the original ranks.^[BEM’s Table 16.2 caption describes annual cross-sections. We use formation months, which reproduce the published Size-sample Pearson correlation of 0.36 between beta and idiosyncratic volatility to two decimal places.]
+
+```{python}
+#| label: tbl-bem16-correlations
+#| tbl-cap: Mean cross-sectional correlations by sample (BEM Table 16.2)
+#| tbl-subcap:
+#|   - CRSP sample
+#|   - Price sample
+#|   - Size sample
+
+from eap_pl import correlation_matrix, period_correlations
+
+for sample in samples.values():
+    means = (
+        period_correlations(sample, regressors, "month")
+        .select(pl.exclude("month").mean()).row(0, named=True)
+    )
+    show_table(correlation_matrix(means, regressors))
+```
+
+For persistence, match each stock's characteristic in month $t$ to its value in month $t+\tau$ within the same sample. Average the monthly winsorized Pearson correlations. Omit lags shorter than a characteristic's measurement window.
+
+```{python}
+#| label: tbl-bem16-persistence
+#| tbl-cap: Persistence of stock characteristics by sample (BEM Table 16.3)
+#| tbl-subcap:
+#|   - CRSP sample
+#|   - Price sample
+#|   - Size sample
+
+from eap_pl import persistence
+
+lags = [1, 3, 6, 12, 24, 36, 48, 60, 120]
+shortest = {"beta": 12, "mom": 12, "coskew_5y": 60, "idioskew_5y": 60}
+for sample in samples.values():
+    show_table(persistence(sample, variables, lags).with_columns(
+        pl.when(pl.col("Lag (months)") >= minimum)
+        .then(pl.col(variables[term])).alias(variables[term])
+        for term, minimum in shortest.items()
+    ))
+```
+
+## Portfolio Returns
+
+Sort each sample into deciles every month using its own breakpoints. For each holding month, the high-minus-low portfolio return is
+
+$$
+D_{t+1} = r_{10,t+1} - r_{1,t+1},
+$$ {#eq-bem16-spread}
+
+where $r_{j,t+1}$ is the excess return on decile $j$. We form both value-weighted and equal-weighted portfolios. The Fama–French–Carhart alpha regresses $D_{t+1}$ on the market, size, value, and momentum factors. The liquidity-augmented model adds the traded Pástor–Stambaugh factor. For portfolios sorted on market capitalization, book-to-market, or momentum, we omit the corresponding factor from both models. Inference uses six Newey–West lags. The traded liquidity factor begins in January 1968, so the FFCPS regressions use holding months from January 1968 through December 2012.
+
+```{python}
+from eap_pl import format_fit, hac, load_pastor_stambaugh_2013
+from eap_pl._portfolios import assign_portfolio, portfolio_months, spread
+
+momentum_factor = get_ff_factors("momentum", vintage=vintage)
+factor_returns = (
+    monthly_factors.join(momentum_factor, on="date", validate="1:1")
+    .select(month="date", mkt=100 * pl.col("mktrf"), smb=100 * pl.col("smb"),
+            hml=100 * pl.col("hml"), mom_factor=100 * pl.col("mom"))
+    .join(load_pastor_stambaugh_2013().select(month="date", ps=100 * pl.col("psl")),
+          on="month", how="left", validate="1:1")
+)
+sorts = {term: label for term, label in variables.items() if term != "log_cap"}
+omitted_factors = {"cap": "smb", "bm": "hml", "mom": "mom_factor"}
+
+def portfolio_tables(sample):
+    rows = {"VW": [], "EW": []}
+    for variable, label in sorts.items():
+        members = assign_portfolio(sample.filter(pl.col(variable).is_finite()), variable, 10, "month")
+        monthly_returns = portfolio_months(members, ["portfolio"])
+        means = monthly_returns.group_by("portfolio").agg(pl.col("VW", "EW").mean()).sort("portfolio")
+        factors = [name for name in ("mkt", "smb", "hml", "mom_factor")
+                   if name != omitted_factors.get(variable)]
+        for weight in rows:
+            series = (
+                spread(monthly_returns, 10, 1, "portfolio", weight)
+                .select(pl.col("month").dt.offset_by("1mo"), weight)
+                .join(factor_returns, on="month", validate="1:1").sort("month")
+            )
+            models = {"10–1": [], "FFC alpha": factors, "FFCPS alpha": [*factors, "ps"]}
+            results = {
+                name: format_fit(hac(f"{weight} ~ " + (" + ".join(terms) or "1"),
+                                     series.drop_nulls([weight, *terms])), "Intercept")
+                for name, terms in models.items()
+            }
+            rows[weight].append({
+                "Sort variable": label,
+                **{str(group): f"{value:.2f}" for group, value in means.select("portfolio", weight).iter_rows()},
+                **results,
+            })
+    return [pl.DataFrame(rows[weight]) for weight in ("VW", "EW")]
+```
+
+```{python}
+#| label: tbl-bem16-crsp-portfolios
+#| tbl-cap: Univariate portfolios in the CRSP sample (BEM Table 16.4)
+#| tbl-subcap:
+#|   - Value-weighted portfolios
+#|   - Equal-weighted portfolios
+
+for table in portfolio_tables(samples["CRSP"]):
+    show_table(table)
+```
+
+```{python}
+#| label: tbl-bem16-price-portfolios
+#| tbl-cap: Univariate portfolios in the Price sample (BEM Table 16.5)
+#| tbl-subcap:
+#|   - Value-weighted portfolios
+#|   - Equal-weighted portfolios
+
+for table in portfolio_tables(samples["Price"]):
+    show_table(table)
+```
+
+```{python}
+#| label: tbl-bem16-size-portfolios
+#| tbl-cap: Univariate portfolios in the Size sample (BEM Table 16.6)
+#| tbl-subcap:
+#|   - Value-weighted portfolios
+#|   - Equal-weighted portfolios
+
+for table in portfolio_tables(samples["Size"]):
+    show_table(table)
+```
+
+## Fama–MacBeth Regressions
+
+For each sample, we estimate the monthly cross-sectional regression
+
+$$
+r_{i,t+1} = a_t + \mathbf{x}_{i,t}^{\mathsf T}\mathbf{b}_t + \varepsilon_{i,t+1}.
+$$ {#eq-bem16-fama-macbeth}
+
+We fit a separate univariate regression for each characteristic and one regression with all nine characteristics. Within each specification, we winsorize regressors at the 0.5th and 99.5th percentiles among that month's complete cases. We report the time-series averages of the coefficients, adjusted $R^2$, and sample size, with six-lag Newey–West t-statistics on the average coefficients.
+
+```{python}
+from eap_pl import fama_macbeth_table
+
+def regression_tables(sample):
+    univariate = {}
+    for term, label in regressors.items():
+        fit = fama_macbeth_table(
+            sample.drop_nulls(["excess", term]), [[term]], {term: label}, digits=3,
+        )
+        univariate[label] = fit["(1)"]
+    terms = list(regressors)
+    full_fit = fama_macbeth_table(
+        sample.drop_nulls(["excess", *terms]), [terms], regressors, digits=3,
+    )
+    values = dict(full_fit.iter_rows())
+    headers = ["Intercept", *regressors.values(), "Adjusted R²", "n"]
+    return [
+        pl.DataFrame({"Statistic": ["Slope", "Intercept", "Adjusted R²", "n"], **univariate}),
+        pl.DataFrame({label: [values[label]] for label in headers}),
+    ]
+
+with ptime():
+    regressions = [table for sample in samples.values() for table in regression_tables(sample)]
+```
+
+```{python}
+#| label: tbl-bem16-fama-macbeth
+#| tbl-cap: Fama–MacBeth regressions by stock sample (BEM Table 16.7)
+#| tbl-subcap:
+#|   - CRSP sample, univariate
+#|   - CRSP sample, multivariate
+#|   - Price sample, univariate
+#|   - Price sample, multivariate
+#|   - Size sample, univariate
+#|   - Size sample, multivariate
+
+for table in regressions:
+    show_table(table)
+```

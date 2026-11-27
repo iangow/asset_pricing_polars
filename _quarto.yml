@@ -26,6 +26,7 @@ book:
         - liquidity-replication.qmd
         - skewness-replication.qmd
         - volatility-replication.qmd
+        - liquid-samples-replication.qmd
     - references.qmd
 
 bibliography: book.bib
