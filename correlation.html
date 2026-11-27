@@ -281,7 +281,7 @@ window.Quarto = {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./momentum-replication.html" class="sidebar-item-text sidebar-link">
+  <a href="./momentum.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">The Momentum Effect</span></span></a>
   </div>
 </li>
@@ -295,6 +295,18 @@ window.Quarto = {
   <div class="sidebar-item-container"> 
   <a href="./liquidity-replication.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">Liquidity</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./skewness-replication.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">14</span>&nbsp; <span class="chapter-title">Skewness</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./volatility-replication.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">15</span>&nbsp; <span class="chapter-title">Idiosyncratic Volatility</span></span></a>
   </div>
 </li>
       </ul>
@@ -349,7 +361,7 @@ window.Quarto = {
 </header>
 
 
-<p>In Chapter 3, <span class="citation" data-cites="bali2016">Bali et al. (<a href="references.html#ref-bali2016" role="doc-biblioref">2016</a>)</span> compare the cross-sectional associations among beta, size, book-to-market (BM), and next-year excess return. We use the 1988–2012 annual panel from <a href="summary-statistics.html" class="quarto-xref"><span>Chapter 2</span></a>.</p>
+<p>In Chapter 3, <span class="citation" data-cites="bali2016">Bali et al. (<a href="references.html#ref-bali2016" role="doc-biblioref">2016</a>)</span> compare the cross-sectional associations among beta, size, book-to-market, and next-year excess return. We use the 1988–2012 annual panel from <a href="summary-statistics.html" class="quarto-xref"><span>Chapter 2</span></a>.</p>
 <style>
 .cell-output-markdown:has(> table) {
   max-width: 100%;
@@ -359,7 +371,7 @@ window.Quarto = {
   white-space: nowrap;
 }
 </style>
-<div id="d3153be9" class="cell" data-execution_count="2">
+<div id="18282f3b" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> polars <span class="im">as</span> pl</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> eap_pl <span class="im">import</span> build_annual_panel</span>
@@ -383,10 +395,10 @@ window.Quarto = {
 \rho_t^S(X,Y)=1-\frac{6\sum_{i=1}^{n_t}d_{i,t}^2}{n_t(n_t^2-1)}.
 \tag{3.2}\]</span></span></p>
 <p>With ties, give equal values their average rank and compute the Pearson correlation of the two rank vectors. This is the calculation used by <code>pl.corr(method="spearman")</code>, including when <a href="#eq-bem3-spearman" class="quarto-xref">Equation&nbsp;<span>3.2</span></a> applies.</p>
-<div id="0b785570" class="cell" data-execution_count="3">
+<div id="87ee6ff6" class="cell" data-execution_count="3">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> eap_pl <span class="im">import</span> correlation_matrix, period_correlations</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>variables <span class="op">=</span> {<span class="st">"Beta"</span>: <span class="st">"Beta"</span>, <span class="st">"Size"</span>: <span class="st">"Size"</span>, <span class="st">"BM"</span>: <span class="st">"BM"</span>, <span class="st">"excess"</span>: <span class="st">"Next-year return"</span>}</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>variables <span class="op">=</span> {<span class="st">"Beta"</span>: <span class="st">"Beta"</span>, <span class="st">"Size"</span>: <span class="st">"Size"</span>, <span class="st">"BM"</span>: <span class="st">"Book-to-market"</span>, <span class="st">"excess"</span>: <span class="st">"Next-year return"</span>}</span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>annual <span class="op">=</span> period_correlations(annual_panel, variables, <span class="st">"year"</span>).sort(<span class="st">"year"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="cell" data-execution_count="4">
@@ -418,16 +430,16 @@ Table&nbsp;3.1: Annual Pearson and Spearman correlations (BEM Table 3.1)
 <th style="text-align: left;">Year</th>
 <th style="text-align: right;">Pearson Beta–Size</th>
 <th style="text-align: right;">Spearman Beta–Size</th>
-<th style="text-align: right;">Pearson Beta–BM</th>
-<th style="text-align: right;">Spearman Beta–BM</th>
+<th style="text-align: right;">Pearson Beta–Book-to-market</th>
+<th style="text-align: right;">Spearman Beta–Book-to-market</th>
 <th style="text-align: right;">Pearson Beta–Return</th>
 <th style="text-align: right;">Spearman Beta–Return</th>
-<th style="text-align: right;">Pearson Size–BM</th>
-<th style="text-align: right;">Spearman Size–BM</th>
+<th style="text-align: right;">Pearson Size–Book-to-market</th>
+<th style="text-align: right;">Spearman Size–Book-to-market</th>
 <th style="text-align: right;">Pearson Size–Return</th>
 <th style="text-align: right;">Spearman Size–Return</th>
-<th style="text-align: right;">Pearson BM–Return</th>
-<th style="text-align: right;">Spearman BM–Return</th>
+<th style="text-align: right;">Pearson Book-to-market–Return</th>
+<th style="text-align: right;">Spearman Book-to-market–Return</th>
 </tr>
 </thead>
 <tbody>
@@ -825,7 +837,7 @@ Table&nbsp;3.1: Annual Pearson and Spearman correlations (BEM Table 3.1)
 \bar\rho^S(X,Y)=\frac{1}{N_{XY}}\sum_{t\in\mathcal T_{XY}}\rho_t^S(X,Y).
 \tag{3.4}\]</span></span></p>
 <p>Each available year has the same weight. The next-year return is unavailable for the 2012 formation cohort, so return correlations are averaged over 24 years. The other pairs use all 25 years.</p>
-<div id="13261a33" class="cell" data-execution_count="5">
+<div id="c36be687" class="cell" data-execution_count="5">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>average <span class="op">=</span> annual.select(pl.exclude(<span class="st">"year"</span>).mean())</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="cell" data-execution_count="6">
@@ -855,16 +867,16 @@ Table&nbsp;3.2: Average annual correlations by pair (BEM Table 3.2)
 <tr class="header">
 <th style="text-align: left;">Pearson Beta–Size</th>
 <th style="text-align: right;">Spearman Beta–Size</th>
-<th style="text-align: right;">Pearson Beta–BM</th>
-<th style="text-align: right;">Spearman Beta–BM</th>
+<th style="text-align: right;">Pearson Beta–Book-to-market</th>
+<th style="text-align: right;">Spearman Beta–Book-to-market</th>
 <th style="text-align: right;">Pearson Beta–Return</th>
 <th style="text-align: right;">Spearman Beta–Return</th>
-<th style="text-align: right;">Pearson Size–BM</th>
-<th style="text-align: right;">Spearman Size–BM</th>
+<th style="text-align: right;">Pearson Size–Book-to-market</th>
+<th style="text-align: right;">Spearman Size–Book-to-market</th>
 <th style="text-align: right;">Pearson Size–Return</th>
 <th style="text-align: right;">Spearman Size–Return</th>
-<th style="text-align: right;">Pearson BM–Return</th>
-<th style="text-align: right;">Spearman BM–Return</th>
+<th style="text-align: right;">Pearson Book-to-market–Return</th>
+<th style="text-align: right;">Spearman Book-to-market–Return</th>
 </tr>
 </thead>
 <tbody>
@@ -933,7 +945,7 @@ Figure&nbsp;3.1: Annual correlations among beta, size, and book-to-market
 </div>
 </div>
 </div>
-<p>Larger stocks tend to have higher betas. Both measures of correlation also show that larger stocks tend to have lower book-to-market ratios. Market capitalization enters the denominator of BM, which helps explain part of the association.</p>
+<p>Larger stocks tend to have higher betas. Both measures of correlation also show that larger stocks tend to have lower book-to-market ratios. Market capitalization enters the denominator of book-to-market, which helps explain part of the association.</p>
 <div id="cell-fig-bem3-returns" class="cell" data-execution_count="8">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>plot_correlations([(<span class="st">"Beta"</span>, <span class="st">"excess"</span>), (<span class="st">"Size"</span>, <span class="st">"excess"</span>), (<span class="st">"BM"</span>, <span class="st">"excess"</span>)])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="8">
@@ -953,7 +965,7 @@ Figure&nbsp;3.2: Annual correlations of stock characteristics with next-year exc
 </section>
 <section id="present-the-correlations" class="level2" data-number="3.3">
 <h2 data-number="3.3" class="anchored" data-anchor-id="present-the-correlations"><span class="header-section-number">3.3</span> Presenting Correlations</h2>
-<p><a href="#tbl-bem3-matrix" class="quarto-xref">Table&nbsp;<span>3.3</span></a> puts the same averages in a compact matrix. Read Pearson correlations below the diagonal and Spearman correlations above it. The Pearson correlation between size and BM is −0.22 here and −0.23 in BEM. The other average correlations agree at the reported precision.</p>
+<p><a href="#tbl-bem3-matrix" class="quarto-xref">Table&nbsp;<span>3.3</span></a> puts the same averages in a compact matrix. Read Pearson correlations below the diagonal and Spearman correlations above it.</p>
 <div class="cell" data-execution_count="9">
 <div id="tbl-bem3-matrix" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="9">
 <figure class="quarto-float quarto-float-tbl figure">
@@ -968,7 +980,7 @@ Table&nbsp;3.3: Average Pearson (below diagonal) and Spearman (above diagonal) c
 <th style="text-align: left;">Measure</th>
 <th style="text-align: right;">Beta</th>
 <th style="text-align: right;">Size</th>
-<th style="text-align: right;">BM</th>
+<th style="text-align: right;">Book-to-market</th>
 <th style="text-align: right;">Next-year return</th>
 </tr>
 </thead>
@@ -988,7 +1000,7 @@ Table&nbsp;3.3: Average Pearson (below diagonal) and Spearman (above diagonal) c
 <td style="text-align: right;">0.06</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">BM</td>
+<td style="text-align: left;">Book-to-market</td>
 <td style="text-align: right;">-0.18</td>
 <td style="text-align: right;">-0.22</td>
 <td style="text-align: right;"></td>

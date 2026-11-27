@@ -625,7 +625,7 @@
     "href": "reference/get_ff_factors.html",
     "title": "get_ff_factors",
     "section": "",
-    "text": "eap_pl.get_ff_factors(\n    dataset,\n    *,\n    vintage='201406',\n    cache_dir='data/french-factors',\n    timeout=30.0,\n)\nDownload and cache a vintage of Kenneth French’s U.S. factors.\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\ndataset\nstr\n“daily” or “monthly” for the three Fama–French factors and the risk-free rate, or “momentum” for monthly momentum.\nrequired\n\n\nvintage\nstr | int\nCRSP vintage in YYYYMM format. June 2014, September 2015, and December 2024 cover all three datasets. July 2016 covers monthly three-factor data.\n'201406'\n\n\ncache_dir\nstr | Path\nDirectory for the original text from the ZIP file. A cached file is reused when it matches the source checksum.\n'data/french-factors'\n\n\ntimeout\nfloat\nDownload timeout in seconds.\n30.0\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\n\n\n\n\n\npolars.DataFrame\nSorted dates and decimal returns. Monthly dates are the first day of the month. Factor columns are mktrf, smb, hml, and rf, or mom.",
+    "text": "eap_pl.get_ff_factors(\n    dataset,\n    *,\n    vintage='201406',\n    cache_dir='data/french-factors',\n    timeout=30.0,\n)\nDownload and cache a vintage of Kenneth French’s U.S. factors.\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\ndataset\nstr\n“daily” or “monthly” for the three Fama–French factors and the risk-free rate, “momentum” for monthly momentum, or “momentum_daily” for daily momentum.\nrequired\n\n\nvintage\nstr | int\nCRSP vintage in YYYYMM format. June 2014, September 2015, and December 2024 cover all four datasets. July 2016 covers monthly three-factor data.\n'201406'\n\n\ncache_dir\nstr | Path\nDirectory for the original text from the ZIP file. A cached file is reused when it matches the source checksum.\n'data/french-factors'\n\n\ntimeout\nfloat\nDownload timeout in seconds.\n30.0\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\n\n\n\n\n\npolars.DataFrame\nSorted dates and decimal returns. Monthly dates are the first day of the month. Factor columns are mktrf, smb, hml, and rf, or mom.",
     "crumbs": [
       "Reference",
       "Data and Parquet",
@@ -637,7 +637,7 @@
     "href": "reference/get_ff_factors.html#parameters",
     "title": "get_ff_factors",
     "section": "",
-    "text": "Name\nType\nDescription\nDefault\n\n\n\n\ndataset\nstr\n“daily” or “monthly” for the three Fama–French factors and the risk-free rate, or “momentum” for monthly momentum.\nrequired\n\n\nvintage\nstr | int\nCRSP vintage in YYYYMM format. June 2014, September 2015, and December 2024 cover all three datasets. July 2016 covers monthly three-factor data.\n'201406'\n\n\ncache_dir\nstr | Path\nDirectory for the original text from the ZIP file. A cached file is reused when it matches the source checksum.\n'data/french-factors'\n\n\ntimeout\nfloat\nDownload timeout in seconds.\n30.0",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\ndataset\nstr\n“daily” or “monthly” for the three Fama–French factors and the risk-free rate, “momentum” for monthly momentum, or “momentum_daily” for daily momentum.\nrequired\n\n\nvintage\nstr | int\nCRSP vintage in YYYYMM format. June 2014, September 2015, and December 2024 cover all four datasets. July 2016 covers monthly three-factor data.\n'201406'\n\n\ncache_dir\nstr | Path\nDirectory for the original text from the ZIP file. A cached file is reused when it matches the source checksum.\n'data/french-factors'\n\n\ntimeout\nfloat\nDownload timeout in seconds.\n30.0",
     "crumbs": [
       "Reference",
       "Data and Parquet",
@@ -776,7 +776,7 @@
     "href": "reference/monthly_panel.html",
     "title": "monthly_panel",
     "section": "",
-    "text": "eap_pl.monthly_panel(sizes, first, last)\nJoin formation-month characteristics to next-month excess returns.\nReads eap/betas, crsp/msf, crsp/msedelist, and ff/factors_monthly from the local Parquet repository. On a delisting, the recorded delisting return replaces the usual stock return. Missing delisting returns use −30% for poor performance and −100% otherwise.\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nsizes\npolars.DataFrame or polars.LazyFrame\nCharacteristics keyed by permno and the first day of the formation month.\nrequired\n\n\nfirst\npolars.Expr\nFirst formation month, such as pl.date(1963, 6, 1).\nrequired\n\n\nlast\npolars.Expr\nLast formation month, inclusive.\nrequired\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\n\n\n\n\n\npolars.DataFrame\nOne row per beta observation, including the 12-month daily beta, the supplied characteristics, and next-month excess and market in percentage points.",
+    "text": "eap_pl.monthly_panel(sizes, first, last, *, monthly_factors=None)\nJoin formation-month characteristics to next-month excess returns.\nReads eap/betas, crsp/msf, and crsp/msedelist from the local Parquet repository. By default, it also reads ff/factors_monthly. On a delisting, the recorded delisting return replaces the usual stock return. Missing delisting returns use −30% for poor performance and −100% otherwise.\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\nDefault\n\n\n\n\nsizes\npolars.DataFrame or polars.LazyFrame\nCharacteristics keyed by permno and the first day of the formation month.\nrequired\n\n\nfirst\npolars.Expr\nFirst formation month, such as pl.date(1963, 6, 1).\nrequired\n\n\nlast\npolars.Expr\nLast formation month, inclusive.\nrequired\n\n\nmonthly_factors\npolars.DataFrame or polars.LazyFrame\nMonthly factor table with date, mktrf, and rf in decimal units.\nNone\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nName\nType\nDescription\n\n\n\n\n\npolars.DataFrame\nOne row per beta observation, including the 12-month daily beta, the supplied characteristics, and next-month excess and market in percentage points.",
     "crumbs": [
       "Reference",
       "Data and Parquet",
@@ -788,7 +788,7 @@
     "href": "reference/monthly_panel.html#parameters",
     "title": "monthly_panel",
     "section": "",
-    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nsizes\npolars.DataFrame or polars.LazyFrame\nCharacteristics keyed by permno and the first day of the formation month.\nrequired\n\n\nfirst\npolars.Expr\nFirst formation month, such as pl.date(1963, 6, 1).\nrequired\n\n\nlast\npolars.Expr\nLast formation month, inclusive.\nrequired",
+    "text": "Name\nType\nDescription\nDefault\n\n\n\n\nsizes\npolars.DataFrame or polars.LazyFrame\nCharacteristics keyed by permno and the first day of the formation month.\nrequired\n\n\nfirst\npolars.Expr\nFirst formation month, such as pl.date(1963, 6, 1).\nrequired\n\n\nlast\npolars.Expr\nLast formation month, inclusive.\nrequired\n\n\nmonthly_factors\npolars.DataFrame or polars.LazyFrame\nMonthly factor table with date, mktrf, and rf in decimal units.\nNone",
     "crumbs": [
       "Reference",
       "Data and Parquet",

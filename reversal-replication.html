@@ -88,7 +88,7 @@ div.csl-indent {
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
 <link href="./liquidity-replication.html" rel="next">
-<link href="./momentum-replication.html" rel="prev">
+<link href="./momentum.html" rel="prev">
 <script src="site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
@@ -281,7 +281,7 @@ window.Quarto = {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./momentum-replication.html" class="sidebar-item-text sidebar-link">
+  <a href="./momentum.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">The Momentum Effect</span></span></a>
   </div>
 </li>
@@ -295,6 +295,18 @@ window.Quarto = {
   <div class="sidebar-item-container"> 
   <a href="./liquidity-replication.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">Liquidity</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./skewness-replication.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">14</span>&nbsp; <span class="chapter-title">Skewness</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./volatility-replication.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">15</span>&nbsp; <span class="chapter-title">Idiosyncratic Volatility</span></span></a>
   </div>
 </li>
       </ul>
@@ -351,7 +363,7 @@ window.Quarto = {
 </header>
 
 
-<p>Do stocks that rose last month continue to outperform, or do they give back some of their gains? Following Chapter 12 of <span class="citation" data-cites="bali2016">Bali et al. (<a href="references.html#ref-bali2016" role="doc-biblioref">2016</a>)</span>, we sort on the most recent monthly return and compare its predictive power with that of earlier returns. This complements <a href="momentum-replication.html" class="quarto-xref"><span>Chapter 11</span></a>, where the main momentum signal skips the formation month.</p>
+<p>Do stocks that rose last month continue to outperform, or do they give back some of their gains? Following Chapter 12 of <span class="citation" data-cites="bali2016">Bali et al. (<a href="references.html#ref-bali2016" role="doc-biblioref">2016</a>)</span>, we sort on the most recent monthly return and compare its predictive power with that of earlier returns. This complements <a href="momentum.html" class="quarto-xref"><span>Chapter 11</span></a>, where the main momentum signal skips the formation month.</p>
 <section id="measuring-short-term-reversal" class="level2" data-number="12.1">
 <h2 data-number="12.1" class="anchored" data-anchor-id="measuring-short-term-reversal"><span class="header-section-number">12.1</span> Measuring Short-Term Reversal</h2>
 <p>In BEM’s Equation (12.1), the reversal signal is the formation-month CRSP stock return in percentage points.</p>
@@ -359,7 +371,7 @@ window.Quarto = {
 \operatorname{Rev}_{i,t}=100 R_{i,t}.
 \tag{12.1}\]</span></span></p>
 <p>Here <span class="math inline">\(R_{i,t}\)</span> is the decimal return for stock <span class="math inline">\(i\)</span> in month <span class="math inline">\(t\)</span>. Earlier returns are also expressed in percentage points and matched by calendar month, so a gap in the CRSP file does not make an older observation count as the previous month’s return. The formation sample runs from June 1963 through November 2012, and the outcome is the following month’s excess return, including the delisting treatment in <a href="crsp-replication.html#sec-bem-returns" class="quarto-xref"><span>Section 7.2</span></a>.</p>
-<div id="cc246d6c" class="cell" data-execution_count="1">
+<div id="4a0f87a2" class="cell" data-execution_count="1">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> polars <span class="im">as</span> pl</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> era_pl <span class="im">import</span> load_parquet</span>
@@ -368,7 +380,7 @@ window.Quarto = {
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>first <span class="op">=</span> pl.date(<span class="dv">1963</span>, <span class="dv">6</span>, <span class="dv">1</span>)</span>
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>last <span class="op">=</span> pl.date(<span class="dv">2012</span>, <span class="dv">11</span>, <span class="dv">1</span>)</span>
 <span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>keys <span class="op">=</span> [<span class="st">"permno"</span>, <span class="st">"month"</span>]</span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>lag_labels <span class="op">=</span> {<span class="st">"rev"</span>: <span class="st">"Rev"</span>, <span class="op">**</span>{<span class="ss">f"lag</span><span class="sc">{</span>k<span class="sc">}</span><span class="ss">"</span>: <span class="ss">f"R(t−</span><span class="sc">{</span>k<span class="sc">}</span><span class="ss">)"</span> <span class="cf">for</span> k <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">1</span>, <span class="dv">12</span>)}}</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>lag_labels <span class="op">=</span> {<span class="st">"rev"</span>: <span class="st">"`rev`"</span>, <span class="op">**</span>{<span class="ss">f"lag</span><span class="sc">{</span>k<span class="sc">}</span><span class="ss">"</span>: <span class="ss">f"R(t−</span><span class="sc">{</span>k<span class="sc">}</span><span class="ss">)"</span> <span class="cf">for</span> k <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">1</span>, <span class="dv">12</span>)}}</span>
 <span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>stock_returns <span class="op">=</span> (</span>
 <span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>    load_parquet(<span class="st">"msf"</span>, <span class="st">"crsp"</span>)</span>
 <span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>    .<span class="bu">filter</span>(pl.col(<span class="st">"date"</span>).is_between(first.dt.offset_by(<span class="st">"-11mo"</span>), last.dt.month_end()))</span>
@@ -411,7 +423,7 @@ window.Quarto = {
 <div class="cell" data-execution_count="3">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> eap_pl <span class="im">import</span> mean_cross_sections</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>show_table(mean_cross_sections(panel, {<span class="st">"rev"</span>: <span class="st">"Rev"</span>}))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>show_table(mean_cross_sections(panel, {<span class="st">"rev"</span>: <span class="st">"`rev`"</span>}))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div id="tbl-bem12-summary" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="3">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bem12-summary-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
@@ -454,7 +466,7 @@ Table&nbsp;12.1: Monthly cross-sectional summary statistics for reversal (BEM Ta
 </thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: left;">Rev</td>
+<td style="text-align: left;"><code>rev</code></td>
 <td style="text-align: right;">1.21</td>
 <td style="text-align: right;">15.49</td>
 <td style="text-align: right;">3.11</td>
@@ -478,7 +490,7 @@ Table&nbsp;12.1: Monthly cross-sectional summary statistics for reversal (BEM Ta
 <div class="cell" data-execution_count="4">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> eap_pl <span class="im">import</span> period_correlations</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>controls <span class="op">=</span> {<span class="st">"beta"</span>: <span class="st">"Beta"</span>, <span class="st">"log_cap"</span>: <span class="st">"Size"</span>, <span class="st">"bm"</span>: <span class="st">"BM"</span>, <span class="st">"mom"</span>: <span class="st">"Mom"</span>}</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>controls <span class="op">=</span> {<span class="st">"beta"</span>: <span class="st">"Beta"</span>, <span class="st">"log_cap"</span>: <span class="st">"Size"</span>, <span class="st">"bm"</span>: <span class="st">"`bm`"</span>, <span class="st">"mom"</span>: <span class="st">"`mom`"</span>}</span>
 <span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>correlations <span class="op">=</span> (</span>
 <span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    period_correlations(panel, [<span class="st">"rev"</span>, <span class="op">*</span>controls], <span class="st">"month"</span>)</span>
 <span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    .select(pl.exclude(<span class="st">"month"</span>).mean())</span>
@@ -502,8 +514,8 @@ Table&nbsp;12.2: Monthly cross-sectional correlations of reversal with other cha
 <th style="text-align: left;">Method</th>
 <th style="text-align: right;">Beta</th>
 <th style="text-align: right;">Size</th>
-<th style="text-align: right;">BM</th>
-<th style="text-align: right;">Mom</th>
+<th style="text-align: right;"><code>bm</code></th>
+<th style="text-align: right;"><code>mom</code></th>
 </tr>
 </thead>
 <tbody>
@@ -528,14 +540,13 @@ Table&nbsp;12.2: Monthly cross-sectional correlations of reversal with other cha
 </figure>
 </div>
 </div>
-<p>The average monthly mean and standard deviation are 1.21% and 15.49%, matching BEM to two decimals. The average monthly count is 4,748 here and 4,750 in BEM. All eight correlations match at the printed precision.</p>
 </section>
 <section id="reversal-and-stock-returns" class="level2" data-number="12.3">
 <h2 data-number="12.3" class="anchored" data-anchor-id="reversal-and-stock-returns"><span class="header-section-number">12.3</span> Reversal and Stock Returns</h2>
 <section id="univariate-portfolio-analysis" class="level3" data-number="12.3.1">
 <h3 data-number="12.3.1" class="anchored" data-anchor-id="univariate-portfolio-analysis"><span class="header-section-number">12.3.1</span> Univariate Portfolio Analysis</h3>
-<p>Sort stocks into deciles using breakpoints from all eligible stocks with the signal that month. The value-weighted portfolios use formation-month capitalization. Returns and alphas are in percentage points per month. The high-minus-low spread buys last month’s winners and sells last month’s losers, so a negative spread indicates reversal. We align the factors with the holding month and use the CAPM, the Fama–French three-factor model, and the four-factor model in <a href="momentum-replication.html#eq-bem11-ffc" class="quarto-xref">Equation&nbsp;<span>11.2</span></a>. Parentheses show six-lag Newey–West <span class="math inline">\(t\)</span>-statistics <span class="citation" data-cites="neweywest1987">(<a href="references.html#ref-neweywest1987" role="doc-biblioref">Newey and West 1987</a>)</span>.</p>
-<div id="dd9d62f8" class="cell" data-execution_count="5">
+<p>Sort stocks into deciles using breakpoints from all eligible stocks with the signal that month. The value-weighted portfolios use formation-month capitalization. Returns and alphas are in percentage points per month. The high-minus-low spread buys last month’s winners and sells last month’s losers, so a negative spread indicates reversal. We align the factors with the holding month and use the CAPM, the Fama–French three-factor model, and the four-factor model in <a href="momentum.html#eq-bem11-ffc" class="quarto-xref">Equation&nbsp;<span>11.2</span></a>. Parentheses show six-lag Newey–West <span class="math inline">\(t\)</span>-statistics <span class="citation" data-cites="neweywest1987">(<a href="references.html#ref-neweywest1987" role="doc-biblioref">Newey and West 1987</a>)</span>.</p>
+<div id="8b9704e0" class="cell" data-execution_count="5">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> io <span class="im">import</span> StringIO</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> re</span>
@@ -590,7 +601,7 @@ Table&nbsp;12.2: Monthly cross-sectional correlations of reversal with other cha
 <span id="cb4-52"><a href="#cb4-52" aria-hidden="true" tabindex="-1"></a>    }</span>
 <span id="cb4-53"><a href="#cb4-53" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-54"><a href="#cb4-54" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-55"><a href="#cb4-55" aria-hidden="true" tabindex="-1"></a>characteristics <span class="op">=</span> {<span class="st">"rev"</span>: <span class="st">"Rev"</span>, <span class="st">"beta"</span>: <span class="st">"Beta"</span>, <span class="st">"cap"</span>: <span class="st">"MktCap (millions)"</span>, <span class="st">"bm"</span>: <span class="st">"BM"</span>, <span class="st">"mom"</span>: <span class="st">"Mom"</span>}</span>
+<span id="cb4-55"><a href="#cb4-55" aria-hidden="true" tabindex="-1"></a>characteristics <span class="op">=</span> {<span class="st">"rev"</span>: <span class="st">"`rev`"</span>, <span class="st">"beta"</span>: <span class="st">"Beta"</span>, <span class="st">"cap"</span>: <span class="st">"Market cap (millions)"</span>, <span class="st">"bm"</span>: <span class="st">"`bm`"</span>, <span class="st">"mom"</span>: <span class="st">"`mom`"</span>}</span>
 <span id="cb4-56"><a href="#cb4-56" aria-hidden="true" tabindex="-1"></a>deciles <span class="op">=</span> [<span class="bu">str</span>(i) <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">1</span>, <span class="dv">11</span>)]</span>
 <span id="cb4-57"><a href="#cb4-57" aria-hidden="true" tabindex="-1"></a>metrics <span class="op">=</span> [pl.col(column).mean().alias(label) <span class="cf">for</span> column, label <span class="kw">in</span> characteristics.items()]</span>
 <span id="cb4-58"><a href="#cb4-58" aria-hidden="true" tabindex="-1"></a>decile_returns <span class="op">=</span> {}</span>
@@ -645,7 +656,7 @@ Table&nbsp;12.3: Characteristics, returns, and alphas of reversal-sorted deciles
 </thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: left;">Rev</td>
+<td style="text-align: left;"><code>rev</code></td>
 <td style="text-align: right;">-21.37</td>
 <td style="text-align: right;">-10.47</td>
 <td style="text-align: right;">-6.26</td>
@@ -671,7 +682,7 @@ Table&nbsp;12.3: Characteristics, returns, and alphas of reversal-sorted deciles
 <td style="text-align: right;">0.84</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">MktCap (millions)</td>
+<td style="text-align: left;">Market cap (millions)</td>
 <td style="text-align: right;">280.10</td>
 <td style="text-align: right;">718.63</td>
 <td style="text-align: right;">1058.47</td>
@@ -684,7 +695,7 @@ Table&nbsp;12.3: Characteristics, returns, and alphas of reversal-sorted deciles
 <td style="text-align: right;">489.94</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">BM</td>
+<td style="text-align: left;"><code>bm</code></td>
 <td style="text-align: right;">0.94</td>
 <td style="text-align: right;">0.93</td>
 <td style="text-align: right;">0.93</td>
@@ -697,7 +708,7 @@ Table&nbsp;12.3: Characteristics, returns, and alphas of reversal-sorted deciles
 <td style="text-align: right;">1.02</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">Mom</td>
+<td style="text-align: left;"><code>mom</code></td>
 <td style="text-align: right;">11.70</td>
 <td style="text-align: right;">13.86</td>
 <td style="text-align: right;">13.99</td>
@@ -921,7 +932,7 @@ Table&nbsp;12.3: Characteristics, returns, and alphas of reversal-sorted deciles
 </figure>
 </div>
 </div>
-<p>The winner-minus-loser spread is −2.68% per month with equal weights and −0.60% with value weights. BEM report −2.69% and −0.60%, respectively. The value-weighted spread has a four-factor alpha of −0.78%, compared with −0.76% in BEM.</p>
+<p>The winner-minus-loser spread is −2.68% per month with equal weights and −0.60% with value weights. The value-weighted spread has a four-factor alpha of −0.78% per month.</p>
 </section>
 <section id="sorting-on-earlier-returns" class="level3" data-number="12.3.2">
 <h3 data-number="12.3.2" class="anchored" data-anchor-id="sorting-on-earlier-returns"><span class="header-section-number">12.3.2</span> Sorting on Earlier Returns</h3>
@@ -977,7 +988,7 @@ Table&nbsp;12.4: Decile returns and spreads using individual past monthly return
 </thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: left;">Rev</td>
+<td style="text-align: left;"><code>rev</code></td>
 <td style="text-align: right;">2.31</td>
 <td style="text-align: right;">0.97</td>
 <td style="text-align: right;">0.78</td>
@@ -1218,7 +1229,7 @@ Table&nbsp;12.4: Decile returns and spreads using individual past monthly return
 </thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: left;">Rev</td>
+<td style="text-align: left;"><code>rev</code></td>
 <td style="text-align: right;">0.72</td>
 <td style="text-align: right;">0.50</td>
 <td style="text-align: right;">0.74</td>
@@ -1419,15 +1430,15 @@ Table&nbsp;12.4: Decile returns and spreads using individual past monthly return
 </figure>
 </div>
 </div>
-<p>The equal-weighted spread is close to zero when we sort on month <span class="math inline">\(t-1\)</span> and is positive at every earlier lag in the table. Some estimates differ at individual lags. For example, at <span class="math inline">\(t-2\)</span> the equal-weighted spread is 0.69% per month here and 0.62% in BEM.</p>
+<p>The equal-weighted spread is close to zero when we sort on month <span class="math inline">\(t-1\)</span> and is positive at every earlier lag in the table.</p>
 </section>
 <section id="controlling-for-size-beta-book-to-market-and-momentum" class="level3" data-number="12.3.3">
 <h3 data-number="12.3.3" class="anchored" data-anchor-id="controlling-for-size-beta-book-to-market-and-momentum"><span class="header-section-number">12.3.3</span> Controlling for Size, Beta, Book-to-Market, and Momentum</h3>
 <p>For dependent sorts, calculate reversal breakpoints separately within each control quintile. For independent sorts, calculate both sets of breakpoints for the whole cross-section and intersect the resulting groups. The average column equally weights the control quintiles within each month before estimating the return or alpha.</p>
-<div id="24bfcd2d" class="cell" data-execution_count="8">
+<div id="9af56e1a" class="cell" data-execution_count="8">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> eap_pl <span class="im">import</span> bivariate_months</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>sort_variables <span class="op">=</span> {<span class="st">"beta"</span>: <span class="st">"Beta"</span>, <span class="st">"cap"</span>: <span class="st">"MktCap"</span>, <span class="st">"bm"</span>: <span class="st">"BM"</span>, <span class="st">"mom"</span>: <span class="st">"Mom"</span>}</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>sort_variables <span class="op">=</span> {<span class="st">"beta"</span>: <span class="st">"Beta"</span>, <span class="st">"cap"</span>: <span class="st">"Market cap"</span>, <span class="st">"bm"</span>: <span class="st">"`bm`"</span>, <span class="st">"mom"</span>: <span class="st">"`mom`"</span>}</span>
 <span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>quintiles <span class="op">=</span> [<span class="bu">str</span>(i) <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">1</span>, <span class="dv">6</span>)]</span>
 <span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a></span>
@@ -1441,7 +1452,7 @@ Table&nbsp;12.4: Decile returns and spreads using individual past monthly return
 <span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> show_cells:</span>
 <span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> target <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">1</span>, <span class="dv">6</span>):</span>
 <span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>            rows.append({</span>
-<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>                <span class="st">"Statistic"</span>: <span class="ss">f"Rev </span><span class="sc">{</span>target<span class="sc">}</span><span class="ss">"</span>,</span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>                <span class="st">"Statistic"</span>: <span class="ss">f"`rev` </span><span class="sc">{</span>target<span class="sc">}</span><span class="ss">"</span>,</span>
 <span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>                <span class="op">**</span>{label: <span class="ss">f'</span><span class="sc">{</span>cell<span class="sc">.</span><span class="bu">filter</span>(pl.col(<span class="st">"target"</span>) <span class="op">==</span> target)[weight]<span class="sc">.</span>mean()<span class="sc">:.2f}</span><span class="ss">'</span></span>
 <span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>                   <span class="cf">for</span> label, cell <span class="kw">in</span> series.items()},</span>
 <span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>            })</span>
@@ -1503,7 +1514,7 @@ Table&nbsp;12.5: Reversal portfolios within market capitalization quintiles (BEM
 </thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: left;">Rev 1</td>
+<td style="text-align: left;"><code>rev</code> 1</td>
 <td style="text-align: right;">3.92</td>
 <td style="text-align: right;">1.27</td>
 <td style="text-align: right;">1.01</td>
@@ -1512,7 +1523,7 @@ Table&nbsp;12.5: Reversal portfolios within market capitalization quintiles (BEM
 <td style="text-align: right;">1.60</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Rev 2</td>
+<td style="text-align: left;"><code>rev</code> 2</td>
 <td style="text-align: right;">1.27</td>
 <td style="text-align: right;">0.68</td>
 <td style="text-align: right;">0.70</td>
@@ -1521,7 +1532,7 @@ Table&nbsp;12.5: Reversal portfolios within market capitalization quintiles (BEM
 <td style="text-align: right;">0.85</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">Rev 3</td>
+<td style="text-align: left;"><code>rev</code> 3</td>
 <td style="text-align: right;">0.91</td>
 <td style="text-align: right;">0.63</td>
 <td style="text-align: right;">0.68</td>
@@ -1530,7 +1541,7 @@ Table&nbsp;12.5: Reversal portfolios within market capitalization quintiles (BEM
 <td style="text-align: right;">0.71</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Rev 4</td>
+<td style="text-align: left;"><code>rev</code> 4</td>
 <td style="text-align: right;">1.00</td>
 <td style="text-align: right;">0.60</td>
 <td style="text-align: right;">0.59</td>
@@ -1539,7 +1550,7 @@ Table&nbsp;12.5: Reversal portfolios within market capitalization quintiles (BEM
 <td style="text-align: right;">0.63</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">Rev 5</td>
+<td style="text-align: left;"><code>rev</code> 5</td>
 <td style="text-align: right;">-0.41</td>
 <td style="text-align: right;">-0.42</td>
 <td style="text-align: right;">0.09</td>
@@ -1619,7 +1630,7 @@ Table&nbsp;12.5: Reversal portfolios within market capitalization quintiles (BEM
 </thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: left;">Rev 1</td>
+<td style="text-align: left;"><code>rev</code> 1</td>
 <td style="text-align: right;">2.80</td>
 <td style="text-align: right;">1.25</td>
 <td style="text-align: right;">1.01</td>
@@ -1628,7 +1639,7 @@ Table&nbsp;12.5: Reversal portfolios within market capitalization quintiles (BEM
 <td style="text-align: right;">1.32</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Rev 2</td>
+<td style="text-align: left;"><code>rev</code> 2</td>
 <td style="text-align: right;">1.01</td>
 <td style="text-align: right;">0.68</td>
 <td style="text-align: right;">0.73</td>
@@ -1637,7 +1648,7 @@ Table&nbsp;12.5: Reversal portfolios within market capitalization quintiles (BEM
 <td style="text-align: right;">0.77</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">Rev 3</td>
+<td style="text-align: left;"><code>rev</code> 3</td>
 <td style="text-align: right;">0.68</td>
 <td style="text-align: right;">0.62</td>
 <td style="text-align: right;">0.69</td>
@@ -1646,7 +1657,7 @@ Table&nbsp;12.5: Reversal portfolios within market capitalization quintiles (BEM
 <td style="text-align: right;">0.64</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Rev 4</td>
+<td style="text-align: left;"><code>rev</code> 4</td>
 <td style="text-align: right;">0.82</td>
 <td style="text-align: right;">0.62</td>
 <td style="text-align: right;">0.57</td>
@@ -1655,7 +1666,7 @@ Table&nbsp;12.5: Reversal portfolios within market capitalization quintiles (BEM
 <td style="text-align: right;">0.57</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">Rev 5</td>
+<td style="text-align: left;"><code>rev</code> 5</td>
 <td style="text-align: right;">-0.56</td>
 <td style="text-align: right;">-0.35</td>
 <td style="text-align: right;">0.12</td>
@@ -1810,7 +1821,7 @@ Table&nbsp;12.6: Reversal spreads after dependent sorts on beta, book-to-market,
 <td style="text-align: right;">-0.66<br>(-4.22)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">BM</td>
+<td style="text-align: left;"><code>bm</code></td>
 <td style="text-align: right;">EW</td>
 <td style="text-align: right;">5–1 Return</td>
 <td style="text-align: right;">-2.09<br>(-8.67)</td>
@@ -1821,7 +1832,7 @@ Table&nbsp;12.6: Reversal spreads after dependent sorts on beta, book-to-market,
 <td style="text-align: right;">-1.89<br>(-9.57)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">BM</td>
+<td style="text-align: left;"><code>bm</code></td>
 <td style="text-align: right;">EW</td>
 <td style="text-align: right;">5–1 FF α</td>
 <td style="text-align: right;">-1.90<br>(-7.13)</td>
@@ -1832,7 +1843,7 @@ Table&nbsp;12.6: Reversal spreads after dependent sorts on beta, book-to-market,
 <td style="text-align: right;">-1.68<br>(-8.03)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">BM</td>
+<td style="text-align: left;"><code>bm</code></td>
 <td style="text-align: right;">EW</td>
 <td style="text-align: right;">5–1 FFC α</td>
 <td style="text-align: right;">-2.38<br>(-7.29)</td>
@@ -1843,7 +1854,7 @@ Table&nbsp;12.6: Reversal spreads after dependent sorts on beta, book-to-market,
 <td style="text-align: right;">-2.06<br>(-7.91)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">BM</td>
+<td style="text-align: left;"><code>bm</code></td>
 <td style="text-align: right;">VW</td>
 <td style="text-align: right;">5–1 Return</td>
 <td style="text-align: right;">-0.30<br>(-1.29)</td>
@@ -1854,7 +1865,7 @@ Table&nbsp;12.6: Reversal spreads after dependent sorts on beta, book-to-market,
 <td style="text-align: right;">-0.49<br>(-2.77)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">BM</td>
+<td style="text-align: left;"><code>bm</code></td>
 <td style="text-align: right;">VW</td>
 <td style="text-align: right;">5–1 FF α</td>
 <td style="text-align: right;">-0.09<br>(-0.36)</td>
@@ -1865,7 +1876,7 @@ Table&nbsp;12.6: Reversal spreads after dependent sorts on beta, book-to-market,
 <td style="text-align: right;">-0.23<br>(-1.22)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">BM</td>
+<td style="text-align: left;"><code>bm</code></td>
 <td style="text-align: right;">VW</td>
 <td style="text-align: right;">5–1 FFC α</td>
 <td style="text-align: right;">-0.49<br>(-2.01)</td>
@@ -1876,7 +1887,7 @@ Table&nbsp;12.6: Reversal spreads after dependent sorts on beta, book-to-market,
 <td style="text-align: right;">-0.53<br>(-2.63)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">Mom</td>
+<td style="text-align: left;"><code>mom</code></td>
 <td style="text-align: right;">EW</td>
 <td style="text-align: right;">5–1 Return</td>
 <td style="text-align: right;">-5.07<br>(-13.47)</td>
@@ -1887,7 +1898,7 @@ Table&nbsp;12.6: Reversal spreads after dependent sorts on beta, book-to-market,
 <td style="text-align: right;">-1.84<br>(-10.12)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Mom</td>
+<td style="text-align: left;"><code>mom</code></td>
 <td style="text-align: right;">EW</td>
 <td style="text-align: right;">5–1 FF α</td>
 <td style="text-align: right;">-4.80<br>(-12.27)</td>
@@ -1898,7 +1909,7 @@ Table&nbsp;12.6: Reversal spreads after dependent sorts on beta, book-to-market,
 <td style="text-align: right;">-1.62<br>(-8.84)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">Mom</td>
+<td style="text-align: left;"><code>mom</code></td>
 <td style="text-align: right;">EW</td>
 <td style="text-align: right;">5–1 FFC α</td>
 <td style="text-align: right;">-5.41<br>(-11.88)</td>
@@ -1909,7 +1920,7 @@ Table&nbsp;12.6: Reversal spreads after dependent sorts on beta, book-to-market,
 <td style="text-align: right;">-1.98<br>(-9.81)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Mom</td>
+<td style="text-align: left;"><code>mom</code></td>
 <td style="text-align: right;">VW</td>
 <td style="text-align: right;">5–1 Return</td>
 <td style="text-align: right;">-2.17<br>(-6.34)</td>
@@ -1920,7 +1931,7 @@ Table&nbsp;12.6: Reversal spreads after dependent sorts on beta, book-to-market,
 <td style="text-align: right;">-0.86<br>(-5.18)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">Mom</td>
+<td style="text-align: left;"><code>mom</code></td>
 <td style="text-align: right;">VW</td>
 <td style="text-align: right;">5–1 FF α</td>
 <td style="text-align: right;">-1.92<br>(-6.32)</td>
@@ -1931,7 +1942,7 @@ Table&nbsp;12.6: Reversal spreads after dependent sorts on beta, book-to-market,
 <td style="text-align: right;">-0.65<br>(-3.94)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Mom</td>
+<td style="text-align: left;"><code>mom</code></td>
 <td style="text-align: right;">VW</td>
 <td style="text-align: right;">5–1 FFC α</td>
 <td style="text-align: right;">-2.55<br>(-8.23)</td>
@@ -2027,7 +2038,7 @@ Table&nbsp;12.7: Reversal spreads after independent sorts on reversal and each c
 <td style="text-align: right;">-0.63<br>(-4.03)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">MktCap</td>
+<td style="text-align: left;">Market cap</td>
 <td style="text-align: right;">EW</td>
 <td style="text-align: right;">5–1 Return</td>
 <td style="text-align: right;">-3.32<br>(-12.30)</td>
@@ -2038,7 +2049,7 @@ Table&nbsp;12.7: Reversal spreads after independent sorts on reversal and each c
 <td style="text-align: right;">-1.41<br>(-7.63)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">MktCap</td>
+<td style="text-align: left;">Market cap</td>
 <td style="text-align: right;">EW</td>
 <td style="text-align: right;">5–1 FFC α</td>
 <td style="text-align: right;">-3.51<br>(-10.22)</td>
@@ -2049,7 +2060,7 @@ Table&nbsp;12.7: Reversal spreads after independent sorts on reversal and each c
 <td style="text-align: right;">-1.52<br>(-7.03)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">MktCap</td>
+<td style="text-align: left;">Market cap</td>
 <td style="text-align: right;">VW</td>
 <td style="text-align: right;">5–1 Return</td>
 <td style="text-align: right;">-2.70<br>(-10.74)</td>
@@ -2060,7 +2071,7 @@ Table&nbsp;12.7: Reversal spreads after independent sorts on reversal and each c
 <td style="text-align: right;">-1.18<br>(-6.54)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">MktCap</td>
+<td style="text-align: left;">Market cap</td>
 <td style="text-align: right;">VW</td>
 <td style="text-align: right;">5–1 FFC α</td>
 <td style="text-align: right;">-2.87<br>(-8.69)</td>
@@ -2071,7 +2082,7 @@ Table&nbsp;12.7: Reversal spreads after independent sorts on reversal and each c
 <td style="text-align: right;">-1.30<br>(-6.08)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">BM</td>
+<td style="text-align: left;"><code>bm</code></td>
 <td style="text-align: right;">EW</td>
 <td style="text-align: right;">5–1 Return</td>
 <td style="text-align: right;">-1.92<br>(-8.72)</td>
@@ -2082,7 +2093,7 @@ Table&nbsp;12.7: Reversal spreads after independent sorts on reversal and each c
 <td style="text-align: right;">-1.90<br>(-9.57)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">BM</td>
+<td style="text-align: left;"><code>bm</code></td>
 <td style="text-align: right;">EW</td>
 <td style="text-align: right;">5–1 FFC α</td>
 <td style="text-align: right;">-2.14<br>(-7.57)</td>
@@ -2093,7 +2104,7 @@ Table&nbsp;12.7: Reversal spreads after independent sorts on reversal and each c
 <td style="text-align: right;">-2.06<br>(-7.98)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">BM</td>
+<td style="text-align: left;"><code>bm</code></td>
 <td style="text-align: right;">VW</td>
 <td style="text-align: right;">5–1 Return</td>
 <td style="text-align: right;">-0.47<br>(-2.24)</td>
@@ -2104,7 +2115,7 @@ Table&nbsp;12.7: Reversal spreads after independent sorts on reversal and each c
 <td style="text-align: right;">-0.48<br>(-2.66)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">BM</td>
+<td style="text-align: left;"><code>bm</code></td>
 <td style="text-align: right;">VW</td>
 <td style="text-align: right;">5–1 FFC α</td>
 <td style="text-align: right;">-0.56<br>(-2.62)</td>
@@ -2115,7 +2126,7 @@ Table&nbsp;12.7: Reversal spreads after independent sorts on reversal and each c
 <td style="text-align: right;">-0.50<br>(-2.48)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">Mom</td>
+<td style="text-align: left;"><code>mom</code></td>
 <td style="text-align: right;">EW</td>
 <td style="text-align: right;">5–1 Return</td>
 <td style="text-align: right;">-4.00<br>(-13.98)</td>
@@ -2126,7 +2137,7 @@ Table&nbsp;12.7: Reversal spreads after independent sorts on reversal and each c
 <td style="text-align: right;">-1.64<br>(-9.05)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Mom</td>
+<td style="text-align: left;"><code>mom</code></td>
 <td style="text-align: right;">EW</td>
 <td style="text-align: right;">5–1 FFC α</td>
 <td style="text-align: right;">-4.26<br>(-12.32)</td>
@@ -2137,7 +2148,7 @@ Table&nbsp;12.7: Reversal spreads after independent sorts on reversal and each c
 <td style="text-align: right;">-1.78<br>(-8.67)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">Mom</td>
+<td style="text-align: left;"><code>mom</code></td>
 <td style="text-align: right;">VW</td>
 <td style="text-align: right;">5–1 Return</td>
 <td style="text-align: right;">-1.63<br>(-5.34)</td>
@@ -2148,7 +2159,7 @@ Table&nbsp;12.7: Reversal spreads after independent sorts on reversal and each c
 <td style="text-align: right;">-0.66<br>(-3.87)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Mom</td>
+<td style="text-align: left;"><code>mom</code></td>
 <td style="text-align: right;">VW</td>
 <td style="text-align: right;">5–1 FFC α</td>
 <td style="text-align: right;">-1.90<br>(-6.90)</td>
@@ -2168,13 +2179,13 @@ Table&nbsp;12.7: Reversal spreads after independent sorts on reversal and each c
 </section>
 <section id="controlling-for-reversal" class="level3" data-number="12.3.4">
 <h3 data-number="12.3.4" class="anchored" data-anchor-id="controlling-for-reversal"><span class="header-section-number">12.3.4</span> Controlling for Reversal</h3>
-<p>Now examine beta, size, book-to-market, and momentum spreads within reversal quintiles. For size spreads, omit SMB from the factor model. For book-to-market spreads, omit HML. For momentum spreads, use the three-factor model. For the dependent sort, follow BEM’s discussion and the heading of Table 12.8 and set the second breakpoints within each reversal quintile.</p>
-<div id="63f0cf24" class="cell" data-execution_count="12">
+<p>Now examine beta, size, book-to-market, and momentum spreads within reversal quintiles. For size spreads, omit <code>smb</code> from the factor model. For book-to-market spreads, omit <code>hml</code>. For momentum spreads, use the three-factor model. For the dependent sort, follow BEM’s discussion and the heading of Table 12.8 and set the second breakpoints within each reversal quintile.</p>
+<div id="fa4b1e4e" class="cell" data-execution_count="12">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> spreads_within_reversal(sorts):</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    alpha <span class="op">=</span> {</span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>        <span class="st">"beta"</span>: {<span class="st">"FFC α"</span>: models[<span class="st">"FFC α"</span>]},</span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>        <span class="st">"cap"</span>: {<span class="st">"FFC α (excl. SMB)"</span>: <span class="st">"mkt + hml + mom_factor"</span>},</span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>        <span class="st">"bm"</span>: {<span class="st">"FFC α (excl. HML)"</span>: <span class="st">"mkt + smb + mom_factor"</span>},</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>        <span class="st">"cap"</span>: {<span class="st">"FFC α (excl. `smb`)"</span>: <span class="st">"mkt + hml + mom_factor"</span>},</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>        <span class="st">"bm"</span>: {<span class="st">"FFC α (excl. `hml`)"</span>: <span class="st">"mkt + smb + mom_factor"</span>},</span>
 <span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>        <span class="st">"mom"</span>: {<span class="st">"FF α"</span>: models[<span class="st">"FF α"</span>]},</span>
 <span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    }</span>
 <span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    results <span class="op">=</span> []</span>
@@ -2266,7 +2277,7 @@ Table&nbsp;12.8: Dependent characteristic spreads within reversal quintiles (BEM
 <td style="text-align: right;">-0.12<br>(-0.66)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">MktCap</td>
+<td style="text-align: left;">Market cap</td>
 <td style="text-align: right;">EW</td>
 <td style="text-align: right;">5–1 Return</td>
 <td style="text-align: right;">-2.76<br>(-8.56)</td>
@@ -2277,9 +2288,9 @@ Table&nbsp;12.8: Dependent characteristic spreads within reversal quintiles (BEM
 <td style="text-align: right;">-0.58<br>(-2.51)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">MktCap</td>
+<td style="text-align: left;">Market cap</td>
 <td style="text-align: right;">EW</td>
-<td style="text-align: right;">5–1 FFC α (excl. SMB)</td>
+<td style="text-align: right;">5–1 FFC α (excl. <code>smb</code>)</td>
 <td style="text-align: right;">-3.05<br>(-7.42)</td>
 <td style="text-align: right;">-0.10<br>(-0.37)</td>
 <td style="text-align: right;">-0.45<br>(-1.78)</td>
@@ -2288,7 +2299,7 @@ Table&nbsp;12.8: Dependent characteristic spreads within reversal quintiles (BEM
 <td style="text-align: right;">-0.74<br>(-2.94)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">MktCap</td>
+<td style="text-align: left;">Market cap</td>
 <td style="text-align: right;">VW</td>
 <td style="text-align: right;">5–1 Return</td>
 <td style="text-align: right;">-2.35<br>(-7.16)</td>
@@ -2299,9 +2310,9 @@ Table&nbsp;12.8: Dependent characteristic spreads within reversal quintiles (BEM
 <td style="text-align: right;">-0.39<br>(-1.61)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">MktCap</td>
+<td style="text-align: left;">Market cap</td>
 <td style="text-align: right;">VW</td>
-<td style="text-align: right;">5–1 FFC α (excl. SMB)</td>
+<td style="text-align: right;">5–1 FFC α (excl. <code>smb</code>)</td>
 <td style="text-align: right;">-2.59<br>(-6.09)</td>
 <td style="text-align: right;">0.08<br>(0.28)</td>
 <td style="text-align: right;">-0.37<br>(-1.42)</td>
@@ -2310,7 +2321,7 @@ Table&nbsp;12.8: Dependent characteristic spreads within reversal quintiles (BEM
 <td style="text-align: right;">-0.50<br>(-1.95)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">BM</td>
+<td style="text-align: left;"><code>bm</code></td>
 <td style="text-align: right;">EW</td>
 <td style="text-align: right;">5–1 Return</td>
 <td style="text-align: right;">1.35<br>(6.18)</td>
@@ -2321,9 +2332,9 @@ Table&nbsp;12.8: Dependent characteristic spreads within reversal quintiles (BEM
 <td style="text-align: right;">1.02<br>(5.82)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">BM</td>
+<td style="text-align: left;"><code>bm</code></td>
 <td style="text-align: right;">EW</td>
-<td style="text-align: right;">5–1 FFC α (excl. HML)</td>
+<td style="text-align: right;">5–1 FFC α (excl. <code>hml</code>)</td>
 <td style="text-align: right;">1.49<br>(6.49)</td>
 <td style="text-align: right;">1.14<br>(6.52)</td>
 <td style="text-align: right;">1.02<br>(6.65)</td>
@@ -2332,7 +2343,7 @@ Table&nbsp;12.8: Dependent characteristic spreads within reversal quintiles (BEM
 <td style="text-align: right;">1.21<br>(7.28)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">BM</td>
+<td style="text-align: left;"><code>bm</code></td>
 <td style="text-align: right;">VW</td>
 <td style="text-align: right;">5–1 Return</td>
 <td style="text-align: right;">0.71<br>(2.77)</td>
@@ -2343,9 +2354,9 @@ Table&nbsp;12.8: Dependent characteristic spreads within reversal quintiles (BEM
 <td style="text-align: right;">0.50<br>(2.80)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">BM</td>
+<td style="text-align: left;"><code>bm</code></td>
 <td style="text-align: right;">VW</td>
-<td style="text-align: right;">5–1 FFC α (excl. HML)</td>
+<td style="text-align: right;">5–1 FFC α (excl. <code>hml</code>)</td>
 <td style="text-align: right;">0.80<br>(2.98)</td>
 <td style="text-align: right;">0.51<br>(2.55)</td>
 <td style="text-align: right;">0.63<br>(3.15)</td>
@@ -2354,7 +2365,7 @@ Table&nbsp;12.8: Dependent characteristic spreads within reversal quintiles (BEM
 <td style="text-align: right;">0.64<br>(3.85)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">Mom</td>
+<td style="text-align: left;"><code>mom</code></td>
 <td style="text-align: right;">EW</td>
 <td style="text-align: right;">5–1 Return</td>
 <td style="text-align: right;">-0.82<br>(-2.34)</td>
@@ -2365,7 +2376,7 @@ Table&nbsp;12.8: Dependent characteristic spreads within reversal quintiles (BEM
 <td style="text-align: right;">1.02<br>(4.32)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Mom</td>
+<td style="text-align: left;"><code>mom</code></td>
 <td style="text-align: right;">EW</td>
 <td style="text-align: right;">5–1 FF α</td>
 <td style="text-align: right;">-0.57<br>(-1.73)</td>
@@ -2376,7 +2387,7 @@ Table&nbsp;12.8: Dependent characteristic spreads within reversal quintiles (BEM
 <td style="text-align: right;">1.26<br>(6.12)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">Mom</td>
+<td style="text-align: left;"><code>mom</code></td>
 <td style="text-align: right;">VW</td>
 <td style="text-align: right;">5–1 Return</td>
 <td style="text-align: right;">0.35<br>(0.82)</td>
@@ -2387,7 +2398,7 @@ Table&nbsp;12.8: Dependent characteristic spreads within reversal quintiles (BEM
 <td style="text-align: right;">1.02<br>(3.73)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Mom</td>
+<td style="text-align: left;"><code>mom</code></td>
 <td style="text-align: right;">VW</td>
 <td style="text-align: right;">5–1 FF α</td>
 <td style="text-align: right;">0.71<br>(2.12)</td>
@@ -2483,7 +2494,7 @@ Table&nbsp;12.9: Independent characteristic spreads within reversal quintiles (B
 <td style="text-align: right;">-0.15<br>(-0.76)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">MktCap</td>
+<td style="text-align: left;">Market cap</td>
 <td style="text-align: right;">EW</td>
 <td style="text-align: right;">5–1 Return</td>
 <td style="text-align: right;">-2.18<br>(-7.10)</td>
@@ -2494,9 +2505,9 @@ Table&nbsp;12.9: Independent characteristic spreads within reversal quintiles (B
 <td style="text-align: right;">-0.46<br>(-1.93)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">MktCap</td>
+<td style="text-align: left;">Market cap</td>
 <td style="text-align: right;">EW</td>
-<td style="text-align: right;">5–1 FFC α (excl. SMB)</td>
+<td style="text-align: right;">5–1 FFC α (excl. <code>smb</code>)</td>
 <td style="text-align: right;">-2.43<br>(-6.15)</td>
 <td style="text-align: right;">-0.12<br>(-0.46)</td>
 <td style="text-align: right;">-0.50<br>(-1.87)</td>
@@ -2505,7 +2516,7 @@ Table&nbsp;12.9: Independent characteristic spreads within reversal quintiles (B
 <td style="text-align: right;">-0.64<br>(-2.43)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">MktCap</td>
+<td style="text-align: left;">Market cap</td>
 <td style="text-align: right;">VW</td>
 <td style="text-align: right;">5–1 Return</td>
 <td style="text-align: right;">-1.65<br>(-5.36)</td>
@@ -2516,9 +2527,9 @@ Table&nbsp;12.9: Independent characteristic spreads within reversal quintiles (B
 <td style="text-align: right;">-0.26<br>(-1.03)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">MktCap</td>
+<td style="text-align: left;">Market cap</td>
 <td style="text-align: right;">VW</td>
-<td style="text-align: right;">5–1 FFC α (excl. SMB)</td>
+<td style="text-align: right;">5–1 FFC α (excl. <code>smb</code>)</td>
 <td style="text-align: right;">-1.85<br>(-4.78)</td>
 <td style="text-align: right;">0.03<br>(0.09)</td>
 <td style="text-align: right;">-0.41<br>(-1.48)</td>
@@ -2527,7 +2538,7 @@ Table&nbsp;12.9: Independent characteristic spreads within reversal quintiles (B
 <td style="text-align: right;">-0.38<br>(-1.45)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">BM</td>
+<td style="text-align: left;"><code>bm</code></td>
 <td style="text-align: right;">EW</td>
 <td style="text-align: right;">5–1 Return</td>
 <td style="text-align: right;">1.36<br>(6.32)</td>
@@ -2538,9 +2549,9 @@ Table&nbsp;12.9: Independent characteristic spreads within reversal quintiles (B
 <td style="text-align: right;">1.08<br>(6.04)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">BM</td>
+<td style="text-align: left;"><code>bm</code></td>
 <td style="text-align: right;">EW</td>
-<td style="text-align: right;">5–1 FFC α (excl. HML)</td>
+<td style="text-align: right;">5–1 FFC α (excl. <code>hml</code>)</td>
 <td style="text-align: right;">1.49<br>(6.72)</td>
 <td style="text-align: right;">1.19<br>(6.84)</td>
 <td style="text-align: right;">1.15<br>(6.64)</td>
@@ -2549,7 +2560,7 @@ Table&nbsp;12.9: Independent characteristic spreads within reversal quintiles (B
 <td style="text-align: right;">1.28<br>(7.50)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">BM</td>
+<td style="text-align: left;"><code>bm</code></td>
 <td style="text-align: right;">VW</td>
 <td style="text-align: right;">5–1 Return</td>
 <td style="text-align: right;">0.83<br>(3.27)</td>
@@ -2560,9 +2571,9 @@ Table&nbsp;12.9: Independent characteristic spreads within reversal quintiles (B
 <td style="text-align: right;">0.59<br>(3.18)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">BM</td>
+<td style="text-align: left;"><code>bm</code></td>
 <td style="text-align: right;">VW</td>
-<td style="text-align: right;">5–1 FFC α (excl. HML)</td>
+<td style="text-align: right;">5–1 FFC α (excl. <code>hml</code>)</td>
 <td style="text-align: right;">0.87<br>(3.29)</td>
 <td style="text-align: right;">0.52<br>(2.40)</td>
 <td style="text-align: right;">0.77<br>(3.39)</td>
@@ -2571,7 +2582,7 @@ Table&nbsp;12.9: Independent characteristic spreads within reversal quintiles (B
 <td style="text-align: right;">0.71<br>(4.01)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">Mom</td>
+<td style="text-align: left;"><code>mom</code></td>
 <td style="text-align: right;">EW</td>
 <td style="text-align: right;">5–1 Return</td>
 <td style="text-align: right;">-0.53<br>(-1.70)</td>
@@ -2582,7 +2593,7 @@ Table&nbsp;12.9: Independent characteristic spreads within reversal quintiles (B
 <td style="text-align: right;">1.13<br>(4.47)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Mom</td>
+<td style="text-align: left;"><code>mom</code></td>
 <td style="text-align: right;">EW</td>
 <td style="text-align: right;">5–1 FF α</td>
 <td style="text-align: right;">-0.28<br>(-1.02)</td>
@@ -2593,7 +2604,7 @@ Table&nbsp;12.9: Independent characteristic spreads within reversal quintiles (B
 <td style="text-align: right;">1.38<br>(6.33)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">Mom</td>
+<td style="text-align: left;"><code>mom</code></td>
 <td style="text-align: right;">VW</td>
 <td style="text-align: right;">5–1 Return</td>
 <td style="text-align: right;">0.45<br>(1.20)</td>
@@ -2604,7 +2615,7 @@ Table&nbsp;12.9: Independent characteristic spreads within reversal quintiles (B
 <td style="text-align: right;">1.05<br>(3.67)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Mom</td>
+<td style="text-align: left;"><code>mom</code></td>
 <td style="text-align: right;">VW</td>
 <td style="text-align: right;">5–1 FF α</td>
 <td style="text-align: right;">0.77<br>(2.65)</td>
@@ -2630,7 +2641,7 @@ Table&nbsp;12.9: Independent characteristic spreads within reversal quintiles (B
 <div class="cell" data-execution_count="15">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> eap_pl <span class="im">import</span> fama_macbeth_table</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>terms <span class="op">=</span> {<span class="st">"rev"</span>: <span class="st">"Rev"</span>, <span class="op">**</span>controls}</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>terms <span class="op">=</span> {<span class="st">"rev"</span>: <span class="st">"`rev`"</span>, <span class="op">**</span>controls}</span>
 <span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>specifications <span class="op">=</span> [[<span class="st">"rev"</span>], <span class="op">*</span>[[<span class="st">"rev"</span>, term] <span class="cf">for</span> term <span class="kw">in</span> controls], <span class="bu">list</span>(terms)]</span>
 <span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>show_table(fama_macbeth_table(panel, specifications, terms, digits<span class="op">=</span><span class="dv">3</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div id="tbl-bem12-fama-macbeth" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="15">
@@ -2663,7 +2674,7 @@ Table&nbsp;12.10: Reversal and next-month excess returns with controls (BEM Tabl
 </thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: left;">Rev</td>
+<td style="text-align: left;"><code>rev</code></td>
 <td style="text-align: right;">-0.048<br>(-10.05)</td>
 <td style="text-align: right;">-0.053<br>(-10.80)</td>
 <td style="text-align: right;">-0.051<br>(-10.71)</td>
@@ -2690,7 +2701,7 @@ Table&nbsp;12.10: Reversal and next-month excess returns with controls (BEM Tabl
 <td style="text-align: right;">-0.125<br>(-2.29)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">BM</td>
+<td style="text-align: left;"><code>bm</code></td>
 <td style="text-align: right;"></td>
 <td style="text-align: right;"></td>
 <td style="text-align: right;"></td>
@@ -2699,7 +2710,7 @@ Table&nbsp;12.10: Reversal and next-month excess returns with controls (BEM Tabl
 <td style="text-align: right;">0.233<br>(3.62)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">Mom</td>
+<td style="text-align: left;"><code>mom</code></td>
 <td style="text-align: right;"></td>
 <td style="text-align: right;"></td>
 <td style="text-align: right;"></td>
@@ -2741,7 +2752,7 @@ Table&nbsp;12.10: Reversal and next-month excess returns with controls (BEM Tabl
 </figure>
 </div>
 </div>
-<p>The reversal slope is −0.048 without controls and −0.062 with all four controls, compared with −0.048 and −0.063 in BEM.</p>
+<p>The reversal slope is −0.048 without controls and −0.062 with all four controls.</p>
 <div class="cell" data-execution_count="16">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>lag_terms <span class="op">=</span> <span class="bu">list</span>(lag_labels)</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>specifications <span class="op">=</span> [[term] <span class="cf">for</span> term <span class="kw">in</span> lag_terms] <span class="op">+</span> [lag_terms]</span>
@@ -2790,7 +2801,7 @@ Table&nbsp;12.11: Fama–MacBeth regressions with individual past monthly return
 </thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: left;">Rev</td>
+<td style="text-align: left;"><code>rev</code></td>
 <td style="text-align: right;">-0.048<br>(-10.05)</td>
 <td style="text-align: right;"></td>
 <td style="text-align: right;"></td>
@@ -3068,7 +3079,7 @@ Table&nbsp;12.12: Fama–MacBeth regressions with past monthly returns and contr
 </thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: left;">Rev</td>
+<td style="text-align: left;"><code>rev</code></td>
 <td style="text-align: right;">-0.060<br>(-12.14)</td>
 <td style="text-align: right;">-0.061<br>(-12.47)</td>
 <td style="text-align: right;">-0.062<br>(-12.32)</td>
@@ -3180,7 +3191,7 @@ Table&nbsp;12.12: Fama–MacBeth regressions with past monthly returns and contr
 <td style="text-align: right;">-0.130<br>(-2.72)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">BM</td>
+<td style="text-align: left;"><code>bm</code></td>
 <td style="text-align: right;"></td>
 <td style="text-align: right;"></td>
 <td style="text-align: right;">0.363<br>(5.56)</td>
@@ -3188,7 +3199,7 @@ Table&nbsp;12.12: Fama–MacBeth regressions with past monthly returns and contr
 <td style="text-align: right;">0.224<br>(3.52)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Mom</td>
+<td style="text-align: left;"><code>mom</code></td>
 <td style="text-align: right;"></td>
 <td style="text-align: right;"></td>
 <td style="text-align: right;"></td>
@@ -3226,7 +3237,7 @@ Table&nbsp;12.12: Fama–MacBeth regressions with past monthly returns and contr
 </figure>
 </div>
 </div>
-<p>In the joint regression with all twelve returns and no other controls, the return from exactly one year before the outcome month has a coefficient of 0.019, matching BEM. With all controls included, the coefficients on months <span class="math inline">\(t-2\)</span> through <span class="math inline">\(t-11\)</span> are statistically indistinguishable from zero at the 5% level, and the coefficients on Rev and <span class="math inline">\(R_{t-1}\)</span> remain negative.</p>
+<p>In the joint regression with all twelve returns and no other controls, the return from exactly one year before the outcome month has a coefficient of 0.019. With all controls included, the coefficients on months <span class="math inline">\(t-2\)</span> through <span class="math inline">\(t-11\)</span> are statistically indistinguishable from zero at the 5% level, and the coefficients on <code>rev</code> and <span class="math inline">\(R_{t-1}\)</span> remain negative.</p>
 </section>
 <section id="the-short-term-reversal-factor" class="level2" data-number="12.5">
 <h2 data-number="12.5" class="anchored" data-anchor-id="the-short-term-reversal-factor"><span class="header-section-number">12.5</span> The Short-Term Reversal Factor</h2>
@@ -3260,7 +3271,7 @@ L_t=\sum_{m\le t}\log(1+\mathrm{STR}_m).
 <span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>    pl.date_range(pl.date(<span class="dv">1926</span>, <span class="dv">7</span>, <span class="dv">1</span>), pl.date(<span class="dv">2012</span>, <span class="dv">12</span>, <span class="dv">1</span>), <span class="st">"1mo"</span>, eager<span class="op">=</span><span class="va">True</span>)</span>
 <span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> reversal_factor.select(pl.col(<span class="st">"str"</span>).is_finite().fill_null(<span class="va">False</span>).<span class="bu">all</span>()).item()</span>
-<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>plot_cumulative_returns(reversal_factor, y_label<span class="op">=</span><span class="st">"Cumulative STR return"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>plot_cumulative_returns(reversal_factor, y_label<span class="op">=</span><span class="st">"Cumulative reversal factor return"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="18">
 <div id="fig-bem12-str" class="quarto-float quarto-figure quarto-figure-center anchored" alt="Two time-series panels from July 1926 to December 2012. Compounded returns rise most steeply late in the sample, while cumulative log returns rise more steadily.">
 <figure class="quarto-float quarto-float-fig figure">
@@ -3274,9 +3285,9 @@ Figure&nbsp;12.1: Compounded and cumulative log returns of the short-term revers
 </div>
 </div>
 </div>
-<p>The archived series compounds to 121,099% and reaches a cumulative log return of 710.00%. BEM report 121,104% and 710%, respectively.</p>
+<p>The archived series compounds to 121,099% and reaches a cumulative log return of 710.00%.</p>
 <p>To estimate the four-factor alpha, use January 1927 through December 2012 because the momentum factor starts in January 1927. The regression outcome is in percentage points per month.</p>
-<div id="8c015ca0" class="cell" data-execution_count="19">
+<div id="0b3f2eca" class="cell" data-execution_count="19">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>str_sample <span class="op">=</span> (</span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>    reversal_factor.select(month<span class="op">=</span><span class="st">"date"</span>, str_pct<span class="op">=</span><span class="dv">100</span> <span class="op">*</span> pl.col(<span class="st">"str"</span>))</span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>    .join(factors.drop_nulls(<span class="st">"mom_factor"</span>), on<span class="op">=</span><span class="st">"month"</span>, validate<span class="op">=</span><span class="st">"1:1"</span>)</span>
@@ -3284,7 +3295,7 @@ Figure&nbsp;12.1: Compounded and cumulative log returns of the short-term revers
 <span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>str_fit <span class="op">=</span> hac(<span class="st">"str_pct ~ mkt + smb + hml + mom_factor"</span>, str_sample)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<p>The four-factor alpha is 0.78% per month (<span class="math inline">\(t\)</span> = 6.10), compared with 0.77% (<span class="math inline">\(t\)</span> = 6.37) in BEM.</p>
+<p>The four-factor alpha is 0.78% per month (<span class="math inline">\(t\)</span> = 6.10).</p>
 
 
 <div id="refs" class="references csl-bib-body hanging-indent" role="list" style="display: none">
@@ -3700,7 +3711,7 @@ Newey, Whitney K., and Kenneth D. West. 1987. <span>“A Simple, Positive Semi-D
   </script>
 <nav class="page-navigation">
   <div class="nav-page nav-page-previous">
-      <a href="./momentum-replication.html" class="pagination-link" aria-label="The Momentum Effect">
+      <a href="./momentum.html" class="pagination-link" aria-label="The Momentum Effect">
         <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">The Momentum Effect</span></span>
       </a>          
   </div>

@@ -281,7 +281,7 @@ window.Quarto = {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./momentum-replication.html" class="sidebar-item-text sidebar-link">
+  <a href="./momentum.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">The Momentum Effect</span></span></a>
   </div>
 </li>
@@ -295,6 +295,18 @@ window.Quarto = {
   <div class="sidebar-item-container"> 
   <a href="./liquidity-replication.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">Liquidity</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./skewness-replication.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">14</span>&nbsp; <span class="chapter-title">Skewness</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./volatility-replication.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">15</span>&nbsp; <span class="chapter-title">Idiosyncratic Volatility</span></span></a>
   </div>
 </li>
       </ul>
@@ -357,7 +369,7 @@ window.Quarto = {
 <section id="sec-data-vintages" class="level3" data-number="1.1.1">
 <h3 data-number="1.1.1" class="anchored" data-anchor-id="sec-data-vintages"><span class="header-section-number">1.1.1</span> WRDS tables</h3>
 <p><span id="data-vintages"></span>The table lists the inputs used in this build. The source update date comes from the metadata embedded in each Parquet file, read with <a href="https://iangow.github.io/db2pq/">db2pq</a>. It is not the sample end date or the date the file was downloaded.</p>
-<div id="a9bb8615" class="cell" data-execution_count="1">
+<div id="71cffa80" class="cell" data-execution_count="1">
 <div class="cell-output cell-output-display cell-output-markdown">
 <table class="caption-top table table-sm table-striped small">
 <colgroup>
@@ -460,7 +472,7 @@ window.Quarto = {
 <p>The annual methods chapters construct December betas, size, and book-to-market from the local source data when needed. See Chapters <a href="beta-replication.html" class="quarto-xref"><span>8</span></a>, <a href="size-replication.html" class="quarto-xref"><span>9</span></a>, and <a href="value-replication.html" class="quarto-xref"><span>10</span></a> for how each measure is constructed. The monthly Size and Value analyses read the 12-month daily beta from <code>eap.betas</code>, which the Beta chapter can export during the full render. See the <a href="https://github.com/iangow/asset_pricing_polars#render">render instructions</a>.</p>
 <p>The size builder and the CRSP and Value chapters use the <a href="https://fred.stlouisfed.org/series/CPIAUCNS">BLS all-items CPI for urban consumers, not seasonally adjusted</a>, from FRED, to express market capitalizations in December 2012 dollars. This file does not come from WRDS.</p>
 <p><a href="liquidity-replication.html" class="quarto-xref"><span>Chapter 13</span></a> uses the December 2013 Pástor–Stambaugh liquidity release bundled with <code>eap_pl</code>.</p>
-<p>For comparisons across Fama–French vintages, see <a href="eap_pl/reference/get_ff_factors.html">eap_pl.get_ff_factors()</a>. The loader checks the archive’s checksum and keeps a local copy for later renders.</p>
+<p>For comparisons across Fama–French vintages, see <a href="eap_pl/reference/get_ff_factors.html">eap_pl.get_ff_factors()</a>. The loader checks the archive’s checksum and keeps a local copy for later renders. <a href="skewness-replication.html" class="quarto-xref"><span>Chapter 14</span></a> and <a href="volatility-replication.html" class="quarto-xref"><span>Chapter 15</span></a> use the June 2014 archive. The four-factor volatility model also uses its daily momentum factor.</p>
 </section>
 </section>
 <section id="winsorization-and-truncation" class="level2" data-number="1.2">
@@ -475,7 +487,7 @@ window.Quarto = {
 <p>In Section 1.3, <span class="citation" data-cites="bali2016">Bali et al. (<a href="references.html#ref-bali2016" role="doc-biblioref">2016</a>)</span> explain why inference on a time-series mean can be sensitive to changing variance and correlation across periods. Regressing a series on a constant gives its sample mean as the intercept. The adjustment of <span class="citation" data-cites="neweywest1987">Newey and West (<a href="references.html#ref-neweywest1987" role="doc-biblioref">1987</a>)</span> estimates the standard error using covariances across periods, with less weight on more distant lags. Depending on the pattern of autocorrelation, the adjustment can increase or decrease the standard error. In <a href="portfolio-analysis.html" class="quarto-xref"><span>Chapter 5</span></a>, BEM use the adjustment for average portfolio returns and spreads, and in time-series factor regressions for portfolio alphas.</p>
 <p>For Fama–MacBeth regressions, BEM apply the adjustment to the sequence of estimated coefficients, with one estimate per cross-section. BEM motivate six lags with a rule of thumb for a series of about 600 monthly observations and also use six lags in their annual example, which has only 24 coefficient estimates. <span class="citation" data-cites="gow2010">Gow et al. (<a href="references.html#ref-gow2010" role="doc-biblioref">2010</a>)</span> call this procedure FM-NW and find that its standard errors can remain too small when the underlying panel has both cross-sectional and time-series dependence. A short coefficient series provides limited information about persistence in the underlying data <span class="citation" data-cites="gow2010">(<a href="references.html#ref-gow2010" role="doc-biblioref">Gow et al. 2010, 488</a>)</span>.</p>
 <p>The annual, beta, size, and book-to-market regressions replicated here use realized excess returns over nonoverlapping holding periods. This resembles the return-based application in <span class="citation" data-cites="gow2010">Gow et al. (<a href="references.html#ref-gow2010" role="doc-biblioref">2010, sec. V</a>)</span>, where shared shocks across stocks are the main concern. For slope inference, the relevant serial dependence involves the joint behavior of regressors and residuals. Size is highly persistent in our replications. Across specifications, the pooled lag-one correlations between residuals for the same stock range from about <span class="math inline">\(-0.05\)</span> to <span class="math inline">\(-0.01\)</span>.</p>
-<p>For every slope in the monthly replications, the ordinary and six-lag tests agree at the 5% level. In the annual example, the ordinary Fama–MacBeth <span class="math inline">\(t\)</span>-statistic calculated from the 24 size slopes in BEM Table 6.1, Panel D, is about <span class="math inline">\(-1.82\)</span>. For the same specification, BEM report a six-lag adjusted <span class="math inline">\(t\)</span>-statistic of <span class="math inline">\(-4.37\)</span> in Table 6.2, which crosses the 5% significance threshold.</p>
+<p>For every slope in the monthly replications, the ordinary and six-lag tests agree at the 5% level. <a href="annual-regressions.html#sec-annual-fm-inference" class="quarto-xref"><span>Section 6.2</span></a> shows how the adjustment changes inference on size in the annual example.</p>
 <p>For more on Newey–West, Fama–MacBeth, and clustering, see Section 5.6 of <em>Empirical Research in Accounting</em> in the <a href="https://iangow.github.io/era_statpai/stat-inf.html#sec-dependence">StatsPAI edition</a> or the <a href="https://iangow.github.io/era_pl_book/stat-inf.html#sec-dependence">Polars edition</a>.</p>
 </section>
 <section id="summary" class="level2" data-number="1.4">

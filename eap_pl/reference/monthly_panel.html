@@ -389,16 +389,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <section id="eap_pl.monthly_panel" class="level1">
 <h1>monthly_panel</h1>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>eap_pl.monthly_panel(sizes, first, last)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>eap_pl.monthly_panel(sizes, first, last, <span class="op">*</span>, monthly_factors<span class="op">=</span><span class="va">None</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Join formation-month characteristics to next-month excess returns.</p>
-<p>Reads <code>eap/betas</code>, <code>crsp/msf</code>, <code>crsp/msedelist</code>, and <code>ff/factors_monthly</code> from the local Parquet repository. On a delisting, the recorded delisting return replaces the usual stock return. Missing delisting returns use −30% for poor performance and −100% otherwise.</p>
+<p>Reads <code>eap/betas</code>, <code>crsp/msf</code>, and <code>crsp/msedelist</code> from the local Parquet repository. By default, it also reads <code>ff/factors_monthly</code>. On a delisting, the recorded delisting return replaces the usual stock return. Missing delisting returns use −30% for poor performance and −100% otherwise.</p>
 <section id="parameters" class="level2 doc-section doc-section-parameters">
 <h2 class="doc-section doc-section-parameters anchored" data-anchor-id="parameters">Parameters</h2>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 5%">
-<col style="width: 27%">
-<col style="width: 57%">
+<col style="width: 11%">
+<col style="width: 26%">
+<col style="width: 54%">
 <col style="width: 8%">
 </colgroup>
 <thead>
@@ -427,6 +427,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>polars.Expr</td>
 <td>Last formation month, inclusive.</td>
 <td><em>required</em></td>
+</tr>
+<tr class="even">
+<td>monthly_factors</td>
+<td>polars.DataFrame or polars.LazyFrame</td>
+<td>Monthly factor table with date, mktrf, and rf in decimal units.</td>
+<td><code>None</code></td>
 </tr>
 </tbody>
 </table>

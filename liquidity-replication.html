@@ -87,7 +87,7 @@ div.csl-indent {
 <script src="site_libs/quarto-search/fuse.min.js"></script>
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
-<link href="./references.html" rel="next">
+<link href="./skewness-replication.html" rel="next">
 <link href="./reversal-replication.html" rel="prev">
 <script src="site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
@@ -281,7 +281,7 @@ window.Quarto = {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./momentum-replication.html" class="sidebar-item-text sidebar-link">
+  <a href="./momentum.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">The Momentum Effect</span></span></a>
   </div>
 </li>
@@ -295,6 +295,18 @@ window.Quarto = {
   <div class="sidebar-item-container"> 
   <a href="./liquidity-replication.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">Liquidity</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./skewness-replication.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">14</span>&nbsp; <span class="chapter-title">Skewness</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./volatility-replication.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">15</span>&nbsp; <span class="chapter-title">Idiosyncratic Volatility</span></span></a>
   </div>
 </li>
       </ul>
@@ -359,7 +371,7 @@ window.Quarto = {
 \frac{|R_{i,d}|}{P_{i,d}Q_{i,d}/10^6}.
 \tag{13.1}\]</span></span></p>
 <p><span class="math inline">\(R_{i,d}\)</span> is the decimal CRSP return, <span class="math inline">\(P_{i,d}\)</span> is the closing trade price, and <span class="math inline">\(Q_{i,d}\)</span> is the number of shares traded. We require a finite return and strictly positive price and volume. A negative CRSP price denotes a bid–ask average, which BEM exclude for this measure. The minimum counts for the one-, three-, six-, and twelve-month windows are 15, 50, 100, and 200 usable days. We also use <span class="math inline">\(\log(1+\operatorname{Illiq}_{i,t}^{(k)})\)</span>, which reduces the influence of large values without changing their ranks.</p>
-<div id="2aeadaca" class="cell" data-execution_count="1">
+<div id="d2886143" class="cell" data-execution_count="1">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> polars <span class="im">as</span> pl</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> era_pl <span class="im">import</span> load_parquet</span>
@@ -369,8 +381,8 @@ window.Quarto = {
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>first <span class="op">=</span> pl.date(<span class="dv">1963</span>, <span class="dv">6</span>, <span class="dv">1</span>)</span>
 <span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>last <span class="op">=</span> pl.date(<span class="dv">2012</span>, <span class="dv">11</span>, <span class="dv">1</span>)</span>
 <span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>minimum_days <span class="op">=</span> {<span class="dv">1</span>: <span class="dv">15</span>, <span class="dv">3</span>: <span class="dv">50</span>, <span class="dv">6</span>: <span class="dv">100</span>, <span class="dv">12</span>: <span class="dv">200</span>}</span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>raw <span class="op">=</span> {<span class="ss">f"illiq</span><span class="sc">{</span>k<span class="sc">}</span><span class="ss">"</span>: <span class="ss">f"Illiq </span><span class="sc">{</span>k<span class="sc">}</span><span class="ss">M"</span> <span class="cf">for</span> k <span class="kw">in</span> minimum_days}</span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>logged <span class="op">=</span> {<span class="ss">f"log_</span><span class="sc">{</span>term<span class="sc">}</span><span class="ss">"</span>: <span class="ss">f"ln </span><span class="sc">{</span>label<span class="sc">}</span><span class="ss">"</span> <span class="cf">for</span> term, label <span class="kw">in</span> raw.items()}</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>raw <span class="op">=</span> {<span class="ss">f"illiq</span><span class="sc">{</span>k<span class="sc">}</span><span class="ss">"</span>: <span class="ss">f"`illiq</span><span class="sc">{</span>k<span class="sc">}</span><span class="ss">`"</span> <span class="cf">for</span> k <span class="kw">in</span> minimum_days}</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>logged <span class="op">=</span> {<span class="ss">f"log_</span><span class="sc">{</span>term<span class="sc">}</span><span class="ss">"</span>: <span class="ss">f"`log_</span><span class="sc">{</span>term<span class="sc">}</span><span class="ss">`"</span> <span class="cf">for</span> term <span class="kw">in</span> raw}</span>
 <span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>measures <span class="op">=</span> raw <span class="op">|</span> logged</span>
 <span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>sizes <span class="op">=</span> build_sizes()</span>
@@ -403,7 +415,7 @@ window.Quarto = {
 <span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>Pool the daily ratios and counts over each window so that each usable day receives equal weight. The rolling windows use elapsed calendar months. Months without a usable day contribute zero to the sum and count.</p>
-<div id="7b198980" class="cell" data-execution_count="2">
+<div id="b717f6aa" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>daily <span class="op">=</span> load_parquet(<span class="st">"dsf"</span>, <span class="st">"crsp"</span>).<span class="bu">filter</span>(</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    pl.col(<span class="st">"date"</span>).is_between(first.dt.offset_by(<span class="st">"-11mo"</span>), last.dt.month_end()),</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    pl.col(<span class="st">"ret"</span>).is_finite(),</span>
@@ -434,7 +446,7 @@ window.Quarto = {
 <span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a>                .then(pl.col(<span class="st">"total"</span>) <span class="op">/</span> pl.col(<span class="st">"days"</span>)).alias(<span class="ss">f"illiq</span><span class="sc">{</span>k<span class="sc">}</span><span class="ss">"</span>))</span>
 <span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a>    )</span>
 <span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a>    panel <span class="op">=</span> panel.join(window, on<span class="op">=</span>keys, how<span class="op">=</span><span class="st">"left"</span>, validate<span class="op">=</span><span class="st">"1:1"</span>)</span>
-<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a>panel <span class="op">=</span> panel.with_columns(pl.col(term).log1p().alias(<span class="ss">f"log_</span><span class="sc">{</span>term<span class="sc">}</span><span class="ss">"</span>) <span class="cf">for</span> term <span class="kw">in</span> raw)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a>panel <span class="op">=</span> panel.with_columns(pl.col(<span class="op">*</span>raw).log1p().name.prefix(<span class="st">"log_"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="summary-statistics-correlations-and-persistence" class="level2" data-number="13.2">
@@ -496,7 +508,7 @@ Table&nbsp;13.1: Cross-sectional summary statistics for the illiquidity measures
 </thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: left;">Illiq 1M</td>
+<td style="text-align: left;"><code>illiq1</code></td>
 <td style="text-align: right;">3.79</td>
 <td style="text-align: right;">27.74</td>
 <td style="text-align: right;">22.16</td>
@@ -511,7 +523,7 @@ Table&nbsp;13.1: Cross-sectional summary statistics for the illiquidity measures
 <td style="text-align: right;">3603</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Illiq 3M</td>
+<td style="text-align: left;"><code>illiq3</code></td>
 <td style="text-align: right;">2.88</td>
 <td style="text-align: right;">18.03</td>
 <td style="text-align: right;">20.10</td>
@@ -526,7 +538,7 @@ Table&nbsp;13.1: Cross-sectional summary statistics for the illiquidity measures
 <td style="text-align: right;">3436</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">Illiq 6M</td>
+<td style="text-align: left;"><code>illiq6</code></td>
 <td style="text-align: right;">2.76</td>
 <td style="text-align: right;">15.75</td>
 <td style="text-align: right;">18.35</td>
@@ -541,7 +553,7 @@ Table&nbsp;13.1: Cross-sectional summary statistics for the illiquidity measures
 <td style="text-align: right;">3369</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Illiq 12M</td>
+<td style="text-align: left;"><code>illiq12</code></td>
 <td style="text-align: right;">2.70</td>
 <td style="text-align: right;">14.01</td>
 <td style="text-align: right;">16.52</td>
@@ -556,7 +568,7 @@ Table&nbsp;13.1: Cross-sectional summary statistics for the illiquidity measures
 <td style="text-align: right;">3246</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">ln Illiq 1M</td>
+<td style="text-align: left;"><code>log_illiq1</code></td>
 <td style="text-align: right;">0.57</td>
 <td style="text-align: right;">0.84</td>
 <td style="text-align: right;">2.50</td>
@@ -571,7 +583,7 @@ Table&nbsp;13.1: Cross-sectional summary statistics for the illiquidity measures
 <td style="text-align: right;">3603</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">ln Illiq 3M</td>
+<td style="text-align: left;"><code>log_illiq3</code></td>
 <td style="text-align: right;">0.53</td>
 <td style="text-align: right;">0.79</td>
 <td style="text-align: right;">2.51</td>
@@ -586,7 +598,7 @@ Table&nbsp;13.1: Cross-sectional summary statistics for the illiquidity measures
 <td style="text-align: right;">3436</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">ln Illiq 6M</td>
+<td style="text-align: left;"><code>log_illiq6</code></td>
 <td style="text-align: right;">0.54</td>
 <td style="text-align: right;">0.79</td>
 <td style="text-align: right;">2.43</td>
@@ -601,7 +613,7 @@ Table&nbsp;13.1: Cross-sectional summary statistics for the illiquidity measures
 <td style="text-align: right;">3369</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">ln Illiq 12M</td>
+<td style="text-align: left;"><code>log_illiq12</code></td>
 <td style="text-align: right;">0.55</td>
 <td style="text-align: right;">0.79</td>
 <td style="text-align: right;">2.35</td>
@@ -622,12 +634,11 @@ Table&nbsp;13.1: Cross-sectional summary statistics for the illiquidity measures
 </figure>
 </div>
 </div>
-<p>The average monthly mean and median of one-month illiquidity are 3.79 and 0.26, matching BEM to two decimal places. The average monthly count is 3,603 here and 3,604 in BEM.</p>
 <p>For Pearson correlations we winsorize each variable at the 0.5th and 99.5th percentiles of the paired monthly sample. Spearman correlations use the original ranks.</p>
 <div class="cell" data-execution_count="5">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> eap_pl <span class="im">import</span> correlation_matrix, period_correlations</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>controls <span class="op">=</span> {<span class="st">"beta"</span>: <span class="st">"Beta"</span>, <span class="st">"log_cap"</span>: <span class="st">"Size"</span>, <span class="st">"bm"</span>: <span class="st">"BM"</span>, <span class="st">"mom"</span>: <span class="st">"Mom"</span>, <span class="st">"rev"</span>: <span class="st">"Rev"</span>}</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>controls <span class="op">=</span> {<span class="st">"beta"</span>: <span class="st">"Beta"</span>, <span class="st">"log_cap"</span>: <span class="st">"Size"</span>, <span class="st">"bm"</span>: <span class="st">"`bm`"</span>, <span class="st">"mom"</span>: <span class="st">"`mom`"</span>, <span class="st">"rev"</span>: <span class="st">"`rev`"</span>}</span>
 <span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>variables <span class="op">=</span> measures <span class="op">|</span> controls</span>
 <span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>correlations <span class="op">=</span> period_correlations(panel, <span class="bu">list</span>(variables), <span class="st">"month"</span>)</span>
 <span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>show_table(correlation_matrix(correlations.select(pl.exclude(<span class="st">"month"</span>).mean()).row(<span class="dv">0</span>, named<span class="op">=</span><span class="va">True</span>), variables))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -658,24 +669,24 @@ Table&nbsp;13.2: Average monthly Pearson correlations below the diagonal and Spe
 <thead>
 <tr class="header">
 <th style="text-align: left;">Measure</th>
-<th style="text-align: right;">Illiq 1M</th>
-<th style="text-align: right;">Illiq 3M</th>
-<th style="text-align: right;">Illiq 6M</th>
-<th style="text-align: right;">Illiq 12M</th>
-<th style="text-align: right;">ln Illiq 1M</th>
-<th style="text-align: right;">ln Illiq 3M</th>
-<th style="text-align: right;">ln Illiq 6M</th>
-<th style="text-align: right;">ln Illiq 12M</th>
+<th style="text-align: right;"><code>illiq1</code></th>
+<th style="text-align: right;"><code>illiq3</code></th>
+<th style="text-align: right;"><code>illiq6</code></th>
+<th style="text-align: right;"><code>illiq12</code></th>
+<th style="text-align: right;"><code>log_illiq1</code></th>
+<th style="text-align: right;"><code>log_illiq3</code></th>
+<th style="text-align: right;"><code>log_illiq6</code></th>
+<th style="text-align: right;"><code>log_illiq12</code></th>
 <th style="text-align: right;">Beta</th>
 <th style="text-align: right;">Size</th>
-<th style="text-align: right;">BM</th>
-<th style="text-align: right;">Mom</th>
-<th style="text-align: right;">Rev</th>
+<th style="text-align: right;"><code>bm</code></th>
+<th style="text-align: right;"><code>mom</code></th>
+<th style="text-align: right;"><code>rev</code></th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: left;">Illiq 1M</td>
+<td style="text-align: left;"><code>illiq1</code></td>
 <td style="text-align: right;"></td>
 <td style="text-align: right;">0.98</td>
 <td style="text-align: right;">0.97</td>
@@ -691,7 +702,7 @@ Table&nbsp;13.2: Average monthly Pearson correlations below the diagonal and Spe
 <td style="text-align: right;">-0.08</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Illiq 3M</td>
+<td style="text-align: left;"><code>illiq3</code></td>
 <td style="text-align: right;">0.91</td>
 <td style="text-align: right;"></td>
 <td style="text-align: right;">0.99</td>
@@ -707,7 +718,7 @@ Table&nbsp;13.2: Average monthly Pearson correlations below the diagonal and Spe
 <td style="text-align: right;">-0.05</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">Illiq 6M</td>
+<td style="text-align: left;"><code>illiq6</code></td>
 <td style="text-align: right;">0.87</td>
 <td style="text-align: right;">0.95</td>
 <td style="text-align: right;"></td>
@@ -723,7 +734,7 @@ Table&nbsp;13.2: Average monthly Pearson correlations below the diagonal and Spe
 <td style="text-align: right;">-0.05</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Illiq 12M</td>
+<td style="text-align: left;"><code>illiq12</code></td>
 <td style="text-align: right;">0.81</td>
 <td style="text-align: right;">0.89</td>
 <td style="text-align: right;">0.95</td>
@@ -739,7 +750,7 @@ Table&nbsp;13.2: Average monthly Pearson correlations below the diagonal and Spe
 <td style="text-align: right;">-0.04</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">ln Illiq 1M</td>
+<td style="text-align: left;"><code>log_illiq1</code></td>
 <td style="text-align: right;">0.81</td>
 <td style="text-align: right;">0.79</td>
 <td style="text-align: right;">0.78</td>
@@ -755,7 +766,7 @@ Table&nbsp;13.2: Average monthly Pearson correlations below the diagonal and Spe
 <td style="text-align: right;">-0.08</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">ln Illiq 3M</td>
+<td style="text-align: left;"><code>log_illiq3</code></td>
 <td style="text-align: right;">0.78</td>
 <td style="text-align: right;">0.83</td>
 <td style="text-align: right;">0.82</td>
@@ -771,7 +782,7 @@ Table&nbsp;13.2: Average monthly Pearson correlations below the diagonal and Spe
 <td style="text-align: right;">-0.05</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">ln Illiq 6M</td>
+<td style="text-align: left;"><code>log_illiq6</code></td>
 <td style="text-align: right;">0.75</td>
 <td style="text-align: right;">0.80</td>
 <td style="text-align: right;">0.83</td>
@@ -787,7 +798,7 @@ Table&nbsp;13.2: Average monthly Pearson correlations below the diagonal and Spe
 <td style="text-align: right;">-0.05</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">ln Illiq 12M</td>
+<td style="text-align: left;"><code>log_illiq12</code></td>
 <td style="text-align: right;">0.71</td>
 <td style="text-align: right;">0.77</td>
 <td style="text-align: right;">0.80</td>
@@ -835,7 +846,7 @@ Table&nbsp;13.2: Average monthly Pearson correlations below the diagonal and Spe
 <td style="text-align: right;">0.11</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">BM</td>
+<td style="text-align: left;"><code>bm</code></td>
 <td style="text-align: right;">0.18</td>
 <td style="text-align: right;">0.18</td>
 <td style="text-align: right;">0.20</td>
@@ -851,7 +862,7 @@ Table&nbsp;13.2: Average monthly Pearson correlations below the diagonal and Spe
 <td style="text-align: right;">0.03</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Mom</td>
+<td style="text-align: left;"><code>mom</code></td>
 <td style="text-align: right;">-0.16</td>
 <td style="text-align: right;">-0.16</td>
 <td style="text-align: right;">-0.14</td>
@@ -867,7 +878,7 @@ Table&nbsp;13.2: Average monthly Pearson correlations below the diagonal and Spe
 <td style="text-align: right;">0.04</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">Rev</td>
+<td style="text-align: left;"><code>rev</code></td>
 <td style="text-align: right;">-0.04</td>
 <td style="text-align: right;">-0.01</td>
 <td style="text-align: right;">-0.01</td>
@@ -921,14 +932,14 @@ Table&nbsp;13.3: Average monthly cross-sectional illiquidity correlations at non
 <thead>
 <tr class="header">
 <th style="text-align: left;">Lag (months)</th>
-<th style="text-align: right;">Illiq 1M</th>
-<th style="text-align: right;">Illiq 3M</th>
-<th style="text-align: right;">Illiq 6M</th>
-<th style="text-align: right;">Illiq 12M</th>
-<th style="text-align: right;">ln Illiq 1M</th>
-<th style="text-align: right;">ln Illiq 3M</th>
-<th style="text-align: right;">ln Illiq 6M</th>
-<th style="text-align: right;">ln Illiq 12M</th>
+<th style="text-align: right;"><code>illiq1</code></th>
+<th style="text-align: right;"><code>illiq3</code></th>
+<th style="text-align: right;"><code>illiq6</code></th>
+<th style="text-align: right;"><code>illiq12</code></th>
+<th style="text-align: right;"><code>log_illiq1</code></th>
+<th style="text-align: right;"><code>log_illiq3</code></th>
+<th style="text-align: right;"><code>log_illiq6</code></th>
+<th style="text-align: right;"><code>log_illiq12</code></th>
 </tr>
 </thead>
 <tbody>
@@ -1041,8 +1052,8 @@ Table&nbsp;13.3: Average monthly cross-sectional illiquidity correlations at non
 </section>
 <section id="illiquidity-and-stock-returns" class="level2" data-number="13.3">
 <h2 data-number="13.3" class="anchored" data-anchor-id="illiquidity-and-stock-returns"><span class="header-section-number">13.3</span> Illiquidity and Stock Returns</h2>
-<p>We use next-month excess returns, including the delisting treatment in <a href="crsp-replication.html#sec-bem-returns" class="quarto-xref"><span>Section 7.2</span></a>. One panel of <a href="#tbl-bem13-univariate" class="quarto-xref">Table&nbsp;<span>13.4</span></a> uses unadjusted CRSP returns to show the effect of including delistings. The risk models are the four-factor model in <a href="momentum-replication.html#eq-bem11-ffc" class="quarto-xref">Equation&nbsp;<span>11.2</span></a> and that model augmented by the short-term reversal factor in <a href="reversal-replication.html#eq-bem12-str" class="quarto-xref">Equation&nbsp;<span>12.2</span></a>.</p>
-<div id="3e8abf3e" class="cell" data-execution_count="7">
+<p>We use next-month excess returns, including the delisting treatment in <a href="crsp-replication.html#sec-bem-returns" class="quarto-xref"><span>Section 7.2</span></a>. One panel of <a href="#tbl-bem13-univariate" class="quarto-xref">Table&nbsp;<span>13.4</span></a> uses unadjusted CRSP returns to show the effect of including delistings. The risk models are the four-factor model in <a href="momentum.html#eq-bem11-ffc" class="quarto-xref">Equation&nbsp;<span>11.2</span></a> and that model augmented by the short-term reversal factor in <a href="reversal-replication.html#eq-bem12-str" class="quarto-xref">Equation&nbsp;<span>12.2</span></a>.</p>
+<div id="5e699c6e" class="cell" data-execution_count="7">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> io <span class="im">import</span> StringIO</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path</span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> re</span>
@@ -1091,11 +1102,11 @@ Table&nbsp;13.3: Average monthly cross-sectional illiquidity correlations at non
 <section id="univariate-portfolio-analysis" class="level3" data-number="13.3.1">
 <h3 data-number="13.3.1" class="anchored" data-anchor-id="univariate-portfolio-analysis"><span class="header-section-number">13.3.1</span> Univariate Portfolio Analysis</h3>
 <p>We form monthly deciles using all eligible stocks with each measure, then compute equal- and value-weighted returns. Value weights use formation-month capitalization. The 10–1 portfolio buys the least liquid decile and sells the most liquid decile.</p>
-<div id="4d1b63fb" class="cell" data-execution_count="8">
+<div id="e295cae9" class="cell" data-execution_count="8">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>deciles <span class="op">=</span> [<span class="bu">str</span>(i) <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">1</span>, <span class="dv">11</span>)]</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>characteristics <span class="op">=</span> {<span class="st">"illiq12"</span>: raw[<span class="st">"illiq12"</span>], <span class="st">"log_illiq12"</span>: logged[<span class="st">"log_illiq12"</span>],</span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>                   <span class="st">"beta"</span>: <span class="st">"Beta"</span>, <span class="st">"cap"</span>: <span class="st">"MktCap ($ millions)"</span>,</span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>                   <span class="st">"bm"</span>: <span class="st">"BM"</span>, <span class="st">"mom"</span>: <span class="st">"Mom"</span>, <span class="st">"rev"</span>: <span class="st">"Rev"</span>}</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>                   <span class="st">"beta"</span>: <span class="st">"Beta"</span>, <span class="st">"cap"</span>: <span class="st">"Market cap ($ millions)"</span>,</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>                   <span class="st">"bm"</span>: <span class="st">"`bm`"</span>, <span class="st">"mom"</span>: <span class="st">"`mom`"</span>, <span class="st">"rev"</span>: <span class="st">"`rev`"</span>}</span>
 <span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>decile_results <span class="op">=</span> {}</span>
 <span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> term <span class="kw">in</span> raw:</span>
 <span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>    members <span class="op">=</span> assign_portfolio(panel.<span class="bu">filter</span>(pl.col(term).is_finite()), term, <span class="dv">10</span>, <span class="st">"month"</span>)</span>
@@ -1129,8 +1140,8 @@ Table&nbsp;13.3: Average monthly cross-sectional illiquidity correlations at non
 <span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>groups <span class="op">=</span> monthly.partition_by(<span class="st">"portfolio"</span>, as_dict<span class="op">=</span><span class="va">True</span>)</span>
 <span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>fits <span class="op">=</span> {<span class="bu">str</span>(i): factor_fit(groups[i,], <span class="st">"VW"</span>, ffcstr) <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">1</span>, <span class="dv">11</span>)}</span>
 <span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>fits[<span class="st">"10–1"</span>] <span class="op">=</span> factor_fit(spread(monthly, <span class="dv">10</span>, <span class="dv">1</span>, <span class="st">"portfolio"</span>, <span class="st">"VW"</span>), <span class="st">"VW"</span>, ffcstr)</span>
-<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a>terms <span class="op">=</span> {<span class="st">"Intercept"</span>: <span class="st">"FFCSTR α"</span>, <span class="st">"mkt"</span>: <span class="st">"MKT"</span>, <span class="st">"smb"</span>: <span class="st">"SMB"</span>, <span class="st">"hml"</span>: <span class="st">"HML"</span>,</span>
-<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a>         <span class="st">"mom_factor"</span>: <span class="st">"MOM"</span>, <span class="st">"str_factor"</span>: <span class="st">"STR"</span>}</span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a>terms <span class="op">=</span> {<span class="st">"Intercept"</span>: <span class="st">"FFCSTR α"</span>, <span class="st">"mkt"</span>: <span class="st">"`mkt`"</span>, <span class="st">"smb"</span>: <span class="st">"`smb`"</span>, <span class="st">"hml"</span>: <span class="st">"`hml`"</span>,</span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a>         <span class="st">"mom_factor"</span>: <span class="st">"`mom_factor`"</span>, <span class="st">"str_factor"</span>: <span class="st">"`str_factor`"</span>}</span>
 <span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a>show_table(pl.DataFrame([</span>
 <span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a>    {<span class="st">"Statistic"</span>: label, <span class="op">**</span>{decile: format_fit(fit, term) <span class="cf">for</span> decile, fit <span class="kw">in</span> fits.items()}}</span>
 <span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> term, label <span class="kw">in</span> terms.items()</span>
@@ -1179,7 +1190,7 @@ Table&nbsp;13.4: Characteristics, returns, and alphas of illiquidity deciles (BE
 </thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: left;">Illiq 12M</td>
+<td style="text-align: left;"><code>illiq12</code></td>
 <td style="text-align: right;">0.01</td>
 <td style="text-align: right;">0.02</td>
 <td style="text-align: right;">0.05</td>
@@ -1192,7 +1203,7 @@ Table&nbsp;13.4: Characteristics, returns, and alphas of illiquidity deciles (BE
 <td style="text-align: right;">21.30</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">ln Illiq 12M</td>
+<td style="text-align: left;"><code>log_illiq12</code></td>
 <td style="text-align: right;">0.01</td>
 <td style="text-align: right;">0.02</td>
 <td style="text-align: right;">0.05</td>
@@ -1218,7 +1229,7 @@ Table&nbsp;13.4: Characteristics, returns, and alphas of illiquidity deciles (BE
 <td style="text-align: right;">0.60</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">MktCap ($ millions)</td>
+<td style="text-align: left;">Market cap ($ millions)</td>
 <td style="text-align: right;">10271.07</td>
 <td style="text-align: right;">1454.98</td>
 <td style="text-align: right;">689.79</td>
@@ -1231,7 +1242,7 @@ Table&nbsp;13.4: Characteristics, returns, and alphas of illiquidity deciles (BE
 <td style="text-align: right;">16.58</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">BM</td>
+<td style="text-align: left;"><code>bm</code></td>
 <td style="text-align: right;">0.64</td>
 <td style="text-align: right;">0.70</td>
 <td style="text-align: right;">0.70</td>
@@ -1244,7 +1255,7 @@ Table&nbsp;13.4: Characteristics, returns, and alphas of illiquidity deciles (BE
 <td style="text-align: right;">1.47</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Mom</td>
+<td style="text-align: left;"><code>mom</code></td>
 <td style="text-align: right;">15.80</td>
 <td style="text-align: right;">16.54</td>
 <td style="text-align: right;">17.25</td>
@@ -1257,7 +1268,7 @@ Table&nbsp;13.4: Characteristics, returns, and alphas of illiquidity deciles (BE
 <td style="text-align: right;">7.00</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">Rev</td>
+<td style="text-align: left;"><code>rev</code></td>
 <td style="text-align: right;">0.92</td>
 <td style="text-align: right;">1.05</td>
 <td style="text-align: right;">1.05</td>
@@ -1319,7 +1330,7 @@ Table&nbsp;13.4: Characteristics, returns, and alphas of illiquidity deciles (BE
 </thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: left;">Illiq 1M</td>
+<td style="text-align: left;"><code>illiq1</code></td>
 <td style="text-align: right;">0.53</td>
 <td style="text-align: right;">0.63</td>
 <td style="text-align: right;">0.73</td>
@@ -1335,7 +1346,7 @@ Table&nbsp;13.4: Characteristics, returns, and alphas of illiquidity deciles (BE
 <td style="text-align: right;">0.38<br>(1.88)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Illiq 3M</td>
+<td style="text-align: left;"><code>illiq3</code></td>
 <td style="text-align: right;">0.49</td>
 <td style="text-align: right;">0.62</td>
 <td style="text-align: right;">0.65</td>
@@ -1351,7 +1362,7 @@ Table&nbsp;13.4: Characteristics, returns, and alphas of illiquidity deciles (BE
 <td style="text-align: right;">0.43<br>(2.09)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">Illiq 6M</td>
+<td style="text-align: left;"><code>illiq6</code></td>
 <td style="text-align: right;">0.48</td>
 <td style="text-align: right;">0.59</td>
 <td style="text-align: right;">0.63</td>
@@ -1367,7 +1378,7 @@ Table&nbsp;13.4: Characteristics, returns, and alphas of illiquidity deciles (BE
 <td style="text-align: right;">0.44<br>(2.13)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Illiq 12M</td>
+<td style="text-align: left;"><code>illiq12</code></td>
 <td style="text-align: right;">0.46</td>
 <td style="text-align: right;">0.60</td>
 <td style="text-align: right;">0.58</td>
@@ -1432,7 +1443,7 @@ Table&nbsp;13.4: Characteristics, returns, and alphas of illiquidity deciles (BE
 </thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: left;">Illiq 1M</td>
+<td style="text-align: left;"><code>illiq1</code></td>
 <td style="text-align: right;">0.53</td>
 <td style="text-align: right;">0.63</td>
 <td style="text-align: right;">0.72</td>
@@ -1448,7 +1459,7 @@ Table&nbsp;13.4: Characteristics, returns, and alphas of illiquidity deciles (BE
 <td style="text-align: right;">0.63<br>(3.01)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Illiq 3M</td>
+<td style="text-align: left;"><code>illiq3</code></td>
 <td style="text-align: right;">0.49</td>
 <td style="text-align: right;">0.61</td>
 <td style="text-align: right;">0.65</td>
@@ -1464,7 +1475,7 @@ Table&nbsp;13.4: Characteristics, returns, and alphas of illiquidity deciles (BE
 <td style="text-align: right;">0.67<br>(3.21)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">Illiq 6M</td>
+<td style="text-align: left;"><code>illiq6</code></td>
 <td style="text-align: right;">0.47</td>
 <td style="text-align: right;">0.59</td>
 <td style="text-align: right;">0.63</td>
@@ -1480,7 +1491,7 @@ Table&nbsp;13.4: Characteristics, returns, and alphas of illiquidity deciles (BE
 <td style="text-align: right;">0.68<br>(3.23)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Illiq 12M</td>
+<td style="text-align: left;"><code>illiq12</code></td>
 <td style="text-align: right;">0.46</td>
 <td style="text-align: right;">0.60</td>
 <td style="text-align: right;">0.58</td>
@@ -1545,7 +1556,7 @@ Table&nbsp;13.4: Characteristics, returns, and alphas of illiquidity deciles (BE
 </thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: left;">Illiq 1M</td>
+<td style="text-align: left;"><code>illiq1</code></td>
 <td style="text-align: right;">0.42</td>
 <td style="text-align: right;">0.54</td>
 <td style="text-align: right;">0.60</td>
@@ -1561,7 +1572,7 @@ Table&nbsp;13.4: Characteristics, returns, and alphas of illiquidity deciles (BE
 <td style="text-align: right;">-0.49<br>(-3.22)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Illiq 3M</td>
+<td style="text-align: left;"><code>illiq3</code></td>
 <td style="text-align: right;">0.41</td>
 <td style="text-align: right;">0.57</td>
 <td style="text-align: right;">0.58</td>
@@ -1577,7 +1588,7 @@ Table&nbsp;13.4: Characteristics, returns, and alphas of illiquidity deciles (BE
 <td style="text-align: right;">-0.35<br>(-2.30)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">Illiq 6M</td>
+<td style="text-align: left;"><code>illiq6</code></td>
 <td style="text-align: right;">0.41</td>
 <td style="text-align: right;">0.55</td>
 <td style="text-align: right;">0.58</td>
@@ -1593,7 +1604,7 @@ Table&nbsp;13.4: Characteristics, returns, and alphas of illiquidity deciles (BE
 <td style="text-align: right;">-0.25<br>(-1.57)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Illiq 12M</td>
+<td style="text-align: left;"><code>illiq12</code></td>
 <td style="text-align: right;">0.41</td>
 <td style="text-align: right;">0.57</td>
 <td style="text-align: right;">0.58</td>
@@ -1668,7 +1679,7 @@ Table&nbsp;13.4: Characteristics, returns, and alphas of illiquidity deciles (BE
 <td style="text-align: right;">-0.49<br>(-3.22)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">MKT</td>
+<td style="text-align: left;"><code>mkt</code></td>
 <td style="text-align: right;">0.99<br>(200.03)</td>
 <td style="text-align: right;">1.06<br>(75.32)</td>
 <td style="text-align: right;">1.04<br>(83.80)</td>
@@ -1682,7 +1693,7 @@ Table&nbsp;13.4: Characteristics, returns, and alphas of illiquidity deciles (BE
 <td style="text-align: right;">-0.17<br>(-3.04)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">SMB</td>
+<td style="text-align: left;"><code>smb</code></td>
 <td style="text-align: right;">-0.17<br>(-12.10)</td>
 <td style="text-align: right;">0.25<br>(10.47)</td>
 <td style="text-align: right;">0.45<br>(15.21)</td>
@@ -1696,7 +1707,7 @@ Table&nbsp;13.4: Characteristics, returns, and alphas of illiquidity deciles (BE
 <td style="text-align: right;">1.41<br>(10.39)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">HML</td>
+<td style="text-align: left;"><code>hml</code></td>
 <td style="text-align: right;">-0.05<br>(-5.08)</td>
 <td style="text-align: right;">0.11<br>(3.42)</td>
 <td style="text-align: right;">0.11<br>(4.28)</td>
@@ -1710,7 +1721,7 @@ Table&nbsp;13.4: Characteristics, returns, and alphas of illiquidity deciles (BE
 <td style="text-align: right;">0.51<br>(4.05)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">MOM</td>
+<td style="text-align: left;"><code>mom_factor</code></td>
 <td style="text-align: right;">0.02<br>(3.46)</td>
 <td style="text-align: right;">-0.05<br>(-2.71)</td>
 <td style="text-align: right;">-0.07<br>(-3.31)</td>
@@ -1724,7 +1735,7 @@ Table&nbsp;13.4: Characteristics, returns, and alphas of illiquidity deciles (BE
 <td style="text-align: right;">-0.27<br>(-4.51)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">STR</td>
+<td style="text-align: left;"><code>str_factor</code></td>
 <td style="text-align: right;">-0.02<br>(-2.61)</td>
 <td style="text-align: right;">0.01<br>(0.56)</td>
 <td style="text-align: right;">0.04<br>(1.72)</td>
@@ -1747,12 +1758,12 @@ Table&nbsp;13.4: Characteristics, returns, and alphas of illiquidity deciles (BE
 </figure>
 </div>
 </div>
-<p>At the displayed precision, the twelve-month illiquidity spread matches BEM at 0.77% per month with equal weights and 0.27% with value weights. Using the unadjusted stock returns raises the equal-weighted spread to 1.01%, also matching BEM.</p>
+<p>The twelve-month illiquidity spread is 0.77% per month with equal weights and 0.27% with value weights. Using the unadjusted stock returns raises the equal-weighted spread to 1.01%.</p>
 </section>
 <section id="bivariate-portfolio-analysis" class="level3" data-number="13.3.2">
 <h3 data-number="13.3.2" class="anchored" data-anchor-id="bivariate-portfolio-analysis"><span class="header-section-number">13.3.2</span> Bivariate Portfolio Analysis</h3>
 <p>Each two-way sort uses stocks with both characteristics available. We form quintiles first on a control variable, then on twelve-month illiquidity. In dependent sorts, we calculate the second set of cutoffs within each control quintile. In independent sorts, we calculate both sets of cutoffs from the monthly cross-section and intersect the groups. The average column weights the available control cells equally within each month and illiquidity quintile.</p>
-<div id="46b5c4dc" class="cell" data-execution_count="10">
+<div id="fb63d29f" class="cell" data-execution_count="10">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> eap_pl <span class="im">import</span> bivariate_months</span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>quintiles <span class="op">=</span> [<span class="ss">f"Q</span><span class="sc">{</span>i<span class="sc">}</span><span class="ss">"</span> <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">1</span>, <span class="dv">6</span>)]</span>
@@ -1808,7 +1819,7 @@ Table&nbsp;13.4: Characteristics, returns, and alphas of illiquidity deciles (BE
 <span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> (</span>
 <span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>        grid.join(month_averages, on<span class="op">=</span><span class="st">"target"</span>, validate<span class="op">=</span><span class="st">"1:1"</span>)</span>
 <span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a>        .sort(<span class="st">"target"</span>)</span>
-<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a>        .select(pl.<span class="bu">format</span>(<span class="st">"Illiq 12M </span><span class="sc">{}</span><span class="st">"</span>, pl.col(<span class="st">"target"</span>)).alias(<span class="st">"Portfolio"</span>), <span class="op">*</span>group_labels)</span>
+<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a>        .select(pl.<span class="bu">format</span>(<span class="st">"`illiq12` </span><span class="sc">{}</span><span class="st">"</span>, pl.col(<span class="st">"target"</span>)).alias(<span class="st">"Portfolio"</span>), <span class="op">*</span>group_labels)</span>
 <span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a>    )</span>
 <span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a></span>
@@ -1860,7 +1871,7 @@ Table&nbsp;13.5: Illiquidity portfolios within size quintiles (BEM Table 13.5)
 </thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: left;">Illiq 12M 1</td>
+<td style="text-align: left;"><code>illiq12</code> 1</td>
 <td style="text-align: right;">0.47</td>
 <td style="text-align: right;">0.25</td>
 <td style="text-align: right;">0.47</td>
@@ -1869,7 +1880,7 @@ Table&nbsp;13.5: Illiquidity portfolios within size quintiles (BEM Table 13.5)
 <td style="text-align: right;">0.43</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Illiq 12M 2</td>
+<td style="text-align: left;"><code>illiq12</code> 2</td>
 <td style="text-align: right;">0.79</td>
 <td style="text-align: right;">0.76</td>
 <td style="text-align: right;">0.71</td>
@@ -1878,7 +1889,7 @@ Table&nbsp;13.5: Illiquidity portfolios within size quintiles (BEM Table 13.5)
 <td style="text-align: right;">0.69</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">Illiq 12M 3</td>
+<td style="text-align: left;"><code>illiq12</code> 3</td>
 <td style="text-align: right;">0.79</td>
 <td style="text-align: right;">0.76</td>
 <td style="text-align: right;">0.70</td>
@@ -1887,7 +1898,7 @@ Table&nbsp;13.5: Illiquidity portfolios within size quintiles (BEM Table 13.5)
 <td style="text-align: right;">0.72</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Illiq 12M 4</td>
+<td style="text-align: left;"><code>illiq12</code> 4</td>
 <td style="text-align: right;">1.04</td>
 <td style="text-align: right;">0.89</td>
 <td style="text-align: right;">0.80</td>
@@ -1896,7 +1907,7 @@ Table&nbsp;13.5: Illiquidity portfolios within size quintiles (BEM Table 13.5)
 <td style="text-align: right;">0.81</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">Illiq 12M 5</td>
+<td style="text-align: left;"><code>illiq12</code> 5</td>
 <td style="text-align: right;">1.74</td>
 <td style="text-align: right;">0.84</td>
 <td style="text-align: right;">0.81</td>
@@ -1958,7 +1969,7 @@ Table&nbsp;13.5: Illiquidity portfolios within size quintiles (BEM Table 13.5)
 </thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: left;">Illiq 12M 1</td>
+<td style="text-align: left;"><code>illiq12</code> 1</td>
 <td style="text-align: right;">24</td>
 <td style="text-align: right;">73</td>
 <td style="text-align: right;">198</td>
@@ -1967,7 +1978,7 @@ Table&nbsp;13.5: Illiquidity portfolios within size quintiles (BEM Table 13.5)
 <td style="text-align: right;">4131</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Illiq 12M 2</td>
+<td style="text-align: left;"><code>illiq12</code> 2</td>
 <td style="text-align: right;">21</td>
 <td style="text-align: right;">66</td>
 <td style="text-align: right;">180</td>
@@ -1976,7 +1987,7 @@ Table&nbsp;13.5: Illiquidity portfolios within size quintiles (BEM Table 13.5)
 <td style="text-align: right;">1084</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">Illiq 12M 3</td>
+<td style="text-align: left;"><code>illiq12</code> 3</td>
 <td style="text-align: right;">18</td>
 <td style="text-align: right;">62</td>
 <td style="text-align: right;">165</td>
@@ -1985,7 +1996,7 @@ Table&nbsp;13.5: Illiquidity portfolios within size quintiles (BEM Table 13.5)
 <td style="text-align: right;">646</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Illiq 12M 4</td>
+<td style="text-align: left;"><code>illiq12</code> 4</td>
 <td style="text-align: right;">15</td>
 <td style="text-align: right;">57</td>
 <td style="text-align: right;">153</td>
@@ -1994,7 +2005,7 @@ Table&nbsp;13.5: Illiquidity portfolios within size quintiles (BEM Table 13.5)
 <td style="text-align: right;">462</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">Illiq 12M 5</td>
+<td style="text-align: left;"><code>illiq12</code> 5</td>
 <td style="text-align: right;">9</td>
 <td style="text-align: right;">51</td>
 <td style="text-align: right;">142</td>
@@ -2116,7 +2127,7 @@ Table&nbsp;13.6: Illiquidity spreads from dependent sorts (BEM Table 13.6)
 <td style="text-align: right;">0.00<br>(0.03)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">BM</td>
+<td style="text-align: left;"><code>bm</code></td>
 <td style="text-align: right;">EW</td>
 <td style="text-align: right;">Return</td>
 <td style="text-align: right;">0.18<br>(0.66)</td>
@@ -2127,7 +2138,7 @@ Table&nbsp;13.6: Illiquidity spreads from dependent sorts (BEM Table 13.6)
 <td style="text-align: right;">0.42<br>(1.81)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">BM</td>
+<td style="text-align: left;"><code>bm</code></td>
 <td style="text-align: right;">EW</td>
 <td style="text-align: right;">FFC α</td>
 <td style="text-align: right;">-0.05<br>(-0.20)</td>
@@ -2138,7 +2149,7 @@ Table&nbsp;13.6: Illiquidity spreads from dependent sorts (BEM Table 13.6)
 <td style="text-align: right;">0.38<br>(2.12)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">BM</td>
+<td style="text-align: left;"><code>bm</code></td>
 <td style="text-align: right;">EW</td>
 <td style="text-align: right;">FFCSTR α</td>
 <td style="text-align: right;">-0.09<br>(-0.42)</td>
@@ -2149,7 +2160,7 @@ Table&nbsp;13.6: Illiquidity spreads from dependent sorts (BEM Table 13.6)
 <td style="text-align: right;">0.35<br>(2.14)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">BM</td>
+<td style="text-align: left;"><code>bm</code></td>
 <td style="text-align: right;">VW</td>
 <td style="text-align: right;">Return</td>
 <td style="text-align: right;">-0.20<br>(-0.78)</td>
@@ -2160,7 +2171,7 @@ Table&nbsp;13.6: Illiquidity spreads from dependent sorts (BEM Table 13.6)
 <td style="text-align: right;">0.22<br>(1.02)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">BM</td>
+<td style="text-align: left;"><code>bm</code></td>
 <td style="text-align: right;">VW</td>
 <td style="text-align: right;">FFC α</td>
 <td style="text-align: right;">-0.50<br>(-2.98)</td>
@@ -2171,7 +2182,7 @@ Table&nbsp;13.6: Illiquidity spreads from dependent sorts (BEM Table 13.6)
 <td style="text-align: right;">0.06<br>(0.56)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">BM</td>
+<td style="text-align: left;"><code>bm</code></td>
 <td style="text-align: right;">VW</td>
 <td style="text-align: right;">FFCSTR α</td>
 <td style="text-align: right;">-0.53<br>(-3.12)</td>
@@ -2182,7 +2193,7 @@ Table&nbsp;13.6: Illiquidity spreads from dependent sorts (BEM Table 13.6)
 <td style="text-align: right;">0.04<br>(0.34)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">Mom</td>
+<td style="text-align: left;"><code>mom</code></td>
 <td style="text-align: right;">EW</td>
 <td style="text-align: right;">Return</td>
 <td style="text-align: right;">0.93<br>(3.32)</td>
@@ -2193,7 +2204,7 @@ Table&nbsp;13.6: Illiquidity spreads from dependent sorts (BEM Table 13.6)
 <td style="text-align: right;">0.77<br>(3.91)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Mom</td>
+<td style="text-align: left;"><code>mom</code></td>
 <td style="text-align: right;">EW</td>
 <td style="text-align: right;">FFC α</td>
 <td style="text-align: right;">0.47<br>(1.49)</td>
@@ -2204,7 +2215,7 @@ Table&nbsp;13.6: Illiquidity spreads from dependent sorts (BEM Table 13.6)
 <td style="text-align: right;">0.45<br>(2.99)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">Mom</td>
+<td style="text-align: left;"><code>mom</code></td>
 <td style="text-align: right;">EW</td>
 <td style="text-align: right;">FFCSTR α</td>
 <td style="text-align: right;">0.43<br>(1.43)</td>
@@ -2215,7 +2226,7 @@ Table&nbsp;13.6: Illiquidity spreads from dependent sorts (BEM Table 13.6)
 <td style="text-align: right;">0.43<br>(2.94)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Mom</td>
+<td style="text-align: left;"><code>mom</code></td>
 <td style="text-align: right;">VW</td>
 <td style="text-align: right;">Return</td>
 <td style="text-align: right;">-0.07<br>(-0.24)</td>
@@ -2226,7 +2237,7 @@ Table&nbsp;13.6: Illiquidity spreads from dependent sorts (BEM Table 13.6)
 <td style="text-align: right;">0.44<br>(2.21)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">Mom</td>
+<td style="text-align: left;"><code>mom</code></td>
 <td style="text-align: right;">VW</td>
 <td style="text-align: right;">FFC α</td>
 <td style="text-align: right;">-0.68<br>(-2.84)</td>
@@ -2237,7 +2248,7 @@ Table&nbsp;13.6: Illiquidity spreads from dependent sorts (BEM Table 13.6)
 <td style="text-align: right;">0.01<br>(0.09)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Mom</td>
+<td style="text-align: left;"><code>mom</code></td>
 <td style="text-align: right;">VW</td>
 <td style="text-align: right;">FFCSTR α</td>
 <td style="text-align: right;">-0.71<br>(-3.05)</td>
@@ -2248,7 +2259,7 @@ Table&nbsp;13.6: Illiquidity spreads from dependent sorts (BEM Table 13.6)
 <td style="text-align: right;">-0.01<br>(-0.10)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">Rev</td>
+<td style="text-align: left;"><code>rev</code></td>
 <td style="text-align: right;">EW</td>
 <td style="text-align: right;">Return</td>
 <td style="text-align: right;">2.11<br>(7.41)</td>
@@ -2259,7 +2270,7 @@ Table&nbsp;13.6: Illiquidity spreads from dependent sorts (BEM Table 13.6)
 <td style="text-align: right;">0.40<br>(1.80)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Rev</td>
+<td style="text-align: left;"><code>rev</code></td>
 <td style="text-align: right;">EW</td>
 <td style="text-align: right;">FFC α</td>
 <td style="text-align: right;">1.87<br>(6.02)</td>
@@ -2270,7 +2281,7 @@ Table&nbsp;13.6: Illiquidity spreads from dependent sorts (BEM Table 13.6)
 <td style="text-align: right;">0.14<br>(0.89)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">Rev</td>
+<td style="text-align: left;"><code>rev</code></td>
 <td style="text-align: right;">EW</td>
 <td style="text-align: right;">FFCSTR α</td>
 <td style="text-align: right;">2.07<br>(7.27)</td>
@@ -2281,7 +2292,7 @@ Table&nbsp;13.6: Illiquidity spreads from dependent sorts (BEM Table 13.6)
 <td style="text-align: right;">0.15<br>(0.97)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Rev</td>
+<td style="text-align: left;"><code>rev</code></td>
 <td style="text-align: right;">VW</td>
 <td style="text-align: right;">Return</td>
 <td style="text-align: right;">1.49<br>(5.50)</td>
@@ -2292,7 +2303,7 @@ Table&nbsp;13.6: Illiquidity spreads from dependent sorts (BEM Table 13.6)
 <td style="text-align: right;">0.38<br>(1.85)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">Rev</td>
+<td style="text-align: left;"><code>rev</code></td>
 <td style="text-align: right;">VW</td>
 <td style="text-align: right;">FFC α</td>
 <td style="text-align: right;">1.21<br>(4.59)</td>
@@ -2303,7 +2314,7 @@ Table&nbsp;13.6: Illiquidity spreads from dependent sorts (BEM Table 13.6)
 <td style="text-align: right;">0.04<br>(0.35)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Rev</td>
+<td style="text-align: left;"><code>rev</code></td>
 <td style="text-align: right;">VW</td>
 <td style="text-align: right;">FFCSTR α</td>
 <td style="text-align: right;">1.38<br>(5.47)</td>
@@ -2422,7 +2433,7 @@ Table&nbsp;13.7: Illiquidity spreads from independent sorts (BEM Table 13.7)
 <td style="text-align: right;">-0.16<br>(-1.29)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">BM</td>
+<td style="text-align: left;"><code>bm</code></td>
 <td style="text-align: right;">EW</td>
 <td style="text-align: right;">Return</td>
 <td style="text-align: right;">0.39<br>(1.27)</td>
@@ -2433,7 +2444,7 @@ Table&nbsp;13.7: Illiquidity spreads from independent sorts (BEM Table 13.7)
 <td style="text-align: right;">0.45<br>(1.94)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">BM</td>
+<td style="text-align: left;"><code>bm</code></td>
 <td style="text-align: right;">EW</td>
 <td style="text-align: right;">FFC α</td>
 <td style="text-align: right;">0.01<br>(0.03)</td>
@@ -2444,7 +2455,7 @@ Table&nbsp;13.7: Illiquidity spreads from independent sorts (BEM Table 13.7)
 <td style="text-align: right;">0.34<br>(1.91)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">BM</td>
+<td style="text-align: left;"><code>bm</code></td>
 <td style="text-align: right;">EW</td>
 <td style="text-align: right;">FFCSTR α</td>
 <td style="text-align: right;">-0.03<br>(-0.13)</td>
@@ -2455,7 +2466,7 @@ Table&nbsp;13.7: Illiquidity spreads from independent sorts (BEM Table 13.7)
 <td style="text-align: right;">0.31<br>(1.86)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">BM</td>
+<td style="text-align: left;"><code>bm</code></td>
 <td style="text-align: right;">VW</td>
 <td style="text-align: right;">Return</td>
 <td style="text-align: right;">0.01<br>(0.03)</td>
@@ -2466,7 +2477,7 @@ Table&nbsp;13.7: Illiquidity spreads from independent sorts (BEM Table 13.7)
 <td style="text-align: right;">0.24<br>(1.08)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">BM</td>
+<td style="text-align: left;"><code>bm</code></td>
 <td style="text-align: right;">VW</td>
 <td style="text-align: right;">FFC α</td>
 <td style="text-align: right;">-0.42<br>(-1.98)</td>
@@ -2477,7 +2488,7 @@ Table&nbsp;13.7: Illiquidity spreads from independent sorts (BEM Table 13.7)
 <td style="text-align: right;">0.01<br>(0.10)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">BM</td>
+<td style="text-align: left;"><code>bm</code></td>
 <td style="text-align: right;">VW</td>
 <td style="text-align: right;">FFCSTR α</td>
 <td style="text-align: right;">-0.43<br>(-2.00)</td>
@@ -2488,7 +2499,7 @@ Table&nbsp;13.7: Illiquidity spreads from independent sorts (BEM Table 13.7)
 <td style="text-align: right;">-0.01<br>(-0.11)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">Mom</td>
+<td style="text-align: left;"><code>mom</code></td>
 <td style="text-align: right;">EW</td>
 <td style="text-align: right;">Return</td>
 <td style="text-align: right;">0.48<br>(1.73)</td>
@@ -2499,7 +2510,7 @@ Table&nbsp;13.7: Illiquidity spreads from independent sorts (BEM Table 13.7)
 <td style="text-align: right;">0.74<br>(3.55)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Mom</td>
+<td style="text-align: left;"><code>mom</code></td>
 <td style="text-align: right;">EW</td>
 <td style="text-align: right;">FFC α</td>
 <td style="text-align: right;">-0.04<br>(-0.14)</td>
@@ -2510,7 +2521,7 @@ Table&nbsp;13.7: Illiquidity spreads from independent sorts (BEM Table 13.7)
 <td style="text-align: right;">0.41<br>(2.63)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">Mom</td>
+<td style="text-align: left;"><code>mom</code></td>
 <td style="text-align: right;">EW</td>
 <td style="text-align: right;">FFCSTR α</td>
 <td style="text-align: right;">-0.09<br>(-0.33)</td>
@@ -2521,7 +2532,7 @@ Table&nbsp;13.7: Illiquidity spreads from independent sorts (BEM Table 13.7)
 <td style="text-align: right;">0.38<br>(2.63)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Mom</td>
+<td style="text-align: left;"><code>mom</code></td>
 <td style="text-align: right;">VW</td>
 <td style="text-align: right;">Return</td>
 <td style="text-align: right;">-0.18<br>(-0.66)</td>
@@ -2532,7 +2543,7 @@ Table&nbsp;13.7: Illiquidity spreads from independent sorts (BEM Table 13.7)
 <td style="text-align: right;">0.48<br>(2.30)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">Mom</td>
+<td style="text-align: left;"><code>mom</code></td>
 <td style="text-align: right;">VW</td>
 <td style="text-align: right;">FFC α</td>
 <td style="text-align: right;">-0.80<br>(-3.67)</td>
@@ -2543,7 +2554,7 @@ Table&nbsp;13.7: Illiquidity spreads from independent sorts (BEM Table 13.7)
 <td style="text-align: right;">0.04<br>(0.37)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Mom</td>
+<td style="text-align: left;"><code>mom</code></td>
 <td style="text-align: right;">VW</td>
 <td style="text-align: right;">FFCSTR α</td>
 <td style="text-align: right;">-0.82<br>(-3.85)</td>
@@ -2554,7 +2565,7 @@ Table&nbsp;13.7: Illiquidity spreads from independent sorts (BEM Table 13.7)
 <td style="text-align: right;">0.03<br>(0.27)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">Rev</td>
+<td style="text-align: left;"><code>rev</code></td>
 <td style="text-align: right;">EW</td>
 <td style="text-align: right;">Return</td>
 <td style="text-align: right;">2.02<br>(7.05)</td>
@@ -2565,7 +2576,7 @@ Table&nbsp;13.7: Illiquidity spreads from independent sorts (BEM Table 13.7)
 <td style="text-align: right;">0.40<br>(1.72)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Rev</td>
+<td style="text-align: left;"><code>rev</code></td>
 <td style="text-align: right;">EW</td>
 <td style="text-align: right;">FFC α</td>
 <td style="text-align: right;">1.80<br>(5.93)</td>
@@ -2576,7 +2587,7 @@ Table&nbsp;13.7: Illiquidity spreads from independent sorts (BEM Table 13.7)
 <td style="text-align: right;">0.14<br>(0.85)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">Rev</td>
+<td style="text-align: left;"><code>rev</code></td>
 <td style="text-align: right;">EW</td>
 <td style="text-align: right;">FFCSTR α</td>
 <td style="text-align: right;">1.99<br>(7.27)</td>
@@ -2587,7 +2598,7 @@ Table&nbsp;13.7: Illiquidity spreads from independent sorts (BEM Table 13.7)
 <td style="text-align: right;">0.15<br>(0.94)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Rev</td>
+<td style="text-align: left;"><code>rev</code></td>
 <td style="text-align: right;">VW</td>
 <td style="text-align: right;">Return</td>
 <td style="text-align: right;">1.42<br>(5.37)</td>
@@ -2598,7 +2609,7 @@ Table&nbsp;13.7: Illiquidity spreads from independent sorts (BEM Table 13.7)
 <td style="text-align: right;">0.39<br>(1.73)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">Rev</td>
+<td style="text-align: left;"><code>rev</code></td>
 <td style="text-align: right;">VW</td>
 <td style="text-align: right;">FFC α</td>
 <td style="text-align: right;">1.11<br>(4.46)</td>
@@ -2609,7 +2620,7 @@ Table&nbsp;13.7: Illiquidity spreads from independent sorts (BEM Table 13.7)
 <td style="text-align: right;">0.02<br>(0.14)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Rev</td>
+<td style="text-align: left;"><code>rev</code></td>
 <td style="text-align: right;">VW</td>
 <td style="text-align: right;">FFCSTR α</td>
 <td style="text-align: right;">1.27<br>(5.37)</td>
@@ -2626,12 +2637,12 @@ Table&nbsp;13.7: Illiquidity spreads from independent sorts (BEM Table 13.7)
 </figure>
 </div>
 </div>
-<p>Reversing the roles of the sort variables shows whether the other characteristics predict returns within illiquidity quintiles. The independent sorts use the same intersections as <a href="#tbl-bem13-independent" class="quarto-xref">Table&nbsp;<span>13.7</span></a> and take the spread along the other dimension. The benchmark omits HML for the book-to-market spread and the momentum factor for the momentum spread. For the reversal spread we report the four-factor alpha.</p>
+<p>Reversing the roles of the sort variables shows whether the other characteristics predict returns within illiquidity quintiles. The independent sorts use the same intersections as <a href="#tbl-bem13-independent" class="quarto-xref">Table&nbsp;<span>13.7</span></a> and take the spread along the other dimension. The benchmark omits <code>hml</code> for the book-to-market spread and the momentum factor for the momentum spread. For the reversal spread we report the four-factor alpha.</p>
 <div class="cell" data-execution_count="14">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>control_spreads <span class="op">=</span> [(<span class="st">"illiq12"</span>, term, label) <span class="cf">for</span> term, label <span class="kw">in</span> sort_controls.items()]</span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>without_hml <span class="op">=</span> <span class="st">"mkt + smb + mom_factor"</span></span>
 <span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>reverse_models <span class="op">=</span> {</span>
-<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">"bm"</span>: {<span class="st">"Return"</span>: <span class="st">"1"</span>, <span class="st">"FFC ex HML α"</span>: without_hml, <span class="st">"FFCSTR ex HML α"</span>: <span class="ss">f"</span><span class="sc">{</span>without_hml<span class="sc">}</span><span class="ss"> + str_factor"</span>},</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">"bm"</span>: {<span class="st">"Return"</span>: <span class="st">"1"</span>, <span class="st">"FFC ex `hml` α"</span>: without_hml, <span class="st">"FFCSTR ex `hml` α"</span>: <span class="ss">f"</span><span class="sc">{</span>without_hml<span class="sc">}</span><span class="ss"> + str_factor"</span>},</span>
 <span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">"mom"</span>: {<span class="st">"Return"</span>: <span class="st">"1"</span>, <span class="st">"FF α"</span>: ff, <span class="st">"FFSTR α"</span>: <span class="ss">f"</span><span class="sc">{</span>ff<span class="sc">}</span><span class="ss"> + str_factor"</span>},</span>
 <span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">"rev"</span>: {<span class="st">"Return"</span>: <span class="st">"1"</span>, <span class="st">"FFC α"</span>: ffc},</span>
 <span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>}</span>
@@ -2736,7 +2747,7 @@ Table&nbsp;13.8: Characteristic spreads within illiquidity quintiles using depen
 <td style="text-align: right;">-0.30<br>(-1.72)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">BM</td>
+<td style="text-align: left;"><code>bm</code></td>
 <td style="text-align: right;">EW</td>
 <td style="text-align: right;">Return</td>
 <td style="text-align: right;">0.35<br>(1.74)</td>
@@ -2747,9 +2758,9 @@ Table&nbsp;13.8: Characteristic spreads within illiquidity quintiles using depen
 <td style="text-align: right;">0.69<br>(3.96)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">BM</td>
+<td style="text-align: left;"><code>bm</code></td>
 <td style="text-align: right;">EW</td>
-<td style="text-align: right;">FFC ex HML α</td>
+<td style="text-align: right;">FFC ex <code>hml</code> α</td>
 <td style="text-align: right;">0.65<br>(3.35)</td>
 <td style="text-align: right;">0.87<br>(4.06)</td>
 <td style="text-align: right;">1.05<br>(5.02)</td>
@@ -2758,9 +2769,9 @@ Table&nbsp;13.8: Characteristic spreads within illiquidity quintiles using depen
 <td style="text-align: right;">0.87<br>(5.20)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">BM</td>
+<td style="text-align: left;"><code>bm</code></td>
 <td style="text-align: right;">EW</td>
-<td style="text-align: right;">FFCSTR ex HML α</td>
+<td style="text-align: right;">FFCSTR ex <code>hml</code> α</td>
 <td style="text-align: right;">0.67<br>(3.12)</td>
 <td style="text-align: right;">0.92<br>(3.88)</td>
 <td style="text-align: right;">1.09<br>(4.65)</td>
@@ -2769,7 +2780,7 @@ Table&nbsp;13.8: Characteristic spreads within illiquidity quintiles using depen
 <td style="text-align: right;">0.90<br>(4.84)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">BM</td>
+<td style="text-align: left;"><code>bm</code></td>
 <td style="text-align: right;">VW</td>
 <td style="text-align: right;">Return</td>
 <td style="text-align: right;">0.17<br>(0.95)</td>
@@ -2780,9 +2791,9 @@ Table&nbsp;13.8: Characteristic spreads within illiquidity quintiles using depen
 <td style="text-align: right;">0.58<br>(3.38)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">BM</td>
+<td style="text-align: left;"><code>bm</code></td>
 <td style="text-align: right;">VW</td>
-<td style="text-align: right;">FFC ex HML α</td>
+<td style="text-align: right;">FFC ex <code>hml</code> α</td>
 <td style="text-align: right;">0.39<br>(2.18)</td>
 <td style="text-align: right;">0.82<br>(3.95)</td>
 <td style="text-align: right;">0.93<br>(4.66)</td>
@@ -2791,9 +2802,9 @@ Table&nbsp;13.8: Characteristic spreads within illiquidity quintiles using depen
 <td style="text-align: right;">0.78<br>(4.85)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">BM</td>
+<td style="text-align: left;"><code>bm</code></td>
 <td style="text-align: right;">VW</td>
-<td style="text-align: right;">FFCSTR ex HML α</td>
+<td style="text-align: right;">FFCSTR ex <code>hml</code> α</td>
 <td style="text-align: right;">0.36<br>(1.93)</td>
 <td style="text-align: right;">0.83<br>(3.54)</td>
 <td style="text-align: right;">0.87<br>(3.90)</td>
@@ -2802,7 +2813,7 @@ Table&nbsp;13.8: Characteristic spreads within illiquidity quintiles using depen
 <td style="text-align: right;">0.75<br>(4.18)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">Mom</td>
+<td style="text-align: left;"><code>mom</code></td>
 <td style="text-align: right;">EW</td>
 <td style="text-align: right;">Return</td>
 <td style="text-align: right;">0.78<br>(3.24)</td>
@@ -2813,7 +2824,7 @@ Table&nbsp;13.8: Characteristic spreads within illiquidity quintiles using depen
 <td style="text-align: right;">1.26<br>(5.16)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Mom</td>
+<td style="text-align: left;"><code>mom</code></td>
 <td style="text-align: right;">EW</td>
 <td style="text-align: right;">FF α</td>
 <td style="text-align: right;">1.05<br>(4.53)</td>
@@ -2824,7 +2835,7 @@ Table&nbsp;13.8: Characteristic spreads within illiquidity quintiles using depen
 <td style="text-align: right;">1.51<br>(6.95)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">Mom</td>
+<td style="text-align: left;"><code>mom</code></td>
 <td style="text-align: right;">EW</td>
 <td style="text-align: right;">FFSTR α</td>
 <td style="text-align: right;">1.25<br>(5.02)</td>
@@ -2835,7 +2846,7 @@ Table&nbsp;13.8: Characteristic spreads within illiquidity quintiles using depen
 <td style="text-align: right;">1.71<br>(7.52)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Mom</td>
+<td style="text-align: left;"><code>mom</code></td>
 <td style="text-align: right;">VW</td>
 <td style="text-align: right;">Return</td>
 <td style="text-align: right;">0.61<br>(2.60)</td>
@@ -2846,7 +2857,7 @@ Table&nbsp;13.8: Characteristic spreads within illiquidity quintiles using depen
 <td style="text-align: right;">1.36<br>(5.85)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">Mom</td>
+<td style="text-align: left;"><code>mom</code></td>
 <td style="text-align: right;">VW</td>
 <td style="text-align: right;">FF α</td>
 <td style="text-align: right;">0.87<br>(3.87)</td>
@@ -2857,7 +2868,7 @@ Table&nbsp;13.8: Characteristic spreads within illiquidity quintiles using depen
 <td style="text-align: right;">1.61<br>(7.80)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Mom</td>
+<td style="text-align: left;"><code>mom</code></td>
 <td style="text-align: right;">VW</td>
 <td style="text-align: right;">FFSTR α</td>
 <td style="text-align: right;">1.06<br>(4.56)</td>
@@ -2868,7 +2879,7 @@ Table&nbsp;13.8: Characteristic spreads within illiquidity quintiles using depen
 <td style="text-align: right;">1.79<br>(8.22)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">Rev</td>
+<td style="text-align: left;"><code>rev</code></td>
 <td style="text-align: right;">EW</td>
 <td style="text-align: right;">Return</td>
 <td style="text-align: right;">-0.35<br>(-2.12)</td>
@@ -2879,7 +2890,7 @@ Table&nbsp;13.8: Characteristic spreads within illiquidity quintiles using depen
 <td style="text-align: right;">-1.50<br>(-7.92)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Rev</td>
+<td style="text-align: left;"><code>rev</code></td>
 <td style="text-align: right;">EW</td>
 <td style="text-align: right;">FFC α</td>
 <td style="text-align: right;">-0.44<br>(-2.33)</td>
@@ -2890,7 +2901,7 @@ Table&nbsp;13.8: Characteristic spreads within illiquidity quintiles using depen
 <td style="text-align: right;">-1.71<br>(-6.53)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">Rev</td>
+<td style="text-align: left;"><code>rev</code></td>
 <td style="text-align: right;">VW</td>
 <td style="text-align: right;">Return</td>
 <td style="text-align: right;">-0.18<br>(-1.08)</td>
@@ -2901,7 +2912,7 @@ Table&nbsp;13.8: Characteristic spreads within illiquidity quintiles using depen
 <td style="text-align: right;">-1.16<br>(-6.73)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Rev</td>
+<td style="text-align: left;"><code>rev</code></td>
 <td style="text-align: right;">VW</td>
 <td style="text-align: right;">FFC α</td>
 <td style="text-align: right;">-0.25<br>(-1.28)</td>
@@ -3020,7 +3031,7 @@ Table&nbsp;13.9: Characteristic spreads within illiquidity quintiles using indep
 <td style="text-align: right;">-0.38<br>(-2.00)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">BM</td>
+<td style="text-align: left;"><code>bm</code></td>
 <td style="text-align: right;">EW</td>
 <td style="text-align: right;">Return</td>
 <td style="text-align: right;">0.40<br>(2.13)</td>
@@ -3031,9 +3042,9 @@ Table&nbsp;13.9: Characteristic spreads within illiquidity quintiles using indep
 <td style="text-align: right;">0.70<br>(3.90)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">BM</td>
+<td style="text-align: left;"><code>bm</code></td>
 <td style="text-align: right;">EW</td>
-<td style="text-align: right;">FFC ex HML α</td>
+<td style="text-align: right;">FFC ex <code>hml</code> α</td>
 <td style="text-align: right;">0.65<br>(3.51)</td>
 <td style="text-align: right;">0.89<br>(4.04)</td>
 <td style="text-align: right;">1.03<br>(4.83)</td>
@@ -3042,9 +3053,9 @@ Table&nbsp;13.9: Characteristic spreads within illiquidity quintiles using indep
 <td style="text-align: right;">0.88<br>(5.27)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">BM</td>
+<td style="text-align: left;"><code>bm</code></td>
 <td style="text-align: right;">EW</td>
-<td style="text-align: right;">FFCSTR ex HML α</td>
+<td style="text-align: right;">FFCSTR ex <code>hml</code> α</td>
 <td style="text-align: right;">0.69<br>(3.42)</td>
 <td style="text-align: right;">0.93<br>(3.69)</td>
 <td style="text-align: right;">1.08<br>(4.51)</td>
@@ -3053,7 +3064,7 @@ Table&nbsp;13.9: Characteristic spreads within illiquidity quintiles using indep
 <td style="text-align: right;">0.92<br>(4.91)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">BM</td>
+<td style="text-align: left;"><code>bm</code></td>
 <td style="text-align: right;">VW</td>
 <td style="text-align: right;">Return</td>
 <td style="text-align: right;">0.19<br>(1.08)</td>
@@ -3064,9 +3075,9 @@ Table&nbsp;13.9: Characteristic spreads within illiquidity quintiles using indep
 <td style="text-align: right;">0.60<br>(3.40)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">BM</td>
+<td style="text-align: left;"><code>bm</code></td>
 <td style="text-align: right;">VW</td>
-<td style="text-align: right;">FFC ex HML α</td>
+<td style="text-align: right;">FFC ex <code>hml</code> α</td>
 <td style="text-align: right;">0.36<br>(2.01)</td>
 <td style="text-align: right;">0.80<br>(3.65)</td>
 <td style="text-align: right;">0.90<br>(4.44)</td>
@@ -3075,9 +3086,9 @@ Table&nbsp;13.9: Characteristic spreads within illiquidity quintiles using indep
 <td style="text-align: right;">0.80<br>(4.79)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">BM</td>
+<td style="text-align: left;"><code>bm</code></td>
 <td style="text-align: right;">VW</td>
-<td style="text-align: right;">FFCSTR ex HML α</td>
+<td style="text-align: right;">FFCSTR ex <code>hml</code> α</td>
 <td style="text-align: right;">0.37<br>(1.92)</td>
 <td style="text-align: right;">0.79<br>(3.21)</td>
 <td style="text-align: right;">0.86<br>(3.78)</td>
@@ -3086,7 +3097,7 @@ Table&nbsp;13.9: Characteristic spreads within illiquidity quintiles using indep
 <td style="text-align: right;">0.78<br>(4.19)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">Mom</td>
+<td style="text-align: left;"><code>mom</code></td>
 <td style="text-align: right;">EW</td>
 <td style="text-align: right;">Return</td>
 <td style="text-align: right;">1.01<br>(3.43)</td>
@@ -3097,7 +3108,7 @@ Table&nbsp;13.9: Characteristic spreads within illiquidity quintiles using indep
 <td style="text-align: right;">1.34<br>(5.33)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Mom</td>
+<td style="text-align: left;"><code>mom</code></td>
 <td style="text-align: right;">EW</td>
 <td style="text-align: right;">FF α</td>
 <td style="text-align: right;">1.35<br>(5.26)</td>
@@ -3108,7 +3119,7 @@ Table&nbsp;13.9: Characteristic spreads within illiquidity quintiles using indep
 <td style="text-align: right;">1.61<br>(7.43)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">Mom</td>
+<td style="text-align: left;"><code>mom</code></td>
 <td style="text-align: right;">EW</td>
 <td style="text-align: right;">FFSTR α</td>
 <td style="text-align: right;">1.57<br>(5.63)</td>
@@ -3119,7 +3130,7 @@ Table&nbsp;13.9: Characteristic spreads within illiquidity quintiles using indep
 <td style="text-align: right;">1.80<br>(7.80)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Mom</td>
+<td style="text-align: left;"><code>mom</code></td>
 <td style="text-align: right;">VW</td>
 <td style="text-align: right;">Return</td>
 <td style="text-align: right;">1.01<br>(3.26)</td>
@@ -3130,7 +3141,7 @@ Table&nbsp;13.9: Characteristic spreads within illiquidity quintiles using indep
 <td style="text-align: right;">1.41<br>(5.82)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">Mom</td>
+<td style="text-align: left;"><code>mom</code></td>
 <td style="text-align: right;">VW</td>
 <td style="text-align: right;">FF α</td>
 <td style="text-align: right;">1.37<br>(5.02)</td>
@@ -3141,7 +3152,7 @@ Table&nbsp;13.9: Characteristic spreads within illiquidity quintiles using indep
 <td style="text-align: right;">1.69<br>(7.95)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Mom</td>
+<td style="text-align: left;"><code>mom</code></td>
 <td style="text-align: right;">VW</td>
 <td style="text-align: right;">FFSTR α</td>
 <td style="text-align: right;">1.58<br>(5.64)</td>
@@ -3152,7 +3163,7 @@ Table&nbsp;13.9: Characteristic spreads within illiquidity quintiles using indep
 <td style="text-align: right;">1.86<br>(8.31)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">Rev</td>
+<td style="text-align: left;"><code>rev</code></td>
 <td style="text-align: right;">EW</td>
 <td style="text-align: right;">Return</td>
 <td style="text-align: right;">-0.25<br>(-1.30)</td>
@@ -3163,7 +3174,7 @@ Table&nbsp;13.9: Characteristic spreads within illiquidity quintiles using indep
 <td style="text-align: right;">-1.33<br>(-7.19)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Rev</td>
+<td style="text-align: left;"><code>rev</code></td>
 <td style="text-align: right;">EW</td>
 <td style="text-align: right;">FFC α</td>
 <td style="text-align: right;">-0.36<br>(-1.66)</td>
@@ -3174,7 +3185,7 @@ Table&nbsp;13.9: Characteristic spreads within illiquidity quintiles using indep
 <td style="text-align: right;">-1.53<br>(-6.11)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">Rev</td>
+<td style="text-align: left;"><code>rev</code></td>
 <td style="text-align: right;">VW</td>
 <td style="text-align: right;">Return</td>
 <td style="text-align: right;">-0.01<br>(-0.06)</td>
@@ -3185,7 +3196,7 @@ Table&nbsp;13.9: Characteristic spreads within illiquidity quintiles using indep
 <td style="text-align: right;">-1.02<br>(-6.11)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Rev</td>
+<td style="text-align: left;"><code>rev</code></td>
 <td style="text-align: right;">VW</td>
 <td style="text-align: right;">FFC α</td>
 <td style="text-align: right;">-0.11<br>(-0.50)</td>
@@ -3262,7 +3273,7 @@ Table&nbsp;13.10: Twelve-month illiquidity with each control and with all contro
 </thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: left;">Illiq 12M</td>
+<td style="text-align: left;"><code>illiq12</code></td>
 <td style="text-align: right;">0.027<br>(1.34)</td>
 <td style="text-align: right;">0.022<br>(1.04)</td>
 <td style="text-align: right;">0.050<br>(2.96)</td>
@@ -3292,7 +3303,7 @@ Table&nbsp;13.10: Twelve-month illiquidity with each control and with all contro
 <td style="text-align: right;">-0.041<br>(-0.79)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">BM</td>
+<td style="text-align: left;"><code>bm</code></td>
 <td style="text-align: right;"></td>
 <td style="text-align: right;"></td>
 <td style="text-align: right;"></td>
@@ -3302,7 +3313,7 @@ Table&nbsp;13.10: Twelve-month illiquidity with each control and with all contro
 <td style="text-align: right;">0.187<br>(2.63)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">Mom</td>
+<td style="text-align: left;"><code>mom</code></td>
 <td style="text-align: right;"></td>
 <td style="text-align: right;"></td>
 <td style="text-align: right;"></td>
@@ -3312,7 +3323,7 @@ Table&nbsp;13.10: Twelve-month illiquidity with each control and with all contro
 <td style="text-align: right;">0.008<br>(4.27)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Rev</td>
+<td style="text-align: left;"><code>rev</code></td>
 <td style="text-align: right;"></td>
 <td style="text-align: right;"></td>
 <td style="text-align: right;"></td>
@@ -3389,7 +3400,7 @@ Table&nbsp;13.10: Twelve-month illiquidity with each control and with all contro
 </thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: left;">ln Illiq 12M</td>
+<td style="text-align: left;"><code>log_illiq12</code></td>
 <td style="text-align: right;">0.257<br>(2.35)</td>
 <td style="text-align: right;">0.239<br>(1.92)</td>
 <td style="text-align: right;">0.290<br>(3.20)</td>
@@ -3419,7 +3430,7 @@ Table&nbsp;13.10: Twelve-month illiquidity with each control and with all contro
 <td style="text-align: right;">-0.009<br>(-0.18)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">BM</td>
+<td style="text-align: left;"><code>bm</code></td>
 <td style="text-align: right;"></td>
 <td style="text-align: right;"></td>
 <td style="text-align: right;"></td>
@@ -3429,7 +3440,7 @@ Table&nbsp;13.10: Twelve-month illiquidity with each control and with all contro
 <td style="text-align: right;">0.195<br>(2.76)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">Mom</td>
+<td style="text-align: left;"><code>mom</code></td>
 <td style="text-align: right;"></td>
 <td style="text-align: right;"></td>
 <td style="text-align: right;"></td>
@@ -3439,7 +3450,7 @@ Table&nbsp;13.10: Twelve-month illiquidity with each control and with all contro
 <td style="text-align: right;">0.008<br>(4.12)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Rev</td>
+<td style="text-align: left;"><code>rev</code></td>
 <td style="text-align: right;"></td>
 <td style="text-align: right;"></td>
 <td style="text-align: right;"></td>
@@ -3532,7 +3543,7 @@ Table&nbsp;13.11: Fama–MacBeth regressions by illiquidity window (BEM Table 13
 </thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: left;">Illiq 1M</td>
+<td style="text-align: left;"><code>illiq1</code></td>
 <td style="text-align: right;">0.050<br>(1.99)</td>
 <td style="text-align: right;">0.055<br>(3.21)</td>
 <td style="text-align: right;"></td>
@@ -3543,7 +3554,7 @@ Table&nbsp;13.11: Fama–MacBeth regressions by illiquidity window (BEM Table 13
 <td style="text-align: right;"></td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Illiq 3M</td>
+<td style="text-align: left;"><code>illiq3</code></td>
 <td style="text-align: right;"></td>
 <td style="text-align: right;"></td>
 <td style="text-align: right;">0.041<br>(1.55)</td>
@@ -3554,7 +3565,7 @@ Table&nbsp;13.11: Fama–MacBeth regressions by illiquidity window (BEM Table 13
 <td style="text-align: right;"></td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">Illiq 6M</td>
+<td style="text-align: left;"><code>illiq6</code></td>
 <td style="text-align: right;"></td>
 <td style="text-align: right;"></td>
 <td style="text-align: right;"></td>
@@ -3565,7 +3576,7 @@ Table&nbsp;13.11: Fama–MacBeth regressions by illiquidity window (BEM Table 13
 <td style="text-align: right;"></td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Illiq 12M</td>
+<td style="text-align: left;"><code>illiq12</code></td>
 <td style="text-align: right;"></td>
 <td style="text-align: right;"></td>
 <td style="text-align: right;"></td>
@@ -3598,7 +3609,7 @@ Table&nbsp;13.11: Fama–MacBeth regressions by illiquidity window (BEM Table 13
 <td style="text-align: right;">-0.041<br>(-0.79)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">BM</td>
+<td style="text-align: left;"><code>bm</code></td>
 <td style="text-align: right;"></td>
 <td style="text-align: right;">0.217<br>(3.12)</td>
 <td style="text-align: right;"></td>
@@ -3609,7 +3620,7 @@ Table&nbsp;13.11: Fama–MacBeth regressions by illiquidity window (BEM Table 13
 <td style="text-align: right;">0.187<br>(2.63)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Mom</td>
+<td style="text-align: left;"><code>mom</code></td>
 <td style="text-align: right;"></td>
 <td style="text-align: right;">0.008<br>(4.18)</td>
 <td style="text-align: right;"></td>
@@ -3620,7 +3631,7 @@ Table&nbsp;13.11: Fama–MacBeth regressions by illiquidity window (BEM Table 13
 <td style="text-align: right;">0.008<br>(4.27)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">Rev</td>
+<td style="text-align: left;"><code>rev</code></td>
 <td style="text-align: right;"></td>
 <td style="text-align: right;">-0.061<br>(-12.08)</td>
 <td style="text-align: right;"></td>
@@ -3703,7 +3714,7 @@ Table&nbsp;13.11: Fama–MacBeth regressions by illiquidity window (BEM Table 13
 </thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: left;">ln Illiq 1M</td>
+<td style="text-align: left;"><code>log_illiq1</code></td>
 <td style="text-align: right;">0.222<br>(2.01)</td>
 <td style="text-align: right;">0.116<br>(1.42)</td>
 <td style="text-align: right;"></td>
@@ -3714,7 +3725,7 @@ Table&nbsp;13.11: Fama–MacBeth regressions by illiquidity window (BEM Table 13
 <td style="text-align: right;"></td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">ln Illiq 3M</td>
+<td style="text-align: left;"><code>log_illiq3</code></td>
 <td style="text-align: right;"></td>
 <td style="text-align: right;"></td>
 <td style="text-align: right;">0.221<br>(1.91)</td>
@@ -3725,7 +3736,7 @@ Table&nbsp;13.11: Fama–MacBeth regressions by illiquidity window (BEM Table 13
 <td style="text-align: right;"></td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">ln Illiq 6M</td>
+<td style="text-align: left;"><code>log_illiq6</code></td>
 <td style="text-align: right;"></td>
 <td style="text-align: right;"></td>
 <td style="text-align: right;"></td>
@@ -3736,7 +3747,7 @@ Table&nbsp;13.11: Fama–MacBeth regressions by illiquidity window (BEM Table 13
 <td style="text-align: right;"></td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">ln Illiq 12M</td>
+<td style="text-align: left;"><code>log_illiq12</code></td>
 <td style="text-align: right;"></td>
 <td style="text-align: right;"></td>
 <td style="text-align: right;"></td>
@@ -3769,7 +3780,7 @@ Table&nbsp;13.11: Fama–MacBeth regressions by illiquidity window (BEM Table 13
 <td style="text-align: right;">-0.009<br>(-0.18)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">BM</td>
+<td style="text-align: left;"><code>bm</code></td>
 <td style="text-align: right;"></td>
 <td style="text-align: right;">0.229<br>(3.31)</td>
 <td style="text-align: right;"></td>
@@ -3780,7 +3791,7 @@ Table&nbsp;13.11: Fama–MacBeth regressions by illiquidity window (BEM Table 13
 <td style="text-align: right;">0.195<br>(2.76)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Mom</td>
+<td style="text-align: left;"><code>mom</code></td>
 <td style="text-align: right;"></td>
 <td style="text-align: right;">0.008<br>(3.89)</td>
 <td style="text-align: right;"></td>
@@ -3791,7 +3802,7 @@ Table&nbsp;13.11: Fama–MacBeth regressions by illiquidity window (BEM Table 13
 <td style="text-align: right;">0.008<br>(4.12)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">Rev</td>
+<td style="text-align: left;"><code>rev</code></td>
 <td style="text-align: right;"></td>
 <td style="text-align: right;">-0.062<br>(-12.08)</td>
 <td style="text-align: right;"></td>
@@ -3844,7 +3855,6 @@ Table&nbsp;13.11: Fama–MacBeth regressions by illiquidity window (BEM Table 13
 </figure>
 </div>
 </div>
-<p>With all controls, the coefficient on log twelve-month illiquidity is 0.341, compared with 0.342 in BEM.</p>
 </section>
 </section>
 <section id="liquidity-factors" class="level2" data-number="13.4">
@@ -3862,7 +3872,7 @@ r_{i,d+1}-r_{M,d+1}
 \widehat{\gamma}_m=\frac{1}{N_m}\sum_{i=1}^{N_m}\widehat{\gamma}_{i,m}.
 \tag{13.3}\]</span></span></p>
 <p>The aggregation uses stocks with a price of $5 to $1,000 at the prior month-end. The plotted level scales the average by <span class="math inline">\(V_m/V_1\)</span>, using the total prior month-end capitalization of the eligible stocks and August 1962 as the base month. We use the authors’ <a href="https://web.archive.org/web/20141121162425id_/http://faculty.chicagobooth.edu:80/lubos.pastor/research/liq_data_1962_2013.txt">December 2013 release</a>, the same vintage used by BEM. The file comes with <code>eap_pl</code> and includes the aggregate level, innovations, and traded factor.</p>
-<div id="80816808" class="cell" data-execution_count="18">
+<div id="65e92625" class="cell" data-execution_count="18">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> plotnine_polars <span class="im">import</span> aes</span>
 <span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> eap_pl <span class="im">import</span> load_pastor_stambaugh_2013</span>
@@ -3946,7 +3956,7 @@ r_{i,m}^{e}=\alpha_i+\beta_{i,M}\mathrm{MKT}_m+
 <span id="cb20-8"><a href="#cb20-8" aria-hidden="true" tabindex="-1"></a>    )</span>
 <span id="cb20-9"><a href="#cb20-9" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb20-10"><a href="#cb20-10" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> traded.select((pl.col(<span class="st">"psl"</span>).is_finite() <span class="op">&amp;</span> (pl.col(<span class="st">"psl"</span>) <span class="op">&gt;</span> <span class="op">-</span><span class="dv">1</span>)).fill_null(<span class="va">False</span>).<span class="bu">all</span>()).item()</span>
-<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a>plot_cumulative_returns(traded, y_label<span class="op">=</span><span class="st">"Cumulative PSL return"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb20-11"><a href="#cb20-11" aria-hidden="true" tabindex="-1"></a>plot_cumulative_returns(traded, y_label<span class="op">=</span><span class="st">"Cumulative liquidity factor return"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="21">
 <div id="fig-bem13-traded" class="quarto-float quarto-figure quarto-figure-center anchored" alt="Separate panels show positive long-run cumulative returns, a sustained drawdown from the late 1980s and sharp fluctuations around 2008–2009.">
 <figure class="quarto-float quarto-float-fig figure">
@@ -3960,8 +3970,8 @@ Figure&nbsp;13.3: Compounded and cumulative log returns for the traded liquidity
 </div>
 </div>
 </div>
-<p>The series ends December 2012 at 701.17% compounded and 208.09% in cumulative log returns, matching the 701% and 208% reported by BEM to the nearest percentage point.</p>
-<div id="e29febf1" class="cell" data-execution_count="22">
+<p>The series ends December 2012 at 701.17% compounded and 208.09% in cumulative log returns.</p>
+<div id="ab1d0d30" class="cell" data-execution_count="22">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>psl_sample <span class="op">=</span> (</span>
 <span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>    traded.select(month<span class="op">=</span><span class="st">"date"</span>, psl_pct<span class="op">=</span><span class="dv">100</span> <span class="op">*</span> pl.col(<span class="st">"psl"</span>))</span>
 <span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>    .join(factors, on<span class="op">=</span><span class="st">"month"</span>, validate<span class="op">=</span><span class="st">"1:1"</span>)</span>
@@ -4420,8 +4430,8 @@ Pástor, Ľuboš, and Robert F. Stambaugh. 2003. <span>“Liquidity Risk and Exp
       </a>          
   </div>
   <div class="nav-page nav-page-next">
-      <a href="./references.html" class="pagination-link" aria-label="References">
-        <span class="nav-page-text">References</span> <i class="bi bi-arrow-right-short"></i>
+      <a href="./skewness-replication.html" class="pagination-link" aria-label="Skewness">
+        <span class="nav-page-text"><span class="chapter-number">14</span>&nbsp; <span class="chapter-title">Skewness</span></span> <i class="bi bi-arrow-right-short"></i>
       </a>
   </div>
 </nav>

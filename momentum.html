@@ -168,7 +168,7 @@ window.Quarto = {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./crsp-replication.html">Part II. The Cross Section of Stock Returns</a></li><li class="breadcrumb-item"><a href="./momentum-replication.html"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">The Momentum Effect</span></a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./crsp-replication.html">Part II. The Cross Section of Stock Returns</a></li><li class="breadcrumb-item"><a href="./momentum.html"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">The Momentum Effect</span></a></li></ol></nav>
         <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
@@ -281,7 +281,7 @@ window.Quarto = {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./momentum-replication.html" class="sidebar-item-text sidebar-link active">
+  <a href="./momentum.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">The Momentum Effect</span></span></a>
   </div>
 </li>
@@ -295,6 +295,18 @@ window.Quarto = {
   <div class="sidebar-item-container"> 
   <a href="./liquidity-replication.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">Liquidity</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./skewness-replication.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">14</span>&nbsp; <span class="chapter-title">Skewness</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./volatility-replication.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">15</span>&nbsp; <span class="chapter-title">Idiosyncratic Volatility</span></span></a>
   </div>
 </li>
       </ul>
@@ -336,7 +348,7 @@ window.Quarto = {
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./crsp-replication.html">Part II. The Cross Section of Stock Returns</a></li><li class="breadcrumb-item"><a href="./momentum-replication.html"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">The Momentum Effect</span></a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./crsp-replication.html">Part II. The Cross Section of Stock Returns</a></li><li class="breadcrumb-item"><a href="./momentum.html"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">The Momentum Effect</span></a></li></ol></nav>
 <div class="quarto-title">
 <h1 class="title"><span id="sec-momentum-replication" class="quarto-section-identifier"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">The Momentum Effect</span></span></h1>
 </div>
@@ -393,7 +405,7 @@ window.Quarto = {
 <span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    ).agg(</span>
 <span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>        pl.when(gross.count() <span class="op">&gt;=</span> minimum).then(<span class="dv">100</span> <span class="op">*</span> (gross.product() <span class="op">-</span> <span class="dv">1</span>)).alias(name)</span>
 <span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div id="53908745" class="cell" data-execution_count="5">
+<div id="d9fefe98" class="cell" data-execution_count="5">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> polars <span class="im">as</span> pl</span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> eap_pl <span class="im">import</span> build_book_to_market, build_momentum, build_sizes, monthly_panel</span>
@@ -402,8 +414,8 @@ window.Quarto = {
 <span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>last <span class="op">=</span> pl.date(<span class="dv">2012</span>, <span class="dv">11</span>, <span class="dv">1</span>)</span>
 <span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>keys <span class="op">=</span> [<span class="st">"permno"</span>, <span class="st">"month"</span>]</span>
 <span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>signals <span class="op">=</span> {</span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    <span class="st">"mom"</span>: <span class="st">"Mom"</span>, <span class="st">"lag12"</span>: <span class="st">"Rₜ₋₁₂:ₜ₋₁"</span>, <span class="st">"lag6"</span>: <span class="st">"Rₜ₋₆:ₜ₋₁"</span>,</span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    <span class="st">"r12m"</span>: <span class="st">"R12M"</span>, <span class="st">"r9m"</span>: <span class="st">"R9M"</span>, <span class="st">"r6m"</span>: <span class="st">"R6M"</span>, <span class="st">"r3m"</span>: <span class="st">"R3M"</span>,</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    <span class="st">"mom"</span>: <span class="st">"`mom`"</span>, <span class="st">"lag12"</span>: <span class="st">"Rₜ₋₁₂:ₜ₋₁"</span>, <span class="st">"lag6"</span>: <span class="st">"Rₜ₋₆:ₜ₋₁"</span>,</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    <span class="st">"r12m"</span>: <span class="st">"`r12m`"</span>, <span class="st">"r9m"</span>: <span class="st">"`r9m`"</span>, <span class="st">"r6m"</span>: <span class="st">"`r6m`"</span>, <span class="st">"r3m"</span>: <span class="st">"`r3m`"</span>,</span>
 <span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>}</span>
 <span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>sizes <span class="op">=</span> build_sizes()</span>
@@ -471,7 +483,7 @@ Table&nbsp;11.1: Monthly summary statistics for momentum measures (BEM Table 11.
 </thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: left;">Mom</td>
+<td style="text-align: left;"><code>mom</code></td>
 <td style="text-align: right;">14.12</td>
 <td style="text-align: right;">58.40</td>
 <td style="text-align: right;">4.12</td>
@@ -516,7 +528,7 @@ Table&nbsp;11.1: Monthly summary statistics for momentum measures (BEM Table 11.
 <td style="text-align: right;">4567</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">R12M</td>
+<td style="text-align: left;"><code>r12m</code></td>
 <td style="text-align: right;">15.54</td>
 <td style="text-align: right;">62.39</td>
 <td style="text-align: right;">4.30</td>
@@ -531,7 +543,7 @@ Table&nbsp;11.1: Monthly summary statistics for momentum measures (BEM Table 11.
 <td style="text-align: right;">4421</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">R9M</td>
+<td style="text-align: left;"><code>r9m</code></td>
 <td style="text-align: right;">11.34</td>
 <td style="text-align: right;">51.02</td>
 <td style="text-align: right;">3.84</td>
@@ -546,7 +558,7 @@ Table&nbsp;11.1: Monthly summary statistics for momentum measures (BEM Table 11.
 <td style="text-align: right;">4532</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">R6M</td>
+<td style="text-align: left;"><code>r6m</code></td>
 <td style="text-align: right;">7.39</td>
 <td style="text-align: right;">39.68</td>
 <td style="text-align: right;">3.61</td>
@@ -561,7 +573,7 @@ Table&nbsp;11.1: Monthly summary statistics for momentum measures (BEM Table 11.
 <td style="text-align: right;">4601</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">R3M</td>
+<td style="text-align: left;"><code>r3m</code></td>
 <td style="text-align: right;">3.63</td>
 <td style="text-align: right;">26.69</td>
 <td style="text-align: right;">3.16</td>
@@ -582,7 +594,6 @@ Table&nbsp;11.1: Monthly summary statistics for momentum measures (BEM Table 11.
 </figure>
 </div>
 </div>
-<p>Mom has an average monthly cross-sectional mean of 14.12% and standard deviation of 58.40%, both matching BEM to two decimals. The average monthly count is 4,424 stocks versus 4,426 in BEM.</p>
 </section>
 <section id="correlations" class="level2" data-number="11.3">
 <h2 data-number="11.3" class="anchored" data-anchor-id="correlations"><span class="header-section-number">11.3</span> Correlations</h2>
@@ -590,7 +601,7 @@ Table&nbsp;11.1: Monthly summary statistics for momentum measures (BEM Table 11.
 <div class="cell" data-execution_count="8">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> eap_pl <span class="im">import</span> period_correlations</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>controls <span class="op">=</span> {<span class="st">"beta"</span>: <span class="st">"Beta"</span>, <span class="st">"log_cap"</span>: <span class="st">"Size"</span>, <span class="st">"bm"</span>: <span class="st">"BM"</span>}</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>controls <span class="op">=</span> {<span class="st">"beta"</span>: <span class="st">"Beta"</span>, <span class="st">"log_cap"</span>: <span class="st">"Size"</span>, <span class="st">"bm"</span>: <span class="st">"`bm`"</span>}</span>
 <span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>correlations <span class="op">=</span> (</span>
 <span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    period_correlations(panel, [<span class="op">*</span>controls, <span class="op">*</span>signals], <span class="st">"month"</span>)</span>
 <span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    .select(pl.exclude(<span class="st">"month"</span>).mean())</span>
@@ -629,13 +640,13 @@ Table&nbsp;11.2: Correlations of momentum with beta, size, and book-to-market (B
 <tr class="header">
 <th style="text-align: left;">Method</th>
 <th style="text-align: right;">Characteristic</th>
-<th style="text-align: right;">Mom</th>
+<th style="text-align: right;"><code>mom</code></th>
 <th style="text-align: right;">Rₜ₋₁₂:ₜ₋₁</th>
 <th style="text-align: right;">Rₜ₋₆:ₜ₋₁</th>
-<th style="text-align: right;">R12M</th>
-<th style="text-align: right;">R9M</th>
-<th style="text-align: right;">R6M</th>
-<th style="text-align: right;">R3M</th>
+<th style="text-align: right;"><code>r12m</code></th>
+<th style="text-align: right;"><code>r9m</code></th>
+<th style="text-align: right;"><code>r6m</code></th>
+<th style="text-align: right;"><code>r3m</code></th>
 </tr>
 </thead>
 <tbody>
@@ -663,7 +674,7 @@ Table&nbsp;11.2: Correlations of momentum with beta, size, and book-to-market (B
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Pearson</td>
-<td style="text-align: right;">BM</td>
+<td style="text-align: right;"><code>bm</code></td>
 <td style="text-align: right;">0.02</td>
 <td style="text-align: right;">0.01</td>
 <td style="text-align: right;">0.06</td>
@@ -696,7 +707,7 @@ Table&nbsp;11.2: Correlations of momentum with beta, size, and book-to-market (B
 </tr>
 <tr class="even">
 <td style="text-align: left;">Spearman</td>
-<td style="text-align: right;">BM</td>
+<td style="text-align: right;"><code>bm</code></td>
 <td style="text-align: right;">0.04</td>
 <td style="text-align: right;">0.02</td>
 <td style="text-align: right;">0.07</td>
@@ -712,14 +723,14 @@ Table&nbsp;11.2: Correlations of momentum with beta, size, and book-to-market (B
 </figure>
 </div>
 </div>
-<p>The monthly calculation reproduces all entries in BEM Table 11.2 at the printed precision. Mom is more strongly correlated with size than with beta or book-to-market.</p>
+<p><code>mom</code> is more strongly correlated with size than with beta or book-to-market.</p>
 </section>
 <section id="momentum-and-stock-returns" class="level2" data-number="11.4">
 <h2 data-number="11.4" class="anchored" data-anchor-id="momentum-and-stock-returns"><span class="header-section-number">11.4</span> Momentum and Stock Returns</h2>
 <section id="univariate-portfolio-analysis" class="level3" data-number="11.4.1">
 <h3 data-number="11.4.1" class="anchored" data-anchor-id="univariate-portfolio-analysis"><span class="header-section-number">11.4.1</span> Univariate Portfolio Analysis</h3>
 <p>Each month, sort the stocks with a valid signal into ten portfolios using breakpoints from all stocks with that signal. Value weights use market capitalization at formation. Returns and alphas are in percentage points per month. For each winner-minus-loser spread, regress the monthly return series on an intercept, on the market factor, or on the three Fama–French factors to estimate its mean, CAPM alpha, or FF alpha. Parentheses report six-lag Newey–West <span class="math inline">\(t\)</span>-statistics <span class="citation" data-cites="neweywest1987">(<a href="references.html#ref-neweywest1987" role="doc-biblioref">Newey and West 1987</a>)</span>.</p>
-<div id="7c90e255" class="cell" data-execution_count="9">
+<div id="b55dffe6" class="cell" data-execution_count="9">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> era_pl <span class="im">import</span> load_parquet</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> eap_pl <span class="im">import</span> format_fit, hac</span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> eap_pl._portfolios <span class="im">import</span> assign_portfolio, portfolio_months, spread</span>
@@ -751,7 +762,7 @@ Table&nbsp;11.2: Correlations of momentum with beta, size, and book-to-market (B
 <span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> name, rhs <span class="kw">in</span> models.items()</span>
 <span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a>    }</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div id="790a92af" class="cell" data-execution_count="10">
+<div id="ceb4393c" class="cell" data-execution_count="10">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>deciles <span class="op">=</span> {<span class="bu">str</span>(i): i <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">1</span>, <span class="dv">11</span>)}</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>formation <span class="op">=</span> panel.select(<span class="op">*</span>keys, <span class="st">"cap"</span>, <span class="op">*</span>signals)</span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>members <span class="op">=</span> {</span>
@@ -783,7 +794,7 @@ Table&nbsp;11.3: Momentum-sorted decile portfolios (BEM Table 11.3)
 <div id="tbl-bem11-deciles-1" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-subfloat-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-subfloat-caption quarto-subfloat-tbl" id="tbl-bem11-deciles-1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-(a) Mom-sorted portfolio characteristics
+(a) Momentum-sorted portfolio characteristics
 </figcaption>
 <div aria-describedby="tbl-bem11-deciles-1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <table id="tbl-bem11-deciles-1" class="caption-top table table-sm table-striped small">
@@ -817,7 +828,7 @@ Table&nbsp;11.3: Momentum-sorted decile portfolios (BEM Table 11.3)
 </thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: left;">Mom</td>
+<td style="text-align: left;"><code>mom</code></td>
 <td style="text-align: right;">-52.41</td>
 <td style="text-align: right;">-29.84</td>
 <td style="text-align: right;">-17.21</td>
@@ -843,7 +854,7 @@ Table&nbsp;11.3: Momentum-sorted decile portfolios (BEM Table 11.3)
 <td style="text-align: right;">0.97</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">MktCap (millions)</td>
+<td style="text-align: left;">Market cap (millions)</td>
 <td style="text-align: right;">154.17</td>
 <td style="text-align: right;">487.92</td>
 <td style="text-align: right;">873.20</td>
@@ -856,7 +867,7 @@ Table&nbsp;11.3: Momentum-sorted decile portfolios (BEM Table 11.3)
 <td style="text-align: right;">849.82</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">BM</td>
+<td style="text-align: left;"><code>bm</code></td>
 <td style="text-align: right;">0.89</td>
 <td style="text-align: right;">0.93</td>
 <td style="text-align: right;">0.94</td>
@@ -921,7 +932,7 @@ Table&nbsp;11.3: Momentum-sorted decile portfolios (BEM Table 11.3)
 <tbody>
 <tr class="odd">
 <td style="text-align: left;">Value weighted</td>
-<td style="text-align: right;">Mom</td>
+<td style="text-align: right;"><code>mom</code></td>
 <td style="text-align: right;">-0.76</td>
 <td style="text-align: right;">-0.12</td>
 <td style="text-align: right;">0.04</td>
@@ -972,7 +983,7 @@ Table&nbsp;11.3: Momentum-sorted decile portfolios (BEM Table 11.3)
 </tr>
 <tr class="even">
 <td style="text-align: left;">Value weighted</td>
-<td style="text-align: right;">R12M</td>
+<td style="text-align: right;"><code>r12m</code></td>
 <td style="text-align: right;">-0.37</td>
 <td style="text-align: right;">0.00</td>
 <td style="text-align: right;">0.26</td>
@@ -989,7 +1000,7 @@ Table&nbsp;11.3: Momentum-sorted decile portfolios (BEM Table 11.3)
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Value weighted</td>
-<td style="text-align: right;">R9M</td>
+<td style="text-align: right;"><code>r9m</code></td>
 <td style="text-align: right;">0.01</td>
 <td style="text-align: right;">0.40</td>
 <td style="text-align: right;">0.40</td>
@@ -1006,7 +1017,7 @@ Table&nbsp;11.3: Momentum-sorted decile portfolios (BEM Table 11.3)
 </tr>
 <tr class="even">
 <td style="text-align: left;">Value weighted</td>
-<td style="text-align: right;">R6M</td>
+<td style="text-align: right;"><code>r6m</code></td>
 <td style="text-align: right;">0.21</td>
 <td style="text-align: right;">0.48</td>
 <td style="text-align: right;">0.48</td>
@@ -1023,7 +1034,7 @@ Table&nbsp;11.3: Momentum-sorted decile portfolios (BEM Table 11.3)
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Value weighted</td>
-<td style="text-align: right;">R3M</td>
+<td style="text-align: right;"><code>r3m</code></td>
 <td style="text-align: right;">0.33</td>
 <td style="text-align: right;">0.54</td>
 <td style="text-align: right;">0.60</td>
@@ -1040,7 +1051,7 @@ Table&nbsp;11.3: Momentum-sorted decile portfolios (BEM Table 11.3)
 </tr>
 <tr class="even">
 <td style="text-align: left;">Equal weighted</td>
-<td style="text-align: right;">Mom</td>
+<td style="text-align: right;"><code>mom</code></td>
 <td style="text-align: right;">0.23</td>
 <td style="text-align: right;">0.35</td>
 <td style="text-align: right;">0.48</td>
@@ -1091,7 +1102,7 @@ Table&nbsp;11.3: Momentum-sorted decile portfolios (BEM Table 11.3)
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Equal weighted</td>
-<td style="text-align: right;">R12M</td>
+<td style="text-align: right;"><code>r12m</code></td>
 <td style="text-align: right;">1.04</td>
 <td style="text-align: right;">0.30</td>
 <td style="text-align: right;">0.45</td>
@@ -1108,7 +1119,7 @@ Table&nbsp;11.3: Momentum-sorted decile portfolios (BEM Table 11.3)
 </tr>
 <tr class="even">
 <td style="text-align: left;">Equal weighted</td>
-<td style="text-align: right;">R9M</td>
+<td style="text-align: right;"><code>r9m</code></td>
 <td style="text-align: right;">1.22</td>
 <td style="text-align: right;">0.43</td>
 <td style="text-align: right;">0.45</td>
@@ -1125,7 +1136,7 @@ Table&nbsp;11.3: Momentum-sorted decile portfolios (BEM Table 11.3)
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Equal weighted</td>
-<td style="text-align: right;">R6M</td>
+<td style="text-align: right;"><code>r6m</code></td>
 <td style="text-align: right;">1.43</td>
 <td style="text-align: right;">0.53</td>
 <td style="text-align: right;">0.54</td>
@@ -1142,7 +1153,7 @@ Table&nbsp;11.3: Momentum-sorted decile portfolios (BEM Table 11.3)
 </tr>
 <tr class="even">
 <td style="text-align: left;">Equal weighted</td>
-<td style="text-align: right;">R3M</td>
+<td style="text-align: right;"><code>r3m</code></td>
 <td style="text-align: right;">1.84</td>
 <td style="text-align: right;">0.67</td>
 <td style="text-align: right;">0.60</td>
@@ -1167,12 +1178,12 @@ Table&nbsp;11.3: Momentum-sorted decile portfolios (BEM Table 11.3)
 </figure>
 </div>
 </div>
-<p>The Mom winner-minus-loser spread averages 1.94% per month with value weights and 1.14% with equal weights. BEM report 1.95% and 1.08%, respectively.</p>
+<p>The <code>mom</code> winner-minus-loser spread averages 1.94% per month with value weights and 1.14% with equal weights.</p>
 </section>
 <section id="returns-at-longer-horizons" class="level3" data-number="11.4.2">
 <h3 data-number="11.4.2" class="anchored" data-anchor-id="returns-at-longer-horizons"><span class="header-section-number">11.4.2</span> Returns at Longer Horizons</h3>
 <p>Keep the formation-month decile assignments and capitalization weights. For each <span class="math inline">\(k\)</span>, attach the return in month <span class="math inline">\(t+k\)</span> and compute the spread across stocks with a return in that month. A delisting contributes its adjusted return in the month it occurs. We use realized returns through December 2012 and match the factors to the month in which each return is realized.</p>
-<div id="abd5411e" class="cell" data-execution_count="12">
+<div id="c78bd3c3" class="cell" data-execution_count="12">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> eap_pl._data <span class="im">import</span> monthly_stock_returns</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>holding_returns <span class="op">=</span> (</span>
@@ -1240,7 +1251,7 @@ Table&nbsp;11.4: Winner-minus-loser returns and FF alphas by horizon (BEM Table 
 <tbody>
 <tr class="odd">
 <td style="text-align: left;">Value weighted</td>
-<td style="text-align: right;">Mom</td>
+<td style="text-align: right;"><code>mom</code></td>
 <td style="text-align: right;">Return</td>
 <td style="text-align: right;">1.94<br>(5.38)</td>
 <td style="text-align: right;">1.71<br>(5.06)</td>
@@ -1257,7 +1268,7 @@ Table&nbsp;11.4: Winner-minus-loser returns and FF alphas by horizon (BEM Table 
 </tr>
 <tr class="even">
 <td style="text-align: left;">Value weighted</td>
-<td style="text-align: right;">Mom</td>
+<td style="text-align: right;"><code>mom</code></td>
 <td style="text-align: right;">FF α</td>
 <td style="text-align: right;">2.38<br>(7.58)</td>
 <td style="text-align: right;">2.16<br>(7.19)</td>
@@ -1342,7 +1353,7 @@ Table&nbsp;11.4: Winner-minus-loser returns and FF alphas by horizon (BEM Table 
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Value weighted</td>
-<td style="text-align: right;">R12M</td>
+<td style="text-align: right;"><code>r12m</code></td>
 <td style="text-align: right;">Return</td>
 <td style="text-align: right;">1.42<br>(3.67)</td>
 <td style="text-align: right;">1.60<br>(4.39)</td>
@@ -1359,7 +1370,7 @@ Table&nbsp;11.4: Winner-minus-loser returns and FF alphas by horizon (BEM Table 
 </tr>
 <tr class="even">
 <td style="text-align: left;">Value weighted</td>
-<td style="text-align: right;">R12M</td>
+<td style="text-align: right;"><code>r12m</code></td>
 <td style="text-align: right;">FF α</td>
 <td style="text-align: right;">1.95<br>(5.84)</td>
 <td style="text-align: right;">2.08<br>(6.73)</td>
@@ -1376,7 +1387,7 @@ Table&nbsp;11.4: Winner-minus-loser returns and FF alphas by horizon (BEM Table 
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Value weighted</td>
-<td style="text-align: right;">R9M</td>
+<td style="text-align: right;"><code>r9m</code></td>
 <td style="text-align: right;">Return</td>
 <td style="text-align: right;">0.96<br>(2.53)</td>
 <td style="text-align: right;">1.29<br>(3.45)</td>
@@ -1393,7 +1404,7 @@ Table&nbsp;11.4: Winner-minus-loser returns and FF alphas by horizon (BEM Table 
 </tr>
 <tr class="even">
 <td style="text-align: left;">Value weighted</td>
-<td style="text-align: right;">R9M</td>
+<td style="text-align: right;"><code>r9m</code></td>
 <td style="text-align: right;">FF α</td>
 <td style="text-align: right;">1.46<br>(4.48)</td>
 <td style="text-align: right;">1.74<br>(5.40)</td>
@@ -1410,7 +1421,7 @@ Table&nbsp;11.4: Winner-minus-loser returns and FF alphas by horizon (BEM Table 
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Value weighted</td>
-<td style="text-align: right;">R6M</td>
+<td style="text-align: right;"><code>r6m</code></td>
 <td style="text-align: right;">Return</td>
 <td style="text-align: right;">0.57<br>(1.70)</td>
 <td style="text-align: right;">1.26<br>(3.36)</td>
@@ -1427,7 +1438,7 @@ Table&nbsp;11.4: Winner-minus-loser returns and FF alphas by horizon (BEM Table 
 </tr>
 <tr class="even">
 <td style="text-align: left;">Value weighted</td>
-<td style="text-align: right;">R6M</td>
+<td style="text-align: right;"><code>r6m</code></td>
 <td style="text-align: right;">FF α</td>
 <td style="text-align: right;">0.97<br>(3.17)</td>
 <td style="text-align: right;">1.64<br>(5.07)</td>
@@ -1444,7 +1455,7 @@ Table&nbsp;11.4: Winner-minus-loser returns and FF alphas by horizon (BEM Table 
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Value weighted</td>
-<td style="text-align: right;">R3M</td>
+<td style="text-align: right;"><code>r3m</code></td>
 <td style="text-align: right;">Return</td>
 <td style="text-align: right;">0.30<br>(1.03)</td>
 <td style="text-align: right;">1.04<br>(3.71)</td>
@@ -1461,7 +1472,7 @@ Table&nbsp;11.4: Winner-minus-loser returns and FF alphas by horizon (BEM Table 
 </tr>
 <tr class="even">
 <td style="text-align: left;">Value weighted</td>
-<td style="text-align: right;">R3M</td>
+<td style="text-align: right;"><code>r3m</code></td>
 <td style="text-align: right;">FF α</td>
 <td style="text-align: right;">0.69<br>(2.34)</td>
 <td style="text-align: right;">1.33<br>(4.91)</td>
@@ -1478,7 +1489,7 @@ Table&nbsp;11.4: Winner-minus-loser returns and FF alphas by horizon (BEM Table 
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Equal weighted</td>
-<td style="text-align: right;">Mom</td>
+<td style="text-align: right;"><code>mom</code></td>
 <td style="text-align: right;">Return</td>
 <td style="text-align: right;">1.14<br>(3.63)</td>
 <td style="text-align: right;">1.02<br>(3.37)</td>
@@ -1495,7 +1506,7 @@ Table&nbsp;11.4: Winner-minus-loser returns and FF alphas by horizon (BEM Table 
 </tr>
 <tr class="even">
 <td style="text-align: left;">Equal weighted</td>
-<td style="text-align: right;">Mom</td>
+<td style="text-align: right;"><code>mom</code></td>
 <td style="text-align: right;">FF α</td>
 <td style="text-align: right;">1.46<br>(5.17)</td>
 <td style="text-align: right;">1.35<br>(4.99)</td>
@@ -1580,7 +1591,7 @@ Table&nbsp;11.4: Winner-minus-loser returns and FF alphas by horizon (BEM Table 
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Equal weighted</td>
-<td style="text-align: right;">R12M</td>
+<td style="text-align: right;"><code>r12m</code></td>
 <td style="text-align: right;">Return</td>
 <td style="text-align: right;">0.16<br>(0.45)</td>
 <td style="text-align: right;">0.95<br>(3.00)</td>
@@ -1597,7 +1608,7 @@ Table&nbsp;11.4: Winner-minus-loser returns and FF alphas by horizon (BEM Table 
 </tr>
 <tr class="even">
 <td style="text-align: left;">Equal weighted</td>
-<td style="text-align: right;">R12M</td>
+<td style="text-align: right;"><code>r12m</code></td>
 <td style="text-align: right;">FF α</td>
 <td style="text-align: right;">0.55<br>(1.75)</td>
 <td style="text-align: right;">1.29<br>(4.50)</td>
@@ -1614,7 +1625,7 @@ Table&nbsp;11.4: Winner-minus-loser returns and FF alphas by horizon (BEM Table 
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Equal weighted</td>
-<td style="text-align: right;">R9M</td>
+<td style="text-align: right;"><code>r9m</code></td>
 <td style="text-align: right;">Return</td>
 <td style="text-align: right;">-0.04<br>(-0.12)</td>
 <td style="text-align: right;">0.83<br>(2.60)</td>
@@ -1631,7 +1642,7 @@ Table&nbsp;11.4: Winner-minus-loser returns and FF alphas by horizon (BEM Table 
 </tr>
 <tr class="even">
 <td style="text-align: left;">Equal weighted</td>
-<td style="text-align: right;">R9M</td>
+<td style="text-align: right;"><code>r9m</code></td>
 <td style="text-align: right;">FF α</td>
 <td style="text-align: right;">0.38<br>(1.21)</td>
 <td style="text-align: right;">1.17<br>(4.24)</td>
@@ -1648,7 +1659,7 @@ Table&nbsp;11.4: Winner-minus-loser returns and FF alphas by horizon (BEM Table 
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Equal weighted</td>
-<td style="text-align: right;">R6M</td>
+<td style="text-align: right;"><code>r6m</code></td>
 <td style="text-align: right;">Return</td>
 <td style="text-align: right;">-0.53<br>(-1.62)</td>
 <td style="text-align: right;">0.83<br>(2.91)</td>
@@ -1665,7 +1676,7 @@ Table&nbsp;11.4: Winner-minus-loser returns and FF alphas by horizon (BEM Table 
 </tr>
 <tr class="even">
 <td style="text-align: left;">Equal weighted</td>
-<td style="text-align: right;">R6M</td>
+<td style="text-align: right;"><code>r6m</code></td>
 <td style="text-align: right;">FF α</td>
 <td style="text-align: right;">-0.14<br>(-0.46)</td>
 <td style="text-align: right;">1.11<br>(4.50)</td>
@@ -1682,7 +1693,7 @@ Table&nbsp;11.4: Winner-minus-loser returns and FF alphas by horizon (BEM Table 
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Equal weighted</td>
-<td style="text-align: right;">R3M</td>
+<td style="text-align: right;"><code>r3m</code></td>
 <td style="text-align: right;">Return</td>
 <td style="text-align: right;">-1.33<br>(-4.61)</td>
 <td style="text-align: right;">0.54<br>(2.53)</td>
@@ -1699,7 +1710,7 @@ Table&nbsp;11.4: Winner-minus-loser returns and FF alphas by horizon (BEM Table 
 </tr>
 <tr class="even">
 <td style="text-align: left;">Equal weighted</td>
-<td style="text-align: right;">R3M</td>
+<td style="text-align: right;"><code>r3m</code></td>
 <td style="text-align: right;">FF α</td>
 <td style="text-align: right;">-1.01<br>(-3.47)</td>
 <td style="text-align: right;">0.74<br>(3.53)</td>
@@ -1721,12 +1732,12 @@ Table&nbsp;11.4: Winner-minus-loser returns and FF alphas by horizon (BEM Table 
 </figure>
 </div>
 </div>
-<p>The value-weighted Mom spread turns negative at the longer horizons, reaching −0.63% in month <span class="math inline">\(t+12\)</span>. Its FF alpha in that month is close to zero.</p>
+<p>The value-weighted <code>mom</code> spread turns negative at the longer horizons, reaching −0.63% in month <span class="math inline">\(t+12\)</span>. Its FF alpha in that month is close to zero.</p>
 </section>
 <section id="controlling-for-market-capitalization" class="level3" data-number="11.4.3">
 <h3 data-number="11.4.3" class="anchored" data-anchor-id="controlling-for-market-capitalization"><span class="header-section-number">11.4.3</span> Controlling for Market Capitalization</h3>
-<p>First divide stocks into five capitalization groups. Then compute Mom quintile breakpoints separately within each capitalization group. The last column averages the control portfolios each month before calculating the mean return or estimating an alpha.</p>
-<div id="6651c85a" class="cell" data-execution_count="14">
+<p>First divide stocks into five capitalization groups. Then compute <code>mom</code> quintile breakpoints separately within each capitalization group. The last column averages the control portfolios each month before calculating the mean return or estimating an alpha.</p>
+<div id="56cdf24a" class="cell" data-execution_count="14">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> eap_pl <span class="im">import</span> bivariate_months</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>sort_panel <span class="op">=</span> panel.select(<span class="op">*</span>keys, <span class="st">"mom"</span>, <span class="st">"beta"</span>, <span class="st">"cap"</span>, <span class="st">"bm"</span>, <span class="st">"excess"</span>, <span class="st">"market"</span>)</span>
@@ -1746,7 +1757,7 @@ Table&nbsp;11.4: Winner-minus-loser returns and FF alphas by horizon (BEM Table 
 <span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> show_cells:</span>
 <span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> target <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">1</span>, <span class="dv">6</span>):</span>
 <span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>            rows.append({</span>
-<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>                <span class="st">"Statistic"</span>: <span class="ss">f"Mom </span><span class="sc">{</span>target<span class="sc">}</span><span class="ss">"</span>,</span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>                <span class="st">"Statistic"</span>: <span class="ss">f"`mom` </span><span class="sc">{</span>target<span class="sc">}</span><span class="ss">"</span>,</span>
 <span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>                <span class="op">**</span>{label: <span class="ss">f'</span><span class="sc">{</span>cell<span class="sc">.</span><span class="bu">filter</span>(pl.col(<span class="st">"target"</span>) <span class="op">==</span> target)[weight]<span class="sc">.</span>mean()<span class="sc">:.2f}</span><span class="ss">'</span></span>
 <span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>                   <span class="cf">for</span> label, cell <span class="kw">in</span> series.items()},</span>
 <span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>            })</span>
@@ -1804,7 +1815,7 @@ Table&nbsp;11.5: Dependent sorts on capitalization and momentum (BEM Table 11.5)
 <tbody>
 <tr class="odd">
 <td style="text-align: left;">Value weighted</td>
-<td style="text-align: right;">Mom 1</td>
+<td style="text-align: right;"><code>mom</code> 1</td>
 <td style="text-align: right;">0.34</td>
 <td style="text-align: right;">-0.64</td>
 <td style="text-align: right;">-0.30</td>
@@ -1814,7 +1825,7 @@ Table&nbsp;11.5: Dependent sorts on capitalization and momentum (BEM Table 11.5)
 </tr>
 <tr class="even">
 <td style="text-align: left;">Value weighted</td>
-<td style="text-align: right;">Mom 2</td>
+<td style="text-align: right;"><code>mom</code> 2</td>
 <td style="text-align: right;">0.61</td>
 <td style="text-align: right;">0.35</td>
 <td style="text-align: right;">0.46</td>
@@ -1824,7 +1835,7 @@ Table&nbsp;11.5: Dependent sorts on capitalization and momentum (BEM Table 11.5)
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Value weighted</td>
-<td style="text-align: right;">Mom 3</td>
+<td style="text-align: right;"><code>mom</code> 3</td>
 <td style="text-align: right;">0.92</td>
 <td style="text-align: right;">0.74</td>
 <td style="text-align: right;">0.75</td>
@@ -1834,7 +1845,7 @@ Table&nbsp;11.5: Dependent sorts on capitalization and momentum (BEM Table 11.5)
 </tr>
 <tr class="even">
 <td style="text-align: left;">Value weighted</td>
-<td style="text-align: right;">Mom 4</td>
+<td style="text-align: right;"><code>mom</code> 4</td>
 <td style="text-align: right;">1.09</td>
 <td style="text-align: right;">1.03</td>
 <td style="text-align: right;">1.00</td>
@@ -1844,7 +1855,7 @@ Table&nbsp;11.5: Dependent sorts on capitalization and momentum (BEM Table 11.5)
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Value weighted</td>
-<td style="text-align: right;">Mom 5</td>
+<td style="text-align: right;"><code>mom</code> 5</td>
 <td style="text-align: right;">1.39</td>
 <td style="text-align: right;">1.36</td>
 <td style="text-align: right;">1.31</td>
@@ -1884,7 +1895,7 @@ Table&nbsp;11.5: Dependent sorts on capitalization and momentum (BEM Table 11.5)
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Equal weighted</td>
-<td style="text-align: right;">Mom 1</td>
+<td style="text-align: right;"><code>mom</code> 1</td>
 <td style="text-align: right;">1.53</td>
 <td style="text-align: right;">-0.62</td>
 <td style="text-align: right;">-0.29</td>
@@ -1894,7 +1905,7 @@ Table&nbsp;11.5: Dependent sorts on capitalization and momentum (BEM Table 11.5)
 </tr>
 <tr class="even">
 <td style="text-align: left;">Equal weighted</td>
-<td style="text-align: right;">Mom 2</td>
+<td style="text-align: right;"><code>mom</code> 2</td>
 <td style="text-align: right;">1.17</td>
 <td style="text-align: right;">0.36</td>
 <td style="text-align: right;">0.44</td>
@@ -1904,7 +1915,7 @@ Table&nbsp;11.5: Dependent sorts on capitalization and momentum (BEM Table 11.5)
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Equal weighted</td>
-<td style="text-align: right;">Mom 3</td>
+<td style="text-align: right;"><code>mom</code> 3</td>
 <td style="text-align: right;">1.24</td>
 <td style="text-align: right;">0.74</td>
 <td style="text-align: right;">0.77</td>
@@ -1914,7 +1925,7 @@ Table&nbsp;11.5: Dependent sorts on capitalization and momentum (BEM Table 11.5)
 </tr>
 <tr class="even">
 <td style="text-align: left;">Equal weighted</td>
-<td style="text-align: right;">Mom 4</td>
+<td style="text-align: right;"><code>mom</code> 4</td>
 <td style="text-align: right;">1.35</td>
 <td style="text-align: right;">1.03</td>
 <td style="text-align: right;">1.00</td>
@@ -1924,7 +1935,7 @@ Table&nbsp;11.5: Dependent sorts on capitalization and momentum (BEM Table 11.5)
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Equal weighted</td>
-<td style="text-align: right;">Mom 5</td>
+<td style="text-align: right;"><code>mom</code> 5</td>
 <td style="text-align: right;">1.57</td>
 <td style="text-align: right;">1.37</td>
 <td style="text-align: right;">1.30</td>
@@ -1972,7 +1983,7 @@ Table&nbsp;11.5: Dependent sorts on capitalization and momentum (BEM Table 11.5)
 </section>
 <section id="momentum-among-small-stocks" class="level3" data-number="11.4.4">
 <h3 data-number="11.4.4" class="anchored" data-anchor-id="momentum-among-small-stocks"><span class="header-section-number">11.4.4</span> Momentum Among Small Stocks</h3>
-<p>Restrict the first sort to the bottom fifth of the capitalization distribution. Split that group into four portfolios and sort each portfolio into Mom quintiles.</p>
+<p>Restrict the first sort to the bottom fifth of the capitalization distribution. Split that group into four portfolios and sort each portfolio into <code>mom</code> quintiles.</p>
 <div class="cell" data-execution_count="16">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>small <span class="op">=</span> sort_panel.<span class="bu">filter</span>(pl.col(<span class="st">"cap"</span>) <span class="op">&lt;=</span> pl.col(<span class="st">"cap"</span>).quantile(<span class="fl">0.20</span>).over(<span class="st">"month"</span>))</span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>small <span class="op">=</span> assign_portfolio(small, <span class="st">"cap"</span>, <span class="dv">4</span>, <span class="st">"month"</span>, label<span class="op">=</span><span class="st">"control"</span>)</span>
@@ -2015,7 +2026,7 @@ Table&nbsp;11.6: Dependent momentum sorts within the smallest capitalization qui
 <tbody>
 <tr class="odd">
 <td style="text-align: left;">Value weighted</td>
-<td style="text-align: right;">Mom 1</td>
+<td style="text-align: right;"><code>mom</code> 1</td>
 <td style="text-align: right;">3.11</td>
 <td style="text-align: right;">0.39</td>
 <td style="text-align: right;">-0.34</td>
@@ -2023,7 +2034,7 @@ Table&nbsp;11.6: Dependent momentum sorts within the smallest capitalization qui
 </tr>
 <tr class="even">
 <td style="text-align: left;">Value weighted</td>
-<td style="text-align: right;">Mom 2</td>
+<td style="text-align: right;"><code>mom</code> 2</td>
 <td style="text-align: right;">2.51</td>
 <td style="text-align: right;">1.12</td>
 <td style="text-align: right;">0.41</td>
@@ -2031,7 +2042,7 @@ Table&nbsp;11.6: Dependent momentum sorts within the smallest capitalization qui
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Value weighted</td>
-<td style="text-align: right;">Mom 3</td>
+<td style="text-align: right;"><code>mom</code> 3</td>
 <td style="text-align: right;">2.23</td>
 <td style="text-align: right;">1.10</td>
 <td style="text-align: right;">0.90</td>
@@ -2039,7 +2050,7 @@ Table&nbsp;11.6: Dependent momentum sorts within the smallest capitalization qui
 </tr>
 <tr class="even">
 <td style="text-align: left;">Value weighted</td>
-<td style="text-align: right;">Mom 4</td>
+<td style="text-align: right;"><code>mom</code> 4</td>
 <td style="text-align: right;">2.22</td>
 <td style="text-align: right;">1.31</td>
 <td style="text-align: right;">0.99</td>
@@ -2047,7 +2058,7 @@ Table&nbsp;11.6: Dependent momentum sorts within the smallest capitalization qui
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Value weighted</td>
-<td style="text-align: right;">Mom 5</td>
+<td style="text-align: right;"><code>mom</code> 5</td>
 <td style="text-align: right;">2.35</td>
 <td style="text-align: right;">1.48</td>
 <td style="text-align: right;">1.35</td>
@@ -2079,7 +2090,7 @@ Table&nbsp;11.6: Dependent momentum sorts within the smallest capitalization qui
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Equal weighted</td>
-<td style="text-align: right;">Mom 1</td>
+<td style="text-align: right;"><code>mom</code> 1</td>
 <td style="text-align: right;">4.09</td>
 <td style="text-align: right;">0.43</td>
 <td style="text-align: right;">-0.32</td>
@@ -2087,7 +2098,7 @@ Table&nbsp;11.6: Dependent momentum sorts within the smallest capitalization qui
 </tr>
 <tr class="even">
 <td style="text-align: left;">Equal weighted</td>
-<td style="text-align: right;">Mom 2</td>
+<td style="text-align: right;"><code>mom</code> 2</td>
 <td style="text-align: right;">3.13</td>
 <td style="text-align: right;">1.15</td>
 <td style="text-align: right;">0.44</td>
@@ -2095,7 +2106,7 @@ Table&nbsp;11.6: Dependent momentum sorts within the smallest capitalization qui
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Equal weighted</td>
-<td style="text-align: right;">Mom 3</td>
+<td style="text-align: right;"><code>mom</code> 3</td>
 <td style="text-align: right;">2.67</td>
 <td style="text-align: right;">1.09</td>
 <td style="text-align: right;">0.90</td>
@@ -2103,7 +2114,7 @@ Table&nbsp;11.6: Dependent momentum sorts within the smallest capitalization qui
 </tr>
 <tr class="even">
 <td style="text-align: left;">Equal weighted</td>
-<td style="text-align: right;">Mom 4</td>
+<td style="text-align: right;"><code>mom</code> 4</td>
 <td style="text-align: right;">2.54</td>
 <td style="text-align: right;">1.33</td>
 <td style="text-align: right;">0.98</td>
@@ -2111,7 +2122,7 @@ Table&nbsp;11.6: Dependent momentum sorts within the smallest capitalization qui
 </tr>
 <tr class="odd">
 <td style="text-align: left;">Equal weighted</td>
-<td style="text-align: right;">Mom 5</td>
+<td style="text-align: right;"><code>mom</code> 5</td>
 <td style="text-align: right;">2.59</td>
 <td style="text-align: right;">1.47</td>
 <td style="text-align: right;">1.37</td>
@@ -2151,9 +2162,9 @@ Table&nbsp;11.6: Dependent momentum sorts within the smallest capitalization qui
 </section>
 <section id="controlling-for-beta-and-book-to-market" class="level3" data-number="11.4.5">
 <h3 data-number="11.4.5" class="anchored" data-anchor-id="controlling-for-beta-and-book-to-market"><span class="header-section-number">11.4.5</span> Controlling for Beta and Book-to-Market</h3>
-<p>The dependent sorts calculate Mom breakpoints within each beta or BM quintile. The independent sorts use the intersection of two sets of breakpoints computed separately across stocks for each variable. The tables show the high-minus-low Mom spread within each control quintile and its average across the control quintiles.</p>
-<div id="867ff2ab" class="cell" data-execution_count="17">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>sort_variables <span class="op">=</span> {<span class="st">"beta"</span>: <span class="st">"Beta"</span>, <span class="st">"cap"</span>: <span class="st">"MktCap"</span>, <span class="st">"bm"</span>: <span class="st">"BM"</span>}</span>
+<p>The dependent sorts calculate <code>mom</code> breakpoints within each beta or <code>bm</code> quintile. The independent sorts use the intersection of two sets of breakpoints computed separately across stocks for each variable. The tables show the high-minus-low <code>mom</code> spread within each control quintile and its average across the control quintiles.</p>
+<div id="51f8342d" class="cell" data-execution_count="17">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>sort_variables <span class="op">=</span> {<span class="st">"beta"</span>: <span class="st">"Beta"</span>, <span class="st">"cap"</span>: <span class="st">"Market cap"</span>, <span class="st">"bm"</span>: <span class="st">"`bm`"</span>}</span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> two_way_spreads(pairs, <span class="op">*</span>, dependent, momentum_first<span class="op">=</span><span class="va">False</span>):</span>
@@ -2271,7 +2282,7 @@ Table&nbsp;11.7: Momentum spreads from dependent sorts controlling for beta or b
 <td style="text-align: right;">1.22<br>(6.04)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">BM</td>
+<td style="text-align: left;"><code>bm</code></td>
 <td style="text-align: right;">Value weighted</td>
 <td style="text-align: right;">5–1 Return</td>
 <td style="text-align: right;">1.76<br>(5.49)</td>
@@ -2282,7 +2293,7 @@ Table&nbsp;11.7: Momentum spreads from dependent sorts controlling for beta or b
 <td style="text-align: right;">0.87<br>(3.25)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">BM</td>
+<td style="text-align: left;"><code>bm</code></td>
 <td style="text-align: right;">Value weighted</td>
 <td style="text-align: right;">5–1 CAPM α</td>
 <td style="text-align: right;">1.92<br>(6.43)</td>
@@ -2293,7 +2304,7 @@ Table&nbsp;11.7: Momentum spreads from dependent sorts controlling for beta or b
 <td style="text-align: right;">1.00<br>(4.12)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">BM</td>
+<td style="text-align: left;"><code>bm</code></td>
 <td style="text-align: right;">Value weighted</td>
 <td style="text-align: right;">5–1 FF α</td>
 <td style="text-align: right;">2.19<br>(7.30)</td>
@@ -2304,7 +2315,7 @@ Table&nbsp;11.7: Momentum spreads from dependent sorts controlling for beta or b
 <td style="text-align: right;">1.23<br>(5.27)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">BM</td>
+<td style="text-align: left;"><code>bm</code></td>
 <td style="text-align: right;">Equal weighted</td>
 <td style="text-align: right;">5–1 Return</td>
 <td style="text-align: right;">1.14<br>(3.93)</td>
@@ -2315,7 +2326,7 @@ Table&nbsp;11.7: Momentum spreads from dependent sorts controlling for beta or b
 <td style="text-align: right;">0.69<br>(2.79)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">BM</td>
+<td style="text-align: left;"><code>bm</code></td>
 <td style="text-align: right;">Equal weighted</td>
 <td style="text-align: right;">5–1 CAPM α</td>
 <td style="text-align: right;">1.24<br>(4.68)</td>
@@ -2326,7 +2337,7 @@ Table&nbsp;11.7: Momentum spreads from dependent sorts controlling for beta or b
 <td style="text-align: right;">0.77<br>(3.46)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">BM</td>
+<td style="text-align: left;"><code>bm</code></td>
 <td style="text-align: right;">Equal weighted</td>
 <td style="text-align: right;">5–1 FF α</td>
 <td style="text-align: right;">1.47<br>(5.43)</td>
@@ -2444,7 +2455,7 @@ Table&nbsp;11.8: Momentum spreads from independent sorts controlling for beta, c
 <td style="text-align: right;">1.24<br>(5.90)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">MktCap</td>
+<td style="text-align: left;">Market cap</td>
 <td style="text-align: right;">Value weighted</td>
 <td style="text-align: right;">5–1 Return</td>
 <td style="text-align: right;">0.95<br>(3.89)</td>
@@ -2455,7 +2466,7 @@ Table&nbsp;11.8: Momentum spreads from independent sorts controlling for beta, c
 <td style="text-align: right;">1.38<br>(5.80)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">MktCap</td>
+<td style="text-align: left;">Market cap</td>
 <td style="text-align: right;">Value weighted</td>
 <td style="text-align: right;">5–1 CAPM α</td>
 <td style="text-align: right;">1.07<br>(4.85)</td>
@@ -2466,7 +2477,7 @@ Table&nbsp;11.8: Momentum spreads from independent sorts controlling for beta, c
 <td style="text-align: right;">1.50<br>(7.05)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">MktCap</td>
+<td style="text-align: left;">Market cap</td>
 <td style="text-align: right;">Value weighted</td>
 <td style="text-align: right;">5–1 FF α</td>
 <td style="text-align: right;">1.16<br>(5.45)</td>
@@ -2477,7 +2488,7 @@ Table&nbsp;11.8: Momentum spreads from independent sorts controlling for beta, c
 <td style="text-align: right;">1.66<br>(8.28)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">MktCap</td>
+<td style="text-align: left;">Market cap</td>
 <td style="text-align: right;">Equal weighted</td>
 <td style="text-align: right;">5–1 Return</td>
 <td style="text-align: right;">0.30<br>(1.20)</td>
@@ -2488,7 +2499,7 @@ Table&nbsp;11.8: Momentum spreads from independent sorts controlling for beta, c
 <td style="text-align: right;">1.29<br>(5.49)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">MktCap</td>
+<td style="text-align: left;">Market cap</td>
 <td style="text-align: right;">Equal weighted</td>
 <td style="text-align: right;">5–1 CAPM α</td>
 <td style="text-align: right;">0.41<br>(1.81)</td>
@@ -2499,7 +2510,7 @@ Table&nbsp;11.8: Momentum spreads from independent sorts controlling for beta, c
 <td style="text-align: right;">1.41<br>(6.66)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">MktCap</td>
+<td style="text-align: left;">Market cap</td>
 <td style="text-align: right;">Equal weighted</td>
 <td style="text-align: right;">5–1 FF α</td>
 <td style="text-align: right;">0.50<br>(2.14)</td>
@@ -2510,7 +2521,7 @@ Table&nbsp;11.8: Momentum spreads from independent sorts controlling for beta, c
 <td style="text-align: right;">1.56<br>(7.84)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">BM</td>
+<td style="text-align: left;"><code>bm</code></td>
 <td style="text-align: right;">Value weighted</td>
 <td style="text-align: right;">5–1 Return</td>
 <td style="text-align: right;">1.54<br>(5.31)</td>
@@ -2521,7 +2532,7 @@ Table&nbsp;11.8: Momentum spreads from independent sorts controlling for beta, c
 <td style="text-align: right;">0.87<br>(3.16)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">BM</td>
+<td style="text-align: left;"><code>bm</code></td>
 <td style="text-align: right;">Value weighted</td>
 <td style="text-align: right;">5–1 CAPM α</td>
 <td style="text-align: right;">1.70<br>(6.28)</td>
@@ -2532,7 +2543,7 @@ Table&nbsp;11.8: Momentum spreads from independent sorts controlling for beta, c
 <td style="text-align: right;">1.01<br>(4.03)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">BM</td>
+<td style="text-align: left;"><code>bm</code></td>
 <td style="text-align: right;">Value weighted</td>
 <td style="text-align: right;">5–1 FF α</td>
 <td style="text-align: right;">1.93<br>(7.46)</td>
@@ -2543,7 +2554,7 @@ Table&nbsp;11.8: Momentum spreads from independent sorts controlling for beta, c
 <td style="text-align: right;">1.22<br>(5.13)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">BM</td>
+<td style="text-align: left;"><code>bm</code></td>
 <td style="text-align: right;">Equal weighted</td>
 <td style="text-align: right;">5–1 Return</td>
 <td style="text-align: right;">1.29<br>(4.73)</td>
@@ -2554,7 +2565,7 @@ Table&nbsp;11.8: Momentum spreads from independent sorts controlling for beta, c
 <td style="text-align: right;">0.73<br>(2.94)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">BM</td>
+<td style="text-align: left;"><code>bm</code></td>
 <td style="text-align: right;">Equal weighted</td>
 <td style="text-align: right;">5–1 CAPM α</td>
 <td style="text-align: right;">1.38<br>(5.52)</td>
@@ -2565,7 +2576,7 @@ Table&nbsp;11.8: Momentum spreads from independent sorts controlling for beta, c
 <td style="text-align: right;">0.80<br>(3.62)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">BM</td>
+<td style="text-align: left;"><code>bm</code></td>
 <td style="text-align: right;">Equal weighted</td>
 <td style="text-align: right;">5–1 FF α</td>
 <td style="text-align: right;">1.59<br>(6.54)</td>
@@ -2585,7 +2596,7 @@ Table&nbsp;11.8: Momentum spreads from independent sorts controlling for beta, c
 </section>
 <section id="controlling-for-momentum" class="level3" data-number="11.4.6">
 <h3 data-number="11.4.6" class="anchored" data-anchor-id="controlling-for-momentum"><span class="header-section-number">11.4.6</span> Controlling for Momentum</h3>
-<p>Reverse the sort order to ask whether differences associated with beta, capitalization, or BM remain within Mom quintiles. For Table 11.9, we follow BEM’s discussion and calculate the second set of breakpoints within each Mom quintile. For capitalization spreads, omit SMB from the FF regression. For BM spreads, omit HML.</p>
+<p>Reverse the sort order to ask whether differences associated with beta, capitalization, or <code>bm</code> remain within <code>mom</code> quintiles. For Table 11.9, we follow BEM’s discussion and calculate the second set of breakpoints within each <code>mom</code> quintile. For capitalization spreads, omit <code>smb</code> from the FF regression. For <code>bm</code> spreads, omit <code>hml</code>.</p>
 <div class="cell" data-execution_count="20">
 <div id="tbl-bem11-reverse-dependent" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="20">
 <figure class="quarto-float quarto-float-tbl figure">
@@ -2687,7 +2698,7 @@ Table&nbsp;11.9: Characteristic spreads from dependent sorts controlling for mom
 <td style="text-align: right;">-0.84<br>(-5.62)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">MktCap</td>
+<td style="text-align: left;">Market cap</td>
 <td style="text-align: right;">Value weighted</td>
 <td style="text-align: right;">5–1 Return</td>
 <td style="text-align: right;">-1.95<br>(-5.63)</td>
@@ -2698,7 +2709,7 @@ Table&nbsp;11.9: Characteristic spreads from dependent sorts controlling for mom
 <td style="text-align: right;">-0.89<br>(-4.00)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">MktCap</td>
+<td style="text-align: left;">Market cap</td>
 <td style="text-align: right;">Value weighted</td>
 <td style="text-align: right;">5–1 CAPM α</td>
 <td style="text-align: right;">-2.06<br>(-5.73)</td>
@@ -2709,7 +2720,7 @@ Table&nbsp;11.9: Characteristic spreads from dependent sorts controlling for mom
 <td style="text-align: right;">-0.94<br>(-4.11)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">MktCap</td>
+<td style="text-align: left;">Market cap</td>
 <td style="text-align: right;">Value weighted</td>
 <td style="text-align: right;">5–1 FF α</td>
 <td style="text-align: right;">-2.08<br>(-5.39)</td>
@@ -2720,7 +2731,7 @@ Table&nbsp;11.9: Characteristic spreads from dependent sorts controlling for mom
 <td style="text-align: right;">-0.89<br>(-3.71)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">MktCap</td>
+<td style="text-align: left;">Market cap</td>
 <td style="text-align: right;">Equal weighted</td>
 <td style="text-align: right;">5–1 Return</td>
 <td style="text-align: right;">-2.82<br>(-7.67)</td>
@@ -2731,7 +2742,7 @@ Table&nbsp;11.9: Characteristic spreads from dependent sorts controlling for mom
 <td style="text-align: right;">-1.15<br>(-5.48)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">MktCap</td>
+<td style="text-align: left;">Market cap</td>
 <td style="text-align: right;">Equal weighted</td>
 <td style="text-align: right;">5–1 CAPM α</td>
 <td style="text-align: right;">-2.95<br>(-7.68)</td>
@@ -2742,7 +2753,7 @@ Table&nbsp;11.9: Characteristic spreads from dependent sorts controlling for mom
 <td style="text-align: right;">-1.24<br>(-5.56)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">MktCap</td>
+<td style="text-align: left;">Market cap</td>
 <td style="text-align: right;">Equal weighted</td>
 <td style="text-align: right;">5–1 FF α</td>
 <td style="text-align: right;">-2.95<br>(-7.30)</td>
@@ -2753,7 +2764,7 @@ Table&nbsp;11.9: Characteristic spreads from dependent sorts controlling for mom
 <td style="text-align: right;">-1.20<br>(-5.23)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">BM</td>
+<td style="text-align: left;"><code>bm</code></td>
 <td style="text-align: right;">Value weighted</td>
 <td style="text-align: right;">5–1 Return</td>
 <td style="text-align: right;">0.96<br>(3.73)</td>
@@ -2764,7 +2775,7 @@ Table&nbsp;11.9: Characteristic spreads from dependent sorts controlling for mom
 <td style="text-align: right;">0.51<br>(3.12)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">BM</td>
+<td style="text-align: left;"><code>bm</code></td>
 <td style="text-align: right;">Value weighted</td>
 <td style="text-align: right;">5–1 CAPM α</td>
 <td style="text-align: right;">1.06<br>(3.92)</td>
@@ -2775,7 +2786,7 @@ Table&nbsp;11.9: Characteristic spreads from dependent sorts controlling for mom
 <td style="text-align: right;">0.56<br>(3.28)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">BM</td>
+<td style="text-align: left;"><code>bm</code></td>
 <td style="text-align: right;">Value weighted</td>
 <td style="text-align: right;">5–1 FF α</td>
 <td style="text-align: right;">1.04<br>(3.83)</td>
@@ -2786,7 +2797,7 @@ Table&nbsp;11.9: Characteristic spreads from dependent sorts controlling for mom
 <td style="text-align: right;">0.54<br>(3.17)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">BM</td>
+<td style="text-align: left;"><code>bm</code></td>
 <td style="text-align: right;">Equal weighted</td>
 <td style="text-align: right;">5–1 Return</td>
 <td style="text-align: right;">1.51<br>(7.16)</td>
@@ -2797,7 +2808,7 @@ Table&nbsp;11.9: Characteristic spreads from dependent sorts controlling for mom
 <td style="text-align: right;">1.03<br>(6.43)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">BM</td>
+<td style="text-align: left;"><code>bm</code></td>
 <td style="text-align: right;">Equal weighted</td>
 <td style="text-align: right;">5–1 CAPM α</td>
 <td style="text-align: right;">1.66<br>(7.55)</td>
@@ -2808,7 +2819,7 @@ Table&nbsp;11.9: Characteristic spreads from dependent sorts controlling for mom
 <td style="text-align: right;">1.17<br>(7.17)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">BM</td>
+<td style="text-align: left;"><code>bm</code></td>
 <td style="text-align: right;">Equal weighted</td>
 <td style="text-align: right;">5–1 FF α</td>
 <td style="text-align: right;">1.67<br>(7.63)</td>
@@ -2926,7 +2937,7 @@ Table&nbsp;11.10: Characteristic spreads from independent sorts controlling for 
 <td style="text-align: right;">-0.85<br>(-5.33)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">MktCap</td>
+<td style="text-align: left;">Market cap</td>
 <td style="text-align: right;">Value weighted</td>
 <td style="text-align: right;">5–1 Return</td>
 <td style="text-align: right;">-0.59<br>(-1.91)</td>
@@ -2937,7 +2948,7 @@ Table&nbsp;11.10: Characteristic spreads from independent sorts controlling for 
 <td style="text-align: right;">-0.67<br>(-2.97)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">MktCap</td>
+<td style="text-align: left;">Market cap</td>
 <td style="text-align: right;">Value weighted</td>
 <td style="text-align: right;">5–1 CAPM α</td>
 <td style="text-align: right;">-0.66<br>(-2.10)</td>
@@ -2948,7 +2959,7 @@ Table&nbsp;11.10: Characteristic spreads from independent sorts controlling for 
 <td style="text-align: right;">-0.72<br>(-3.13)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">MktCap</td>
+<td style="text-align: left;">Market cap</td>
 <td style="text-align: right;">Value weighted</td>
 <td style="text-align: right;">5–1 FF α</td>
 <td style="text-align: right;">-0.67<br>(-2.03)</td>
@@ -2959,7 +2970,7 @@ Table&nbsp;11.10: Characteristic spreads from independent sorts controlling for 
 <td style="text-align: right;">-0.67<br>(-2.82)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">MktCap</td>
+<td style="text-align: left;">Market cap</td>
 <td style="text-align: right;">Equal weighted</td>
 <td style="text-align: right;">5–1 Return</td>
 <td style="text-align: right;">-1.46<br>(-4.80)</td>
@@ -2970,7 +2981,7 @@ Table&nbsp;11.10: Characteristic spreads from independent sorts controlling for 
 <td style="text-align: right;">-0.94<br>(-4.41)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">MktCap</td>
+<td style="text-align: left;">Market cap</td>
 <td style="text-align: right;">Equal weighted</td>
 <td style="text-align: right;">5–1 CAPM α</td>
 <td style="text-align: right;">-1.55<br>(-4.91)</td>
@@ -2981,7 +2992,7 @@ Table&nbsp;11.10: Characteristic spreads from independent sorts controlling for 
 <td style="text-align: right;">-1.03<br>(-4.59)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">MktCap</td>
+<td style="text-align: left;">Market cap</td>
 <td style="text-align: right;">Equal weighted</td>
 <td style="text-align: right;">5–1 FF α</td>
 <td style="text-align: right;">-1.56<br>(-4.65)</td>
@@ -2992,7 +3003,7 @@ Table&nbsp;11.10: Characteristic spreads from independent sorts controlling for 
 <td style="text-align: right;">-0.99<br>(-4.31)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">BM</td>
+<td style="text-align: left;"><code>bm</code></td>
 <td style="text-align: right;">Value weighted</td>
 <td style="text-align: right;">5–1 Return</td>
 <td style="text-align: right;">0.95<br>(3.72)</td>
@@ -3003,7 +3014,7 @@ Table&nbsp;11.10: Characteristic spreads from independent sorts controlling for 
 <td style="text-align: right;">0.52<br>(3.18)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">BM</td>
+<td style="text-align: left;"><code>bm</code></td>
 <td style="text-align: right;">Value weighted</td>
 <td style="text-align: right;">5–1 CAPM α</td>
 <td style="text-align: right;">1.05<br>(4.01)</td>
@@ -3014,7 +3025,7 @@ Table&nbsp;11.10: Characteristic spreads from independent sorts controlling for 
 <td style="text-align: right;">0.58<br>(3.42)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">BM</td>
+<td style="text-align: left;"><code>bm</code></td>
 <td style="text-align: right;">Value weighted</td>
 <td style="text-align: right;">5–1 FF α</td>
 <td style="text-align: right;">1.02<br>(3.91)</td>
@@ -3025,7 +3036,7 @@ Table&nbsp;11.10: Characteristic spreads from independent sorts controlling for 
 <td style="text-align: right;">0.55<br>(3.30)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">BM</td>
+<td style="text-align: left;"><code>bm</code></td>
 <td style="text-align: right;">Equal weighted</td>
 <td style="text-align: right;">5–1 Return</td>
 <td style="text-align: right;">1.52<br>(7.26)</td>
@@ -3036,7 +3047,7 @@ Table&nbsp;11.10: Characteristic spreads from independent sorts controlling for 
 <td style="text-align: right;">1.05<br>(6.38)</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">BM</td>
+<td style="text-align: left;"><code>bm</code></td>
 <td style="text-align: right;">Equal weighted</td>
 <td style="text-align: right;">5–1 CAPM α</td>
 <td style="text-align: right;">1.68<br>(7.68)</td>
@@ -3047,7 +3058,7 @@ Table&nbsp;11.10: Characteristic spreads from independent sorts controlling for 
 <td style="text-align: right;">1.19<br>(7.15)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">BM</td>
+<td style="text-align: left;"><code>bm</code></td>
 <td style="text-align: right;">Equal weighted</td>
 <td style="text-align: right;">5–1 FF α</td>
 <td style="text-align: right;">1.68<br>(7.72)</td>
@@ -3067,13 +3078,13 @@ Table&nbsp;11.10: Characteristic spreads from independent sorts controlling for 
 </section>
 <section id="famamacbeth-regressions" class="level3" data-number="11.4.7">
 <h3 data-number="11.4.7" class="anchored" data-anchor-id="famamacbeth-regressions"><span class="header-section-number">11.4.7</span> Fama–MacBeth Regressions</h3>
-<p>Regress next month’s excess return on Mom and combinations of beta, log capitalization, and BM. Winsorize the regressors at 0.5% in each tail within each month. Report the average monthly coefficients and estimate their standard errors using six Newey–West lags.</p>
+<p>Regress next month’s excess return on <code>mom</code> and combinations of beta, log capitalization, and <code>bm</code>. Winsorize the regressors at 0.5% in each tail within each month. Report the average monthly coefficients and estimate their standard errors using six Newey–West lags.</p>
 <div class="cell" data-execution_count="22">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> itertools <span class="im">import</span> combinations</span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> eap_pl <span class="im">import</span> fama_macbeth_table</span>
 <span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>terms <span class="op">=</span> {<span class="st">"mom"</span>: <span class="st">"Mom"</span>, <span class="op">**</span>controls}</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>terms <span class="op">=</span> {<span class="st">"mom"</span>: <span class="st">"`mom`"</span>, <span class="op">**</span>controls}</span>
 <span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>specifications <span class="op">=</span> [</span>
 <span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>    [<span class="st">"mom"</span>, <span class="op">*</span>subset]</span>
 <span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> n <span class="kw">in</span> <span class="bu">range</span>(<span class="bu">len</span>(controls) <span class="op">+</span> <span class="dv">1</span>)</span>
@@ -3114,7 +3125,7 @@ Table&nbsp;11.11: Monthly Fama–MacBeth regressions of next-month excess return
 </thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: left;">Mom</td>
+<td style="text-align: left;"><code>mom</code></td>
 <td style="text-align: right;">0.007<br>(3.09)</td>
 <td style="text-align: right;">0.006<br>(3.14)</td>
 <td style="text-align: right;">0.007<br>(3.85)</td>
@@ -3147,7 +3158,7 @@ Table&nbsp;11.11: Monthly Fama–MacBeth regressions of next-month excess return
 <td style="text-align: right;">-0.170<br>(-3.20)</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">BM</td>
+<td style="text-align: left;"><code>bm</code></td>
 <td style="text-align: right;"></td>
 <td style="text-align: right;"></td>
 <td style="text-align: right;"></td>
@@ -3197,12 +3208,12 @@ Table&nbsp;11.11: Monthly Fama–MacBeth regressions of next-month excess return
 </figure>
 </div>
 </div>
-<p>The Mom coefficient rounds to 0.007 in the univariate regression and in the regression with all three controls, matching BEM in both specifications. In the full specification, a 100-percentage-point difference in Mom corresponds to about 0.70 percentage points in next month’s fitted excess return.</p>
+<p>In the full specification, a 100-percentage-point difference in <code>mom</code> corresponds to about 0.70 percentage points in next month’s fitted excess return.</p>
 </section>
 </section>
 <section id="the-momentum-factor" class="level2" data-number="11.5">
 <h2 data-number="11.5" class="anchored" data-anchor-id="the-momentum-factor"><span class="header-section-number">11.5</span> The Momentum Factor</h2>
-<p>The <a href="https://mba.tuck.dartmouth.edu/pages/faculty/Ken.French/Data_Library/det_mom_factor.html">Kenneth French Data Library</a> constructs MOM using six value-weighted portfolios formed on size and prior return. The sorts use an NYSE median for size and NYSE 30th and 70th percentiles for prior return. The factor averages the returns of the small- and large-stock winner portfolios and subtracts the average return of the corresponding loser portfolios. We use the December 2024 release listed in the book’s setup instructions and plot January 1927 through December 2012, the period in BEM.</p>
+<p>The <a href="https://mba.tuck.dartmouth.edu/pages/faculty/Ken.French/Data_Library/det_mom_factor.html">Kenneth French Data Library</a> constructs its momentum factor using six value-weighted portfolios formed on size and prior return. The sorts use an NYSE median for size and NYSE 30th and 70th percentiles for prior return. The factor averages the returns of the small- and large-stock winner portfolios and subtracts the average return of the corresponding loser portfolios. We use the December 2024 release listed in the book’s setup instructions and plot January 1927 through December 2012, the period in BEM.</p>
 <div id="cell-fig-bem11-mom" class="cell" data-execution_count="23">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> io <span class="im">import</span> StringIO</span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pathlib <span class="im">import</span> Path</span>
@@ -3230,21 +3241,21 @@ Table&nbsp;11.11: Monthly Fama–MacBeth regressions of next-month excess return
 <span id="cb12-24"><a href="#cb12-24" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb12-25"><a href="#cb12-25" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> momentum_factor.height <span class="op">==</span> <span class="dv">1032</span></span>
 <span id="cb12-26"><a href="#cb12-26" aria-hidden="true" tabindex="-1"></a><span class="cf">assert</span> momentum_factor.select(pl.col(<span class="st">"mom"</span>).is_finite().<span class="bu">all</span>()).item()</span>
-<span id="cb12-27"><a href="#cb12-27" aria-hidden="true" tabindex="-1"></a>plot_cumulative_returns(momentum_factor, y_label<span class="op">=</span><span class="st">"Cumulative MOM return"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb12-27"><a href="#cb12-27" aria-hidden="true" tabindex="-1"></a>plot_cumulative_returns(momentum_factor, y_label<span class="op">=</span><span class="st">"Cumulative momentum factor return"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display" data-execution_count="23">
 <div id="fig-bem11-mom" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-bem11-mom-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="momentum-replication_files/figure-html/fig-bem11-mom-output-1.png" width="787" height="480" class="figure-img">
+<img src="momentum_files/figure-html/fig-bem11-mom-output-1.png" width="787" height="480" class="figure-img">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-bem11-mom-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;11.1: Compounded and cumulative log returns of the MOM factor, January 1927–December 2012 (BEM Figure 11.1)
+Figure&nbsp;11.1: Compounded and cumulative log returns of the momentum factor, January 1927–December 2012 (BEM Figure 11.1)
 </figcaption>
 </figure>
 </div>
 </div>
 </div>
-<p>The compounded series ends at about 30,312%, compared with 31,207% in BEM. Both series show a sharp drawdown in 2009.</p>
+<p>The compounded series shows a sharp drawdown in 2009.</p>
 </section>
 <section id="the-famafrenchcarhart-four-factor-model" class="level2" data-number="11.6">
 <h2 data-number="11.6" class="anchored" data-anchor-id="the-famafrenchcarhart-four-factor-model"><span class="header-section-number">11.6</span> The Fama–French–Carhart Four-Factor Model</h2>

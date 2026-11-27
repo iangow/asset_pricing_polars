@@ -281,7 +281,7 @@ window.Quarto = {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./momentum-replication.html" class="sidebar-item-text sidebar-link">
+  <a href="./momentum.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">The Momentum Effect</span></span></a>
   </div>
 </li>
@@ -295,6 +295,18 @@ window.Quarto = {
   <div class="sidebar-item-container"> 
   <a href="./liquidity-replication.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">Liquidity</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./skewness-replication.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">14</span>&nbsp; <span class="chapter-title">Skewness</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./volatility-replication.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">15</span>&nbsp; <span class="chapter-title">Idiosyncratic Volatility</span></span></a>
   </div>
 </li>
       </ul>
@@ -418,12 +430,11 @@ window.Quarto = {
 <span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    )</span>
 <span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>    .drop(<span class="st">"cpi"</span>)</span>
 <span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    .with_columns(</span>
-<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>        pl.col(var).log().alias(<span class="ss">f"log_</span><span class="sc">{</span>var<span class="sc">}</span><span class="ss">"</span>)</span>
-<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> var <span class="kw">in</span> [<span class="st">"cap"</span>, <span class="st">"cap_real"</span>, <span class="st">"cap_june"</span>, <span class="st">"cap_june_real"</span>]</span>
-<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>    .collect()</span>
-<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div id="bef32f3b" class="cell" data-execution_count="6">
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>        pl.col(<span class="st">"cap"</span>, <span class="st">"cap_real"</span>, <span class="st">"cap_june"</span>, <span class="st">"cap_june_real"</span>).log().name.prefix(<span class="st">"log_"</span>)</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>    .collect()</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="521838cc" class="cell" data-execution_count="6">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> polars <span class="im">as</span> pl</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> eap_pl <span class="im">import</span> build_sizes</span>
@@ -440,14 +451,14 @@ window.Quarto = {
 <section id="summary-statistics" class="level2" data-number="9.2">
 <h2 data-number="9.2" class="anchored" data-anchor-id="summary-statistics"><span class="header-section-number">9.2</span> Summary Statistics</h2>
 <p>The mean of the monthly medians describes the middle stock in a typical month. It is not a median calculated once on the pooled stock-month data.</p>
-<div id="2aaf8f54" class="cell" data-execution_count="8">
+<div id="06326556" class="cell" data-execution_count="8">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> eap_pl <span class="im">import</span> mean_cross_sections</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>stats <span class="op">=</span> mean_cross_sections(sizes, {</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">"cap"</span>: <span class="st">"MktCap"</span>, <span class="st">"cap_real"</span>: <span class="st">"MktCap CPI"</span>,</span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">"log_cap"</span>: <span class="st">"Size"</span>, <span class="st">"log_cap_real"</span>: <span class="st">"Size CPI"</span>,</span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">"cap_june"</span>: <span class="st">"MktCap FF"</span>, <span class="st">"cap_june_real"</span>: <span class="st">"MktCap FF CPI"</span>,</span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    <span class="st">"log_cap_june"</span>: <span class="st">"Size FF"</span>, <span class="st">"log_cap_june_real"</span>: <span class="st">"Size FF CPI"</span>,</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">"cap"</span>: <span class="st">"`cap`"</span>, <span class="st">"cap_real"</span>: <span class="st">"`cap_real`"</span>,</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">"log_cap"</span>: <span class="st">"`log_cap`"</span>, <span class="st">"log_cap_real"</span>: <span class="st">"`log_cap_real`"</span>,</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">"cap_june"</span>: <span class="st">"`cap_june`"</span>, <span class="st">"cap_june_real"</span>: <span class="st">"`cap_june_real`"</span>,</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    <span class="st">"log_cap_june"</span>: <span class="st">"`log_cap_june`"</span>, <span class="st">"log_cap_june_real"</span>: <span class="st">"`log_cap_june_real`"</span>,</span>
 <span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>})</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <style>
@@ -502,7 +513,7 @@ Table&nbsp;9.1: Monthly summary statistics for size (BEM Table 9.1)
 </thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: left;">MktCap</td>
+<td style="text-align: left;"><code>cap</code></td>
 <td style="text-align: right;">1101.90</td>
 <td style="text-align: right;">5572.44</td>
 <td style="text-align: right;">17.72</td>
@@ -517,7 +528,7 @@ Table&nbsp;9.1: Monthly summary statistics for size (BEM Table 9.1)
 <td style="text-align: right;">4792</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">MktCap CPI</td>
+<td style="text-align: left;"><code>cap_real</code></td>
 <td style="text-align: right;">1736.73</td>
 <td style="text-align: right;">8838.95</td>
 <td style="text-align: right;">17.72</td>
@@ -532,7 +543,7 @@ Table&nbsp;9.1: Monthly summary statistics for size (BEM Table 9.1)
 <td style="text-align: right;">4792</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">Size</td>
+<td style="text-align: left;"><code>log_cap</code></td>
 <td style="text-align: right;">4.33</td>
 <td style="text-align: right;">1.92</td>
 <td style="text-align: right;">0.38</td>
@@ -547,7 +558,7 @@ Table&nbsp;9.1: Monthly summary statistics for size (BEM Table 9.1)
 <td style="text-align: right;">4792</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Size CPI</td>
+<td style="text-align: left;"><code>log_cap_real</code></td>
 <td style="text-align: right;">5.17</td>
 <td style="text-align: right;">1.92</td>
 <td style="text-align: right;">0.38</td>
@@ -562,7 +573,7 @@ Table&nbsp;9.1: Monthly summary statistics for size (BEM Table 9.1)
 <td style="text-align: right;">4792</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">MktCap FF</td>
+<td style="text-align: left;"><code>cap_june</code></td>
 <td style="text-align: right;">1100.34</td>
 <td style="text-align: right;">5516.95</td>
 <td style="text-align: right;">17.44</td>
@@ -577,7 +588,7 @@ Table&nbsp;9.1: Monthly summary statistics for size (BEM Table 9.1)
 <td style="text-align: right;">4600</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">MktCap FF CPI</td>
+<td style="text-align: left;"><code>cap_june_real</code></td>
 <td style="text-align: right;">1734.79</td>
 <td style="text-align: right;">8767.27</td>
 <td style="text-align: right;">17.44</td>
@@ -592,7 +603,7 @@ Table&nbsp;9.1: Monthly summary statistics for size (BEM Table 9.1)
 <td style="text-align: right;">4600</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">Size FF</td>
+<td style="text-align: left;"><code>log_cap_june</code></td>
 <td style="text-align: right;">4.35</td>
 <td style="text-align: right;">1.90</td>
 <td style="text-align: right;">0.41</td>
@@ -607,7 +618,7 @@ Table&nbsp;9.1: Monthly summary statistics for size (BEM Table 9.1)
 <td style="text-align: right;">4600</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Size FF CPI</td>
+<td style="text-align: left;"><code>log_cap_june_real</code></td>
 <td style="text-align: right;">5.20</td>
 <td style="text-align: right;">1.90</td>
 <td style="text-align: right;">0.41</td>
@@ -628,7 +639,7 @@ Table&nbsp;9.1: Monthly summary statistics for size (BEM Table 9.1)
 </figure>
 </div>
 </div>
-<p>The published nominal market capitalization has a monthly mean of $1,101 million and an average monthly median of $107 million. The much larger mean reflects the concentration of market capitalization in a few stocks.</p>
+<p>The average monthly mean market capitalization is much larger than the average monthly median, reflecting the concentration of market capitalization in a few stocks.</p>
 <div id="cell-fig-bem9-concentration" class="cell" data-execution_count="11">
 <div class="cell-output cell-output-display" data-execution_count="11">
 <div id="fig-bem9-concentration" class="quarto-float quarto-figure quarto-figure-center anchored">
@@ -647,12 +658,12 @@ Figure&nbsp;9.1: Share of market capitalization held by the largest stocks (BEM 
 <section id="correlation-and-persistence" class="level2" data-number="9.3">
 <h2 data-number="9.3" class="anchored" data-anchor-id="correlation-and-persistence"><span class="header-section-number">9.3</span> Correlations</h2>
 <p>Join the size measures to the twelve-month daily beta from <a href="beta-replication.html" class="quarto-xref"><span>Chapter 8</span></a>. We take the mean of the monthly cross-sectional correlations. Below the diagonal are Pearson correlations on winsorized observations, and above it are Spearman correlations on the original ranks.</p>
-<div id="2a64e5c7" class="cell" data-execution_count="12">
+<div id="435cb137" class="cell" data-execution_count="12">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> eap_pl <span class="im">import</span> correlation_matrix, monthly_panel, period_correlations, persistence</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>panel <span class="op">=</span> monthly_panel(sizes, first, last)</span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>measures <span class="op">=</span> {<span class="st">"cap"</span>: <span class="st">"MktCap"</span>, <span class="st">"log_cap"</span>: <span class="st">"Size"</span>, <span class="st">"cap_june"</span>: <span class="st">"MktCap FF"</span>,</span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>            <span class="st">"log_cap_june"</span>: <span class="st">"Size FF"</span>, <span class="st">"beta"</span>: <span class="st">"Beta"</span>}</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>measures <span class="op">=</span> {<span class="st">"cap"</span>: <span class="st">"`cap`"</span>, <span class="st">"log_cap"</span>: <span class="st">"`log_cap`"</span>, <span class="st">"cap_june"</span>: <span class="st">"`cap_june`"</span>,</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>            <span class="st">"log_cap_june"</span>: <span class="st">"`log_cap_june`"</span>, <span class="st">"beta"</span>: <span class="st">"Beta"</span>}</span>
 <span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>corr <span class="op">=</span> period_correlations(panel, measures, <span class="st">"month"</span>).select(pl.exclude(<span class="st">"month"</span>).mean())</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <div class="cell" data-execution_count="13">
@@ -667,16 +678,16 @@ Table&nbsp;9.2: Cross-sectional correlations for size and beta (BEM Table 9.2)
 <thead>
 <tr class="header">
 <th style="text-align: left;">Measure</th>
-<th style="text-align: right;">MktCap</th>
-<th style="text-align: right;">Size</th>
-<th style="text-align: right;">MktCap FF</th>
-<th style="text-align: right;">Size FF</th>
+<th style="text-align: right;"><code>cap</code></th>
+<th style="text-align: right;"><code>log_cap</code></th>
+<th style="text-align: right;"><code>cap_june</code></th>
+<th style="text-align: right;"><code>log_cap_june</code></th>
 <th style="text-align: right;">Beta</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: left;">MktCap</td>
+<td style="text-align: left;"><code>cap</code></td>
 <td style="text-align: right;"></td>
 <td style="text-align: right;">1.00</td>
 <td style="text-align: right;">0.98</td>
@@ -684,7 +695,7 @@ Table&nbsp;9.2: Cross-sectional correlations for size and beta (BEM Table 9.2)
 <td style="text-align: right;">0.33</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Size</td>
+<td style="text-align: left;"><code>log_cap</code></td>
 <td style="text-align: right;">0.58</td>
 <td style="text-align: right;"></td>
 <td style="text-align: right;">0.98</td>
@@ -692,7 +703,7 @@ Table&nbsp;9.2: Cross-sectional correlations for size and beta (BEM Table 9.2)
 <td style="text-align: right;">0.33</td>
 </tr>
 <tr class="odd">
-<td style="text-align: left;">MktCap FF</td>
+<td style="text-align: left;"><code>cap_june</code></td>
 <td style="text-align: right;">0.99</td>
 <td style="text-align: right;">0.57</td>
 <td style="text-align: right;"></td>
@@ -700,7 +711,7 @@ Table&nbsp;9.2: Cross-sectional correlations for size and beta (BEM Table 9.2)
 <td style="text-align: right;">0.34</td>
 </tr>
 <tr class="even">
-<td style="text-align: left;">Size FF</td>
+<td style="text-align: left;"><code>log_cap_june</code></td>
 <td style="text-align: right;">0.58</td>
 <td style="text-align: right;">0.98</td>
 <td style="text-align: right;">0.58</td>
@@ -738,10 +749,10 @@ Table&nbsp;9.3: Persistence of nominal size measures (BEM Table 9.3)
 <thead>
 <tr class="header">
 <th style="text-align: left;">Lag (months)</th>
-<th style="text-align: right;">MktCap</th>
-<th style="text-align: right;">Size</th>
-<th style="text-align: right;">MktCap FF</th>
-<th style="text-align: right;">Size FF</th>
+<th style="text-align: right;"><code>cap</code></th>
+<th style="text-align: right;"><code>log_cap</code></th>
+<th style="text-align: right;"><code>cap_june</code></th>
+<th style="text-align: right;"><code>log_cap_june</code></th>
 </tr>
 </thead>
 <tbody>
@@ -821,7 +832,7 @@ Table&nbsp;9.3: Persistence of nominal size measures (BEM Table 9.3)
 <section id="univariate-portfolio-analysis" class="level3" data-number="9.5.1">
 <h3 data-number="9.5.1" class="anchored" data-anchor-id="univariate-portfolio-analysis"><span class="header-section-number">9.5.1</span> Univariate Portfolio Analysis</h3>
 <p>Sort stocks at the end of month <span class="math inline">\(t\)</span> and measure their excess returns in <span class="math inline">\(t+1\)</span>, using the delisting rules in <a href="crsp-replication.html#sec-bem-returns" class="quarto-xref"><span>Section 7.2</span></a>. First use NYSE stocks to calculate the breakpoints, then use all eligible stocks. In both cases, assign stocks from the full eligible sample. For the June-based sort, the value weights use June capitalization, as in BEM. Returns and CAPM alphas are in percent per month. The <span class="math inline">\(t\)</span>-statistics use six Newey–West lags.</p>
-<div id="986ddaab" class="cell" data-execution_count="15">
+<div id="f1bc37e3" class="cell" data-execution_count="15">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> eap_pl <span class="im">import</span> bivariate_months, bivariate_panel, fama_macbeth_table, univariate_panel</span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> size_deciles(nyse):</span>
@@ -1540,12 +1551,12 @@ Table&nbsp;9.5: Size deciles using all-stock breakpoints (BEM Table 9.5)
 </figure>
 </div>
 </div>
-<p>With NYSE breakpoints, the equal-weighted large-minus-small spread for monthly size is −0.49% per month, as in BEM. Using all-stock breakpoints increases its magnitude to −1.54%, compared with −1.59% in the book. The difference comes primarily from the smallest decile.</p>
+<p>The equal-weighted large-minus-small spread for monthly size is −0.49% per month with NYSE breakpoints and −1.54% with all-stock breakpoints. The difference comes primarily from the smallest decile.</p>
 </section>
 <section id="sort-on-beta-and-size" class="level3" data-number="9.5.2">
 <h3 data-number="9.5.2" class="anchored" data-anchor-id="sort-on-beta-and-size"><span class="header-section-number">9.5.2</span> Bivariate Portfolio Analysis</h3>
 <p>For a dependent sort, form beta quintiles first and compute size breakpoints within each beta quintile. For an independent sort, compute beta and size breakpoints separately across the reference universe. The rows are size quintiles and the columns are beta quintiles. Average portfolios give each constituent portfolio equal weight each month.</p>
-<div id="e3a4ae7a" class="cell" data-execution_count="18">
+<div id="86675728" class="cell" data-execution_count="18">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> size_quintiles(nyse, dependent):</span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    monthly <span class="op">=</span> bivariate_months(panel, <span class="st">"beta"</span>, <span class="st">"cap"</span>, nyse<span class="op">=</span>nyse, dependent<span class="op">=</span>dependent)</span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> pl.concat([</span>
@@ -2465,8 +2476,8 @@ Table&nbsp;9.10: Fama–MacBeth regressions of returns on size (BEM Table 9.10)
 </section>
 <section id="the-size-factor" class="level2" data-number="9.6">
 <h2 data-number="9.6" class="anchored" data-anchor-id="the-size-factor"><span class="header-section-number">9.6</span> The Size Factor</h2>
-<p>SMB is the average of three small-stock portfolios less the average of three big-stock portfolios. The three portfolios in each size group cover low, middle, and high book-to-market. Using the same book-to-market groups on both sides reduces the factor’s exposure to the value spread.</p>
-<p>For the historical factor series we use the monthly Fama–French SMB from July 1926 through December 2012.</p>
+<p><code>smb</code> is the average of three small-stock portfolios less the average of three big-stock portfolios. The three portfolios in each size group cover low, middle, and high book-to-market. Using the same book-to-market groups on both sides reduces the factor’s exposure to the value spread.</p>
+<p>For the historical factor series we use the monthly Fama–French <code>smb</code> from July 1926 through December 2012.</p>
 <div id="cell-fig-bem9-smb" class="cell" data-execution_count="24">
 <div class="cell-output cell-output-display" data-execution_count="24">
 <div id="fig-bem9-smb" class="quarto-float quarto-figure quarto-figure-center anchored">
@@ -2475,7 +2486,7 @@ Table&nbsp;9.10: Fama–MacBeth regressions of returns on size (BEM Table 9.10)
 <img src="size-replication_files/figure-html/fig-bem9-smb-output-1.png" width="787" height="480" class="figure-img">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-bem9-smb-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;9.2: Cumulative returns on the Fama–French SMB factor (BEM Figure 9.2)
+Figure&nbsp;9.2: Cumulative returns on the Fama–French <code>smb</code> factor (BEM Figure 9.2)
 </figcaption>
 </figure>
 </div>

@@ -284,7 +284,7 @@ window.Quarto = {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./momentum-replication.html" class="sidebar-item-text sidebar-link">
+  <a href="./momentum.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">The Momentum Effect</span></span></a>
   </div>
 </li>
@@ -298,6 +298,18 @@ window.Quarto = {
   <div class="sidebar-item-container"> 
   <a href="./liquidity-replication.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">Liquidity</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./skewness-replication.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">14</span>&nbsp; <span class="chapter-title">Skewness</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./volatility-replication.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">15</span>&nbsp; <span class="chapter-title">Idiosyncratic Volatility</span></span></a>
   </div>
 </li>
       </ul>
@@ -356,13 +368,13 @@ window.Quarto = {
 </header>
 
 
-<p>This chapter reconstructs the figures and tables in Chapter 7 of <span class="citation" data-cites="bali2016">Bali et al. (<a href="references.html#ref-bali2016" role="doc-biblioref">2016</a>)</span>. We use a later snapshot of legacy CRSP (SIZ), the same data format used by the authors. See <a href="data.html#sec-data-vintages" class="quarto-xref"><span>Section 1.1.1</span></a> for source update dates. The comparisons below separate data and convention differences from the calculations themselves.</p>
+<p>This chapter reconstructs the figures and tables in Chapter 7 of <span class="citation" data-cites="bali2016">Bali et al. (<a href="references.html#ref-bali2016" role="doc-biblioref">2016</a>)</span>. We use a later snapshot of legacy CRSP (SIZ), the same data format used by the authors. See <a href="data.html#sec-data-vintages" class="quarto-xref"><span>Section 1.1.1</span></a> for source update dates.</p>
 <section id="the-u.s.-stock-market" class="level2" data-number="7.1">
 <h2 data-number="7.1" class="anchored" data-anchor-id="the-u.s.-stock-market"><span class="header-section-number">7.1</span> The U.S. Stock Market</h2>
 <section id="build-the-monthly-common-stock-sample" class="level3" data-number="7.1.1">
 <h3 data-number="7.1.1" class="anchored" data-anchor-id="build-the-monthly-common-stock-sample"><span class="header-section-number">7.1.1</span> The CRSP U.S.-Based Common Stock Sample</h3>
 <p>At each calendar month-end, keep securities with a historical share code of 10 or 11. We do not restrict the exchange or require a price to count a stock. For market capitalization, use the absolute alternate price times shares outstanding. Dividing by 1,000 gives millions of dollars because CRSP reports shares in thousands.</p>
-<div id="3d9581ac" class="cell" data-execution_count="1">
+<div id="2ae17572" class="cell" data-execution_count="1">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> polars <span class="im">as</span> pl</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> era_pl <span class="im">import</span> load_parquet</span>
@@ -422,7 +434,7 @@ window.Quarto = {
 <section id="exchanges" class="level4 unnumbered unlisted">
 <h4 class="unnumbered unlisted anchored" data-anchor-id="exchanges">Stock Exchange Composition of CRSP Sample</h4>
 <p>The book groups exchange codes 1 and 31 as NYSE, 2 and 32 as AMEX, and 3 and 33 as Nasdaq. All remaining codes go into <em>Other</em>.</p>
-<div id="72200b55" class="cell" data-execution_count="2">
+<div id="705502d6" class="cell" data-execution_count="2">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> plotnine_polars <span class="im">import</span> aes, guide_legend</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>exchange <span class="op">=</span> (</span>
@@ -523,283 +535,25 @@ Figure&nbsp;7.2: Market value by exchange, recreating the series in BEM Figure 7
 </div>
 </div>
 <p>AMEX enters the data in July 1962. Most Nasdaq coverage starts in December 1972. The value series jumps much less than the count series at those dates: market coverage can change substantially without much change in market value. Keep that distinction in mind when comparing equal- and value-weighted results across time.</p>
-<p>The following checkpoints compare the reconstructed exchange counts with the figures quoted in the book’s text. The authors report a December 2012 total of 3,675, but their four exchange counts add up to 3,677. Keep both benchmarks rather than forcing the component counts to match the printed total. The available legacy CRSP file is a later vintage; the count differences do not by themselves identify revisions or coding differences.</p>
-<div class="cell" data-execution_count="5">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>benchmarks <span class="op">=</span> pl.DataFrame({</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">"checkpoint"</span>: [<span class="st">"1925-12"</span>, <span class="st">"1962-06"</span>, <span class="st">"1962-07"</span>, <span class="st">"1972-11"</span>,</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>                   <span class="st">"1972-12"</span>, <span class="st">"1997-11"</span>, <span class="st">"2012-12"</span>],</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">"printed_total"</span>: [<span class="dv">499</span>, <span class="dv">1130</span>, <span class="dv">1963</span>, <span class="dv">2666</span>, <span class="dv">5534</span>, <span class="dv">7544</span>, <span class="dv">3675</span>],</span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">"printed_nyse"</span>: [<span class="dv">499</span>, <span class="dv">1121</span>, <span class="dv">1125</span>, <span class="dv">1378</span>, <span class="dv">1386</span>, <span class="dv">1862</span>, <span class="dv">1319</span>],</span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">"printed_amex"</span>: [<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">834</span>, <span class="dv">1133</span>, <span class="dv">1135</span>, <span class="dv">572</span>, <span class="dv">226</span>],</span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    <span class="st">"printed_nasdaq"</span>: [<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">102</span>, <span class="dv">2896</span>, <span class="dv">5029</span>, <span class="dv">2130</span>],</span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>    <span class="st">"printed_other"</span>: [<span class="dv">0</span>, <span class="dv">9</span>, <span class="dv">4</span>, <span class="dv">53</span>, <span class="dv">117</span>, <span class="dv">81</span>, <span class="dv">2</span>],</span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>})</span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>actual_counts <span class="op">=</span> (</span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>    by_exchange</span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>    .with_columns(checkpoint<span class="op">=</span>pl.col(<span class="st">"month"</span>).dt.strftime(<span class="st">"%Y-%m"</span>))</span>
-<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>    .pivot(on<span class="op">=</span><span class="st">"exchange"</span>, index<span class="op">=</span><span class="st">"checkpoint"</span>, values<span class="op">=</span><span class="st">"stocks"</span>)</span>
-<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>count_checkpoints <span class="op">=</span> (</span>
-<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>    benchmarks</span>
-<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>    .join(actual_counts, on<span class="op">=</span><span class="st">"checkpoint"</span>, validate<span class="op">=</span><span class="st">"1:1"</span>)</span>
-<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>    .with_columns(total_difference<span class="op">=</span>pl.col(<span class="st">"Total"</span>) <span class="op">-</span> pl.col(<span class="st">"printed_total"</span>))</span>
-<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>count_checkpoints.select(</span>
-<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>    <span class="st">"checkpoint"</span>, <span class="st">"printed_total"</span>, reconstructed_total<span class="op">=</span><span class="st">"Total"</span>,</span>
-<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>    difference<span class="op">=</span><span class="st">"total_difference"</span>,</span>
-<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div id="tbl-bem7-count-checkpoints" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="5">
-<figure class="quarto-float quarto-float-tbl figure">
-<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bem7-count-checkpoints-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Table&nbsp;7.1: Exchange-count checkpoints reported by BEM and reconstructed from the available CRSP vintage.
-</figcaption>
-<div aria-describedby="tbl-bem7-count-checkpoints-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<div class="cell-output cell-output-display" data-execution_count="5">
-<div><style>
-.dataframe > thead > tr,
-.dataframe > tbody > tr {
-  text-align: right;
-  white-space: pre-wrap;
-}
-</style>
-<small>shape: (7, 4)</small>
-<table class="dataframe cell caption-top table table-sm table-striped small" data-border="1">
-<thead>
-<tr class="header">
-<th data-quarto-table-cell-role="th">checkpoint</th>
-<th data-quarto-table-cell-role="th">printed_total</th>
-<th data-quarto-table-cell-role="th">reconstructed_total</th>
-<th data-quarto-table-cell-role="th">difference</th>
-</tr>
-<tr class="even">
-<td>str</td>
-<td>i64</td>
-<td>u32</td>
-<td>i64</td>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>"1925-12"</td>
-<td>499</td>
-<td>497</td>
-<td>-2</td>
-</tr>
-<tr class="even">
-<td>"1962-06"</td>
-<td>1130</td>
-<td>1130</td>
-<td>0</td>
-</tr>
-<tr class="odd">
-<td>"1962-07"</td>
-<td>1963</td>
-<td>1963</td>
-<td>0</td>
-</tr>
-<tr class="even">
-<td>"1972-11"</td>
-<td>2666</td>
-<td>2563</td>
-<td>-103</td>
-</tr>
-<tr class="odd">
-<td>"1972-12"</td>
-<td>5534</td>
-<td>5445</td>
-<td>-89</td>
-</tr>
-<tr class="even">
-<td>"1997-11"</td>
-<td>7544</td>
-<td>7556</td>
-<td>12</td>
-</tr>
-<tr class="odd">
-<td>"2012-12"</td>
-<td>3675</td>
-<td>3742</td>
-<td>67</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-</div>
-</figure>
-</div>
-</div>
-<div class="cell" data-execution_count="6">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>last_counts <span class="op">=</span> count_checkpoints.<span class="bu">filter</span>(pl.col(<span class="st">"checkpoint"</span>) <span class="op">==</span> <span class="st">"2012-12"</span>)</span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>labels <span class="op">=</span> [<span class="st">"NYSE"</span>, <span class="st">"AMEX"</span>, <span class="st">"Nasdaq"</span>, <span class="st">"Other"</span>, <span class="st">"Total"</span>]</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>pl.DataFrame({</span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">"exchange"</span>: labels,</span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">"printed"</span>: [last_counts[<span class="ss">f"printed_</span><span class="sc">{</span>label<span class="sc">.</span>lower()<span class="sc">}</span><span class="ss">"</span>].item() <span class="cf">for</span> label <span class="kw">in</span> labels],</span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">"reconstructed"</span>: [last_counts[label].item() <span class="cf">for</span> label <span class="kw">in</span> labels],</span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>})</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div id="tbl-bem7-exchange-end" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="6">
-<figure class="quarto-float quarto-float-tbl figure">
-<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bem7-exchange-end-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Table&nbsp;7.2: Exchange counts at the end of 2012.
-</figcaption>
-<div aria-describedby="tbl-bem7-exchange-end-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<div class="cell-output cell-output-display" data-execution_count="6">
-<div><style>
-.dataframe > thead > tr,
-.dataframe > tbody > tr {
-  text-align: right;
-  white-space: pre-wrap;
-}
-</style>
-<small>shape: (5, 3)</small>
-<table class="dataframe cell caption-top table table-sm table-striped small" data-border="1">
-<thead>
-<tr class="header">
-<th data-quarto-table-cell-role="th">exchange</th>
-<th data-quarto-table-cell-role="th">printed</th>
-<th data-quarto-table-cell-role="th">reconstructed</th>
-</tr>
-<tr class="even">
-<td>str</td>
-<td>i64</td>
-<td>i64</td>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>"NYSE"</td>
-<td>1319</td>
-<td>1312</td>
-</tr>
-<tr class="even">
-<td>"AMEX"</td>
-<td>226</td>
-<td>223</td>
-</tr>
-<tr class="odd">
-<td>"Nasdaq"</td>
-<td>2130</td>
-<td>2121</td>
-</tr>
-<tr class="even">
-<td>"Other"</td>
-<td>2</td>
-<td>86</td>
-</tr>
-<tr class="odd">
-<td>"Total"</td>
-<td>3675</td>
-<td>3742</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-</div>
-</figure>
-</div>
-</div>
-<p>The local December 2012 universe has 3,742 common stocks. Of the 86 in the Other category, 85 have no usable capitalization in this vintage. That helps explain why a visible difference in counts need not produce a comparable difference in market value, but does not tell us why the book counted only two Other stocks.</p>
-<div class="cell" data-execution_count="7">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>value_benchmarks <span class="op">=</span> pl.DataFrame({</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">"checkpoint"</span>: [<span class="st">"1925-12"</span>, <span class="st">"1972-12"</span>, <span class="st">"2000-03"</span>, <span class="st">"2012-12"</span>],</span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"printed_billions"</span>: [<span class="dv">341</span>, <span class="dv">5300</span>, <span class="dv">22500</span>, <span class="dv">15700</span>],</span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>})</span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>reconstructed <span class="op">=</span> (</span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>    total</span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>    .select(checkpoint<span class="op">=</span>pl.col(<span class="st">"month"</span>).dt.strftime(<span class="st">"%Y-%m"</span>),</span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>            reconstructed_billions<span class="op">=</span>pl.col(<span class="st">"value"</span>).<span class="bu">round</span>(<span class="dv">1</span>))</span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>(</span>
-<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>    value_benchmarks</span>
-<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>    .join(reconstructed, on<span class="op">=</span><span class="st">"checkpoint"</span>, validate<span class="op">=</span><span class="st">"1:1"</span>)</span>
-<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>    .with_columns(difference_billions<span class="op">=</span>(</span>
-<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>        pl.col(<span class="st">"reconstructed_billions"</span>) <span class="op">-</span> pl.col(<span class="st">"printed_billions"</span>)</span>
-<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>    ).<span class="bu">round</span>(<span class="dv">1</span>))</span>
-<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div id="tbl-bem7-value-checkpoints" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="7">
-<figure class="quarto-float quarto-float-tbl figure">
-<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bem7-value-checkpoints-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Table&nbsp;7.3: Market-value checkpoints in billions of December 2012 dollars; the book values are approximate.
-</figcaption>
-<div aria-describedby="tbl-bem7-value-checkpoints-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<div class="cell-output cell-output-display" data-execution_count="7">
-<div><style>
-.dataframe > thead > tr,
-.dataframe > tbody > tr {
-  text-align: right;
-  white-space: pre-wrap;
-}
-</style>
-<small>shape: (4, 4)</small>
-<table class="dataframe cell caption-top table table-sm table-striped small" data-border="1">
-<thead>
-<tr class="header">
-<th data-quarto-table-cell-role="th">checkpoint</th>
-<th data-quarto-table-cell-role="th">printed_billions</th>
-<th data-quarto-table-cell-role="th">reconstructed_billions</th>
-<th data-quarto-table-cell-role="th">difference_billions</th>
-</tr>
-<tr class="even">
-<td>str</td>
-<td>i64</td>
-<td>f64</td>
-<td>f64</td>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>"1925-12"</td>
-<td>341</td>
-<td>345.2</td>
-<td>4.2</td>
-</tr>
-<tr class="even">
-<td>"1972-12"</td>
-<td>5300</td>
-<td>5285.9</td>
-<td>-14.1</td>
-</tr>
-<tr class="odd">
-<td>"2000-03"</td>
-<td>22500</td>
-<td>22487.6</td>
-<td>-12.4</td>
-</tr>
-<tr class="even">
-<td>"2012-12"</td>
-<td>15700</td>
-<td>15715.2</td>
-<td>15.2</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-</div>
-</figure>
-</div>
-</div>
-<p>The reconstructed market value is about $15.72 trillion in December 2012, close to the book’s $15.7 trillion despite the difference in stock counts.</p>
+<p>The December 2012 stock count includes 86 stocks in the Other category, of which 85 have no usable capitalization.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
 </section>
 <section id="industries" class="level4 unnumbered unlisted">
 <h4 class="unnumbered unlisted anchored" data-anchor-id="industries">Industry Composition of CRSP Sample</h4>
 <p>We use the security’s current SIC code rather than a code carried back from a later date. <a href="https://www.osha.gov/data/sic-manual">OSHA’s SIC manual</a> describes the divisions. The table uses the intervals in BEM Table 7.1, with shortened labels. Keep zero and null codes separate from nonmissing codes that do not fall in a listed interval.</p>
-<div class="cell" data-execution_count="8">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>sic_divisions <span class="op">=</span> pl.DataFrame({</span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">"first_sic"</span>: [<span class="dv">1</span>, <span class="dv">1000</span>, <span class="dv">1500</span>, <span class="dv">2000</span>, <span class="dv">4000</span>, <span class="dv">5000</span>, <span class="dv">5200</span>, <span class="dv">6000</span>, <span class="dv">7000</span>, <span class="dv">9000</span>],</span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"last_sic"</span>: [<span class="dv">999</span>, <span class="dv">1499</span>, <span class="dv">1799</span>, <span class="dv">3999</span>, <span class="dv">4999</span>, <span class="dv">5199</span>, <span class="dv">5999</span>, <span class="dv">6799</span>, <span class="dv">8999</span>, <span class="dv">9999</span>],</span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">"industry"</span>: [<span class="st">"Agriculture"</span>, <span class="st">"Mining"</span>, <span class="st">"Construction"</span>, <span class="st">"Manufacturing"</span>,</span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"Transport and utilities"</span>, <span class="st">"Wholesale"</span>, <span class="st">"Retail"</span>,</span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"Finance"</span>, <span class="st">"Services"</span>, <span class="st">"Public administration"</span>],</span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>})</span>
-<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> pl.Config(tbl_rows<span class="op">=</span><span class="dv">12</span>):</span>
-<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>    display(sic_divisions)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div id="tbl-bem7-sic" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="8">
+<div class="cell" data-execution_count="5">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>sic_divisions <span class="op">=</span> pl.DataFrame({</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">"first_sic"</span>: [<span class="dv">1</span>, <span class="dv">1000</span>, <span class="dv">1500</span>, <span class="dv">2000</span>, <span class="dv">4000</span>, <span class="dv">5000</span>, <span class="dv">5200</span>, <span class="dv">6000</span>, <span class="dv">7000</span>, <span class="dv">9000</span>],</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"last_sic"</span>: [<span class="dv">999</span>, <span class="dv">1499</span>, <span class="dv">1799</span>, <span class="dv">3999</span>, <span class="dv">4999</span>, <span class="dv">5199</span>, <span class="dv">5999</span>, <span class="dv">6799</span>, <span class="dv">8999</span>, <span class="dv">9999</span>],</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">"industry"</span>: [<span class="st">"Agriculture"</span>, <span class="st">"Mining"</span>, <span class="st">"Construction"</span>, <span class="st">"Manufacturing"</span>,</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"Transport and utilities"</span>, <span class="st">"Wholesale"</span>, <span class="st">"Retail"</span>,</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"Finance"</span>, <span class="st">"Services"</span>, <span class="st">"Public administration"</span>],</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>})</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> pl.Config(tbl_rows<span class="op">=</span><span class="dv">12</span>):</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>    display(sic_divisions)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="tbl-bem7-sic" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-execution_count="5">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-bem7-sic-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Table&nbsp;7.4: SIC code ranges used in the industry breakdown (BEM Table 7.1).
+Table&nbsp;7.1: SIC code ranges used in the industry breakdown (BEM Table 7.1).
 </figcaption>
 <div aria-describedby="tbl-bem7-sic-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="cell-output cell-output-display">
@@ -883,24 +637,24 @@ Table&nbsp;7.4: SIC code ranges used in the industry breakdown (BEM Table 7.1).
 </figure>
 </div>
 </div>
-<div id="8c7229dd" class="cell" data-execution_count="9">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>industry <span class="op">=</span> pl.coalesce([</span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>    pl.when(pl.col(<span class="st">"siccd"</span>).is_between(lo, hi)).then(pl.lit(name))</span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> lo, hi, name <span class="kw">in</span> sic_divisions.iter_rows()</span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>])</span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>classified <span class="op">=</span> composition.with_columns(</span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>    industry<span class="op">=</span>pl.when(pl.col(<span class="st">"siccd"</span>).fill_null(<span class="dv">0</span>) <span class="op">==</span> <span class="dv">0</span>).then(pl.lit(<span class="st">"Missing"</span>))</span>
-<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>    .otherwise(industry.fill_null(<span class="st">"Unclassified"</span>))</span>
-<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>industry_labels <span class="op">=</span> [<span class="op">*</span>sic_divisions[<span class="st">"industry"</span>].to_list(), <span class="st">"Missing"</span>]</span>
-<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> classified[<span class="st">"industry"</span>].eq(<span class="st">"Unclassified"</span>).<span class="bu">any</span>():</span>
-<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>    industry_labels.append(<span class="st">"Unclassified"</span>)</span>
-<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>by_industry <span class="op">=</span> summarize_composition(classified, <span class="st">"industry"</span>, industry_labels)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="c4f5bd90" class="cell" data-execution_count="6">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>industry <span class="op">=</span> pl.coalesce([</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>    pl.when(pl.col(<span class="st">"siccd"</span>).is_between(lo, hi)).then(pl.lit(name))</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> lo, hi, name <span class="kw">in</span> sic_divisions.iter_rows()</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>])</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>classified <span class="op">=</span> composition.with_columns(</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    industry<span class="op">=</span>pl.when(pl.col(<span class="st">"siccd"</span>).fill_null(<span class="dv">0</span>) <span class="op">==</span> <span class="dv">0</span>).then(pl.lit(<span class="st">"Missing"</span>))</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    .otherwise(industry.fill_null(<span class="st">"Unclassified"</span>))</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>industry_labels <span class="op">=</span> [<span class="op">*</span>sic_divisions[<span class="st">"industry"</span>].to_list(), <span class="st">"Missing"</span>]</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> classified[<span class="st">"industry"</span>].eq(<span class="st">"Unclassified"</span>).<span class="bu">any</span>():</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>    industry_labels.append(<span class="st">"Unclassified"</span>)</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>by_industry <span class="op">=</span> summarize_composition(classified, <span class="st">"industry"</span>, industry_labels)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div id="cell-fig-bem7-industry-count" class="cell" data-execution_count="10">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>plot_composition(by_industry, <span class="st">"industry"</span>, industry_labels,</span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"stocks"</span>, <span class="st">"Number of stocks"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-display" data-execution_count="10">
+<div id="cell-fig-bem7-industry-count" class="cell" data-execution_count="7">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>plot_composition(by_industry, <span class="st">"industry"</span>, industry_labels,</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"stocks"</span>, <span class="st">"Number of stocks"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="7">
 <div id="fig-bem7-industry-count" class="quarto-float quarto-figure quarto-figure-center anchored" alt="Manufacturing is the largest industry by stock count, with sharp changes in several industries when Nasdaq enters.">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-bem7-industry-count-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
@@ -913,10 +667,10 @@ Figure&nbsp;7.3: Number of stocks by SIC division, recreating the series in BEM 
 </div>
 </div>
 </div>
-<div id="cell-fig-bem7-industry-value" class="cell" data-execution_count="11">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>plot_composition(by_industry, <span class="st">"industry"</span>, industry_labels,</span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"value"</span>, <span class="st">"Market value ($ billions, December 2012)"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-display" data-execution_count="11">
+<div id="cell-fig-bem7-industry-value" class="cell" data-execution_count="8">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>plot_composition(by_industry, <span class="st">"industry"</span>, industry_labels,</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>                 <span class="st">"value"</span>, <span class="st">"Market value ($ billions, December 2012)"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="8">
 <div id="fig-bem7-industry-value" class="quarto-float quarto-figure quarto-figure-center anchored" alt="Manufacturing has the largest market value. Communications, grouped with transport and utilities, and services grow during the dot-com boom.">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-bem7-industry-value-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
@@ -936,97 +690,97 @@ Figure&nbsp;7.4: Market value by SIC division, recreating the series in BEM Figu
 <h2 data-number="7.2" class="anchored" data-anchor-id="sec-bem-returns"><span class="header-section-number">7.2</span> Stock Returns and Excess Returns</h2>
 <p>Start with eligible common stocks at the end of month <span class="math inline">\(t\)</span> and look up the return for the same security in month <span class="math inline">\(t+1\)</span>. Do not require it to remain in the common-stock universe in the holding month: that would screen out delistings.</p>
 <p>Chapter 7 uses the legacy CRSP delisting return in place of the regular monthly return if the stock delists. If no delisting return is recorded, it imputes a loss of 30% for the codes listed below and a loss of 100% for other delistings. This is the book’s convention for legacy data, not a reason to adjust the reported returns from CRSP CIZ a second time.</p>
-<div id="7a8f3457" class="cell" data-execution_count="12">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>first_return <span class="op">=</span> pl.date(<span class="dv">1926</span>, <span class="dv">7</span>, <span class="dv">1</span>)</span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>first_return_late <span class="op">=</span> pl.date(<span class="dv">1963</span>, <span class="dv">7</span>, <span class="dv">1</span>)</span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>hold_month <span class="op">=</span> pl.col(<span class="st">"month"</span>).dt.offset_by(<span class="st">"1mo"</span>)</span>
-<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>delist <span class="op">=</span> (</span>
-<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>    load_parquet(<span class="st">"msedelist"</span>, <span class="st">"crsp"</span>)</span>
-<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>    .with_columns(month<span class="op">=</span>pl.col(<span class="st">"dlstdt"</span>).dt.month_start())</span>
-<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>    .<span class="bu">filter</span>(pl.col(<span class="st">"month"</span>).is_between(first_return, last))</span>
-<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>    .select(<span class="st">"permno"</span>, <span class="st">"month"</span>, <span class="st">"dlret"</span>, <span class="st">"dlstcd"</span>)</span>
-<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>poor_performance <span class="op">=</span> (</span>
-<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>    pl.col(<span class="st">"dlstcd"</span>).is_in([<span class="dv">500</span>, <span class="dv">520</span>, <span class="dv">580</span>, <span class="dv">584</span>])</span>
-<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>    <span class="op">|</span> pl.col(<span class="st">"dlstcd"</span>).is_between(<span class="dv">551</span>, <span class="dv">574</span>)</span>
-<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>imputed_delist <span class="op">=</span> pl.when(poor_performance).then(<span class="op">-</span><span class="fl">0.30</span>).otherwise(<span class="op">-</span><span class="fl">1.00</span>)</span>
-<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>return_panel <span class="op">=</span> (</span>
-<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a>    universe</span>
-<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a>    .with_columns(formation_month<span class="op">=</span><span class="st">"month"</span>)</span>
-<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a>    .with_columns(month<span class="op">=</span>hold_month)</span>
-<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a>    .<span class="bu">filter</span>(pl.col(<span class="st">"month"</span>).is_between(first_return, last))</span>
-<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a>    .drop(<span class="st">"ret"</span>)</span>
-<span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a>    .join(</span>
-<span id="cb12-24"><a href="#cb12-24" aria-hidden="true" tabindex="-1"></a>        msf.select(<span class="st">"permno"</span>, <span class="st">"month"</span>, ret_raw<span class="op">=</span><span class="st">"ret"</span>),</span>
-<span id="cb12-25"><a href="#cb12-25" aria-hidden="true" tabindex="-1"></a>        on<span class="op">=</span>[<span class="st">"permno"</span>, <span class="st">"month"</span>], how<span class="op">=</span><span class="st">"left"</span>, validate<span class="op">=</span><span class="st">"1:1"</span>,</span>
-<span id="cb12-26"><a href="#cb12-26" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb12-27"><a href="#cb12-27" aria-hidden="true" tabindex="-1"></a>    .join(delist, on<span class="op">=</span>[<span class="st">"permno"</span>, <span class="st">"month"</span>], how<span class="op">=</span><span class="st">"left"</span>, validate<span class="op">=</span><span class="st">"1:1"</span>)</span>
-<span id="cb12-28"><a href="#cb12-28" aria-hidden="true" tabindex="-1"></a>    .join(factors.select(<span class="st">"month"</span>, <span class="st">"rf"</span>), on<span class="op">=</span><span class="st">"month"</span>, how<span class="op">=</span><span class="st">"left"</span>, validate<span class="op">=</span><span class="st">"m:1"</span>)</span>
-<span id="cb12-29"><a href="#cb12-29" aria-hidden="true" tabindex="-1"></a>    .with_columns(</span>
-<span id="cb12-30"><a href="#cb12-30" aria-hidden="true" tabindex="-1"></a>        ret_adj<span class="op">=</span>pl.when(pl.col(<span class="st">"dlstcd"</span>).is_not_null())</span>
-<span id="cb12-31"><a href="#cb12-31" aria-hidden="true" tabindex="-1"></a>        .then(pl.coalesce(<span class="st">"dlret"</span>, imputed_delist))</span>
-<span id="cb12-32"><a href="#cb12-32" aria-hidden="true" tabindex="-1"></a>        .otherwise(pl.col(<span class="st">"ret_raw"</span>))</span>
-<span id="cb12-33"><a href="#cb12-33" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb12-34"><a href="#cb12-34" aria-hidden="true" tabindex="-1"></a>    .with_columns(</span>
-<span id="cb12-35"><a href="#cb12-35" aria-hidden="true" tabindex="-1"></a>        excess_raw<span class="op">=</span>pl.col(<span class="st">"ret_raw"</span>) <span class="op">-</span> pl.col(<span class="st">"rf"</span>),</span>
-<span id="cb12-36"><a href="#cb12-36" aria-hidden="true" tabindex="-1"></a>        excess_adj<span class="op">=</span>pl.col(<span class="st">"ret_adj"</span>) <span class="op">-</span> pl.col(<span class="st">"rf"</span>),</span>
-<span id="cb12-37"><a href="#cb12-37" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb12-38"><a href="#cb12-38" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="857f7186" class="cell" data-execution_count="9">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>first_return <span class="op">=</span> pl.date(<span class="dv">1926</span>, <span class="dv">7</span>, <span class="dv">1</span>)</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>first_return_late <span class="op">=</span> pl.date(<span class="dv">1963</span>, <span class="dv">7</span>, <span class="dv">1</span>)</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>hold_month <span class="op">=</span> pl.col(<span class="st">"month"</span>).dt.offset_by(<span class="st">"1mo"</span>)</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>delist <span class="op">=</span> (</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>    load_parquet(<span class="st">"msedelist"</span>, <span class="st">"crsp"</span>)</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>    .with_columns(month<span class="op">=</span>pl.col(<span class="st">"dlstdt"</span>).dt.month_start())</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>    .<span class="bu">filter</span>(pl.col(<span class="st">"month"</span>).is_between(first_return, last))</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>    .select(<span class="st">"permno"</span>, <span class="st">"month"</span>, <span class="st">"dlret"</span>, <span class="st">"dlstcd"</span>)</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>poor_performance <span class="op">=</span> (</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>    pl.col(<span class="st">"dlstcd"</span>).is_in([<span class="dv">500</span>, <span class="dv">520</span>, <span class="dv">580</span>, <span class="dv">584</span>])</span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>    <span class="op">|</span> pl.col(<span class="st">"dlstcd"</span>).is_between(<span class="dv">551</span>, <span class="dv">574</span>)</span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>imputed_delist <span class="op">=</span> pl.when(poor_performance).then(<span class="op">-</span><span class="fl">0.30</span>).otherwise(<span class="op">-</span><span class="fl">1.00</span>)</span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>return_panel <span class="op">=</span> (</span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>    universe</span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>    .with_columns(formation_month<span class="op">=</span><span class="st">"month"</span>)</span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>    .with_columns(month<span class="op">=</span>hold_month)</span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>    .<span class="bu">filter</span>(pl.col(<span class="st">"month"</span>).is_between(first_return, last))</span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>    .drop(<span class="st">"ret"</span>)</span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>    .join(</span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a>        msf.select(<span class="st">"permno"</span>, <span class="st">"month"</span>, ret_raw<span class="op">=</span><span class="st">"ret"</span>),</span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a>        on<span class="op">=</span>[<span class="st">"permno"</span>, <span class="st">"month"</span>], how<span class="op">=</span><span class="st">"left"</span>, validate<span class="op">=</span><span class="st">"1:1"</span>,</span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a>    .join(delist, on<span class="op">=</span>[<span class="st">"permno"</span>, <span class="st">"month"</span>], how<span class="op">=</span><span class="st">"left"</span>, validate<span class="op">=</span><span class="st">"1:1"</span>)</span>
+<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a>    .join(factors.select(<span class="st">"month"</span>, <span class="st">"rf"</span>), on<span class="op">=</span><span class="st">"month"</span>, how<span class="op">=</span><span class="st">"left"</span>, validate<span class="op">=</span><span class="st">"m:1"</span>)</span>
+<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a>    .with_columns(</span>
+<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a>        ret_adj<span class="op">=</span>pl.when(pl.col(<span class="st">"dlstcd"</span>).is_not_null())</span>
+<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a>        .then(pl.coalesce(<span class="st">"dlret"</span>, imputed_delist))</span>
+<span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a>        .otherwise(pl.col(<span class="st">"ret_raw"</span>))</span>
+<span id="cb9-33"><a href="#cb9-33" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb9-34"><a href="#cb9-34" aria-hidden="true" tabindex="-1"></a>    .with_columns(</span>
+<span id="cb9-35"><a href="#cb9-35" aria-hidden="true" tabindex="-1"></a>        excess_raw<span class="op">=</span>pl.col(<span class="st">"ret_raw"</span>) <span class="op">-</span> pl.col(<span class="st">"rf"</span>),</span>
+<span id="cb9-36"><a href="#cb9-36" aria-hidden="true" tabindex="-1"></a>        excess_adj<span class="op">=</span>pl.col(<span class="st">"ret_adj"</span>) <span class="op">-</span> pl.col(<span class="st">"rf"</span>),</span>
+<span id="cb9-37"><a href="#cb9-37" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb9-38"><a href="#cb9-38" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>The Fama–French risk-free return applies to the holding month, not the formation month. We first calculate the statistics across stocks for each return month, then average those monthly statistics. In particular, the means give each month equal weight, irrespective of the number of stocks in that month. We use sample standard deviations, bias-adjusted skewness and excess kurtosis, and linearly interpolated quantiles.</p>
-<div id="7cd98166" class="cell" data-execution_count="13">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> summarize_returns(start):</span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> pl.col(<span class="st">"return_pct"</span>)</span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> (</span>
-<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>        return_panel</span>
-<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>        .<span class="bu">filter</span>(pl.col(<span class="st">"month"</span>) <span class="op">&gt;=</span> start)</span>
-<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>        .select(<span class="st">"month"</span>, <span class="st">"excess_adj"</span>, <span class="st">"ret_adj"</span>, <span class="st">"excess_raw"</span>, <span class="st">"ret_raw"</span>)</span>
-<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>        .unpivot(index<span class="op">=</span><span class="st">"month"</span>, variable_name<span class="op">=</span><span class="st">"series"</span>, value_name<span class="op">=</span><span class="st">"return_pct"</span>)</span>
-<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>        .with_columns(return_pct<span class="op">=</span><span class="dv">100</span> <span class="op">*</span> x)</span>
-<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>        .group_by(<span class="st">"month"</span>, <span class="st">"series"</span>)</span>
-<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>        .agg(</span>
-<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>            n<span class="op">=</span>x.count(),</span>
-<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>            mean<span class="op">=</span>x.mean(),</span>
-<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>            sd<span class="op">=</span>x.std(),</span>
-<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>            skew<span class="op">=</span>x.skew(bias<span class="op">=</span><span class="va">False</span>),</span>
-<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a>            excess_kurtosis<span class="op">=</span>x.kurtosis(fisher<span class="op">=</span><span class="va">True</span>, bias<span class="op">=</span><span class="va">False</span>),</span>
-<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a>            <span class="bu">min</span><span class="op">=</span>x.<span class="bu">min</span>(),</span>
-<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a>            p05<span class="op">=</span>x.quantile(<span class="fl">0.05</span>, interpolation<span class="op">=</span><span class="st">"linear"</span>),</span>
-<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a>            p25<span class="op">=</span>x.quantile(<span class="fl">0.25</span>, interpolation<span class="op">=</span><span class="st">"linear"</span>),</span>
-<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a>            median<span class="op">=</span>x.median(),</span>
-<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a>            p75<span class="op">=</span>x.quantile(<span class="fl">0.75</span>, interpolation<span class="op">=</span><span class="st">"linear"</span>),</span>
-<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a>            p95<span class="op">=</span>x.quantile(<span class="fl">0.95</span>, interpolation<span class="op">=</span><span class="st">"linear"</span>),</span>
-<span id="cb13-22"><a href="#cb13-22" aria-hidden="true" tabindex="-1"></a>            <span class="bu">max</span><span class="op">=</span>x.<span class="bu">max</span>(),</span>
-<span id="cb13-23"><a href="#cb13-23" aria-hidden="true" tabindex="-1"></a>        )</span>
-<span id="cb13-24"><a href="#cb13-24" aria-hidden="true" tabindex="-1"></a>        .group_by(<span class="st">"series"</span>)</span>
-<span id="cb13-25"><a href="#cb13-25" aria-hidden="true" tabindex="-1"></a>        .agg(pl.exclude(<span class="st">"month"</span>, <span class="st">"series"</span>).mean())</span>
-<span id="cb13-26"><a href="#cb13-26" aria-hidden="true" tabindex="-1"></a>        .collect()</span>
-<span id="cb13-27"><a href="#cb13-27" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb13-28"><a href="#cb13-28" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-29"><a href="#cb13-29" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> display_returns(table):</span>
-<span id="cb13-30"><a href="#cb13-30" aria-hidden="true" tabindex="-1"></a>    labels <span class="op">=</span> {</span>
-<span id="cb13-31"><a href="#cb13-31" aria-hidden="true" tabindex="-1"></a>        <span class="st">"excess_adj"</span>: <span class="st">"Adjusted excess"</span>,</span>
-<span id="cb13-32"><a href="#cb13-32" aria-hidden="true" tabindex="-1"></a>        <span class="st">"ret_adj"</span>: <span class="st">"Adjusted total"</span>,</span>
-<span id="cb13-33"><a href="#cb13-33" aria-hidden="true" tabindex="-1"></a>        <span class="st">"excess_raw"</span>: <span class="st">"Unadjusted excess"</span>,</span>
-<span id="cb13-34"><a href="#cb13-34" aria-hidden="true" tabindex="-1"></a>        <span class="st">"ret_raw"</span>: <span class="st">"Unadjusted total"</span>,</span>
-<span id="cb13-35"><a href="#cb13-35" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb13-36"><a href="#cb13-36" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> (</span>
-<span id="cb13-37"><a href="#cb13-37" aria-hidden="true" tabindex="-1"></a>        table</span>
-<span id="cb13-38"><a href="#cb13-38" aria-hidden="true" tabindex="-1"></a>        .with_columns(series<span class="op">=</span>pl.col(<span class="st">"series"</span>).replace_strict(labels))</span>
-<span id="cb13-39"><a href="#cb13-39" aria-hidden="true" tabindex="-1"></a>        .unpivot(index<span class="op">=</span><span class="st">"series"</span>, variable_name<span class="op">=</span><span class="st">"statistic"</span>, value_name<span class="op">=</span><span class="st">"value"</span>)</span>
-<span id="cb13-40"><a href="#cb13-40" aria-hidden="true" tabindex="-1"></a>        .pivot(on<span class="op">=</span><span class="st">"series"</span>, index<span class="op">=</span><span class="st">"statistic"</span>, values<span class="op">=</span><span class="st">"value"</span>)</span>
-<span id="cb13-41"><a href="#cb13-41" aria-hidden="true" tabindex="-1"></a>        .select(<span class="st">"statistic"</span>, <span class="op">*</span>labels.values())</span>
-<span id="cb13-42"><a href="#cb13-42" aria-hidden="true" tabindex="-1"></a>        .with_columns(pl.exclude(<span class="st">"statistic"</span>).<span class="bu">round</span>(<span class="dv">2</span>))</span>
-<span id="cb13-43"><a href="#cb13-43" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb13-44"><a href="#cb13-44" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-45"><a href="#cb13-45" aria-hidden="true" tabindex="-1"></a>table_7_2 <span class="op">=</span> summarize_returns(first_return)</span>
-<span id="cb13-46"><a href="#cb13-46" aria-hidden="true" tabindex="-1"></a>table_7_3 <span class="op">=</span> summarize_returns(first_return_late)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="07b50e01" class="cell" data-execution_count="10">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> summarize_returns(start):</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> pl.col(<span class="st">"return_pct"</span>)</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> (</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>        return_panel</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>        .<span class="bu">filter</span>(pl.col(<span class="st">"month"</span>) <span class="op">&gt;=</span> start)</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>        .select(<span class="st">"month"</span>, <span class="st">"excess_adj"</span>, <span class="st">"ret_adj"</span>, <span class="st">"excess_raw"</span>, <span class="st">"ret_raw"</span>)</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>        .unpivot(index<span class="op">=</span><span class="st">"month"</span>, variable_name<span class="op">=</span><span class="st">"series"</span>, value_name<span class="op">=</span><span class="st">"return_pct"</span>)</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>        .with_columns(return_pct<span class="op">=</span><span class="dv">100</span> <span class="op">*</span> x)</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>        .group_by(<span class="st">"month"</span>, <span class="st">"series"</span>)</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>        .agg(</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>            n<span class="op">=</span>x.count(),</span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>            mean<span class="op">=</span>x.mean(),</span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>            sd<span class="op">=</span>x.std(),</span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>            skew<span class="op">=</span>x.skew(bias<span class="op">=</span><span class="va">False</span>),</span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>            excess_kurtosis<span class="op">=</span>x.kurtosis(fisher<span class="op">=</span><span class="va">True</span>, bias<span class="op">=</span><span class="va">False</span>),</span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>            <span class="bu">min</span><span class="op">=</span>x.<span class="bu">min</span>(),</span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>            p05<span class="op">=</span>x.quantile(<span class="fl">0.05</span>, interpolation<span class="op">=</span><span class="st">"linear"</span>),</span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>            p25<span class="op">=</span>x.quantile(<span class="fl">0.25</span>, interpolation<span class="op">=</span><span class="st">"linear"</span>),</span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>            median<span class="op">=</span>x.median(),</span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a>            p75<span class="op">=</span>x.quantile(<span class="fl">0.75</span>, interpolation<span class="op">=</span><span class="st">"linear"</span>),</span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>            p95<span class="op">=</span>x.quantile(<span class="fl">0.95</span>, interpolation<span class="op">=</span><span class="st">"linear"</span>),</span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a>            <span class="bu">max</span><span class="op">=</span>x.<span class="bu">max</span>(),</span>
+<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a>        .group_by(<span class="st">"series"</span>)</span>
+<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a>        .agg(pl.exclude(<span class="st">"month"</span>, <span class="st">"series"</span>).mean())</span>
+<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a>        .collect()</span>
+<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb10-28"><a href="#cb10-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-29"><a href="#cb10-29" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> display_returns(table):</span>
+<span id="cb10-30"><a href="#cb10-30" aria-hidden="true" tabindex="-1"></a>    labels <span class="op">=</span> {</span>
+<span id="cb10-31"><a href="#cb10-31" aria-hidden="true" tabindex="-1"></a>        <span class="st">"excess_adj"</span>: <span class="st">"Adjusted excess"</span>,</span>
+<span id="cb10-32"><a href="#cb10-32" aria-hidden="true" tabindex="-1"></a>        <span class="st">"ret_adj"</span>: <span class="st">"Adjusted total"</span>,</span>
+<span id="cb10-33"><a href="#cb10-33" aria-hidden="true" tabindex="-1"></a>        <span class="st">"excess_raw"</span>: <span class="st">"Unadjusted excess"</span>,</span>
+<span id="cb10-34"><a href="#cb10-34" aria-hidden="true" tabindex="-1"></a>        <span class="st">"ret_raw"</span>: <span class="st">"Unadjusted total"</span>,</span>
+<span id="cb10-35"><a href="#cb10-35" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb10-36"><a href="#cb10-36" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> (</span>
+<span id="cb10-37"><a href="#cb10-37" aria-hidden="true" tabindex="-1"></a>        table</span>
+<span id="cb10-38"><a href="#cb10-38" aria-hidden="true" tabindex="-1"></a>        .with_columns(series<span class="op">=</span>pl.col(<span class="st">"series"</span>).replace_strict(labels))</span>
+<span id="cb10-39"><a href="#cb10-39" aria-hidden="true" tabindex="-1"></a>        .unpivot(index<span class="op">=</span><span class="st">"series"</span>, variable_name<span class="op">=</span><span class="st">"statistic"</span>, value_name<span class="op">=</span><span class="st">"value"</span>)</span>
+<span id="cb10-40"><a href="#cb10-40" aria-hidden="true" tabindex="-1"></a>        .pivot(on<span class="op">=</span><span class="st">"series"</span>, index<span class="op">=</span><span class="st">"statistic"</span>, values<span class="op">=</span><span class="st">"value"</span>)</span>
+<span id="cb10-41"><a href="#cb10-41" aria-hidden="true" tabindex="-1"></a>        .select(<span class="st">"statistic"</span>, <span class="op">*</span>labels.values())</span>
+<span id="cb10-42"><a href="#cb10-42" aria-hidden="true" tabindex="-1"></a>        .with_columns(pl.exclude(<span class="st">"statistic"</span>).<span class="bu">round</span>(<span class="dv">2</span>))</span>
+<span id="cb10-43"><a href="#cb10-43" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb10-44"><a href="#cb10-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-45"><a href="#cb10-45" aria-hidden="true" tabindex="-1"></a>table_7_2 <span class="op">=</span> summarize_returns(first_return)</span>
+<span id="cb10-46"><a href="#cb10-46" aria-hidden="true" tabindex="-1"></a>table_7_3 <span class="op">=</span> summarize_returns(first_return_late)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p><strong><span id="july-1926december-2012-table-7.2">July 1926–December 2012 (Table 7.2)</span></strong></p>
-<div id="42b64329" class="cell" data-execution_count="14">
+<div id="016db592" class="cell" data-execution_count="11">
 <div class="cell-output cell-output-display">
 <div><style>
 .dataframe > thead > tr,
@@ -1145,7 +899,7 @@ Figure&nbsp;7.4: Market value by SIC division, recreating the series in BEM Figu
 </div>
 <section id="july-1963december-2012-table-7.3" class="level3" data-number="7.2.1">
 <h3 data-number="7.2.1" class="anchored" data-anchor-id="july-1963december-2012-table-7.3"><span class="header-section-number">7.2.1</span> CRSP Sample (1963–2012)</h3>
-<div id="65b1f483" class="cell" data-execution_count="15">
+<div id="140992ea" class="cell" data-execution_count="12">
 <div class="cell-output cell-output-display">
 <div><style>
 .dataframe > thead > tr,
@@ -1262,120 +1016,104 @@ Figure&nbsp;7.4: Market value by SIC division, recreating the series in BEM Figu
 </div>
 </div>
 </div>
-<p>On the local vintage, average adjusted excess returns are 0.96% and 0.74% per month for the two samples, versus 0.96% and 0.75% in the book. We get about 3,111 and 4,780 valid adjusted returns per month, versus 3,112 and 4,782. The upper tail is less close: the average monthly maximum adjusted excess return is 191.10% and 273.12%, against 208.10% and 302.74% in the book. The unadjusted maxima round to 186.78% and 266.66%, against 186.80% and 266.66% in the book. That points toward a difference in the delisting observations rather than a general shift in ordinary returns, but we cannot identify those observations without the original data and code.</p>
+<p>The delisting adjustment raises the average monthly maximum excess return in both samples.<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a></p>
 </section>
 </section>
 <section id="sec-bem7-market" class="level2" data-number="7.3">
 <h2 data-number="7.3" class="anchored" data-anchor-id="sec-bem7-market"><span class="header-section-number">7.3</span> The Market Factor</h2>
-<p>The Fama–French market factor (MKT) is the excess return on a broad value-weighted portfolio of U.S. common stocks. CRSP’s value-weighted market index (VWRETD) has a broader set of eligible securities. We put both measures on an excess-return basis by subtracting the risk-free rate from VWRETD. MKT already has the risk-free rate subtracted.</p>
-<div id="a671d10f" class="cell" data-execution_count="17">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>market <span class="op">=</span> (</span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>    factors</span>
-<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>    .<span class="bu">filter</span>(pl.col(<span class="st">"month"</span>).is_between(pl.date(<span class="dv">1926</span>, <span class="dv">7</span>, <span class="dv">1</span>), pl.date(<span class="dv">2012</span>, <span class="dv">12</span>, <span class="dv">1</span>)))</span>
-<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>    .join(</span>
-<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>        load_parquet(<span class="st">"msi"</span>, <span class="st">"crsp"</span>)</span>
-<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>        .select(month<span class="op">=</span>pl.col(<span class="st">"date"</span>).dt.month_start(), vwretd<span class="op">=</span>pl.col(<span class="st">"vwretd"</span>)),</span>
-<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>        on<span class="op">=</span><span class="st">"month"</span>, how<span class="op">=</span><span class="st">"left"</span>, validate<span class="op">=</span><span class="st">"1:1"</span>,</span>
-<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>    .with_columns(</span>
-<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>        vw_excess<span class="op">=</span>pl.col(<span class="st">"vwretd"</span>) <span class="op">-</span> pl.col(<span class="st">"rf"</span>),</span>
-<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>        log_excess<span class="op">=</span>pl.col(<span class="st">"mktrf"</span>).log1p(),</span>
-<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>    .sort(<span class="st">"month"</span>)</span>
-<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>    .collect()</span>
-<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The Fama–French market factor (<code>mkt</code>) is the excess return on a broad value-weighted portfolio of U.S. common stocks. CRSP’s value-weighted market index (<code>vwretd</code>) has a broader set of eligible securities. We put both measures on an excess-return basis by subtracting the risk-free rate (<code>rf</code>) from <code>vwretd</code>. <code>mkt</code> already has the risk-free rate subtracted.</p>
+<div id="9cef7175" class="cell" data-execution_count="14">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>market <span class="op">=</span> (</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>    factors</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>    .rename({<span class="st">"mktrf"</span>: <span class="st">"mkt"</span>})</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>    .<span class="bu">filter</span>(pl.col(<span class="st">"month"</span>).is_between(pl.date(<span class="dv">1926</span>, <span class="dv">7</span>, <span class="dv">1</span>), pl.date(<span class="dv">2012</span>, <span class="dv">12</span>, <span class="dv">1</span>)))</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>    .join(</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>        load_parquet(<span class="st">"msi"</span>, <span class="st">"crsp"</span>)</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>        .select(month<span class="op">=</span>pl.col(<span class="st">"date"</span>).dt.month_start(), vwretd<span class="op">=</span>pl.col(<span class="st">"vwretd"</span>)),</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>        on<span class="op">=</span><span class="st">"month"</span>, how<span class="op">=</span><span class="st">"left"</span>, validate<span class="op">=</span><span class="st">"1:1"</span>,</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>    .with_columns(</span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>        vw_excess<span class="op">=</span>pl.col(<span class="st">"vwretd"</span>) <span class="op">-</span> pl.col(<span class="st">"rf"</span>),</span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>        log_excess<span class="op">=</span>pl.col(<span class="st">"mkt"</span>).log1p(),</span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>    .sort(<span class="st">"month"</span>)</span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>    .collect()</span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<p>On this vintage of the data, MKT and VWRETD have a monthly excess-return correlation of 0.9995, the same to four decimal places as reported by BEM. The table puts the means and standard deviations (in percent per month) next to the book’s reported numbers. The annualized Sharpe ratio uses <span class="math inline">\(\sqrt{12}\)</span> times the ratio of the monthly mean to the monthly standard deviation, as in the book.</p>
-<div id="c40c328a" class="cell" data-execution_count="18">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>market_summary <span class="op">=</span> pl.DataFrame(</span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>    {</span>
-<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>        <span class="st">"Series"</span>: [<span class="st">"MKT"</span>, <span class="st">"VWRETD less RF"</span>, <span class="st">"Log MKT"</span>],</span>
-<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>        <span class="st">"BEM mean (%)"</span>: [<span class="fl">0.627</span>, <span class="fl">0.624</span>, <span class="fl">0.478</span>],</span>
-<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>        <span class="st">"BEM SD (%)"</span>: [<span class="fl">5.43</span>, <span class="fl">5.44</span>, <span class="fl">5.44</span>],</span>
-<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>).with_columns(</span>
-<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>    pl.Series(<span class="st">"Local mean (%)"</span>, [</span>
-<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>        <span class="dv">100</span> <span class="op">*</span> market[c].mean() <span class="cf">for</span> c <span class="kw">in</span> [<span class="st">"mktrf"</span>, <span class="st">"vw_excess"</span>, <span class="st">"log_excess"</span>]</span>
-<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>    ]).<span class="bu">round</span>(<span class="dv">3</span>),</span>
-<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>    pl.Series(<span class="st">"Local SD (%)"</span>, [</span>
-<span id="cb15-12"><a href="#cb15-12" aria-hidden="true" tabindex="-1"></a>        <span class="dv">100</span> <span class="op">*</span> market[c].std() <span class="cf">for</span> c <span class="kw">in</span> [<span class="st">"mktrf"</span>, <span class="st">"vw_excess"</span>, <span class="st">"log_excess"</span>]</span>
-<span id="cb15-13"><a href="#cb15-13" aria-hidden="true" tabindex="-1"></a>    ]).<span class="bu">round</span>(<span class="dv">3</span>),</span>
-<span id="cb15-14"><a href="#cb15-14" aria-hidden="true" tabindex="-1"></a>    pl.Series(<span class="st">"Local annualized Sharpe"</span>, [</span>
-<span id="cb15-15"><a href="#cb15-15" aria-hidden="true" tabindex="-1"></a>        <span class="dv">12</span><span class="op">**</span><span class="fl">0.5</span> <span class="op">*</span> market[c].mean() <span class="op">/</span> market[c].std()</span>
-<span id="cb15-16"><a href="#cb15-16" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> c <span class="kw">in</span> [<span class="st">"mktrf"</span>, <span class="st">"vw_excess"</span>, <span class="st">"log_excess"</span>]</span>
-<span id="cb15-17"><a href="#cb15-17" aria-hidden="true" tabindex="-1"></a>    ]).<span class="bu">round</span>(<span class="dv">3</span>),</span>
-<span id="cb15-18"><a href="#cb15-18" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb15-19"><a href="#cb15-19" aria-hidden="true" tabindex="-1"></a>market_summary</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-display" data-execution_count="18">
-<div><style>
-.dataframe > thead > tr,
-.dataframe > tbody > tr {
-  text-align: right;
-  white-space: pre-wrap;
+<p>The monthly correlation between <code>mkt</code> and the adjusted CRSP return (<code>vw_excess</code>) is 0.9995 in this data vintage. Following <span class="citation" data-cites="bali2016">Bali et al. (<a href="references.html#ref-bali2016" role="doc-biblioref">2016, sec. 7.3</a>)</span>, we summarize the monthly returns from July 1926 through December 2012. The annualized Sharpe ratio uses <span class="math inline">\(\sqrt{12}\)</span> times the ratio of the monthly mean to the monthly standard deviation, as in the book.</p>
+<style>
+.cell-output-markdown:has(> table) {
+  max-width: 100%;
+  overflow-x: auto;
+}
+.cell-output-markdown > table {
+  white-space: nowrap;
 }
 </style>
-<small>shape: (3, 6)</small>
-<table class="dataframe caption-top table table-sm table-striped small" data-border="1">
+<div id="039142af" class="cell" data-execution_count="16">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>series_labels <span class="op">=</span> {</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">"mkt"</span>: <span class="st">"`mkt`"</span>,</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">"vw_excess"</span>: <span class="st">"`vwretd` less `rf`"</span>,</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">"log_excess"</span>: <span class="st">"Log `mkt`"</span>,</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>returns <span class="op">=</span> pl.col(<span class="op">*</span>series_labels)</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>market_summary <span class="op">=</span> (</span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>    market.select(</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>        pl.lit(<span class="bu">list</span>(series_labels.values())).alias(<span class="st">"Series"</span>),</span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>        pl.concat_list(returns.mean() <span class="op">*</span> <span class="dv">100</span>).alias(<span class="st">"Monthly mean (%)"</span>),</span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>        pl.concat_list(returns.std() <span class="op">*</span> <span class="dv">100</span>).alias(<span class="st">"Monthly SD (%)"</span>),</span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>        pl.concat_list(returns.mean() <span class="op">*</span> <span class="dv">12</span><span class="op">**</span><span class="fl">0.5</span> <span class="op">/</span> returns.std())</span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>        .alias(<span class="st">"Annualized Sharpe"</span>),</span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>    .explode(pl.<span class="bu">all</span>())</span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>    .with_columns(pl.col(pl.Float64).<span class="bu">round</span>(<span class="dv">3</span>))</span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a>show_table(market_summary.with_columns(pl.col(pl.Float64).cast(pl.String)))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display cell-output-markdown">
+<table class="caption-top table table-sm table-striped small">
 <thead>
 <tr class="header">
-<th data-quarto-table-cell-role="th">Series</th>
-<th data-quarto-table-cell-role="th">BEM mean (%)</th>
-<th data-quarto-table-cell-role="th">BEM SD (%)</th>
-<th data-quarto-table-cell-role="th">Local mean (%)</th>
-<th data-quarto-table-cell-role="th">Local SD (%)</th>
-<th data-quarto-table-cell-role="th">Local annualized Sharpe</th>
-</tr>
-<tr class="even">
-<td>str</td>
-<td>f64</td>
-<td>f64</td>
-<td>f64</td>
-<td>f64</td>
-<td>f64</td>
+<th style="text-align: left;">Series</th>
+<th style="text-align: right;">Monthly mean (%)</th>
+<th style="text-align: right;">Monthly SD (%)</th>
+<th style="text-align: right;">Annualized Sharpe</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td>"MKT"</td>
-<td>0.627</td>
-<td>5.43</td>
-<td>0.629</td>
-<td>5.447</td>
-<td>0.4</td>
+<td style="text-align: left;"><code>mkt</code></td>
+<td style="text-align: right;">0.629</td>
+<td style="text-align: right;">5.447</td>
+<td style="text-align: right;">0.4</td>
 </tr>
 <tr class="even">
-<td>"VWRETD less RF"</td>
-<td>0.624</td>
-<td>5.44</td>
-<td>0.626</td>
-<td>5.46</td>
-<td>0.397</td>
+<td style="text-align: left;"><code>vwretd</code> less <code>rf</code></td>
+<td style="text-align: right;">0.626</td>
+<td style="text-align: right;">5.46</td>
+<td style="text-align: right;">0.397</td>
 </tr>
 <tr class="odd">
-<td>"Log MKT"</td>
-<td>0.478</td>
-<td>5.44</td>
-<td>0.48</td>
-<td>5.453</td>
-<td>0.305</td>
+<td style="text-align: left;">Log <code>mkt</code></td>
+<td style="text-align: right;">0.48</td>
+<td style="text-align: right;">5.453</td>
+<td style="text-align: right;">0.305</td>
 </tr>
 </tbody>
 </table>
 </div>
 </div>
-</div>
 <p><strong><span id="cumulative-market-excess-returns">Cumulative market excess returns</span></strong></p>
 <p>For comparison with BEM Figure 7.5, we compound the monthly market factor, <span class="math inline">\(\prod_{s\leq t}(1+\mathrm{MKT}_s)-1\)</span>, and sum its log transformation, <span class="math inline">\(\sum_{s\leq t}\log(1+\mathrm{MKT}_s)\)</span>. Both are transformations of the same underlying series. The panels share a month-end date axis and use separate percentage scales.</p>
 <p>Compounding the market factor is <strong>not</strong> the same as subtracting the compounded risk-free return from the compounded market return. Here we follow the book’s definition.</p>
-<div id="ad87acec" class="cell" data-execution_count="19">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>market_path <span class="op">=</span> market.with_columns(</span>
-<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>    date<span class="op">=</span>pl.col(<span class="st">"month"</span>).dt.month_end(),</span>
-<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>    compounded<span class="op">=</span>(<span class="dv">1</span> <span class="op">+</span> pl.col(<span class="st">"mktrf"</span>)).cum_prod() <span class="op">-</span> <span class="dv">1</span>,</span>
-<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>    cumulative_log<span class="op">=</span>pl.col(<span class="st">"log_excess"</span>).cum_sum(),</span>
-<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="794be600" class="cell" data-execution_count="17">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>market_path <span class="op">=</span> market.with_columns(</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>    date<span class="op">=</span>pl.col(<span class="st">"month"</span>).dt.month_end(),</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>    compounded<span class="op">=</span>(<span class="dv">1</span> <span class="op">+</span> pl.col(<span class="st">"mkt"</span>)).cum_prod() <span class="op">-</span> <span class="dv">1</span>,</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>    cumulative_log<span class="op">=</span>pl.col(<span class="st">"log_excess"</span>).cum_sum(),</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
-<div id="cell-fig-bem7-market-path" class="cell" data-execution_count="20">
-<div class="cell-output cell-output-display" data-execution_count="20">
+<div id="cell-fig-bem7-market-path" class="cell" data-execution_count="18">
+<div class="cell-output cell-output-display" data-execution_count="18">
 <div id="fig-bem7-market-path" class="quarto-float quarto-figure quarto-figure-center anchored" alt="Two panels show compounded and cumulative log market excess returns. The 1929–1932 drawdown is clearer in the cumulative log panel.">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-bem7-market-path-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
@@ -1388,37 +1126,36 @@ Figure&nbsp;7.5: Cumulative market excess returns, July 1926–December 2012 (co
 </div>
 </div>
 </div>
-<p>The reconstructed series ends at about 14,411% compounded and 498% on the cumulative log scale, versus 14,209% and 496% in BEM. The monthly means and major drawdowns are close, but small differences in monthly inputs compound over 1,038 observations. These figures use the local factor vintage, not necessarily the one available to the authors.</p>
 <p><strong><span id="drawdowns">Drawdowns</span></strong></p>
 <p>The compounded line makes early losses look small compared with later ones. To measure a drawdown, divide the value at the trough by the value at the preceding peak, then subtract one. Use the peak and trough months described in BEM; the recovery month is the first later month back at or above the old peak. Month names here refer to end-of-month values, so an episode that begins in September uses the August close as its reference.</p>
-<div id="e1c4e9e1" class="cell" data-execution_count="21">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> datetime <span class="im">import</span> date</span>
-<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>episodes <span class="op">=</span> [</span>
-<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"1929 crash"</span>, date(<span class="dv">1929</span>, <span class="dv">8</span>, <span class="dv">1</span>), date(<span class="dv">1932</span>, <span class="dv">6</span>, <span class="dv">1</span>)),</span>
-<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"1968–1974 decline"</span>, date(<span class="dv">1968</span>, <span class="dv">11</span>, <span class="dv">1</span>), date(<span class="dv">1974</span>, <span class="dv">9</span>, <span class="dv">1</span>)),</span>
-<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"Dot-com bust and financial crisis"</span>, date(<span class="dv">2000</span>, <span class="dv">3</span>, <span class="dv">1</span>), date(<span class="dv">2009</span>, <span class="dv">2</span>, <span class="dv">1</span>)),</span>
-<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"1987 crash"</span>, date(<span class="dv">1987</span>, <span class="dv">8</span>, <span class="dv">1</span>), date(<span class="dv">1987</span>, <span class="dv">11</span>, <span class="dv">1</span>)),</span>
-<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>]</span>
-<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>wealth <span class="op">=</span> market_path.select(<span class="st">"month"</span>, wealth<span class="op">=</span><span class="dv">1</span> <span class="op">+</span> pl.col(<span class="st">"compounded"</span>))</span>
-<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> measure_drawdown(episode, peak, trough):</span>
-<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>    peak_value <span class="op">=</span> wealth.<span class="bu">filter</span>(pl.col(<span class="st">"month"</span>) <span class="op">==</span> peak)[<span class="st">"wealth"</span>].item()</span>
-<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a>    trough_value <span class="op">=</span> wealth.<span class="bu">filter</span>(pl.col(<span class="st">"month"</span>) <span class="op">==</span> trough)[<span class="st">"wealth"</span>].item()</span>
-<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a>    recovery <span class="op">=</span> wealth.<span class="bu">filter</span>(</span>
-<span id="cb17-16"><a href="#cb17-16" aria-hidden="true" tabindex="-1"></a>        (pl.col(<span class="st">"month"</span>) <span class="op">&gt;</span> trough) <span class="op">&amp;</span> (pl.col(<span class="st">"wealth"</span>) <span class="op">&gt;=</span> peak_value)</span>
-<span id="cb17-17"><a href="#cb17-17" aria-hidden="true" tabindex="-1"></a>    )[<span class="st">"month"</span>].first()</span>
-<span id="cb17-18"><a href="#cb17-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> {</span>
-<span id="cb17-19"><a href="#cb17-19" aria-hidden="true" tabindex="-1"></a>        <span class="st">"Episode"</span>: episode,</span>
-<span id="cb17-20"><a href="#cb17-20" aria-hidden="true" tabindex="-1"></a>        <span class="st">"Peak"</span>: peak.strftime(<span class="st">"%Y-%m"</span>),</span>
-<span id="cb17-21"><a href="#cb17-21" aria-hidden="true" tabindex="-1"></a>        <span class="st">"Trough"</span>: trough.strftime(<span class="st">"%Y-%m"</span>),</span>
-<span id="cb17-22"><a href="#cb17-22" aria-hidden="true" tabindex="-1"></a>        <span class="st">"Drawdown (%)"</span>: <span class="bu">round</span>(<span class="dv">100</span> <span class="op">*</span> (trough_value <span class="op">/</span> peak_value <span class="op">-</span> <span class="dv">1</span>), <span class="dv">1</span>),</span>
-<span id="cb17-23"><a href="#cb17-23" aria-hidden="true" tabindex="-1"></a>        <span class="st">"Recovery"</span>: recovery.strftime(<span class="st">"%Y-%m"</span>) <span class="cf">if</span> recovery <span class="cf">else</span> <span class="st">"Not by 2012-12"</span>,</span>
-<span id="cb17-24"><a href="#cb17-24" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb17-25"><a href="#cb17-25" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb17-26"><a href="#cb17-26" aria-hidden="true" tabindex="-1"></a>pl.DataFrame([measure_drawdown(<span class="op">*</span>episode) <span class="cf">for</span> episode <span class="kw">in</span> episodes])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-display" data-execution_count="21">
+<div id="6df4a54b" class="cell" data-execution_count="19">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> datetime <span class="im">import</span> date</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>episodes <span class="op">=</span> [</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"1929 crash"</span>, date(<span class="dv">1929</span>, <span class="dv">8</span>, <span class="dv">1</span>), date(<span class="dv">1932</span>, <span class="dv">6</span>, <span class="dv">1</span>)),</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"1968–1974 decline"</span>, date(<span class="dv">1968</span>, <span class="dv">11</span>, <span class="dv">1</span>), date(<span class="dv">1974</span>, <span class="dv">9</span>, <span class="dv">1</span>)),</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"Dot-com bust and financial crisis"</span>, date(<span class="dv">2000</span>, <span class="dv">3</span>, <span class="dv">1</span>), date(<span class="dv">2009</span>, <span class="dv">2</span>, <span class="dv">1</span>)),</span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>    (<span class="st">"1987 crash"</span>, date(<span class="dv">1987</span>, <span class="dv">8</span>, <span class="dv">1</span>), date(<span class="dv">1987</span>, <span class="dv">11</span>, <span class="dv">1</span>)),</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>wealth <span class="op">=</span> market_path.select(<span class="st">"month"</span>, wealth<span class="op">=</span><span class="dv">1</span> <span class="op">+</span> pl.col(<span class="st">"compounded"</span>))</span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> measure_drawdown(episode, peak, trough):</span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a>    peak_value <span class="op">=</span> wealth.<span class="bu">filter</span>(pl.col(<span class="st">"month"</span>) <span class="op">==</span> peak)[<span class="st">"wealth"</span>].item()</span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a>    trough_value <span class="op">=</span> wealth.<span class="bu">filter</span>(pl.col(<span class="st">"month"</span>) <span class="op">==</span> trough)[<span class="st">"wealth"</span>].item()</span>
+<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a>    recovery <span class="op">=</span> wealth.<span class="bu">filter</span>(</span>
+<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a>        (pl.col(<span class="st">"month"</span>) <span class="op">&gt;</span> trough) <span class="op">&amp;</span> (pl.col(<span class="st">"wealth"</span>) <span class="op">&gt;=</span> peak_value)</span>
+<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a>    )[<span class="st">"month"</span>].first()</span>
+<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> {</span>
+<span id="cb14-19"><a href="#cb14-19" aria-hidden="true" tabindex="-1"></a>        <span class="st">"Episode"</span>: episode,</span>
+<span id="cb14-20"><a href="#cb14-20" aria-hidden="true" tabindex="-1"></a>        <span class="st">"Peak"</span>: peak.strftime(<span class="st">"%Y-%m"</span>),</span>
+<span id="cb14-21"><a href="#cb14-21" aria-hidden="true" tabindex="-1"></a>        <span class="st">"Trough"</span>: trough.strftime(<span class="st">"%Y-%m"</span>),</span>
+<span id="cb14-22"><a href="#cb14-22" aria-hidden="true" tabindex="-1"></a>        <span class="st">"Drawdown (%)"</span>: <span class="bu">round</span>(<span class="dv">100</span> <span class="op">*</span> (trough_value <span class="op">/</span> peak_value <span class="op">-</span> <span class="dv">1</span>), <span class="dv">1</span>),</span>
+<span id="cb14-23"><a href="#cb14-23" aria-hidden="true" tabindex="-1"></a>        <span class="st">"Recovery"</span>: recovery.strftime(<span class="st">"%Y-%m"</span>) <span class="cf">if</span> recovery <span class="cf">else</span> <span class="st">"Not by 2012-12"</span>,</span>
+<span id="cb14-24"><a href="#cb14-24" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb14-25"><a href="#cb14-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-26"><a href="#cb14-26" aria-hidden="true" tabindex="-1"></a>pl.DataFrame([measure_drawdown(<span class="op">*</span>episode) <span class="cf">for</span> episode <span class="kw">in</span> episodes])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="19">
 <div><style>
 .dataframe > thead > tr,
 .dataframe > tbody > tr {
@@ -1478,13 +1215,13 @@ Figure&nbsp;7.5: Cumulative market excess returns, July 1926–December 2012 (co
 </div>
 </div>
 </div>
-<p>The monthly dates and the size of the four episodes are close to the book’s account. The daily Fama–French file also lets us check the specific crash days. It puts the compounded October 28–29, 1929 loss at 21.5%, versus more than 23% reported by BEM; the 1987 Black Monday loss is 17.4%, close to their 17.5%. These daily checks are sensitive to the choice of series, vintage, and aggregation.</p>
-<div id="787aec0b" class="cell" data-execution_count="22">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>daily_market <span class="op">=</span> load_parquet(<span class="st">"factors_daily"</span>, <span class="st">"ff"</span>)</span>
-<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>daily_market.<span class="bu">filter</span>(</span>
-<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>    pl.col(<span class="st">"date"</span>).is_in([date(<span class="dv">1929</span>, <span class="dv">10</span>, <span class="dv">28</span>), date(<span class="dv">1929</span>, <span class="dv">10</span>, <span class="dv">29</span>), date(<span class="dv">1987</span>, <span class="dv">10</span>, <span class="dv">19</span>)])</span>
-<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>).select(<span class="st">"date"</span>, market_excess_pct<span class="op">=</span>(<span class="dv">100</span> <span class="op">*</span> pl.col(<span class="st">"mktrf"</span>)).<span class="bu">round</span>(<span class="dv">2</span>)).sort(<span class="st">"date"</span>).collect()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-display" data-execution_count="22">
+<p>The daily Fama–French file shows the individual crash-day returns in October 1929 and October 1987.<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a></p>
+<div id="6a46af85" class="cell" data-execution_count="20">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>daily_market <span class="op">=</span> load_parquet(<span class="st">"factors_daily"</span>, <span class="st">"ff"</span>)</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>daily_market.<span class="bu">filter</span>(</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>    pl.col(<span class="st">"date"</span>).is_in([date(<span class="dv">1929</span>, <span class="dv">10</span>, <span class="dv">28</span>), date(<span class="dv">1929</span>, <span class="dv">10</span>, <span class="dv">29</span>), date(<span class="dv">1987</span>, <span class="dv">10</span>, <span class="dv">19</span>)])</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>).select(<span class="st">"date"</span>, market_excess_pct<span class="op">=</span>(<span class="dv">100</span> <span class="op">*</span> pl.col(<span class="st">"mktrf"</span>)).<span class="bu">round</span>(<span class="dv">2</span>)).sort(<span class="st">"date"</span>).collect()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display" data-execution_count="20">
 <div><style>
 .dataframe > thead > tr,
 .dataframe > tbody > tr {
@@ -1543,6 +1280,14 @@ r_{p,t} = \alpha_p + \beta_p\mathrm{MKT}_t + \varepsilon_{p,t}.
 Bali, Turan G., Robert F. Engle, and Scott Murray. 2016. <em>Empirical Asset Pricing: The Cross Section of Stock Returns</em>. John Wiley &amp; Sons. <a href="https://www.wiley.com/en-us/empirical-asset-pricing-the-cross-section-of-stock-returns-p-9781118095041">https://www.wiley.com/en-us/empirical-asset-pricing-the-cross-section-of-stock-returns-p-9781118095041</a>.
 </div>
 </div>
+</section>
+<section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
+<hr>
+<ol>
+<li id="fn1"><p>BEM §7.1.2 reports two stocks in the Other category at the end of 2012. The cause of the difference is unclear.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>The adjusted maxima average 191.10% and 273.12% here, compared with 208.10% and 302.74% in BEM Tables 7.2 and 7.3. The unadjusted maxima are within 0.02 percentage points of BEM in both samples, suggesting the difference is concentrated in the delisting observations.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p>Compounding the October 28 and 29, 1929 returns gives a loss of 21.5%. BEM §7.3 reports a loss of more than 23% for those two days.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
 </section>
 
 </main> <!-- /main -->
